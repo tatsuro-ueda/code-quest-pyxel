@@ -965,30 +965,27 @@ def get_zone(tile_y, in_dungeon=False):
     return 3
 
 # =====================================================================
-# ENEMY DATA
+# ENEMY DATA — assets/enemies.yaml から読み込む
 # =====================================================================
-ZONE_ENEMIES = {
-    0: [
-        {"name": "10ほスライム", "sprite": "slime", "hp": 15, "atk": 8, "def": 2, "agi": 3, "exp": 5, "gold": 3, "category": "sequential"},
-        {"name": "かいてんゴブリン", "sprite": "goblin", "hp": 25, "atk": 12, "def": 4, "agi": 5, "exp": 8, "gold": 5, "category": "sequential"},
-    ],
-    1: [
-        {"name": "ループゴースト", "sprite": "ghost", "hp": 40, "atk": 20, "def": 8, "agi": 7, "exp": 15, "gold": 10, "category": "loop"},
-        {"name": "10かいナイト", "sprite": "knight", "hp": 60, "atk": 28, "def": 12, "agi": 10, "exp": 25, "gold": 18, "category": "loop"},
-    ],
-    2: [
-        {"name": "もしガード", "sprite": "guard", "hp": 85, "atk": 40, "def": 18, "agi": 12, "exp": 40, "gold": 30, "category": "condition"},
-        {"name": "でなければスライム", "sprite": "else_slime", "hp": 120, "atk": 55, "def": 22, "agi": 15, "exp": 60, "gold": 45, "category": "condition"},
-    ],
-    3: [
-        {"name": "HPカウンター", "sprite": "counter", "hp": 180, "atk": 75, "def": 30, "agi": 18, "exp": 90, "gold": 70, "category": "variable"},
-        {"name": "クローン忍者", "sprite": "ninja", "hp": 250, "atk": 95, "def": 35, "agi": 25, "exp": 130, "gold": 100, "category": "variable"},
-    ],
-    4: [
-        {"name": "無限バグ", "sprite": "inf_bug", "hp": 350, "atk": 120, "def": 40, "agi": 20, "exp": 200, "gold": 150, "category": "composite"},
-    ],
-}
-BOSS_DATA = {"name": "魔王グリッチ", "sprite": "glitch_lord", "hp": 500, "atk": 150, "def": 50, "agi": 30, "exp": 999, "gold": 500, "category": "boss"}
+from src import game_data as _game_data
+
+_ALL_ENEMIES = _game_data.load_enemies()
+
+
+def _build_zone_enemies(enemies):
+    """zone -> list[enemy] にグルーピング。post_clear_only/is_boss/is_professor は除外。"""
+    by_zone: dict[int, list] = {}
+    for e in enemies:
+        if e.get("is_boss") or e.get("is_professor") or e.get("post_clear_only"):
+            continue
+        by_zone.setdefault(e["zone"], []).append(e)
+    return by_zone
+
+
+ZONE_ENEMIES = _build_zone_enemies(_ALL_ENEMIES)
+BOSS_DATA = next(e for e in _ALL_ENEMIES if e.get("is_boss"))
+PROFESSOR_DATA = next(e for e in _ALL_ENEMIES if e.get("is_professor"))
+GLITCH_CLONE_DATA = next(e for e in _ALL_ENEMIES if e.get("post_clear_only"))
 
 ENCOUNTER_RATES = {T_GRASS: 0.06, T_SAND: 0.08, T_FLOOR: 0.12, T_PATH: 0.03}
 
