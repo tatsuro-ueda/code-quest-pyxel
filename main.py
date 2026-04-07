@@ -19,6 +19,7 @@ from src.landmark_events import find_landmark_event
 from src.structured_dialog import StructuredDialogRunner
 from src.save_store import LocalStorageSaveStore, SaveStoreError, make_save_store
 from src.player_snapshot import dump_snapshot, restore_snapshot
+from src.player_factory import create_initial_player
 
 # =====================================================================
 # TILE DATA (16x16 pixel arrays, Pyxel 16-color palette)
@@ -1064,22 +1065,7 @@ class Game:
         self.dungeon_map = None
         self.dungeon_rooms = None
 
-        self.player = {
-            "x": 25, "y": 6,
-            "hp": 30, "max_hp": 30, "mp": 10, "max_mp": 10,
-            "atk": 5, "def": 3, "agi": 5,
-            "lv": 1, "exp": 0, "gold": 50,
-            "weapon": 0, "armor": 0,
-            "items": [{"id": 0, "qty": 3}],
-            "spells": [],
-            "poisoned": False,
-            "in_dungeon": False,
-            "boss_defeated": False,
-            "max_zone_reached": 0,
-            "landmarkTreeSeen": False,
-            "landmarkTowerSeen": False,
-            "dialog_flags": {},
-        }
+        self.player = create_initial_player()
 
         self.state = "title"
         self.prev_state = "map"
@@ -1279,6 +1265,8 @@ class Game:
             return
         if self._btnp(CONFIRM_BUTTONS) or self._btnp(TITLE_START_BUTTONS):
             if self.title_cursor == 0:
+                # はじめから: プレイヤー状態をクリーンに作り直す
+                self.player = create_initial_player()
                 self.state = "map"
                 return
             # つづきから — has_save が False ならグレーアウト（D8 / P9）
