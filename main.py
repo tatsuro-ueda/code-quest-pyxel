@@ -1090,6 +1090,7 @@ class Game:
         self.battle_item_select = 0
         self.battle_spell_select = 0
         self.battle_is_boss = False
+        self.battle_boss_phase = "phase1"
 
         # Menu state
         self.menu_cursor = 0
@@ -1462,6 +1463,7 @@ class Game:
         self.battle_item_select = 0
         self.battle_spell_select = 0
         self.battle_is_boss = is_boss
+        self.battle_boss_phase = "phase1"
         if is_boss:
             self.battle_text = self._dialog_text("boss.glitch.intro")
         self.state = "battle"
@@ -1593,8 +1595,26 @@ class Game:
             enemy=e["name"],
             dmg=dmg,
         )
+        self._check_boss_phase_transition()
         self.battle_phase = "player_attack"
         self.battle_text_timer = 40
+
+    def _check_boss_phase_transition(self):
+        """ボスのHPが閾値を跨いだら phase を更新し、移行メッセージを差し込む。"""
+        if not self.battle_is_boss or self.battle_enemy is None:
+            return
+        max_hp = self.battle_enemy["hp"]
+        if max_hp <= 0:
+            return
+        ratio = self.battle_enemy_hp / max_hp
+        from src.game_data import BOSS_PHASE_MESSAGES, boss_phase
+        new_phase = boss_phase(ratio)
+        if new_phase != self.battle_boss_phase:
+            self.battle_boss_phase = new_phase
+            transition_msg = BOSS_PHASE_MESSAGES.get(new_phase)
+            if transition_msg:
+                # 既存ダメージメッセージに連結
+                self.battle_text = (self.battle_text + " " + transition_msg).strip()
 
     def _do_enemy_attack(self):
         p = self.player

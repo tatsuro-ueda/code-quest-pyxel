@@ -46,3 +46,24 @@ def load_spells() -> list[dict[str, Any]]:
 
 def load_shops() -> dict[str, Any]:
     return _load("shops.yaml")
+
+
+def boss_phase(hp_ratio: float) -> str:
+    """Return a phase label based on the boss HP ratio.
+
+    JS版 `getBossPhases` 相当:
+      - hp_ratio > 0.6 → 'phase1'
+      - 0.3 < hp_ratio <= 0.6 → 'phase2'
+      - hp_ratio <= 0.3 → 'phase3'
+    """
+    if hp_ratio > 0.6:
+        return "phase1"
+    if hp_ratio > 0.3:
+        return "phase2"
+    return "phase3"
+
+
+BOSS_PHASE_MESSAGES = {
+    "phase2": "ボスの様子が変わった！",
+    "phase3": "ボスは最後の力を振り絞っている！",
+}

@@ -128,5 +128,25 @@ class LoadShopsTest(unittest.TestCase):
                 self.assertIn(key, shop)
 
 
+class BossPhaseTest(unittest.TestCase):
+    def test_phase1_at_full_hp(self):
+        self.assertEqual(game_data.boss_phase(1.0), "phase1")
+
+    def test_phase1_just_above_threshold(self):
+        self.assertEqual(game_data.boss_phase(0.61), "phase1")
+
+    def test_phase2_at_60_percent(self):
+        self.assertEqual(game_data.boss_phase(0.6), "phase2")
+
+    def test_phase2_at_31_percent(self):
+        self.assertEqual(game_data.boss_phase(0.31), "phase2")
+
+    def test_phase3_at_30_percent(self):
+        self.assertEqual(game_data.boss_phase(0.3), "phase3")
+
+    def test_phase3_at_zero(self):
+        self.assertEqual(game_data.boss_phase(0.0), "phase3")
+
+
 if __name__ == "__main__":
     unittest.main()
