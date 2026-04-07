@@ -1,0 +1,34 @@
+# 呪文データ — JS版 game/index.html (行702-708) からの全5種移植
+# type: heal / attack
+# learn_lv: そのレベルになると習得
+
+- name: デバッグ
+  mp: 6
+  type: heal
+  power: 60
+  desc: バグを修正しHP60回復
+  learn_lv: 3
+- name: プリント
+  mp: 8
+  type: attack
+  power: 40
+  desc: 出力で攻撃
+  learn_lv: 4
+- name: ループブレイク
+  mp: 12
+  type: attack
+  power: 70
+  desc: 無限ループを断つ
+  learn_lv: 8
+- name: リファクタリング
+  mp: 16
+  type: heal
+  power: 160
+  desc: コード改善しHP160回復
+  learn_lv: 14
+- name: コンパイル
+  mp: 30
+  type: attack
+  power: 140
+  desc: 全コードを実行！
+  learn_lv: 20

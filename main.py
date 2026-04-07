@@ -1023,6 +1023,8 @@ _SHOPS_DATA = _game_data.load_shops()
 SHOPS = _SHOPS_DATA["shops"]
 INN_PRICES = _SHOPS_DATA["inn_prices"]
 TOWN_INDEX_BY_POS = {(20, 12): 0, (30, 22): 1, (18, 34): 2}
+SPELLS = _game_data.load_spells()
+SPELL_BY_NAME = {s["name"]: s for s in SPELLS}
 SAVE_OK_MSG = "ここまでの理解を書き留めた。"
 LOAD_OK_MSG = "記録を読み返した。理解が戻ってくる。"
 NO_RECORD_MSG = "まだ何も書き留めていない…"
@@ -1086,6 +1088,7 @@ class Game:
         self.battle_text = ""
         self.battle_text_timer = 0
         self.battle_item_select = 0
+        self.battle_spell_select = 0
         self.battle_is_boss = False
 
         # Menu state
@@ -1457,6 +1460,7 @@ class Game:
         self.battle_text = ""
         self.battle_text_timer = 0
         self.battle_item_select = 0
+        self.battle_spell_select = 0
         self.battle_is_boss = is_boss
         if is_boss:
             self.battle_text = self._dialog_text("boss.glitch.intro")
@@ -1471,8 +1475,12 @@ class Game:
             if self._btnp(CONFIRM_BUTTONS):
                 if self.battle_menu == 0:  # Attack
                     self._do_player_attack()
-                elif self.battle_menu == 1:  # Skill (not implemented, just attack)
-                    self._do_player_attack()
+                elif self.battle_menu == 1:  # じゅもん
+                    if self.player["spells"]:
+                        self.battle_phase = "spell_select"
+                        self.battle_spell_select = 0
+                    else:
+                        self.battle_text = "まだ じゅもんを 覚えていない"
                 elif self.battle_menu == 2:  # Item
                     self.battle_phase = "item_select"
                     self.battle_item_select = 0
@@ -1490,6 +1498,31 @@ class Game:
                         self.battle_text = self._dialog_text(scene_name)
                         self.battle_phase = "enemy_attack"
                         self.battle_text_timer = 30
+
+        elif self.battle_phase == "spell_select":
+            spells = self.player["spells"]
+            if not spells:
+                self.battle_phase = "menu"
+                return
+            if self._btnp(UP_BUTTONS):
+                self.battle_spell_select = max(0, self.battle_spell_select - 1)
+            if self._btnp(DOWN_BUTTONS):
+                self.battle_spell_select = min(len(spells) - 1, self.battle_spell_select + 1)
+            if self._btnp(CANCEL_BUTTONS):
+                self.battle_phase = "menu"
+            if self._btnp(CONFIRM_BUTTONS):
+                spell_name = spells[self.battle_spell_select]
+                spell = SPELL_BY_NAME.get(spell_name)
+                if spell is None:
+                    self.battle_phase = "menu"
+                    return
+                if self.player["mp"] < spell["mp"]:
+                    self.battle_text = "MPが たりない！"
+                    return
+                self.player["mp"] -= spell["mp"]
+                self.battle_text = self._apply_spell_effect(spell)
+                self.battle_phase = "player_attack"
+                self.battle_text_timer = 30
 
         elif self.battle_phase == "item_select":
             items = self.player["items"]
@@ -1612,6 +1645,10 @@ class Game:
             p["atk"] = s["atk"]
             p["def"] = s["def"]
             p["agi"] = s["agi"]
+            # 呪文習得
+            for spell in SPELLS:
+                if spell["learn_lv"] == p["lv"] and spell["name"] not in p["spells"]:
+                    p["spells"].append(spell["name"])
 
     def update_menu(self):
         menu_items = ["ステータス", "アイテム", "そうび", "とじる"]
@@ -1672,6 +1709,18 @@ class Game:
                     self.player["weapon"] = (self.player["weapon"] - 1) % len(WEAPONS)
                 else:
                     self.player["armor"] = (self.player["armor"] - 1) % len(ARMORS)
+
+    def _apply_spell_effect(self, spell) -> str:
+        """Apply a spell effect (heal or attack). Caller is responsible for MP cost."""
+        p = self.player
+        if spell["type"] == "heal":
+            heal = spell["power"]
+            p["hp"] = min(p["max_hp"], p["hp"] + heal)
+            return f'{spell["name"]}を となえた。HPが{heal}回復した！'
+        # attack
+        damage = max(1, spell["power"])
+        self.battle_enemy_hp = max(0, self.battle_enemy_hp - damage)
+        return f'{spell["name"]}！ {damage}のダメージ！'
 
     def _use_item(self, item_data) -> str:
         """Apply an item's effect and return a status message string.
@@ -2129,7 +2178,7 @@ class Game:
 
         # Menu
         if self.battle_phase == "menu":
-            menu_labels = ["たたかう", "スキル", "アイテム", "にげる"]
+            menu_labels = ["たたかう", "じゅもん", "アイテム", "にげる"]
             pyxel.rect(10, 190, 236, 56, 0)
             pyxel.rectb(10, 190, 236, 56, 7)
             for i, label in enumerate(menu_labels):
@@ -2139,6 +2188,23 @@ class Game:
                 pyxel.text(cx, cy, label, col, self.font)
                 if i == self.battle_menu:
                     pyxel.text(cx - 12, cy, ">", 10, self.font)
+
+        elif self.battle_phase == "spell_select":
+            spells = self.player["spells"]
+            pyxel.rect(10, 190, 236, 56, 0)
+            pyxel.rectb(10, 190, 236, 56, 7)
+            if not spells:
+                pyxel.text(16, 200, "じゅもんを覚えていない", 6, self.font)
+            else:
+                for i, name in enumerate(spells[:4]):
+                    spell = SPELL_BY_NAME.get(name)
+                    if spell is None:
+                        continue
+                    cy = 196 + i * 12
+                    col = 10 if i == self.battle_spell_select else 6
+                    pyxel.text(30, cy, f"{name}  MP{spell['mp']}", col, self.font)
+                    if i == self.battle_spell_select:
+                        pyxel.text(18, cy, ">", 10, self.font)
 
         elif self.battle_phase == "item_select":
             items = self.player["items"]

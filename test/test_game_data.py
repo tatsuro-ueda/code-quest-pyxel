@@ -94,6 +94,25 @@ class LoadItemsTest(unittest.TestCase):
         self.assertIn("セーブポイント", names)
 
 
+class LoadSpellsTest(unittest.TestCase):
+    def test_returns_5_spells(self):
+        spells = game_data.load_spells()
+        self.assertEqual(len(spells), 5)
+
+    def test_each_spell_has_required_keys(self):
+        for s in game_data.load_spells():
+            for key in ("name", "mp", "type", "power", "desc", "learn_lv"):
+                self.assertIn(key, s)
+
+    def test_spell_types_are_heal_or_attack(self):
+        for s in game_data.load_spells():
+            self.assertIn(s["type"], ("heal", "attack"))
+
+    def test_spells_sorted_by_learn_level(self):
+        levels = [s["learn_lv"] for s in game_data.load_spells()]
+        self.assertEqual(levels, sorted(levels))
+
+
 class LoadShopsTest(unittest.TestCase):
     def test_shops_for_3_towns(self):
         data = game_data.load_shops()
