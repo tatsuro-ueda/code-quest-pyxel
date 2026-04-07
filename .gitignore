@@ -5,3 +5,5 @@ __pycache__/
 mock/
 .DS_Store
 *.egg-info/
+.playwright-mcp/
+.claude/

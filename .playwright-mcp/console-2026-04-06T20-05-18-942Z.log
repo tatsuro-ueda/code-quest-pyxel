@@ -1,4 +1,0 @@
-[     527ms] [LOG] Launch Pyxel 2.8.10 with Pyodide 0.29.3 @ https://cdn.jsdelivr.net/gh/kitao/pyxel@2.8.10/wasm/pyxel.js:112
-[     528ms] [LOG] {command: play, name: pyxel.pyxapp, gamepad: enabled, base64: UEsDBBQAAAAIANIahlwsYEvPCQAAAAcAAAAcAAAAcHl4ZWwvLn…6ZV90b190aWxlLnB5UEsFBgAAAAAyADIANA4AAJqXCgAAAA==} @ https://cdn.jsdelivr.net/gh/kitao/pyxel@2.8.10/wasm/pyxel.js:113
-[    5774ms] [LOG] Loading pyxel @ https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.asm.js:7
-[    8498ms] [LOG] Loaded pyxel @ https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.asm.js:7

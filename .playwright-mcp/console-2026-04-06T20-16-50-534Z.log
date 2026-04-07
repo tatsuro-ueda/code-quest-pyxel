@@ -1,9 +1,0 @@
-[      97ms] [LOG] Launch Pyxel 2.8.10 with Pyodide 0.29.3 @ https://cdn.jsdelivr.net/gh/kitao/pyxel@2.8.10/wasm/pyxel.js:112
-[      97ms] [LOG] {command: play, name: pyxel.pyxapp, gamepad: enabled, base64: UEsDBBQAAAAIANIahlwsYEvPCQAAAAcAAAAcAAAAcHl4ZWwvLn…6ZV90b190aWxlLnB5UEsFBgAAAAAyADIANA4AAJqXCgAAAA==} @ https://cdn.jsdelivr.net/gh/kitao/pyxel@2.8.10/wasm/pyxel.js:113
-[    2968ms] [LOG] Loading pyxel @ https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.asm.js:7
-[    4061ms] [LOG] Loaded pyxel @ https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.asm.js:7
-[   48381ms] [WARNING] The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet) @ :0
-[   48558ms] [WARNING] [.WebGL-0x320c0565ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ http://127.0.0.1:8014/.playwright-mcp/pyxel-mobile-test.html:0
-[   48718ms] [WARNING] [.WebGL-0x320c0565ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ http://127.0.0.1:8014/.playwright-mcp/pyxel-mobile-test.html:0
-[   48769ms] [WARNING] [.WebGL-0x320c0565ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ http://127.0.0.1:8014/.playwright-mcp/pyxel-mobile-test.html:0
-[   48884ms] [WARNING] [.WebGL-0x320c0565ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat) @ http://127.0.0.1:8014/.playwright-mcp/pyxel-mobile-test.html:0
