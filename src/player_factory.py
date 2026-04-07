@@ -68,5 +68,6 @@ def create_initial_player(start_x: int = 25, start_y: int = 6) -> dict[str, Any]
         "max_zone_reached": 0,
         "landmarkTreeSeen": False,
         "landmarkTowerSeen": False,
+        "towerEpilogueSeen": False,
         "dialog_flags": {},
     }

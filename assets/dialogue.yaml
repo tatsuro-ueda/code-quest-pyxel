@@ -50,8 +50,17 @@ scenes:
   landmark.tree.first:
     text: "世界樹だ。なぜか落ち着く。気持ちが、考えが、自由だ。"
 
+  landmark.tree.repeat:
+    text: "世界樹「温かいのう……。お前さん、また来てくれたのか。」"
+
   landmark.tower.first:
     text: "通信塔だ。声が流れてくる。「そんなに考えなくていい」「みんなと同じでいい」"
+
+  landmark.tower.repeat:
+    text: "通信塔「……また一人来たか。登録しておく。」"
+
+  landmark.tower.epilogue:
+    text: "通信塔「……もう回路は壊れた。送るものもない。これでよかったのかは、分からない。」"
 
   dungeon.glitch.enter:
     text: "グリッチのサーバーに侵入した…エラーメッセージが飛び交う。ここに、すべての原因がある。"

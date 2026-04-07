@@ -15,7 +15,7 @@ from src.input_bindings import (
     any_btn,
 )
 from src.audio_system import AudioManager, choose_bgm_scene
-from src.landmark_events import find_landmark_event
+from src.landmark_events import find_landmark_at, find_landmark_event, resolve_scene
 from src.structured_dialog import StructuredDialogRunner
 from src.save_store import LocalStorageSaveStore, SaveStoreError, make_save_store
 from src.player_snapshot import dump_snapshot, restore_snapshot
@@ -1438,19 +1438,29 @@ class Game:
         if self.player["in_dungeon"]:
             return False
 
-        landmark = find_landmark_event(
-            player_x=self.player["x"],
-            player_y=self.player["y"],
-            flags={
-                "landmarkTreeSeen": self.player["landmarkTreeSeen"],
-                "landmarkTowerSeen": self.player["landmarkTowerSeen"],
-            },
-        )
+        landmark = find_landmark_at(self.player["x"], self.player["y"])
         if landmark is None:
             return False
 
-        self.player[landmark.flag_name] = True
-        self._enter_message(self._dialog_lines(landmark.scene_name))
+        flags = {
+            "landmarkTreeSeen": self.player.get("landmarkTreeSeen", False),
+            "landmarkTowerSeen": self.player.get("landmarkTowerSeen", False),
+            "towerEpilogueSeen": self.player.get("towerEpilogueSeen", False),
+        }
+        scene = resolve_scene(
+            landmark,
+            flags,
+            boss_defeated=self.player.get("boss_defeated", False),
+        )
+
+        # 最初の訪問なら見たフラグを立てる
+        if not flags.get(landmark.flag_name, False):
+            self.player[landmark.flag_name] = True
+        # エピローグを再生したらエピローグフラグを立てる
+        if landmark.epilogue_flag and scene == landmark.epilogue_scene:
+            self.player[landmark.epilogue_flag] = True
+
+        self._enter_message(self._dialog_lines(scene))
         return True
 
     def _start_battle(self, enemy_template, is_boss=False):
