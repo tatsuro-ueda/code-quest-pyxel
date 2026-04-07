@@ -1600,18 +1600,16 @@ class Game:
         self.battle_text_timer = 60
 
     def _check_level_up(self):
+        from src.player_factory import MAX_LEVEL, exp_for_level, stats_for_level
         p = self.player
-        thresholds = [0, 15, 40, 80, 140, 220, 330, 470, 650, 900, 1200]
-        while p["lv"] < len(thresholds) and p["exp"] >= thresholds[min(p["lv"], len(thresholds) - 1)]:
-            if p["lv"] >= len(thresholds):
-                break
-            if p["exp"] >= thresholds[min(p["lv"], len(thresholds) - 1)]:
-                p["lv"] += 1
-                p["max_hp"] += 8; p["hp"] = p["max_hp"]
-                p["max_mp"] += 3; p["mp"] = p["max_mp"]
-                p["atk"] += 2; p["def"] += 1; p["agi"] += 1
-            else:
-                break
+        while p["lv"] < MAX_LEVEL and p["exp"] >= exp_for_level(p["lv"] + 1):
+            p["lv"] += 1
+            s = stats_for_level(p["lv"])
+            p["max_hp"] = s["max_hp"]; p["hp"] = p["max_hp"]
+            p["max_mp"] = s["max_mp"]; p["mp"] = p["max_mp"]
+            p["atk"] = s["atk"]
+            p["def"] = s["def"]
+            p["agi"] = s["agi"]
 
     def update_menu(self):
         menu_items = ["ステータス", "アイテム", "そうび", "とじる"]
