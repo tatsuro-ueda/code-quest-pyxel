@@ -1039,17 +1039,8 @@ ITEMS = [
     {"name": "デバッグツール", "type": "mp_heal", "value": 15, "desc": "MPを15回復"},
 ]
 
-WEAPONS = [
-    {"name": "素手", "atk": 0},
-    {"name": "初心者の杖", "atk": 3},
-    {"name": "ロジックソード", "atk": 8},
-    {"name": "アルゴリズムの剣", "atk": 15},
-]
-ARMORS = [
-    {"name": "普段着", "def": 0},
-    {"name": "学生服", "def": 3},
-    {"name": "鎧", "def": 8},
-]
+WEAPONS = _game_data.load_weapons()
+ARMORS = _game_data.load_armors()
 
 # =====================================================================
 # GAME CLASS

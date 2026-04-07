@@ -42,5 +42,34 @@ class LoadEnemiesTest(unittest.TestCase):
         self.assertIn(6, zones)
 
 
+class LoadWeaponsTest(unittest.TestCase):
+    def test_returns_8_weapons_including_base(self):
+        weapons = game_data.load_weapons()
+        self.assertEqual(len(weapons), 8)  # 素手 + 7
+        self.assertEqual(weapons[0]["name"], "素手")
+
+    def test_each_weapon_has_required_keys(self):
+        for w in game_data.load_weapons():
+            for key in ("name", "atk", "price", "buy_msg"):
+                self.assertIn(key, w)
+
+    def test_weapon_atk_increases_by_tier(self):
+        atks = [w["atk"] for w in game_data.load_weapons()]
+        for i in range(1, len(atks)):
+            self.assertGreater(atks[i], atks[i - 1])
+
+
+class LoadArmorsTest(unittest.TestCase):
+    def test_returns_8_armors_including_base(self):
+        armors = game_data.load_armors()
+        self.assertEqual(len(armors), 8)
+        self.assertEqual(armors[0]["name"], "ふだんぎ")
+
+    def test_each_armor_has_required_keys(self):
+        for a in game_data.load_armors():
+            for key in ("name", "def", "price", "buy_msg"):
+                self.assertIn(key, a)
+
+
 if __name__ == "__main__":
     unittest.main()
