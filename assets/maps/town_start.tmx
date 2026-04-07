@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.10.0" orientation="orthogonal" renderorder="right-down" width="10" height="8" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="5">
+ <tileset firstgid="1" source="tileset_overworld.tsx"/>
+ <layer id="1" name="ground" width="10" height="8">
+  <data encoding="csv">
+1,1,1,1,12,1,1,1,1,1,
+1,1,1,1,12,1,1,1,1,1,
+1,1,1,1,12,1,1,1,1,1,
+1,1,1,1,12,1,1,1,1,1,
+1,1,1,1,12,1,1,1,1,1,
+1,1,1,1,12,1,1,1,1,1,
+1,1,1,1,12,1,1,1,1,1,
+1,1,1,1,12,1,1,1,1,1
+</data>
+ </layer>
+ <layer id="2" name="decoration" width="10" height="8">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,3,0,0,0,0,0,0,3,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,3,0,0,0,0,0,0,3,0,
+0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="3" name="collision" width="10" height="8">
+  <data encoding="csv">
+6,6,6,6,0,6,6,6,6,6,
+6,0,0,0,0,0,0,0,0,6,
+6,0,0,0,0,0,0,0,0,6,
+6,0,0,0,0,0,0,0,0,6,
+6,0,0,0,0,0,0,0,0,6,
+6,0,0,0,0,0,0,0,0,6,
+6,0,0,0,0,0,0,0,0,6,
+6,6,6,6,6,6,6,6,6,6
+</data>
+ </layer>
+ <objectgroup id="4" name="objects">
+  <object id="1" name="oldman" type="npc" x="48" y="48" width="16" height="16">
+   <properties>
+    <property name="dialog_id" value="intro_01"/>
+    <property name="sprite" value="sprite_oldman.png"/>
+   </properties>
+  </object>
+  <object id="2" name="north_gate" type="door" x="64" y="0" width="16" height="16">
+   <properties>
+    <property name="target_map" value="dungeon_01.tmx"/>
+    <property name="spawn_point" value="entrance"/>
+   </properties>
+  </object>
+  <object id="3" name="welcome_chest" type="chest" x="112" y="64" width="16" height="16">
+   <properties>
+    <property name="item_id" value="potion_small"/>
+    <property name="gold" value="10"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="5" name="spawn">
+  <object id="4" name="player_start" x="64" y="64" width="16" height="16"/>
+ </objectgroup>
+</map>

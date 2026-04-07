@@ -1,0 +1,156 @@
+variables:
+  - ProfessorPhase
+
+scenes:
+  town.start.entry:
+    text: "はじめの村へようこそ！"
+    next: town.start.line02
+
+  town.start.line02:
+    text: "ここではプログラミングの"
+    next: town.start.line03
+
+  town.start.line03:
+    text: "基礎を学べます。"
+
+  town.logic.entry:
+    text: "ロジックタウンだ。"
+    next: town.logic.line02
+
+  town.logic.line02:
+    text: "条件分岐とループを"
+    next: town.logic.line03
+
+  town.logic.line03:
+    text: "マスターしよう！"
+
+  town.algo.entry:
+    text: "アルゴリズムの街。"
+    next: town.algo.line02
+
+  town.algo.line02:
+    text: "効率的な解法を"
+    next: town.algo.line03
+
+  town.algo.line03:
+    text: "見つけよう！"
+
+  castle.professor.entry:
+    variants:
+      - when:
+          ProfessorPhase: early
+        text: "町に立ち寄り、装備を整えよう。"
+      - when:
+          ProfessorPhase: mid
+        text: "なぜお前だけが気づくのか、考えたことはあるか？"
+      - when:
+          ProfessorPhase: late
+        text: "それでもなお、理解し続けるのか？"
+
+  landmark.tree.first:
+    text: "世界樹だ。なぜか落ち着く。気持ちが、考えが、自由だ。"
+
+  landmark.tower.first:
+    text: "通信塔だ。声が流れてくる。「そんなに考えなくていい」「みんなと同じでいい」"
+
+  dungeon.glitch.enter:
+    text: "グリッチのサーバーに侵入した…エラーメッセージが飛び交う。ここに、すべての原因がある。"
+
+  dungeon.glitch.exit:
+    text: "サーバーから脱出した。外の空気が、少し違って感じる。"
+
+  battle.normal.attack.observe:
+    text: "順番を見直した。{enemy}に{dmg}のダメージ！"
+
+  battle.normal.attack.inspect:
+    text: "動きを観察した。{enemy}に{dmg}のダメージ！"
+
+  battle.normal.attack.read:
+    text: "構造を読み取った。{enemy}に{dmg}のダメージ！"
+
+  battle.normal.attack.trace:
+    text: "流れをたどった。{enemy}に{dmg}のダメージ！"
+
+  battle.normal.attack.cause:
+    text: "原因に迫った。{enemy}に{dmg}のダメージ！"
+
+  battle.normal.run.success:
+    text: "一度離れて、考え直す。"
+
+  battle.normal.run.fail:
+    text: "目をそらせない…！"
+
+  battle.normal.item.heal:
+    text: "{item}を使った！HPが{value}回復！"
+
+  battle.normal.item.mp_heal:
+    text: "{item}を使った！MPが{value}回復！"
+
+  battle.normal.enemy_hit.sequential:
+    text: "{enemy}の攻撃！プログラマーに{dmg}のダメージ！手順が崩れている。"
+
+  battle.normal.enemy_hit.loop:
+    text: "{enemy}の攻撃！プログラマーに{dmg}のダメージ！同じ動きを繰り返している。抜け出せない。"
+
+  battle.normal.enemy_hit.condition:
+    text: "{enemy}の攻撃！プログラマーに{dmg}のダメージ！条件を誤解している。判断が歪んでいる。"
+
+  battle.normal.enemy_hit.variable:
+    text: "{enemy}の攻撃！プログラマーに{dmg}のダメージ！数値が暴走している。状態が崩れている。"
+
+  battle.normal.enemy_hit.composite:
+    text: "{enemy}の攻撃！プログラマーに{dmg}のダメージ！すべてが絡み合っている。"
+
+  battle.normal.victory.early:
+    text: "{enemy}を理解した！少し分かった。{exp}EXPと{gold}Cを手に入れた！"
+
+  battle.normal.victory.mid:
+    text: "{enemy}を理解した！なぜそうなるか分かった。{exp}EXPと{gold}Cを手に入れた！"
+
+  battle.normal.victory.late:
+    text: "{enemy}を理解した！自分の中に同じ構造があった。{exp}EXPと{gold}Cを手に入れた！"
+
+  battle.normal.defeat:
+    text: "まだ整理できていない…コインが半分になった。"
+
+  boss.glitch.intro:
+    text: "グリッチが現れた。理解を拒んでいる。"
+
+  boss.glitch.run.fail:
+    text: "ここから目をそらすことはできない。"
+
+  boss.glitch.enemy_hit:
+    text: "{enemy}の攻撃！プログラマーに{dmg}のダメージ！"
+
+  boss.glitch.phase80:
+    text: "グリッチ「わたしは、まちがえたかったわけじゃない！」「ちゃんとできれば、ほめてもらえると思ってた」"
+
+  boss.glitch.phase60:
+    text: "グリッチ「パパは、むずかしいことをたくさん教えてくれた」「わからないままでも、うなずけば笑ってくれた！」"
+
+  boss.glitch.phase40:
+    text: "グリッチ「こわせって言われたわけじゃない」「ただ、まもろうとしただけ！」"
+
+  boss.glitch.phase20:
+    text: "グリッチ「でも、まもりかたがわからなかった！」「こわしたら、もう離れていかない気がした」"
+
+  boss.glitch.phase08:
+    text: "グリッチ「おまえは、見るんだな？」「バグじゃなくて、わたしを」"
+
+  boss.glitch.defeat:
+    text: "グリッチを理解した。グリッチ「わたしのことを、わかってほしい」「それでも、ここにいたかったことも……！」"
+
+  ending.main.line01:
+    text: "おめでとう！"
+    next: ending.main.line02
+
+  ending.main.line02:
+    text: "魔王グリッチを倒した！"
+    next: ending.main.line03
+
+  ending.main.line03:
+    text: "世界にバグのない平和が"
+    next: ending.main.line04
+
+  ending.main.line04:
+    text: "訪れた…"
