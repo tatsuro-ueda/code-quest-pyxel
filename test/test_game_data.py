@@ -71,5 +71,28 @@ class LoadArmorsTest(unittest.TestCase):
                 self.assertIn(key, a)
 
 
+class LoadItemsTest(unittest.TestCase):
+    def test_returns_4_items(self):
+        items = game_data.load_items()
+        self.assertEqual(len(items), 4)
+
+    def test_item_types_are_supported(self):
+        types = {i["type"] for i in game_data.load_items()}
+        self.assertEqual(types, {"heal", "mp_heal", "cure_poison", "warp"})
+
+    def test_each_item_has_required_keys(self):
+        for i in game_data.load_items():
+            for key in ("name", "type", "value", "price", "desc"):
+                self.assertIn(key, i)
+
+    def test_cure_poison_item_exists(self):
+        names = {i["name"] for i in game_data.load_items() if i["type"] == "cure_poison"}
+        self.assertIn("アンチウイルス", names)
+
+    def test_warp_item_exists(self):
+        names = {i["name"] for i in game_data.load_items() if i["type"] == "warp"}
+        self.assertIn("セーブポイント", names)
+
+
 if __name__ == "__main__":
     unittest.main()

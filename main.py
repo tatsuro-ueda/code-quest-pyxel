@@ -1033,11 +1033,7 @@ TOWN_DIALOG_SCENES = {
     (25, 6): "castle.professor.entry",
 }
 
-ITEMS = [
-    {"name": "バグレポート", "type": "heal", "value": 20, "desc": "HPを20回復"},
-    {"name": "エナジードリンク", "type": "heal", "value": 50, "desc": "HPを50回復"},
-    {"name": "デバッグツール", "type": "mp_heal", "value": 15, "desc": "MPを15回復"},
-]
+ITEMS = _game_data.load_items()
 
 WEAPONS = _game_data.load_weapons()
 ARMORS = _game_data.load_armors()
@@ -1360,6 +1356,13 @@ class Game:
                         self.walk_frame = 1 - self.walk_frame
                         self.walk_timer = 0
 
+                    # Poison tick: 数歩ごとにHPを少し削る
+                    if p.get("poisoned"):
+                        self._poison_step_counter = getattr(self, "_poison_step_counter", 0) + 1
+                        if self._poison_step_counter >= 4:
+                            self._poison_step_counter = 0
+                            p["hp"] = max(1, p["hp"] - 2)
+
                     # Check events after move
                     if self._check_landmark_events():
                         return
@@ -1500,23 +1503,14 @@ class Game:
             if self._btnp(CONFIRM_BUTTONS):
                 item = items[self.battle_item_select]
                 item_data = ITEMS[item["id"]]
-                if item_data["type"] == "heal":
-                    self.player["hp"] = min(self.player["max_hp"], self.player["hp"] + item_data["value"])
-                    self.battle_text = self._dialog_text(
-                        "battle.normal.item.heal",
-                        item=item_data["name"],
-                        value=item_data["value"],
-                    )
-                elif item_data["type"] == "mp_heal":
-                    self.player["mp"] = min(self.player["max_mp"], self.player["mp"] + item_data["value"])
-                    self.battle_text = self._dialog_text(
-                        "battle.normal.item.mp_heal",
-                        item=item_data["name"],
-                        value=item_data["value"],
-                    )
-                item["qty"] -= 1
-                if item["qty"] <= 0:
-                    items.pop(self.battle_item_select)
+                # warp はバトル中無効
+                if item_data["type"] == "warp":
+                    self.battle_text = "戦闘中は使えない…"
+                else:
+                    self.battle_text = self._use_item(item_data)
+                    item["qty"] -= 1
+                    if item["qty"] <= 0:
+                        items.pop(self.battle_item_select)
                 self.battle_phase = "enemy_attack"
                 self.battle_text_timer = 30
 
@@ -1655,10 +1649,7 @@ class Game:
                 if self._btnp(CONFIRM_BUTTONS):
                     item = items[self.menu_item_cursor]
                     item_data = ITEMS[item["id"]]
-                    if item_data["type"] == "heal":
-                        self.player["hp"] = min(self.player["max_hp"], self.player["hp"] + item_data["value"])
-                    elif item_data["type"] == "mp_heal":
-                        self.player["mp"] = min(self.player["max_mp"], self.player["mp"] + item_data["value"])
+                    self._use_item(item_data)
                     item["qty"] -= 1
                     if item["qty"] <= 0:
                         items.pop(self.menu_item_cursor)
@@ -1681,6 +1672,39 @@ class Game:
                     self.player["weapon"] = (self.player["weapon"] - 1) % len(WEAPONS)
                 else:
                     self.player["armor"] = (self.player["armor"] - 1) % len(ARMORS)
+
+    def _use_item(self, item_data) -> str:
+        """Apply an item's effect and return a status message string.
+
+        Returns empty string when the item could not be used.
+        """
+        kind = item_data["type"]
+        if kind == "heal":
+            self.player["hp"] = min(self.player["max_hp"], self.player["hp"] + item_data["value"])
+            return self._dialog_text(
+                "battle.normal.item.heal",
+                item=item_data["name"],
+                value=item_data["value"],
+            )
+        if kind == "mp_heal":
+            self.player["mp"] = min(self.player["max_mp"], self.player["mp"] + item_data["value"])
+            return self._dialog_text(
+                "battle.normal.item.mp_heal",
+                item=item_data["name"],
+                value=item_data["value"],
+            )
+        if kind == "cure_poison":
+            if self.player.get("poisoned"):
+                self.player["poisoned"] = False
+                return f'{item_data["name"]}を使った。バグ汚染が消えた！'
+            return f'{item_data["name"]}を使った。だが今は必要なかった。'
+        if kind == "warp":
+            # 最後に訪れた町に戻す。未訪問なら開始位置 (25,6)。
+            tx, ty = getattr(self, "last_town_pos", None) or (25, 6)
+            self.player["x"], self.player["y"] = tx, ty
+            self.player["in_dungeon"] = False
+            return f'{item_data["name"]}を使った。記録した場所に戻った。'
+        return ""
 
     def show_message(self, lines, callback=None):
         self.msg_lines = lines
