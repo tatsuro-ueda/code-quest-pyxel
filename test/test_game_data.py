@@ -94,5 +94,20 @@ class LoadItemsTest(unittest.TestCase):
         self.assertIn("セーブポイント", names)
 
 
+class LoadShopsTest(unittest.TestCase):
+    def test_shops_for_3_towns(self):
+        data = game_data.load_shops()
+        self.assertEqual(len(data["shops"]), 3)
+
+    def test_inn_prices_3_entries(self):
+        data = game_data.load_shops()
+        self.assertEqual(data["inn_prices"], [5, 15, 40])
+
+    def test_shop_keys(self):
+        for shop in game_data.load_shops()["shops"]:
+            for key in ("town", "items", "weapons", "armors"):
+                self.assertIn(key, shop)
+
+
 if __name__ == "__main__":
     unittest.main()

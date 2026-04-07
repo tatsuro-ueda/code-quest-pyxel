@@ -1017,7 +1017,12 @@ VICTORY_SCENES_BY_ZONE = {
 ZONE_NAMES = {0: "始まりの草原", 1: "ロジックの森", 2: "アルゴの山道", 3: "砂漠地帯", 4: "グリッチの洞窟"}
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
-INN_COST = 10  # gold
+SHOP_KIND_BY_LABEL = {"ぶきや": "weapons", "ぼうぐや": "armors", "どうぐや": "items"}
+INN_COST = 10  # gold (フォールバック値; shops.yaml の inn_prices を優先)
+_SHOPS_DATA = _game_data.load_shops()
+SHOPS = _SHOPS_DATA["shops"]
+INN_PRICES = _SHOPS_DATA["inn_prices"]
+TOWN_INDEX_BY_POS = {(20, 12): 0, (30, 22): 1, (18, 34): 2}
 SAVE_OK_MSG = "ここまでの理解を書き留めた。"
 LOAD_OK_MSG = "記録を読み返した。理解が戻ってくる。"
 NO_RECORD_MSG = "まだ何も書き留めていない…"
@@ -1091,6 +1096,13 @@ class Game:
         # Town menu state (D6)
         self.town_menu_cursor = 0
         self.town_menu_pos: tuple[int, int] | None = None
+        self.last_town_pos: tuple[int, int] | None = None
+
+        # Shop state (Task #7)
+        self.shop_kind: str = ""
+        self.shop_inventory: list[int] = []
+        self.shop_cursor: int = 0
+        self.shop_message: str = ""
 
         # A-button cooldown for map state (D13)
         # 「でる」直後 / ロード直後の暴発を1回だけ防ぐ
@@ -1251,6 +1263,8 @@ class Game:
             self.update_town()
         elif self.state == "town_menu":
             self.update_town_menu()
+        elif self.state == "shop":
+            self.update_shop()
         elif self.state == "ending":
             self.update_ending()
 
@@ -1785,8 +1799,8 @@ class Game:
             label = TOWN_MENU_LABELS[self.town_menu_cursor]
             if label == "はなす":
                 self._town_menu_talk()
-            elif label in ("ぶきや", "ぼうぐや", "どうぐや"):
-                self._enter_town_message([SHOP_WIP_MSG])
+            elif label in SHOP_KIND_BY_LABEL:
+                self._enter_shop(SHOP_KIND_BY_LABEL[label])
             elif label == "やどや":
                 self._town_menu_inn()
             elif label == "セーブ":
@@ -1811,14 +1825,110 @@ class Game:
         self._enter_town_message(lines)
 
     def _town_menu_inn(self):
-        if self.player["gold"] < INN_COST:
+        cost = self._inn_cost_for_current_town()
+        if self.player["gold"] < cost:
             self._enter_town_message([INN_LACK_MSG])
             return
-        self.player["gold"] -= INN_COST
+        self.player["gold"] -= cost
         self.player["hp"] = self.player["max_hp"]
         self.player["mp"] = self.player["max_mp"]
         self.player["poisoned"] = False
         self._enter_town_message([INN_OK_MSG])
+
+    def _current_town_index(self) -> int:
+        if self.town_menu_pos is None:
+            return 0
+        return TOWN_INDEX_BY_POS.get(self.town_menu_pos, 0)
+
+    def _inn_cost_for_current_town(self) -> int:
+        idx = self._current_town_index()
+        return INN_PRICES[idx] if idx < len(INN_PRICES) else INN_COST
+
+    # ----- Shop (Task #7) -----
+    def _enter_shop(self, kind: str):
+        """ショップ画面に遷移する。kind は 'weapons' / 'armors' / 'items'。"""
+        idx = self._current_town_index()
+        shop = SHOPS[idx]
+        self.shop_kind = kind
+        self.shop_inventory = list(shop[kind])
+        self.shop_cursor = 0
+        self.shop_message = ""
+        self.last_town_pos = self.town_menu_pos
+        self.state = "shop"
+
+    def update_shop(self):
+        if not self.shop_inventory:
+            if self._btnp(CANCEL_BUTTONS) or self._btnp(CONFIRM_BUTTONS):
+                self.state = "town_menu"
+            return
+        if self._btnp(UP_BUTTONS):
+            self.shop_cursor = (self.shop_cursor - 1) % len(self.shop_inventory)
+            return
+        if self._btnp(DOWN_BUTTONS):
+            self.shop_cursor = (self.shop_cursor + 1) % len(self.shop_inventory)
+            return
+        if self._btnp(CANCEL_BUTTONS):
+            self.state = "town_menu"
+            return
+        if self._btnp(CONFIRM_BUTTONS):
+            self._try_purchase()
+
+    def _try_purchase(self):
+        idx = self.shop_inventory[self.shop_cursor]
+        kind = self.shop_kind
+        if kind == "weapons":
+            entry = WEAPONS[idx]
+        elif kind == "armors":
+            entry = ARMORS[idx]
+        else:
+            entry = ITEMS[idx]
+        price = entry.get("price", 0)
+        if self.player["gold"] < price:
+            self.shop_message = "コインが たりません"
+            return
+        self.player["gold"] -= price
+        if kind == "weapons":
+            self.player["weapon"] = idx
+            self.shop_message = entry.get("buy_msg") or f"{entry['name']}を 手に入れた！"
+        elif kind == "armors":
+            self.player["armor"] = idx
+            self.shop_message = entry.get("buy_msg") or f"{entry['name']}を 手に入れた！"
+        else:
+            # アイテムは inventory に追加
+            for inv in self.player["items"]:
+                if inv["id"] == idx:
+                    inv["qty"] += 1
+                    break
+            else:
+                self.player["items"].append({"id": idx, "qty": 1})
+            self.shop_message = f"{entry['name']}を 手に入れた！"
+
+    def draw_shop(self):
+        pyxel.cls(0)
+        title_map = {"weapons": "ぶきや", "armors": "ぼうぐや", "items": "どうぐや"}
+        title = title_map.get(self.shop_kind, "ショップ")
+        pyxel.text(8, 6, title, 7, self.font)
+        pyxel.text(160, 6, f"G:{self.player['gold']}", 10, self.font)
+        if not self.shop_inventory:
+            pyxel.text(8, 40, "(在庫なし)", 6, self.font)
+            pyxel.text(8, 240, "Bで戻る", 13, self.font)
+            return
+        for i, idx in enumerate(self.shop_inventory):
+            if self.shop_kind == "weapons":
+                e = WEAPONS[idx]
+                line = f"{e['name']}  ATK+{e['atk']}  {e['price']}G"
+            elif self.shop_kind == "armors":
+                e = ARMORS[idx]
+                line = f"{e['name']}  DEF+{e['def']}  {e['price']}G"
+            else:
+                e = ITEMS[idx]
+                line = f"{e['name']}  {e['price']}G"
+            color = 10 if i == self.shop_cursor else 7
+            marker = ">" if i == self.shop_cursor else " "
+            pyxel.text(8, 30 + i * 14, f"{marker} {line}", color, self.font)
+        if self.shop_message:
+            pyxel.text(8, 200, self.shop_message, 11, self.font)
+        pyxel.text(8, 240, "Aで購入 / Bで戻る", 13, self.font)
 
     def _town_menu_save(self):
         snap = dump_snapshot(self.player, town_pos=self.town_menu_pos)
@@ -1867,6 +1977,8 @@ class Game:
             self.draw_message_window()
         elif self.state == "town_menu":
             self.draw_town_menu()
+        elif self.state == "shop":
+            self.draw_shop()
         elif self.state == "ending":
             self.draw_ending()
 
