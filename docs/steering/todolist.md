@@ -35,17 +35,19 @@
 
 | # | 項目 | 元番号 | なぜ委任しやすいか |
 |---|---|---|---|
-| 1 | **YAMLローダ＋データスキーマ実装** | 0 | 既存 `src/simple_yaml.py` を流用。スキーマ定義と汎用ローダだけなので機械的 |
-| 2 | **敵データを `assets/enemies.yaml` に全12種移植** | 4 | JS `ENEMIES` を YAML に書き起こすだけ。検証は件数とキー一致でOK |
-| 3 | **武器・防具を `weapons.yaml` / `armors.yaml` に7種ずつ移植** | 2 | 同上。`buyMsg` テキストもJSからそのまま転記 |
-| 4 | **アイテムを `items.yaml` に移植 + 効果ロジック追加** | 3 | アンチウイルス・セーブポイント・毒システムをJS参照で追加 |
-| 5 | **EXPテーブル/`statsForLevel` を `exp_table.yaml` 化** | （0の一部） | JSの `expForLevel/statsForLevel` をそのまま転記 |
-| 6 | **`createInitialPlayer/resetGameState` のリファクタ** | 14 | リテラル散在をファクトリ関数に集約。純粋リファクタ |
-| 7 | **ショップ実装**（武器屋・防具屋・道具屋） | 1 | `SHOP_WIP_MSG` を本実装に置換。JS `drawShop/tryPurchase/getItemPrice` が参照可能 |
-| 8 | **魔法システム**（5呪文 + レベル習得 + MP消費） | 8 | `spells.yaml` を読んで戦闘・メニューに統合。JS `applySpellEffect/useSelectedMenuSpell` 参照 |
-| 9 | **多段階ボス**（`getBossPhases` 相当） | 9 | JS にロジックあり。HP 閾値で切替える定型実装 |
-| 10 | **世界樹インタラクション** | 10 | JS `interactWorldTree` + `landmarkTreeSeen` 連動をそのまま移植 |
-| 11 | **通信塔インタラクション + 塔エピローグ** | 11 | JS `interactTower/queueTowerEpilogue` + `landmarkTowerSeen` を移植 |
+| 1 | ✅ **YAMLローダ＋データスキーマ実装** | 0 | `src/game_data.py` 実装済み |
+| 2 | ✅ **敵データを `assets/enemies.yaml` に全12種移植** | 4 | プロフェッサー・魔王クローン含む |
+| 3 | ✅ **武器・防具を `weapons.yaml` / `armors.yaml` に7種ずつ移植** | 2 | 価格・購入メッセージ含む |
+| 4 | ✅ **アイテムを `items.yaml` に移植 + 効果ロジック追加** | 3 | cure_poison/warp/毒tick 実装 |
+| 5 | ✅ **EXPテーブル/`statsForLevel` を実装** | （0の一部） | `src/player_factory.py` |
+| 6 | ✅ **`create_initial_player` リファクタ** | 14 | `Game.__init__` から切り出し |
+| 7 | ✅ **ショップ実装**（武器屋・防具屋・道具屋） | 1 | 3町分・町別宿代・購入動作 |
+| 8 | ✅ **魔法システム**（5呪文 + レベル習得 + MP消費） | 8 | 戦闘メニューに「じゅもん」追加 |
+| 9 | ✅ **多段階ボス**（`boss_phase` 相当） | 9 | HP 60%/30% で phase 移行 |
+| 10 | ✅ **世界樹インタラクション**（簡易版） | 10 | 初訪問/再訪問対応 |
+| 11 | ✅ **通信塔インタラクション + 塔エピローグ**（簡易版） | 11 | 初訪問/再訪問/エピローグ対応 |
+
+> **完了**: 2026-04-07。詳細は `docs/steering/20260407-port-features-batch1/`
 
 > このあとに **プロフェッサー戦＋真エンディング**（旧#12）も続けて委任可能だが、テキスト量が多くストーリー判断が混じるため、いったん #1〜#11 が終わってから別スイープにする方が安全。
 
