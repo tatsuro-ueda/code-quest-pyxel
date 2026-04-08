@@ -15,6 +15,7 @@ from src.input_bindings import (
     any_btn,
 )
 from src.audio_system import AudioManager, choose_bgm_scene
+from src.sfx_system import SfxSystem
 from src.landmark_events import find_landmark_at, find_landmark_event, resolve_scene
 from src.structured_dialog import StructuredDialogRunner
 from src.save_store import LocalStorageSaveStore, SaveStoreError, make_save_store
@@ -265,12 +266,34 @@ TILE_FLOOR = [
 T_GRASS = 0; T_WATER = 1; T_TREE = 2; T_SAND = 3
 T_FLOOR = 4; T_WALL = 5; T_CASTLE = 6; T_TOWN = 7
 T_CAVE = 8; T_MOUNTAIN = 9; T_BRIDGE = 10; T_PATH = 11
+T_STAIR_UP = 12  # ダンジョン脱出階段
+
+# 上り階段（青背景に黄色の階段絵）
+TILE_STAIR_UP = [
+    [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [ 1, 1, 1, 1, 1, 1, 1,10,10, 1, 1, 1, 1, 1, 1, 1],
+    [ 1, 1, 1, 1, 1, 1,10,10,10,10, 1, 1, 1, 1, 1, 1],
+    [ 1, 1, 1, 1, 1,10,10,10,10,10,10, 1, 1, 1, 1, 1],
+    [ 1, 1, 1, 1,10,10, 7, 7, 7, 7,10,10, 1, 1, 1, 1],
+    [ 1, 1, 1,10,10, 7, 7, 7, 7, 7, 7,10,10, 1, 1, 1],
+    [ 1, 1, 1, 1, 7, 7, 7, 7, 7, 7, 7, 7, 1, 1, 1, 1],
+    [ 1, 1, 1, 1, 7, 7, 7, 7, 7, 7, 7, 7, 1, 1, 1, 1],
+    [ 1, 1, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 1, 1],
+    [ 1, 1, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 1, 1],
+    [ 1, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 1],
+    [ 1, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1, 1],
+    [ 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1],
+    [ 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1],
+    [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+]
 
 TILE_DATA = {
     T_GRASS: TILE_GRASS, T_WATER: TILE_WATER, T_TREE: TILE_TREE,
     T_SAND: TILE_SAND, T_FLOOR: TILE_FLOOR, T_WALL: TILE_WALL,
     T_CASTLE: TILE_CASTLE, T_TOWN: TILE_TOWN, T_CAVE: TILE_CAVE,
     T_MOUNTAIN: TILE_MOUNTAIN, T_BRIDGE: TILE_BRIDGE, T_PATH: TILE_PATH,
+    T_STAIR_UP: TILE_STAIR_UP,
 }
 
 IMPASSABLE = {T_WATER, T_TREE, T_WALL, T_MOUNTAIN}
@@ -955,7 +978,10 @@ def generate_dungeon(seed=99):
             yy = max(1, min(DUNGEON_H - 2, yy))
             grid[yy][bx] = T_FLOOR
     if rooms:
-        grid[rooms[0][1] + 1][rooms[0][0] + 1] = T_FLOOR
+        # 最初の部屋の入り口を確保し、その位置に上り階段を置く
+        sx = rooms[0][0] + 1
+        sy = rooms[0][1] + 1
+        grid[sy][sx] = T_STAIR_UP
     return grid, rooms
 
 def get_zone(tile_y, in_dungeon=False):
@@ -968,9 +994,23 @@ def get_zone(tile_y, in_dungeon=False):
 # =====================================================================
 # ENEMY DATA — assets/enemies.yaml から読み込む
 # =====================================================================
-from src import game_data as _game_data
+from src.game_data import (
+    ENEMIES,
+    ITEMS,
+    WEAPONS,
+    ARMORS,
+    SPELLS,
+    SHOPS as _SHOP_BUNDLE,
+)
+from src.jp_font_data import (
+    JP_FONT_LAYOUT,
+    JP_FONT_BITMAPS,
+    JP_FONT_GLYPH_W,
+    JP_FONT_GLYPH_H,
+    JP_FONT_IMAGE_BANK,
+)
 
-_ALL_ENEMIES = _game_data.load_enemies()
+_ALL_ENEMIES = ENEMIES
 
 
 def _build_zone_enemies(enemies):
@@ -1014,25 +1054,78 @@ VICTORY_SCENES_BY_ZONE = {
     4: "battle.normal.victory.late",
 }
 
-ZONE_NAMES = {0: "始まりの草原", 1: "ロジックの森", 2: "アルゴの山道", 3: "砂漠地帯", 4: "グリッチの洞窟"}
+ZONE_NAMES = {0: "はじまりのそうげん", 1: "ロジックのもり", 2: "アルゴのやまみち", 3: "さばくちたい", 4: "グリッチのどうくつ"}
+ZONE_NAMES_EN = {0: "Grasslands", 1: "Logic Forest", 2: "Algo Mountains", 3: "Desert", 4: "Glitch Cave"}
+
+# 日本語名 → 英語名 翻訳マップ（BDFフォントが無いとき用）
+NAME_EN_MAP = {
+    # enemies
+    "10ほスライム": "10-step Slime",
+    "かいてんゴブリン": "Loop Goblin",
+    "ループゴースト": "Loop Ghost",
+    "10かいナイト": "10-times Knight",
+    "もしガード": "If Guard",
+    "でなければスライム": "Else Slime",
+    "HPカウンター": "HP Counter",
+    "クローンにんじゃ": "Clone Ninja",
+    "むげんバグ": "Infinity Bug",
+    "まおうグリッチのクローン": "Glitch Lord Clone",
+    "まおうグリッチ": "Glitch Lord",
+    "プロフェッサー": "The Professor",
+    # items
+    "バグレポート": "Bug Report",
+    "エナジードリンク": "Energy Drink",
+    "アンチウイルス": "Antivirus",
+    "セーブポイント": "Save Point",
+    # weapons
+    "すで": "Bare Hands",
+    "マウス": "Mouse",
+    "キーボード": "Keyboard",
+    "テキストエディタ": "Text Editor",
+    "コードエディタ": "Code Editor",
+    "デバッガー": "Debugger",
+    "コンパイラ": "Compiler",
+    "アーキテクト": "Architect",
+    # armors
+    "ふだんぎ": "Casual Wear",
+    "きほんのちしき": "Basic Knowledge",
+    "じゅんじしょりのりかい": "Sequential Logic",
+    "ループのりかい": "Loop Mastery",
+    "じょうけんのりかい": "Conditional Logic",
+    "へんすうのりかい": "Variable Mastery",
+    "せっけいりょく": "Design Skill",
+    "さいてきかのしこう": "Optimization Mind",
+    # spells
+    "デバッグ": "Debug",
+    "プリント": "Print",
+    "ループブレイク": "Loop Break",
+    "リファクタリング": "Refactor",
+    "コンパイル": "Compile",
+    # misc UI strings used inside game logic
+    "プログラマー": "Programmer",
+}
+
+
+def name_en(name: str) -> str:
+    """日本語名を英語名に変換。マップに無ければそのまま返す。"""
+    return NAME_EN_MAP.get(name, name)
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
+TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
 SHOP_KIND_BY_LABEL = {"ぶきや": "weapons", "ぼうぐや": "armors", "どうぐや": "items"}
 INN_COST = 10  # gold (フォールバック値; shops.yaml の inn_prices を優先)
-_SHOPS_DATA = _game_data.load_shops()
-SHOPS = _SHOPS_DATA["shops"]
-INN_PRICES = _SHOPS_DATA["inn_prices"]
+SHOPS = _SHOP_BUNDLE["shops"]
+INN_PRICES = _SHOP_BUNDLE["inn_prices"]
 TOWN_INDEX_BY_POS = {(20, 12): 0, (30, 22): 1, (18, 34): 2}
-SPELLS = _game_data.load_spells()
 SPELL_BY_NAME = {s["name"]: s for s in SPELLS}
-SAVE_OK_MSG = "ここまでの理解を書き留めた。"
-LOAD_OK_MSG = "記録を読み返した。理解が戻ってくる。"
-NO_RECORD_MSG = "まだ何も書き留めていない…"
-SAVE_FAIL_MSG_DESKTOP = "セーブに失敗しました（権限/容量を確認してください）"
-SAVE_FAIL_MSG_WEB = "セーブに失敗しました（ブラウザの保存領域を確認してください）"
-INN_OK_MSG = "安全な場所で休んだ。思考が冴える。HPとMPが かいふくした！"
+SAVE_OK_MSG = "ここまでのりかいをかきとめた。"
+LOAD_OK_MSG = "きろくをよみかえした。りかいがもどってくる。"
+NO_RECORD_MSG = "まだなにもかきとめていない…"
+SAVE_FAIL_MSG_DESKTOP = "セーブにしっぱいしました（けんげん/ようりょうをかくにんしてください）"
+SAVE_FAIL_MSG_WEB = "セーブにしっぱいしました（ブラウザのほぞんりょういきをかくにんしてください）"
+INN_OK_MSG = "あんぜんなばしょでやすんだ。しこうがさえる。HPとMPが かいふくした！"
 INN_LACK_MSG = "コインが たりません"
-SHOP_WIP_MSG = "工事中：本機能はフォローアップで実装予定"
+SHOP_WIP_MSG = "こうじちゅう：ほんきのうはフォローアップでじっそうよてい"
 
 TOWN_DIALOG_SCENES = {
     (20, 12): "town.start.entry",
@@ -1041,20 +1134,34 @@ TOWN_DIALOG_SCENES = {
     (25, 6): "castle.professor.entry",
 }
 
-ITEMS = _game_data.load_items()
-
-WEAPONS = _game_data.load_weapons()
-ARMORS = _game_data.load_armors()
 
 # =====================================================================
 # GAME CLASS
 # =====================================================================
 class Game:
+    _instance: "Game | None" = None  # disp() のグローバル参照用
+
     def __init__(self):
+        Game._instance = self
+        # デバッグオーバーレイ用のリングバッファ
+        self._say_buffer: list[str] = []
         pyxel.init(256, 256, title="Block Quest", fps=30)
-        self.font = pyxel.Font("assets/umplus_j10r.bdf")
+        # 日本語フォントの読み込み。Code Maker 等で BDF が読めない環境では
+        # None になり、各 UI ラベルとダイアログは英語フォールバックに切り替わる。
+        # 日本語フォントは image bank 2 に焼き込んで使う（self.text 経由）。
+        # BDF はレガシー互換のため一応試みる（読めなくても問題ない）。
+        # has_jp_font は JP_FONT_LAYOUT が登録されている限り常に True。
+        try:
+            self.font = pyxel.Font("assets/umplus_j10r.bdf")
+        except Exception:
+            self.font = None
+        self.has_jp_font = bool(JP_FONT_LAYOUT)
         self.audio = AudioManager(pyxel)
-        self.dialog = StructuredDialogRunner("assets/dialogue.yaml")
+        self.sfx = SfxSystem(pyxel)
+        # has_jp_font に応じて日本語/英語ダイアログを選択（src/dialogue_data.py 由来）
+        from src.dialogue_data import DIALOGUE_JA, DIALOGUE_EN
+        dialogue_data = DIALOGUE_JA if self.has_jp_font else DIALOGUE_EN
+        self.dialog = StructuredDialogRunner(dialogue_data)
 
         # Tile/sprite bank position dicts (must init before _render calls)
         self.tile_bank = {}
@@ -1063,18 +1170,20 @@ class Game:
         self.shore_variant_bank = {}
         self.sprite_bank = {}
 
-        # Pre-render tiles to image bank 0
-        self._render_tiles_to_bank()
-        # Pre-render sprites to image bank 1
-        self._render_sprites_to_bank()
+        # Image bank: .pyxres があればロード、無ければプログラム描画
+        self._setup_image_banks()
 
         self.world_map = generate_world_map()
+        # Tilemap[0] に world_map をベイク or .pyxres から派生
+        self._setup_world_tilemap()
+
         self.dungeon_map = None
         self.dungeon_rooms = None
 
         self.player = create_initial_player()
 
-        self.state = "title"
+        self.state = "splash"
+        self.splash_frame = 0
         self.prev_state = "map"
         self.walk_frame = 0
         self.walk_timer = 0
@@ -1090,12 +1199,22 @@ class Game:
         self.battle_item_select = 0
         self.battle_spell_select = 0
         self.battle_is_boss = False
+        self.battle_is_professor = False
         self.battle_boss_phase = "phase1"
+
+        # Professor encounter state
+        self.professor_intro_lines: list[str] = []
+        self.professor_intro_idx = 0
+        self.professor_choice_active = False
+        self.professor_choice_cursor = 1  # 0=うけいれる / 1=ことわる
+        self.professor_ending_lines: list[str] = []
+        self.professor_ending_idx = 0
 
         # Menu state
         self.menu_cursor = 0
         self.menu_sub = None
         self.menu_item_cursor = 0
+        self.menu_message = ""
 
         # Town menu state (D6)
         self.town_menu_cursor = 0
@@ -1141,62 +1260,300 @@ class Game:
 
         self._sync_audio()
 
+    def start(self):
+        """ゲームループに入る。`Game()` 後の `disp()` 呼び出しを有効にするため
+        `__init__` から `pyxel.run` を分離してある。"""
         pyxel.run(self.update, self.draw)
 
-    def _render_tiles_to_bank(self):
-        """Pre-render all tiles to image bank 0"""
-        # We have ~12 base tiles + auto-tiles. Use bank 0.
-        # Layout: row 0-2 for base tiles (16 tiles per row of 256px = 16 tiles)
-        # row 3+ for auto-tiles
-        bank = pyxel.images[0]
-        col = 0; row = 0
+    # ----- Image bank setup (.pyxres support) -----
+    def _setup_image_banks(self):
+        """画像・サウンドバンクの初期化。
+
+        重要: .pyxres は **画像バンクと音バンクの両方** を含む。
+        この関数で `pyxel.load()` すると、AudioManager / SfxSystem が
+        既に書き込んだ sounds 0-42 も .pyxres の内容で上書きされる。
+
+        これは仕様。**Code Maker / `pyxel edit` で編集した内容を真とする**。
+        コード側の chiptune_tracks.py / sfx_system.py を変更しても、
+        .pyxres を削除しない限り反映されない。
+
+        - レイアウト辞書はいつも計算する（コードとデータの位置対応）
+        - assets/blockquest.pyxres / my_resource.pyxres があれば load
+        - 無ければプログラム描画して save（初回・破損時のみ）
+        """
+        self._layout_tile_bank()
+        self._layout_sprite_bank()
+        self._build_reverse_tile_map()
+        self._pyxres_loaded = False
+        self._pyxres_path: Path | None = None
+
+        # Code Maker互換: my_resource.pyxres をルート直下から探し、無ければ assets/ から
+        root = Path(__file__).resolve().parent
+        candidates = [
+            root / "my_resource.pyxres",
+            root / "assets" / "blockquest.pyxres",
+        ]
+        pyxres_path = next((p for p in candidates if p.exists()), candidates[-1])
+        self._pyxres_path = pyxres_path
+        if pyxres_path.exists():
+            try:
+                pyxel.load(str(pyxres_path))
+                self._pyxres_loaded = True
+                return
+            except Exception as exc:
+                print(f"[image_bank] failed to load {pyxres_path}: {exc}; regenerating")
+
+        # 初回 or 破損時：プログラム描画。.pyxres 保存は tilemap ベイク後に行う
+        self._paint_tile_bank()
+        self._paint_sprite_bank()
+        self._paint_jp_font_bank()
+
+    def _paint_jp_font_bank(self):
+        """`JP_FONT_BITMAPS` を image bank 2 に焼き込む。
+
+        各セルは GLYPH_W × GLYPH_H ピクセル。前景色は 7（白）で固定し、
+        描画時に `pyxel.pal()` で目的の色に変換する。
+        """
+        bank = pyxel.images[JP_FONT_IMAGE_BANK]
+        # クリア（全 0 = 黒 = 背景）
+        for py in range(256):
+            for px in range(256):
+                bank.pset(px, py, 0)
+        for ch, rows in JP_FONT_BITMAPS.items():
+            col, row = JP_FONT_LAYOUT[ch]
+            ox = col * JP_FONT_GLYPH_W
+            oy = row * JP_FONT_GLYPH_H
+            for ry in range(JP_FONT_GLYPH_H):
+                bits = rows[ry] if ry < len(rows) else 0
+                for rx in range(JP_FONT_GLYPH_W):
+                    if bits & (1 << (JP_FONT_GLYPH_W - 1 - rx)):
+                        bank.pset(ox + rx, oy + ry, 7)
+
+    def _build_reverse_tile_map(self):
+        """image bank pixel 座標 → 元の tile_id への逆引き辞書。
+
+        tilemap[0] から world_map を派生するときに使う。
+        path/shore variants は基底タイル (T_PATH / T_WATER) として復元する。
+        """
+        self.tile_id_by_pixel = {}
+        for tid, (u, v) in self.tile_bank.items():
+            self.tile_id_by_pixel[(u, v)] = tid
+        for (u, v) in self.path_variant_bank.values():
+            self.tile_id_by_pixel[(u, v)] = T_PATH
+        for (u, v) in self.shore_variant_bank.values():
+            self.tile_id_by_pixel[(u, v)] = T_WATER
+        if self.tile_bank_water2:
+            self.tile_id_by_pixel[self.tile_bank_water2] = T_WATER
+
+    # ----- World tilemap setup (.pyxres tilemap[0] support) -----
+    # Code Maker / pyxel edit は tilemap[N] のデフォルト imgsrc を N と仮定して
+    # 表示するため、tilemap[1] を使うとイメージバンク 1（敵スプライト）が表示されて
+    # しまう。これを避けるため、ワールドマップとダンジョンを **同じ tilemap[0]** に
+    # 配置して、画像バンク 0 だけを参照させる。
+    DUNGEON_TM_OFFSET_Y = 110  # ワールド (0..99) の下に余白を入れて配置
+
+    def _setup_world_tilemap(self):
+        """World map と dungeon を `pyxel.tilemaps[0]` と同期する。
+
+        - tilemap[0] 上部 (0,0)..(99,99): ワールドマップ
+        - tilemap[0] 下部 (0,110)..(39,149): 共有ダンジョン
+        - .pyxres から banks がロード済み → tilemap[0] の両領域から派生
+        - 初回 or .pyxres 不在 → 手続き生成 → ベイク → .pyxres 保存
+        """
+        try:
+            pyxel.tilemaps[0].imgsrc = 0
+        except Exception:
+            pass
+
+        # 共有ダンジョンを生成（固定シード = 99）
+        dgrid, drooms = generate_dungeon(seed=99)
+        self.dungeon_template = dgrid
+        self.dungeon_template_rooms = drooms
+        if drooms:
+            self.dungeon_spawn = (drooms[0][0] + 1, drooms[0][1] + 1)
+        else:
+            self.dungeon_spawn = (1, 1)
+
+        if self._pyxres_loaded:
+            self._derive_world_from_tilemap()
+            self._derive_dungeon_from_tilemap()
+        else:
+            self._bake_world_to_tilemap()
+            self._bake_dungeon_to_tilemap()
+            # ここで初めて .pyxres を保存（banks + tilemap）
+            if self._pyxres_path is not None:
+                try:
+                    self._pyxres_path.parent.mkdir(parents=True, exist_ok=True)
+                    pyxel.save(str(self._pyxres_path))
+                    print(f"[image_bank] generated {self._pyxres_path}")
+                except Exception as exc:
+                    print(f"[image_bank] could not save .pyxres: {exc}")
+
+    def _bake_dungeon_to_tilemap(self):
+        """共有ダンジョン (self.dungeon_template) を tilemap[0] のオフセット領域に焼き込む。"""
+        tilemap = pyxel.tilemaps[0]
+        dg = self.dungeon_template
+        oy = self.DUNGEON_TM_OFFSET_Y
+        for y in range(len(dg)):
+            for x in range(len(dg[0])):
+                tile = dg[y][x]
+                u, v = self.tile_bank.get(tile, self.tile_bank[T_GRASS])
+                tu, tv = u // 8, v // 8
+                tilemap.pset(2 * x,     oy + 2 * y,     (tu,     tv))
+                tilemap.pset(2 * x + 1, oy + 2 * y,     (tu + 1, tv))
+                tilemap.pset(2 * x,     oy + 2 * y + 1, (tu,     tv + 1))
+                tilemap.pset(2 * x + 1, oy + 2 * y + 1, (tu + 1, tv + 1))
+
+    def _derive_dungeon_from_tilemap(self):
+        """tilemap[0] のオフセット領域から共有ダンジョンを組み立てる（編集を反映）。"""
+        tilemap = pyxel.tilemaps[0]
+        dg = self.dungeon_template
+        oy = self.DUNGEON_TM_OFFSET_Y
+        derived = []
+        for y in range(len(dg)):
+            row = []
+            for x in range(len(dg[0])):
+                tu, tv = tilemap.pget(2 * x, oy + 2 * y)
+                key = (tu * 8, tv * 8)
+                tid = self.tile_id_by_pixel.get(key, T_FLOOR)
+                row.append(tid)
+            derived.append(row)
+        self.dungeon_template = derived
+        # 階段の位置を再検索（編集で動いている可能性）
+        for y in range(len(derived)):
+            for x in range(len(derived[0])):
+                if derived[y][x] == T_STAIR_UP:
+                    self.dungeon_spawn = (x, y)
+                    return
+
+    def _bake_world_to_tilemap(self):
+        """self.world_map を tilemap[0] に焼き込む。auto-tile 解決済み。"""
+        tilemap = pyxel.tilemaps[0]
+        wm = self.world_map
+        for y in range(MAP_H):
+            for x in range(MAP_W):
+                tile = wm[y][x]
+                u, v = self._pixel_pos_for_tile(wm, x, y, tile)
+                tu, tv = u // 8, v // 8
+                tilemap.pset(2 * x,     2 * y,     (tu,     tv))
+                tilemap.pset(2 * x + 1, 2 * y,     (tu + 1, tv))
+                tilemap.pset(2 * x,     2 * y + 1, (tu,     tv + 1))
+                tilemap.pset(2 * x + 1, 2 * y + 1, (tu + 1, tv + 1))
+
+    def _pixel_pos_for_tile(self, wm, x, y, tile):
+        """与えられた tile に対する image bank 上の (px, py) を返す（auto-tile 解決込み）。"""
+        if tile == T_PATH:
+            variant = get_path_variant(wm, x, y)
+            return self.path_variant_bank.get(id(variant), self.tile_bank[T_PATH])
+        if tile == T_WATER:
+            shore = get_shore_variant(wm, x, y)
+            if shore is not None:
+                return self.shore_variant_bank.get(id(shore), self.tile_bank[T_WATER])
+            return self.tile_bank[T_WATER]
+        return self.tile_bank.get(tile, self.tile_bank[T_GRASS])
+
+    def _derive_world_from_tilemap(self):
+        """tilemap[0] から self.world_map を組み立てる（編集を反映）。"""
+        tilemap = pyxel.tilemaps[0]
+        derived = []
+        for y in range(MAP_H):
+            row = []
+            for x in range(MAP_W):
+                tu, tv = tilemap.pget(2 * x, 2 * y)
+                key = (tu * 8, tv * 8)
+                tid = self.tile_id_by_pixel.get(key, T_GRASS)
+                row.append(tid)
+            derived.append(row)
+        self.world_map = derived
+
+    # ----- Image bank: layout (positions) と paint (pset) を分離 -----
+    # 通常起動時は .pyxres から load してレイアウト辞書だけ計算する。
+    # .pyxres が無ければ paint してから save する（初回のみ）。
+
+    def _tile_iter(self):
+        """タイルバンクに格納する順序を返す。レイアウト/ペイント両方で使う。
+
+        yields: (kind, key, data)
+            kind: "tile" | "water2" | "path" | "shore"
+            key: tile id / "water2" / id(pdata)
+            data: 16x16 のピクセル配列（paint時のみ使う）
+        """
         for tid, tdata in TILE_DATA.items():
-            bx = col * 16; by = row * 16
-            self.tile_bank[tid] = (bx, by)
-            for py in range(16):
-                for px in range(16):
-                    c = tdata[py][px]
-                    bank.pset(bx + px, by + py, c)
-            col += 1
-            if col >= 16:
-                col = 0; row += 1
-
-        # Water frame 2
-        bx = col * 16; by = row * 16
-        self.tile_bank_water2 = (bx, by)
-        for py in range(16):
-            for px in range(16):
-                bank.pset(bx + px, by + py, TILE_WATER2[py][px])
-        col += 1
-        if col >= 16:
-            col = 0; row += 1
-
-        # Auto-tiles for PATH variants
-        self.path_variant_bank = {}
-        path_variants_list = [
+            yield ("tile", tid, tdata)
+        yield ("water2", "water2", TILE_WATER2)
+        for _name, pdata in [
             ("V", PATH_V), ("H", PATH_H), ("CROSS", PATH_CROSS),
             ("SE", PATH_SE), ("SW", PATH_SW), ("NE", PATH_NE), ("NW", PATH_NW),
             ("T_NES", PATH_T_NES), ("T_NWS", PATH_T_NWS),
             ("T_EWS", PATH_T_EWS), ("T_NEW", PATH_T_NEW),
-        ]
-        for name, pdata in path_variants_list:
+        ]:
+            yield ("path", id(pdata), pdata)
+        for _name, sdata in [
+            ("N", SHORE_N), ("S", SHORE_S), ("W", SHORE_W), ("E", SHORE_E),
+        ]:
+            yield ("shore", id(sdata), sdata)
+
+    def _layout_tile_bank(self):
+        """レイアウト辞書のみ計算（pset なし）。"""
+        self.tile_bank = {}
+        self.path_variant_bank = {}
+        self.shore_variant_bank = {}
+        col = 0; row = 0
+        for kind, key, _data in self._tile_iter():
             bx = col * 16; by = row * 16
-            self.path_variant_bank[id(pdata)] = (bx, by)
-            for py in range(16):
-                for px in range(16):
-                    bank.pset(bx + px, by + py, pdata[py][px])
+            if kind == "tile":
+                self.tile_bank[key] = (bx, by)
+            elif kind == "water2":
+                self.tile_bank_water2 = (bx, by)
+            elif kind == "path":
+                self.path_variant_bank[key] = (bx, by)
+            elif kind == "shore":
+                self.shore_variant_bank[key] = (bx, by)
             col += 1
             if col >= 16:
                 col = 0; row += 1
 
-        # Shore variants
-        self.shore_variant_bank = {}
-        shore_list = [
-            ("N", SHORE_N), ("S", SHORE_S), ("W", SHORE_W), ("E", SHORE_E),
-        ]
-        for name, sdata in shore_list:
+    def _paint_tile_bank(self):
+        """pset でタイル絵をバンクに焼き込む（.pyxres 生成時のみ呼ぶ）。"""
+        bank = pyxel.images[0]
+        col = 0; row = 0
+        for _kind, _key, data in self._tile_iter():
             bx = col * 16; by = row * 16
-            self.shore_variant_bank[id(sdata)] = (bx, by)
+            for py in range(16):
+                for px in range(16):
+                    bank.pset(bx + px, by + py, data[py][px])
+            col += 1
+            if col >= 16:
+                col = 0; row += 1
+
+    def _render_tiles_to_bank(self):
+        """互換ラッパー：_layout + _paint を順に呼ぶ。"""
+        self._layout_tile_bank()
+        self._paint_tile_bank()
+
+    def _sprite_iter(self):
+        sprites_to_render = {
+            "hero_down": HERO_DOWN, "hero_walk": HERO_DOWN_WALK,
+        }
+        sprites_to_render.update(ENEMY_SPRITES)
+        for name, sdata in sprites_to_render.items():
+            yield (name, sdata)
+
+    def _layout_sprite_bank(self):
+        self.sprite_bank = {}
+        col = 0; row = 0
+        for name, _data in self._sprite_iter():
+            bx = col * 16; by = row * 16
+            self.sprite_bank[name] = (bx, by)
+            col += 1
+            if col >= 16:
+                col = 0; row += 1
+
+    def _paint_sprite_bank(self):
+        bank = pyxel.images[1]
+        col = 0; row = 0
+        for _name, sdata in self._sprite_iter():
+            bx = col * 16; by = row * 16
             for py in range(16):
                 for px in range(16):
                     bank.pset(bx + px, by + py, sdata[py][px])
@@ -1205,22 +1562,9 @@ class Game:
                 col = 0; row += 1
 
     def _render_sprites_to_bank(self):
-        """Pre-render sprites to image bank 1"""
-        bank = pyxel.images[1]
-        col = 0; row = 0
-        sprites_to_render = {
-            "hero_down": HERO_DOWN, "hero_walk": HERO_DOWN_WALK,
-        }
-        sprites_to_render.update(ENEMY_SPRITES)
-        for name, sdata in sprites_to_render.items():
-            bx = col * 16; by = row * 16
-            self.sprite_bank[name] = (bx, by)
-            for py in range(16):
-                for px in range(16):
-                    bank.pset(bx + px, by + py, sdata[py][px])
-            col += 1
-            if col >= 16:
-                col = 0; row += 1
+        """互換ラッパー：_layout + _paint を順に呼ぶ。"""
+        self._layout_sprite_bank()
+        self._paint_sprite_bank()
 
     # -----------------------------------------------------------------
     # UPDATE
@@ -1233,6 +1577,16 @@ class Game:
 
     def update(self):
         self.input_state.update(pyxel)
+
+        # 緊急脱出: F1 で強制的にフィールド (map) へ戻す
+        # 「入力が効かない」と感じたときの最終手段
+        if pyxel.btnp(pyxel.KEY_F1):
+            self.state = "map"
+            self.move_cooldown = 0
+            self._a_cooldown = False
+            self.msg_lines = []
+            self.msg_index = 0
+            self.msg_callback = None
 
         # Debug code: up up down down
         if self._btnp(UP_BUTTONS):
@@ -1248,12 +1602,18 @@ class Game:
             ):
                 self.debug_seq = []
 
+        # 無限に伸びるのを防ぐ
+        if len(self.debug_seq) > 8:
+            self.debug_seq = self.debug_seq[-4:]
+
         if len(self.debug_seq) >= 4:
             if self.debug_seq[-4:] == ["U", "U", "D", "D"]:
                 self.debug_mode = not self.debug_mode
                 self.debug_seq = []
 
-        if self.state == "title":
+        if self.state == "splash":
+            self.update_splash()
+        elif self.state == "title":
             self.update_title()
         elif self.state == "map":
             self.update_map()
@@ -1267,12 +1627,26 @@ class Game:
             self.update_town()
         elif self.state == "town_menu":
             self.update_town_menu()
+        elif self.state == "professor_intro":
+            self.update_professor_intro()
+        elif self.state == "professor_ending_main":
+            self.update_professor_ending_main()
+        elif self.state == "professor_ending_accepted":
+            self.update_professor_ending_accepted()
         elif self.state == "shop":
             self.update_shop()
         elif self.state == "ending":
             self.update_ending()
+        elif self.state == "ai_help":
+            self.update_ai_help()
 
         self._sync_audio()
+
+    def update_splash(self):
+        self.splash_frame += 1
+        # 90フレーム = 約3秒で自動遷移。任意キーでもスキップ可能
+        if self.splash_frame >= 90 or self._btnp(CONFIRM_BUTTONS) or self._btnp(CANCEL_BUTTONS):
+            self.state = "title"
 
     def update_title(self):
         if self._btnp(UP_BUTTONS):
@@ -1389,6 +1763,19 @@ class Game:
     def _check_tile_events(self, tile, nx, ny):
         p = self.player
 
+        # Dungeon stair → exit back to overworld
+        if p["in_dungeon"] and tile == T_STAIR_UP:
+            p["in_dungeon"] = False
+            p["x"] = self.world_return_x
+            p["y"] = self.world_return_y
+            self.dungeon_map = None
+            callback = self._enter_ending if p.get("boss_defeated") else None
+            self._enter_message(
+                self._dialog_lines("dungeon.glitch.exit"),
+                callback=callback,
+            )
+            return
+
         # Town entry → open the town menu (D6)
         if tile == T_TOWN:
             self.town_menu_pos = (nx, ny)
@@ -1398,6 +1785,10 @@ class Game:
 
         # Castle still uses the legacy in-place dialog
         if tile == T_CASTLE:
+            # クリア後の隠し導線：プロフェッサー編へ
+            if self.player.get("boss_defeated") and (nx, ny) == (25, 6):
+                self._enter_professor_intro()
+                return
             scene = TOWN_DIALOG_SCENES.get((nx, ny))
             if scene is None:
                 lines = ["..."]
@@ -1413,13 +1804,14 @@ class Game:
         # Cave entry (dungeon)
         if tile == T_CAVE and not p["in_dungeon"]:
             self.world_return_x = nx; self.world_return_y = ny
-            result = generate_dungeon(seed=nx * 100 + ny)
-            self.dungeon_map = result[0]
-            self.dungeon_rooms = result[1]
+            # 全洞窟は同じ共有ダンジョンに通じる（tilemap[1] に保存・編集可）
+            self.dungeon_map = [row[:] for row in self.dungeon_template]
+            self.dungeon_rooms = self.dungeon_template_rooms
             p["in_dungeon"] = True
-            if self.dungeon_rooms:
-                p["x"] = self.dungeon_rooms[0][0] + 1
-                p["y"] = self.dungeon_rooms[0][1] + 1
+            # 階段位置にスポーン（最初の部屋の入り口）
+            sx, sy = self.dungeon_spawn
+            p["x"] = sx
+            p["y"] = sy
             self._enter_message(self._dialog_lines("dungeon.glitch.enter"))
             return
 
@@ -1463,7 +1855,8 @@ class Game:
         self._enter_message(self._dialog_lines(scene))
         return True
 
-    def _start_battle(self, enemy_template, is_boss=False):
+    def _start_battle(self, enemy_template, is_boss=False, is_professor=False):
+        self.sfx.play("encounter")
         self.battle_enemy = dict(enemy_template)
         self.battle_enemy_hp = enemy_template["hp"]
         self.battle_menu = 0
@@ -1473,7 +1866,8 @@ class Game:
         self.battle_item_select = 0
         self.battle_spell_select = 0
         self.battle_is_boss = is_boss
-        self.battle_boss_phase = "phase1"
+        self.battle_is_professor = is_professor
+        self.battle_boss_phase = "phase1" if not is_professor else "100"
         if is_boss:
             self.battle_text = self._dialog_text("boss.glitch.intro")
         self.state = "battle"
@@ -1492,7 +1886,7 @@ class Game:
                         self.battle_phase = "spell_select"
                         self.battle_spell_select = 0
                     else:
-                        self.battle_text = "まだ じゅもんを 覚えていない"
+                        self.battle_text = "まだ じゅもんを おぼえていない"
                 elif self.battle_menu == 2:  # Item
                     self.battle_phase = "item_select"
                     self.battle_item_select = 0
@@ -1552,16 +1946,27 @@ class Game:
                 item_data = ITEMS[item["id"]]
                 # warp はバトル中無効
                 if item_data["type"] == "warp":
-                    self.battle_text = "戦闘中は使えない…"
+                    self.battle_text = "せんとうちゅうはつかえない…"
+                    self.battle_phase = "enemy_attack"
+                    self.battle_text_timer = 30
                 else:
-                    self.battle_text = self._use_item(item_data)
-                    item["qty"] -= 1
-                    if item["qty"] <= 0:
-                        items.pop(self.battle_item_select)
-                self.battle_phase = "enemy_attack"
-                self.battle_text_timer = 30
+                    msg = self._use_item(item_data)
+                    if not msg:
+                        # HP満タンなど使えなかった → アイテム選択に戻る
+                        self.battle_text = "HPがまんたんで つかえない"
+                        self.battle_text_timer = 30
+                    else:
+                        self.battle_text = msg
+                        item["qty"] -= 1
+                        if item["qty"] <= 0:
+                            items.pop(self.battle_item_select)
+                        self.battle_phase = "enemy_attack"
+                        self.battle_text_timer = 30
 
         elif self.battle_phase == "player_attack":
+            # 決定ボタン押しっぱなしで 400ms (12 frame @ 30fps) まで早送り
+            if self._btn(CONFIRM_BUTTONS) and self.battle_text_timer > 12:
+                self.battle_text_timer = 12
             self.battle_text_timer -= 1
             if self.battle_text_timer <= 0:
                 if self.battle_enemy_hp <= 0:
@@ -1570,6 +1975,8 @@ class Game:
                     self._do_enemy_attack()
 
         elif self.battle_phase == "enemy_attack":
+            if self._btn(CONFIRM_BUTTONS) and self.battle_text_timer > 12:
+                self.battle_text_timer = 12
             self.battle_text_timer -= 1
             if self.battle_text_timer <= 0:
                 if self.player["hp"] <= 0:
@@ -1578,18 +1985,26 @@ class Game:
                     self.battle_phase = "menu"
 
         elif self.battle_phase == "result":
+            # 結果表示も同様に押しっぱなし高速化（400ms 後に自動前進）
+            if self._btn(CONFIRM_BUTTONS) and self.battle_text_timer > 12:
+                self.battle_text_timer = 12
             self.battle_text_timer -= 1
             if self.battle_text_timer <= 0:
-                if self._btnp(CONFIRM_BUTTONS) or self.battle_text_timer < -30:
+                if self._btn(CONFIRM_BUTTONS) or self._btnp(CONFIRM_BUTTONS) or self.battle_text_timer < -30:
                     if self.player["hp"] <= 0:
                         # Defeat: lose half gold, restore HP
                         self.player["gold"] = self.player["gold"] // 2
                         self.player["hp"] = self.player["max_hp"]
                         self.player["x"], self.player["y"] = CASTLE_POS
                         self.player["in_dungeon"] = False
-                    if self.battle_is_boss and self.battle_enemy_hp <= 0:
-                        self.player["boss_defeated"] = True
-                    self.state = "map"
+                        self.state = "map"
+                    elif self.battle_is_professor and self.battle_enemy_hp <= 0:
+                        self.player["professor_defeated"] = True
+                        self._enter_professor_ending_main()
+                    else:
+                        if self.battle_is_boss and self.battle_enemy_hp <= 0:
+                            self.player["boss_defeated"] = True
+                        self.state = "map"
 
     def _do_player_attack(self):
         p = self.player
@@ -1599,6 +2014,7 @@ class Game:
         dmg = max(1, atk - e["def"] // 2 + random.randint(-2, 2))
         if self.debug_mode:
             dmg = 9999
+        self.sfx.play("attack")
         self.battle_enemy_hp = max(0, self.battle_enemy_hp - dmg)
         self.battle_text = self._dialog_text(
             random.choice(BATTLE_ATTACK_SCENES),
@@ -1611,12 +2027,25 @@ class Game:
 
     def _check_boss_phase_transition(self):
         """ボスのHPが閾値を跨いだら phase を更新し、移行メッセージを差し込む。"""
-        if not self.battle_is_boss or self.battle_enemy is None:
+        if self.battle_enemy is None:
+            return
+        if not (self.battle_is_boss or self.battle_is_professor):
             return
         max_hp = self.battle_enemy["hp"]
         if max_hp <= 0:
             return
         ratio = self.battle_enemy_hp / max_hp
+        if self.battle_is_professor:
+            new_phase = self._professor_battle_phase(ratio)
+            if new_phase != self.battle_boss_phase:
+                self.battle_boss_phase = new_phase
+                try:
+                    transition_msg = self._dialog_text(f"castle.professor.phase_{new_phase}")
+                except KeyError:
+                    transition_msg = ""
+                if transition_msg:
+                    self.battle_text = (self.battle_text + " " + transition_msg).strip()
+            return
         from src.game_data import BOSS_PHASE_MESSAGES, boss_phase
         new_phase = boss_phase(ratio)
         if new_phase != self.battle_boss_phase:
@@ -1626,6 +2055,18 @@ class Game:
                 # 既存ダメージメッセージに連結
                 self.battle_text = (self.battle_text + " " + transition_msg).strip()
 
+    def _professor_battle_phase(self, ratio: float) -> str:
+        """HP比率からプロフェッサーのフェーズキーを返す（YAMLキー suffix と一致）。
+
+        ratio が 0.85 を初めて下回ったら "85"、0.10 まで下回ったら "10"。
+        100%時は "100"（フェーズ未開始）。最も最近に跨いだしきい値を返す。
+        """
+        pct = ratio * 100
+        for thr in (10, 25, 40, 55, 70, 85):
+            if pct < thr:
+                return str(thr)
+        return "100"
+
     def _do_enemy_attack(self):
         p = self.player
         e = self.battle_enemy
@@ -1634,6 +2075,7 @@ class Game:
         dmg = max(1, e["atk"] - total_def // 2 + random.randint(-2, 2))
         if self.debug_mode:
             dmg = 0
+        self.sfx.play("hit")
         p["hp"] = max(0, p["hp"] - dmg)
         self.battle_text = self._dialog_text(
             self._enemy_hit_scene_name(),
@@ -1645,6 +2087,14 @@ class Game:
 
     def _battle_victory(self):
         e = self.battle_enemy
+        if self.battle_is_professor:
+            # 静かな勝利。EXP/Gold報酬とレベルアップ表示を抑制（D7）
+            # 派手な victory ジングルもならさない
+            self.battle_text = self._dialog_text("castle.professor.silent_victory")
+            self.battle_phase = "result"
+            self.battle_text_timer = 60
+            return
+        self.sfx.play("victory")
         exp = e["exp"]; gold = e["gold"]
         self.player["exp"] += exp
         self.player["gold"] += gold
@@ -1668,6 +2118,7 @@ class Game:
         from src.player_factory import MAX_LEVEL, exp_for_level, stats_for_level
         p = self.player
         while p["lv"] < MAX_LEVEL and p["exp"] >= exp_for_level(p["lv"] + 1):
+            self.sfx.play("levelup")
             p["lv"] += 1
             s = stats_for_level(p["lv"])
             p["max_hp"] = s["max_hp"]; p["hp"] = p["max_hp"]
@@ -1681,7 +2132,7 @@ class Game:
                     p["spells"].append(spell["name"])
 
     def update_menu(self):
-        menu_items = ["ステータス", "アイテム", "そうび", "とじる"]
+        menu_items = ["ステータス", "アイテム", "そうび", "AIでしゅうせい", "とじる"]
         if self.menu_sub is None:
             if self._btnp(UP_BUTTONS):
                 self.menu_cursor = (self.menu_cursor - 1) % len(menu_items)
@@ -1700,6 +2151,8 @@ class Game:
                     self.menu_sub = "equip"
                     self.menu_item_cursor = 0
                 elif self.menu_cursor == 3:
+                    self._enter_ai_help()
+                elif self.menu_cursor == 4:
                     self.state = "map"
         elif self.menu_sub == "status":
             if self._btnp(CANCEL_BUTTONS) or self._btnp(CONFIRM_BUTTONS):
@@ -1711,34 +2164,31 @@ class Game:
             if items:
                 if self._btnp(UP_BUTTONS):
                     self.menu_item_cursor = max(0, self.menu_item_cursor - 1)
+                    self.menu_message = ""
                 if self._btnp(DOWN_BUTTONS):
                     self.menu_item_cursor = min(len(items) - 1, self.menu_item_cursor + 1)
+                    self.menu_message = ""
                 if self._btnp(CONFIRM_BUTTONS):
                     item = items[self.menu_item_cursor]
                     item_data = ITEMS[item["id"]]
-                    self._use_item(item_data)
-                    item["qty"] -= 1
-                    if item["qty"] <= 0:
-                        items.pop(self.menu_item_cursor)
-                        self.menu_item_cursor = max(0, min(self.menu_item_cursor, len(items) - 1))
+                    msg = self._use_item(item_data)
+                    if not msg:
+                        # 使えなかった（HP満タンで回復薬など）→ 消費しない
+                        self.menu_message = "HPがまんたんで つかえない"
+                    else:
+                        self.menu_message = ""
+                        item["qty"] -= 1
+                        if item["qty"] <= 0:
+                            items.pop(self.menu_item_cursor)
+                            self.menu_item_cursor = max(0, min(self.menu_item_cursor, len(items) - 1))
         elif self.menu_sub == "equip":
             if self._btnp(CANCEL_BUTTONS):
                 self.menu_sub = None; return
-            # Simple equip: cycle weapons/armor
+            # 表示専用: 上下でスロット選択のみ。装備変更はお店で行う。
             if self._btnp(UP_BUTTONS):
                 self.menu_item_cursor = (self.menu_item_cursor - 1) % 2
             if self._btnp(DOWN_BUTTONS):
                 self.menu_item_cursor = (self.menu_item_cursor + 1) % 2
-            if self._btnp(RIGHT_BUTTONS):
-                if self.menu_item_cursor == 0:
-                    self.player["weapon"] = (self.player["weapon"] + 1) % len(WEAPONS)
-                else:
-                    self.player["armor"] = (self.player["armor"] + 1) % len(ARMORS)
-            if self._btnp(LEFT_BUTTONS):
-                if self.menu_item_cursor == 0:
-                    self.player["weapon"] = (self.player["weapon"] - 1) % len(WEAPONS)
-                else:
-                    self.player["armor"] = (self.player["armor"] - 1) % len(ARMORS)
 
     def _apply_spell_effect(self, spell) -> str:
         """Apply a spell effect (heal or attack). Caller is responsible for MP cost."""
@@ -1759,7 +2209,10 @@ class Game:
         """
         kind = item_data["type"]
         if kind == "heal":
+            if self.player["hp"] >= self.player["max_hp"]:
+                return ""
             self.player["hp"] = min(self.player["max_hp"], self.player["hp"] + item_data["value"])
+            self.sfx.play("heal")
             return self._dialog_text(
                 "battle.normal.item.heal",
                 item=item_data["name"],
@@ -1767,6 +2220,7 @@ class Game:
             )
         if kind == "mp_heal":
             self.player["mp"] = min(self.player["max_mp"], self.player["mp"] + item_data["value"])
+            self.sfx.play("heal")
             return self._dialog_text(
                 "battle.normal.item.mp_heal",
                 item=item_data["name"],
@@ -1784,6 +2238,55 @@ class Game:
             self.player["in_dungeon"] = False
             return f'{item_data["name"]}を使った。記録した場所に戻った。'
         return ""
+
+    def _t(self, jp: str, en: str) -> str:
+        """言語フォールバック。BDF フォントが無いときは英語版を返す。"""
+        return jp if self.has_jp_font else en
+
+    def _name(self, jp: str) -> str:
+        """データ名（敵・アイテム・装備）の翻訳。NAME_EN_MAP を引く。"""
+        return jp if self.has_jp_font else name_en(jp)
+
+    def say(self, *args) -> None:
+        """デバッグ用: 任意の値を画面左上にオーバーレイ表示する。
+
+        使い方:
+            self.say("こんにちは")
+            self.say("hp =", self.player["hp"])
+
+        モジュールトップの `say()` 関数からも呼べる（同一インスタンスを参照）。
+        最新 12 行までを保持し、次回以降の描画フレームに重ねる。
+        Scratch の「say」ブロックと同じ感覚で使える。
+        """
+        msg = " ".join(str(a) for a in args)
+        self._say_buffer.append(msg)
+        if len(self._say_buffer) > 12:
+            self._say_buffer = self._say_buffer[-12:]
+
+    def text(self, x: int, y: int, s: str, col: int) -> None:
+        """文字列を misaki_gothic 8x8 で描画する。
+
+        ASCII（英数字・記号）も日本語（仮名・全角記号）も統一フォントで
+        bank 2 から blt する。未収録文字はスペース幅でスキップ。
+        """
+        if not s:
+            return
+        pyxel.pal(7, col)
+        cx = x
+        for ch in s:
+            pos = JP_FONT_LAYOUT.get(ch)
+            if pos is not None:
+                bcol, brow = pos
+                pyxel.blt(
+                    cx, y,
+                    JP_FONT_IMAGE_BANK,
+                    bcol * JP_FONT_GLYPH_W,
+                    brow * JP_FONT_GLYPH_H,
+                    JP_FONT_GLYPH_W, JP_FONT_GLYPH_H,
+                    0,
+                )
+            cx += JP_FONT_GLYPH_W
+        pyxel.pal()
 
     def show_message(self, lines, callback=None):
         self.msg_lines = lines
@@ -1848,8 +2351,22 @@ class Game:
         )
         self.audio.play_scene(scene_name)
 
+    def _any_advance_btnp(self) -> bool:
+        """メッセージを進める入力。決定/キャンセル/方向のどれでもOK。
+
+        「Zを押したのに進まない」と誤解されるのを防ぐ防御的UX。
+        """
+        return (
+            self._btnp(CONFIRM_BUTTONS)
+            or self._btnp(CANCEL_BUTTONS)
+            or self._btnp(UP_BUTTONS)
+            or self._btnp(DOWN_BUTTONS)
+            or self._btnp(LEFT_BUTTONS)
+            or self._btnp(RIGHT_BUTTONS)
+        )
+
     def update_message(self):
-        if self._btnp(CONFIRM_BUTTONS):
+        if self._any_advance_btnp():
             self.msg_index += 1
             if self.msg_index >= len(self.msg_lines):
                 self.state = self.prev_state
@@ -1858,7 +2375,7 @@ class Game:
 
     def update_town(self):
         # Show message then return to map
-        if self._btnp(CONFIRM_BUTTONS):
+        if self._any_advance_btnp():
             self.msg_index += 1
             if self.msg_index >= len(self.msg_lines):
                 self.state = "map"
@@ -1866,15 +2383,19 @@ class Game:
     # ----- town_menu (Save Player Journey steering) -----
     def update_town_menu(self):
         if self._btnp(UP_BUTTONS):
+            self.sfx.play("cursor")
             self.town_menu_cursor = (self.town_menu_cursor - 1) % len(TOWN_MENU_LABELS)
             return
         if self._btnp(DOWN_BUTTONS):
+            self.sfx.play("cursor")
             self.town_menu_cursor = (self.town_menu_cursor + 1) % len(TOWN_MENU_LABELS)
             return
         if self._btnp(CANCEL_BUTTONS):
+            self.sfx.play("cancel")
             self._town_menu_exit()
             return
         if self._btnp(CONFIRM_BUTTONS):
+            self.sfx.play("select")
             label = TOWN_MENU_LABELS[self.town_menu_cursor]
             if label == "はなす":
                 self._town_menu_talk()
@@ -1898,7 +2419,7 @@ class Game:
     def _town_menu_talk(self):
         scene = TOWN_DIALOG_SCENES.get(self.town_menu_pos)
         if scene is None:
-            self._enter_town_message(["……ここには 話せる人が いない。"])
+            self._enter_town_message(["……ここには はなせるにんが いない。"])
             return
         lines = self._dialog_lines(scene, ProfessorPhase=self._professor_phase())
         self._enter_town_message(lines)
@@ -1962,16 +2483,23 @@ class Game:
         else:
             entry = ITEMS[idx]
         price = entry.get("price", 0)
+        # 同じ装備を二重購入させない（装備＝所持なので、装備中のものは買えない）
+        if kind == "weapons" and self.player["weapon"] == idx:
+            self.shop_message = "すでに もっています"
+            return
+        if kind == "armors" and self.player["armor"] == idx:
+            self.shop_message = "すでに もっています"
+            return
         if self.player["gold"] < price:
             self.shop_message = "コインが たりません"
             return
         self.player["gold"] -= price
         if kind == "weapons":
             self.player["weapon"] = idx
-            self.shop_message = entry.get("buy_msg") or f"{entry['name']}を 手に入れた！"
+            self.shop_message = entry.get("buy_msg") or f"{entry['name']}を てにいれた！"
         elif kind == "armors":
             self.player["armor"] = idx
-            self.shop_message = entry.get("buy_msg") or f"{entry['name']}を 手に入れた！"
+            self.shop_message = entry.get("buy_msg") or f"{entry['name']}を てにいれた！"
         else:
             # アイテムは inventory に追加
             for inv in self.player["items"]:
@@ -1980,34 +2508,41 @@ class Game:
                     break
             else:
                 self.player["items"].append({"id": idx, "qty": 1})
-            self.shop_message = f"{entry['name']}を 手に入れた！"
+            self.shop_message = f"{entry['name']}を てにいれた！"
 
     def draw_shop(self):
         pyxel.cls(0)
-        title_map = {"weapons": "ぶきや", "armors": "ぼうぐや", "items": "どうぐや"}
-        title = title_map.get(self.shop_kind, "ショップ")
-        pyxel.text(8, 6, title, 7, self.font)
-        pyxel.text(160, 6, f"G:{self.player['gold']}", 10, self.font)
+        if self.has_jp_font:
+            title_map = {"weapons": "ぶきや", "armors": "ぼうぐや", "items": "どうぐや"}
+            title = title_map.get(self.shop_kind, "ショップ")
+        else:
+            title_map = {"weapons": "WEAPONS", "armors": "ARMOR", "items": "ITEMS"}
+            title = title_map.get(self.shop_kind, "SHOP")
+        self.text(8, 6, title, 7)
+        self.text(160, 6, f"G:{self.player['gold']}", 10)
         if not self.shop_inventory:
-            pyxel.text(8, 40, "(在庫なし)", 6, self.font)
-            pyxel.text(8, 240, "Bで戻る", 13, self.font)
+            self.text(8, 40, self._t("(ざいこなし)", "(no stock)"), 6)
             return
         for i, idx in enumerate(self.shop_inventory):
+            owned = False
             if self.shop_kind == "weapons":
                 e = WEAPONS[idx]
-                line = f"{e['name']}  ATK+{e['atk']}  {e['price']}G"
+                line = f"{self._name(e['name'])}  こうげき+{e['atk']}  {e['price']}G"
+                owned = self.player["weapon"] == idx
             elif self.shop_kind == "armors":
                 e = ARMORS[idx]
-                line = f"{e['name']}  DEF+{e['def']}  {e['price']}G"
+                line = f"{self._name(e['name'])}  ぼうぎょ+{e['def']}  {e['price']}G"
+                owned = self.player["armor"] == idx
             else:
                 e = ITEMS[idx]
-                line = f"{e['name']}  {e['price']}G"
+                line = f"{self._name(e['name'])}  {e['price']}G"
+            if owned:
+                line = f"{line}  [もっています]"
             color = 10 if i == self.shop_cursor else 7
             marker = ">" if i == self.shop_cursor else " "
-            pyxel.text(8, 30 + i * 14, f"{marker} {line}", color, self.font)
+            self.text(8, 30 + i * 14, f"{marker} {line}", color)
         if self.shop_message:
-            pyxel.text(8, 200, self.shop_message, 11, self.font)
-        pyxel.text(8, 240, "Aで購入 / Bで戻る", 13, self.font)
+            self.text(8, 200, self.shop_message, 11)
 
     def _town_menu_save(self):
         snap = dump_snapshot(self.player, town_pos=self.town_menu_pos)
@@ -2019,6 +2554,7 @@ class Game:
             self._enter_town_message([msg])
             return
         self._has_save = True
+        self.sfx.play("save")
         self._enter_town_message([SAVE_OK_MSG])
 
     def _town_menu_exit(self):
@@ -2030,12 +2566,199 @@ class Game:
         if self._btnp(CONFIRM_BUTTONS):
             self.state = "title"
 
+    # ----- Professor encounter (隠し章) -----
+    # ----- AI でしゅうせい (Code Maker と外部 AI の橋渡し) -----
+    def _enter_ai_help(self):
+        """AIヘルプ画面に入る。可能なら Claude.ai を新タブで開く。"""
+        self._ai_help_status = self._try_open_ai_chat()
+        self.state = "ai_help"
+
+    def _try_open_ai_chat(self) -> str:
+        """環境に応じて AI を呼ぶ手段を試す。
+
+        1. ブラウザ (Pyodide): `js.window.open` で Claude.ai を新タブで開く
+        2. ローカル VM: `subprocess` で `claude --print` を試す（任意・失敗OK）
+        3. どちらも不可: 説明だけ表示
+
+        戻り値: ステータス文字列（画面に表示する）
+        """
+        # 1. ブラウザ環境
+        try:
+            import js  # type: ignore
+            try:
+                js.window.open("https://claude.ai/new", "_blank")
+                return "あたらしいタブで Claude をひらきました"
+            except Exception:
+                return "Claude.ai を てでひらいてください"
+        except ImportError:
+            pass
+        # 2. ローカル subprocess（VM 開発者向け）
+        try:
+            import subprocess
+            subprocess.run(["claude", "--version"], capture_output=True, timeout=2)
+            return "ローカル Claude が つかえます"
+        except Exception:
+            pass
+        # 3. フォールバック
+        return "Claude.ai を てでひらいてください"
+
+    def update_ai_help(self):
+        if self._btnp(CANCEL_BUTTONS) or self._btnp(CONFIRM_BUTTONS):
+            self.state = "menu"
+
+    def draw_ai_help(self):
+        self.draw_map()
+        self.draw_status_bar()
+        # ウィンドウ
+        x, y, w, h = 12, 36, 232, 196
+        pyxel.rect(x, y, w, h, 1)
+        pyxel.rectb(x, y, w, h, 7)
+        self.text(x + 8, y + 8, "AIで このゲームを しゅうせい", 10)
+        # 手順
+        lines = [
+            "",
+            "１ Code Maker の Save をおして",
+            "  main.py をダウンロード",
+            "",
+            "２ ブラウザで claude.ai か",
+            "  chatgpt.com をひらく",
+            "",
+            "３ main.py をはりつけて",
+            "  「ここを こう なおして」と たのむ",
+            "",
+            "４ かえってきた コードを",
+            "  Code Maker に はりつける",
+            "",
+            f"  -> {self._ai_help_status}",
+        ]
+        for i, line in enumerate(lines):
+            self.text(x + 8, y + 24 + i * 9, line, 7)
+
+    def _enter_professor_intro(self):
+        p = self.player
+        if p.get("professor_intro_seen"):
+            scene = "castle.professor.revisit_intro_01"
+        else:
+            scene = "castle.professor.intro_01"
+        p["professor_intro_seen"] = True
+        self.professor_intro_lines = self._dialog_lines(scene)
+        self.professor_intro_idx = 0
+        self.professor_choice_active = False
+        self.professor_choice_cursor = 1  # default: ことわる
+        self.state = "professor_intro"
+
+    def update_professor_intro(self):
+        if not self.professor_choice_active:
+            if self._btnp(CONFIRM_BUTTONS):
+                self.professor_intro_idx += 1
+                if self.professor_intro_idx >= len(self.professor_intro_lines):
+                    self.professor_choice_active = True
+            return
+        # choice mode
+        if self._btnp(UP_BUTTONS) or self._btnp(DOWN_BUTTONS):
+            self.professor_choice_cursor = 1 - self.professor_choice_cursor
+            return
+        if self._btnp(CONFIRM_BUTTONS):
+            if self.professor_choice_cursor == 0:
+                self._enter_professor_ending_accepted()
+            else:
+                self._start_battle(PROFESSOR_DATA, is_professor=True)
+
+    def draw_professor_intro(self):
+        pyxel.cls(0)
+        if self.professor_intro_lines and self.professor_intro_idx < len(self.professor_intro_lines):
+            line = self.professor_intro_lines[self.professor_intro_idx]
+            # 横幅に応じて折返し
+            wrapped = self._wrap_text(line, max_chars=28)
+            for i, sub in enumerate(wrapped[:6]):
+                self.text(16, 60 + i * 14, sub, 7)
+            if not self.professor_choice_active and (pyxel.frame_count // 15) % 2:
+                self.text(228, 200, "v", 7)
+        if self.professor_choice_active:
+            labels = (
+                ["うけいれる", "ことわる"]
+                if self.has_jp_font
+                else ["ACCEPT", "REFUSE"]
+            )
+            for i, label in enumerate(labels):
+                color = 10 if i == self.professor_choice_cursor else 7
+                marker = ">" if i == self.professor_choice_cursor else " "
+                self.text(96, 180 + i * 16, f"{marker} {label}", color)
+
+    def _wrap_text(self, text: str, max_chars: int = 28) -> list[str]:
+        """簡易な折返し（CJK文字幅考慮なし、おおよその目安）。"""
+        out: list[str] = []
+        for raw_line in text.split("\n"):
+            cur = ""
+            for ch in raw_line:
+                cur += ch
+                if len(cur) >= max_chars:
+                    out.append(cur)
+                    cur = ""
+            if cur:
+                out.append(cur)
+        return out or [""]
+
+    def _enter_professor_ending_main(self):
+        p = self.player
+        if p.get("professor_ending_seen"):
+            scene = "castle.professor.revisit_epilogue_01"
+        else:
+            scene = "castle.professor.epilogue_01"
+        p["professor_ending_seen"] = True
+        self.professor_ending_lines = self._dialog_lines(scene)
+        self.professor_ending_idx = 0
+        self.state = "professor_ending_main"
+
+    def update_professor_ending_main(self):
+        if self._btnp(CONFIRM_BUTTONS):
+            self.professor_ending_idx += 1
+            if self.professor_ending_idx >= len(self.professor_ending_lines):
+                # フィールドに戻す（D8）。城タイル上のままなのでクールダウン
+                self._a_cooldown = True
+                self.state = "map"
+
+    def draw_professor_ending_main(self):
+        pyxel.cls(0)
+        if self.professor_ending_lines and self.professor_ending_idx < len(self.professor_ending_lines):
+            line = self.professor_ending_lines[self.professor_ending_idx]
+            wrapped = self._wrap_text(line, max_chars=28)
+            for i, sub in enumerate(wrapped[:6]):
+                self.text(16, 80 + i * 14, sub, 10)
+            if (pyxel.frame_count // 15) % 2:
+                self.text(228, 200, "v", 7)
+
+    def _enter_professor_ending_accepted(self):
+        self.professor_ending_lines = self._dialog_lines("castle.professor.accepted_01")
+        self.professor_ending_idx = 0
+        self.state = "professor_ending_accepted"
+
+    def update_professor_ending_accepted(self):
+        if self._btnp(CONFIRM_BUTTONS):
+            self.professor_ending_idx += 1
+            if self.professor_ending_idx >= len(self.professor_ending_lines):
+                # 受諾エンド：professor_defeated は立てない。タイトルへ戻る
+                self.state = "title"
+                self._a_cooldown = True
+
+    def draw_professor_ending_accepted(self):
+        pyxel.cls(0)
+        if self.professor_ending_lines and self.professor_ending_idx < len(self.professor_ending_lines):
+            line = self.professor_ending_lines[self.professor_ending_idx]
+            wrapped = self._wrap_text(line, max_chars=28)
+            for i, sub in enumerate(wrapped[:6]):
+                self.text(16, 90 + i * 14, sub, 6)
+            if (pyxel.frame_count // 15) % 2:
+                self.text(228, 200, "v", 7)
+
     # -----------------------------------------------------------------
     # DRAW
     # -----------------------------------------------------------------
     def draw(self):
         pyxel.cls(0)
-        if self.state == "title":
+        if self.state == "splash":
+            self.draw_splash()
+        elif self.state == "title":
             self.draw_title()
         elif self.state == "map":
             self.draw_map()
@@ -2060,21 +2783,64 @@ class Game:
             self.draw_shop()
         elif self.state == "ending":
             self.draw_ending()
+        elif self.state == "professor_intro":
+            self.draw_professor_intro()
+        elif self.state == "professor_ending_main":
+            self.draw_professor_ending_main()
+        elif self.state == "professor_ending_accepted":
+            self.draw_professor_ending_accepted()
+        elif self.state == "ai_help":
+            self.draw_ai_help()
+
+        # デバッグオーバーレイ（最後に重ねる）
+        self._draw_say_overlay()
+
+    def _draw_say_overlay(self):
+        """disp() で蓄えたメッセージを画面左上に重ね描きする。"""
+        if not self._say_buffer:
+            return
+        for i, line in enumerate(self._say_buffer):
+            y = 4 + i * 12
+            # 背景に半透明っぽい黒帯
+            pyxel.rect(2, y - 1, 252, 12, 0)
+            self.text(4, y, line, 10)
+
+    def draw_splash(self):
+        pyxel.cls(0)
+        # 中央にロゴと "presents" 風の演出
+        # フェードイン: 0-30フレームで明るくなり、30-90で安定、最後はフェードアウトしない
+        f = self.splash_frame
+        # タイル枠で囲む（縦長のブロック演出）
+        col = 1 if f < 15 else (5 if f < 30 else 12)
+        for i in range(8):
+            x = 16 + i * 28
+            pyxel.rect(x, 100, 12, 12, col)
+        title_color = 7 if f >= 20 else 5
+        self.text(80, 80, "BLOCK QUEST", title_color)
+        if f >= 40:
+            self.text(50, 130, self._t("コードのたびは、ここから", "Coding journey starts here"), 10)
+        if f >= 60:
+            self.text(70, 160, self._t("presented by うえだたつろう", "by Tatsuro Ueda"), 6)
+        if f >= 75 and (pyxel.frame_count // 8) % 2:
+            self.text(60, 220, "PRESS ANY KEY", 7)
 
     def draw_title(self):
         pyxel.cls(1)
-        pyxel.text(70, 80, "BLOCK QUEST", 7, self.font)
-        pyxel.text(50, 110, "- コードの冒険 -", 10, self.font)
-        labels = ["はじめから", "つづきから"]
+        self.text(70, 80, "BLOCK QUEST", 7)
+        self.text(50, 110, self._t("- コードのぼうけん -", "- A Coding Quest -"), 10)
+        labels = [
+            self._t("はじめから", "NEW GAME"),
+            self._t("つづきから", "CONTINUE"),
+        ]
         for i, label in enumerate(labels):
             ly = 150 + i * 16
             enabled = (i == 0) or self._has_save
             base_color = 7 if enabled else 5
             color = 10 if (i == self.title_cursor and enabled) else base_color
             marker = ">" if i == self.title_cursor else " "
-            pyxel.text(80, ly, f"{marker} {label}", color, self.font)
+            self.text(80, ly, f"{marker} {label}", color)
         if self.title_cursor == 1 and not self._has_save:
-            pyxel.text(40, 200, "(まだ何も書き留めていない)", 5, self.font)
+            self.text(40, 200, self._t("(まだなにもかきとめていない)", "(no save yet)"), 5)
 
     def draw_map(self):
         p = self.player
@@ -2133,6 +2899,10 @@ class Game:
                     if bp:
                         pyxel.blt(sx, sy, 0, bp[0], bp[1], 16, 16)
 
+        # Draw landmark highlights (#13)
+        if not p["in_dungeon"]:
+            self._draw_landmark_highlights()
+
         # Draw hero
         hero_sx = p["x"] * 16 - self.cam_x
         hero_sy = p["y"] * 16 - self.cam_y + 24
@@ -2141,13 +2911,40 @@ class Game:
         if bp:
             pyxel.blt(hero_sx, hero_sy, 1, bp[0], bp[1], 16, 16, 0)
 
+    def _draw_landmark_highlights(self):
+        """ランドマーク強調描画。フレーム枠とパルスで「目印」を示す。
+
+        - 世界樹 (32, 9)：常時、緑のパルス枠
+        - 通信塔 (40, 32)：常時、紫のパルス枠
+        - 城 (25, 6)：boss_defeated 後のみ、黄色のパルス枠（プロフェッサー編発見導線）
+        """
+        p = self.player
+        marks = [
+            (32, 9, 11, True),   # 世界樹: 緑
+            (40, 32, 2, True),   # 通信塔: 紫
+            (25, 6, 10, p.get("boss_defeated", False)),  # 城: 黄（クリア後のみ）
+        ]
+        # パルス（明滅）：30フレームで1周期
+        pulse = (pyxel.frame_count // 8) % 4
+        for tx, ty, color, enabled in marks:
+            if not enabled:
+                continue
+            sx = tx * 16 - self.cam_x
+            sy = ty * 16 - self.cam_y + 24
+            # 画面外はスキップ
+            if sx < -16 or sx > 256 or sy < 8 or sy > 256:
+                continue
+            # 二重枠で目立たせる
+            pyxel.rectb(sx - 1 - pulse, sy - 1 - pulse,
+                        18 + pulse * 2, 18 + pulse * 2, color)
+
     def draw_status_bar(self):
         pyxel.rect(0, 0, 256, 24, 1)
         p = self.player
         zone = get_zone(p["y"], p["in_dungeon"])
-        zone_name = ZONE_NAMES.get(zone, "???")
-        pyxel.text(4, 2, f"Lv{p['lv']} {zone_name}", 7, self.font)
-        pyxel.text(4, 13, f"HP{p['hp']}/{p['max_hp']} MP{p['mp']}/{p['max_mp']}", 7, self.font)
+        zone_name = ZONE_NAMES.get(zone, "???") if self.has_jp_font else ZONE_NAMES_EN.get(zone, "???")
+        self.text(4, 2, f"レベル{p['lv']} {zone_name}", 7)
+        self.text(4, 13, f"HP{p['hp']}/{p['max_hp']} MP{p['mp']}/{p['max_mp']}", 7)
         # HP bar
         bar_x = 170; bar_w = 60
         pyxel.rect(bar_x, 4, bar_w, 6, 0)
@@ -2159,7 +2956,7 @@ class Game:
         pyxel.rect(bar_x, 14, int(bar_w * mp_ratio), 6, 12)
 
         if self.debug_mode:
-            pyxel.text(130, 2, "DEBUG", 8, self.font)
+            self.text(130, 2, "DEBUG", 8)
 
     def draw_battle(self):
         pyxel.cls(1)
@@ -2182,19 +2979,19 @@ class Game:
                                 pyxel.pset(104 + px * 3 + dx2, 30 + py * 3 + dy, c)
 
         # Enemy name and HP bar
-        pyxel.text(80, 10, e["name"], 7, self.font)
+        self.text(80, 10, self._name(e["name"]), 7)
         bar_x = 80; bar_w = 96
         pyxel.rect(bar_x, 85, bar_w, 8, 0)
         hp_ratio = self.battle_enemy_hp / max(1, e["hp"])
         pyxel.rect(bar_x, 85, int(bar_w * hp_ratio), 8, 8)
-        pyxel.text(bar_x + 2, 86, f"HP {self.battle_enemy_hp}/{e['hp']}", 7, self.font)
+        self.text(bar_x + 2, 86, f"HP {self.battle_enemy_hp}/{e['hp']}", 7)
 
         # Player stats
         p = self.player
         pyxel.rect(10, 100, 236, 40, 0)
         pyxel.rectb(10, 100, 236, 40, 7)
-        pyxel.text(16, 104, f"プログラマー  Lv{p['lv']}", 7, self.font)
-        pyxel.text(16, 116, f"HP {p['hp']}/{p['max_hp']}  MP {p['mp']}/{p['max_mp']}", 7, self.font)
+        self.text(16, 104, f"{self._t('プログラマー', 'PROGRAMMER')}  レベル{p['lv']}", 7)
+        self.text(16, 116, f"HP {p['hp']}/{p['max_hp']}  MP {p['mp']}/{p['max_mp']}", 7)
         # Player HP bar
         pyxel.rect(170, 116, 60, 6, 0)
         hp_r = p["hp"] / max(1, p["max_hp"])
@@ -2204,27 +3001,31 @@ class Game:
         if self.battle_text:
             pyxel.rect(10, 148, 236, 30, 0)
             pyxel.rectb(10, 148, 236, 30, 7)
-            pyxel.text(16, 154, self.battle_text, 7, self.font)
+            self.text(16, 154, self.battle_text, 7)
 
         # Menu
         if self.battle_phase == "menu":
-            menu_labels = ["たたかう", "じゅもん", "アイテム", "にげる"]
+            menu_labels = (
+                ["たたかう", "じゅもん", "アイテム", "にげる"]
+                if self.has_jp_font
+                else ["FIGHT", "SPELL", "ITEM", "RUN"]
+            )
             pyxel.rect(10, 190, 236, 56, 0)
             pyxel.rectb(10, 190, 236, 56, 7)
             for i, label in enumerate(menu_labels):
                 cx = 30 + (i % 2) * 110
                 cy = 198 + (i // 2) * 18
                 col = 10 if i == self.battle_menu else 6
-                pyxel.text(cx, cy, label, col, self.font)
+                self.text(cx, cy, label, col)
                 if i == self.battle_menu:
-                    pyxel.text(cx - 12, cy, ">", 10, self.font)
+                    self.text(cx - 12, cy, ">", 10)
 
         elif self.battle_phase == "spell_select":
             spells = self.player["spells"]
             pyxel.rect(10, 190, 236, 56, 0)
             pyxel.rectb(10, 190, 236, 56, 7)
             if not spells:
-                pyxel.text(16, 200, "じゅもんを覚えていない", 6, self.font)
+                self.text(16, 200, self._t("じゅもんをおぼえていない", "No spells learned"), 6)
             else:
                 for i, name in enumerate(spells[:4]):
                     spell = SPELL_BY_NAME.get(name)
@@ -2232,84 +3033,91 @@ class Game:
                         continue
                     cy = 196 + i * 12
                     col = 10 if i == self.battle_spell_select else 6
-                    pyxel.text(30, cy, f"{name}  MP{spell['mp']}", col, self.font)
+                    self.text(30, cy, f"{self._name(name)}  MP{spell['mp']}", col)
                     if i == self.battle_spell_select:
-                        pyxel.text(18, cy, ">", 10, self.font)
+                        self.text(18, cy, ">", 10)
 
         elif self.battle_phase == "item_select":
             items = self.player["items"]
             pyxel.rect(10, 190, 236, 56, 0)
             pyxel.rectb(10, 190, 236, 56, 7)
+            if self.battle_text:
+                self.text(16, 192, self.battle_text, 8)
             if not items:
-                pyxel.text(16, 200, "アイテムがない", 6, self.font)
+                self.text(16, 200, self._t("アイテムがない", "No items"), 6)
             else:
                 for i, item in enumerate(items[:4]):
                     idata = ITEMS[item["id"]]
                     cy = 196 + i * 12
                     col = 10 if i == self.battle_item_select else 6
-                    pyxel.text(30, cy, f"{idata['name']} x{item['qty']}", col, self.font)
+                    self.text(30, cy, f"{self._name(idata['name'])} x{item['qty']}", col)
                     if i == self.battle_item_select:
-                        pyxel.text(18, cy, ">", 10, self.font)
+                        self.text(18, cy, ">", 10)
 
     def draw_menu(self):
         # Semi-transparent overlay
         pyxel.rect(20, 30, 216, 200, 1)
         pyxel.rectb(20, 30, 216, 200, 7)
 
-        menu_labels = ["ステータス", "アイテム", "そうび", "とじる"]
+        menu_labels = (
+            ["ステータス", "アイテム", "そうび", "とじる"]
+            if self.has_jp_font
+            else ["STATUS", "ITEMS", "EQUIP", "AI HELP", "CLOSE"]
+        )
         for i, label in enumerate(menu_labels):
             cy = 40 + i * 16
             col = 10 if i == self.menu_cursor and self.menu_sub is None else 6
-            pyxel.text(36, cy, label, col, self.font)
+            self.text(36, cy, label, col)
             if i == self.menu_cursor and self.menu_sub is None:
-                pyxel.text(26, cy, ">", 10, self.font)
+                self.text(26, cy, ">", 10)
 
         p = self.player
         if self.menu_sub == "status":
             pyxel.rect(40, 100, 180, 120, 0)
             pyxel.rectb(40, 100, 180, 120, 7)
             lines = [
-                f"Lv {p['lv']}  EXP {p['exp']}",
+                f"レベル {p['lv']}  けいけん {p['exp']}",
                 f"HP {p['hp']}/{p['max_hp']}",
                 f"MP {p['mp']}/{p['max_mp']}",
-                f"ATK {p['atk']+WEAPONS[p['weapon']]['atk']}  DEF {p['def']+ARMORS[p['armor']]['def']}",
-                f"AGI {p['agi']}",
-                f"Gold {p['gold']}C",
-                f"武器: {WEAPONS[p['weapon']]['name']}",
-                f"防具: {ARMORS[p['armor']]['name']}",
+                f"こうげき {p['atk']+WEAPONS[p['weapon']]['atk']}  ぼうぎょ {p['def']+ARMORS[p['armor']]['def']}",
+                f"すばやさ {p['agi']}",
+                f"コイン {p['gold']}",
             ]
             for i, line in enumerate(lines):
-                pyxel.text(50, 108 + i * 13, line, 7, self.font)
+                self.text(50, 108 + i * 13, line, 7)
 
         elif self.menu_sub == "items":
             pyxel.rect(40, 100, 180, 120, 0)
             pyxel.rectb(40, 100, 180, 120, 7)
             items = p["items"]
             if not items:
-                pyxel.text(50, 110, "アイテムがない", 6, self.font)
+                self.text(50, 110, self._t("アイテムがない", "No items"), 6)
             else:
                 for i, item in enumerate(items[:8]):
                     idata = ITEMS[item["id"]]
                     cy = 108 + i * 13
                     col = 10 if i == self.menu_item_cursor else 6
-                    pyxel.text(56, cy, f"{idata['name']} x{item['qty']}", col, self.font)
+                    self.text(56, cy, f"{self._name(idata['name'])} x{item['qty']}", col)
                     if i == self.menu_item_cursor:
-                        pyxel.text(46, cy, ">", 10, self.font)
+                        self.text(46, cy, ">", 10)
+            if self.menu_message:
+                self.text(50, 210, self.menu_message, 8)
 
         elif self.menu_sub == "equip":
             pyxel.rect(40, 100, 180, 80, 0)
             pyxel.rectb(40, 100, 180, 80, 7)
+            wlbl = self._t("ぶき", "WPN")
+            albl = self._t("ぼうぐ", "ARM")
             labels = [
-                f"武器: {WEAPONS[p['weapon']]['name']} (ATK+{WEAPONS[p['weapon']]['atk']})",
-                f"防具: {ARMORS[p['armor']]['name']} (DEF+{ARMORS[p['armor']]['def']})",
+                f"{wlbl}: {self._name(WEAPONS[p['weapon']]['name'])} (こうげき+{WEAPONS[p['weapon']]['atk']})",
+                f"{albl}: {self._name(ARMORS[p['armor']]['name'])} (ぼうぎょ+{ARMORS[p['armor']]['def']})",
             ]
             for i, label in enumerate(labels):
                 cy = 110 + i * 20
                 col = 10 if i == self.menu_item_cursor else 6
-                pyxel.text(56, cy, label, col, self.font)
+                self.text(56, cy, label, col)
                 if i == self.menu_item_cursor:
-                    pyxel.text(46, cy, ">", 10, self.font)
-            pyxel.text(50, 158, "< > で変更", 6, self.font)
+                    self.text(46, cy, ">", 10)
 
     def draw_town_menu(self):
         # Background: show the map underneath so players keep their bearings.
@@ -2319,14 +3127,15 @@ class Game:
         x, y, w, h = 20, 40, 216, 170
         pyxel.rect(x, y, w, h, 1)
         pyxel.rectb(x, y, w, h, 7)
-        pyxel.text(x + 8, y + 8, "町メニュー", 7, self.font)
-        for i, label in enumerate(TOWN_MENU_LABELS):
+        self.text(x + 8, y + 8, self._t("まちメニュー", "TOWN MENU"), 7)
+        labels = TOWN_MENU_LABELS if self.has_jp_font else TOWN_MENU_LABELS_EN
+        for i, label in enumerate(labels):
             ly = y + 28 + i * 16
             color = 10 if i == self.town_menu_cursor else 7
             marker = ">" if i == self.town_menu_cursor else " "
-            pyxel.text(x + 16, ly, f"{marker} {label}", color, self.font)
+            self.text(x + 16, ly, f"{marker} {label}", color)
         gold = self.player["gold"]
-        pyxel.text(x + 8, y + h - 16, f"GOLD: {gold}   A:決定 B:でる", 6, self.font)
+        self.text(x + 8, y + h - 16, f"GOLD: {gold}", 6)
 
     def draw_message_window(self):
         pyxel.rect(8, 208, 240, 44, 0)
@@ -2335,25 +3144,53 @@ class Game:
             # Show current line and up to 2 more
             start = self.msg_index
             for i in range(min(3, len(self.msg_lines) - start)):
-                pyxel.text(16, 214 + i * 12, self.msg_lines[start + i], 7, self.font)
+                self.text(16, 214 + i * 12, self.msg_lines[start + i], 7)
         # Blink indicator
         if (pyxel.frame_count // 15) % 2:
-            pyxel.text(228, 240, "v", 7, self.font)
+            self.text(228, 240, "v", 7)
 
     def draw_ending(self):
         pyxel.cls(1)
         if not self.ending_lines:
             self.ending_lines = self._dialog_lines("ending.main.line01")
         if self.ending_lines:
-            pyxel.text(60, 60, self.ending_lines[0], 10, self.font)
+            self.text(60, 60, self.ending_lines[0], 10)
         for index, line in enumerate(self.ending_lines[1:]):
-            pyxel.text(20, 90 + index * 15, line, 7, self.font)
-        pyxel.text(40, 180, "PRESS Z TO TITLE", 6, self.font)
+            self.text(20, 90 + index * 15, line, 7)
+        self.text(40, 180, "PRESS Z TO TITLE", 6)
         p = self.player
-        pyxel.text(30, 200, f"Lv{p['lv']} Time:{pyxel.frame_count//30//60}m", 6, self.font)
+        self.text(30, 200, f"レベル{p['lv']} Time:{pyxel.frame_count//30//60}m", 6)
+
+
+# =====================================================================
+# DEBUG: グローバル say() 関数 — Scratch の「say」ブロックと同じ感覚
+# =====================================================================
+def say(*args):
+    """画面左上にデバッグ表示するヘルパ関数。
+
+    使い方:
+        say("こんにちは")             # → 画面左上に「こんにちは」が出る
+        say("hp =", player["hp"])     # → 「hp = 45」のように出る
+
+    最新 12 行までが画面左上にオーバーレイ表示される。
+    print() より便利な点:
+      - ゲーム画面に出るのでブラウザでも見える（Code Maker 環境向け）
+      - 日本語が表示できる（仮名のみ）
+    """
+    if Game._instance is not None:
+        Game._instance.say(*args)
+
+
+def say_clear():
+    """say バッファをクリアする。"""
+    if Game._instance is not None:
+        Game._instance._say_buffer.clear()
 
 
 # =====================================================================
 # ENTRY POINT
 # =====================================================================
-Game()
+# 子どもがコードを試すときは、ここで `say("こんにちは")` のように呼ぶと
+# 画面左上にデバッグ表示される（Scratch の say ブロックと同じ感覚）。
+game = Game()
+game.start()
