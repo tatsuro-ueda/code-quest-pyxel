@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Block Quest</title>
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+  width: 100%;
+  height: 100%;
+}
+#game-frame {
+  width: 100vw;
+  height: 100vh;
+  border: none;
+  display: block;
+}
+#fullscreen-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 12px 24px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: sans-serif;
+  transition: opacity 0.5s ease;
+  opacity: 1;
+  display: none;
+}
+#fullscreen-btn.faded {
+  opacity: 0;
+  pointer-events: none;
+}
+#fallback-msg {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #aaa;
+  font-size: 14px;
+  font-family: sans-serif;
+  text-align: center;
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+<iframe id="game-frame" src="{{PYXEL_HTML_SRC}}" allowfullscreen></iframe>
+<button id="fullscreen-btn">ぜんがめんであそぶ</button>
+<p id="fallback-msg">ホームがめんについかすると ぜんがめんであそべます</p>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('fullscreen-btn');
+  var fallbackMsg = document.getElementById('fallback-msg');
+  var target = document.documentElement;
+  var fadeTimer = null;
+
+  var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  if (!isTouchDevice) {
+    return;
+  }
+
+  var canFullscreen = target.requestFullscreen || target.webkitRequestFullscreen;
+
+  if (!canFullscreen) {
+    fallbackMsg.style.display = 'block';
+    return;
+  }
+
+  btn.style.display = 'block';
+
+  function startFadeTimer() {
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(function() {
+      btn.classList.add('faded');
+    }, 5000);
+  }
+
+  function showButton() {
+    btn.classList.remove('faded');
+    btn.style.display = 'block';
+    startFadeTimer();
+  }
+
+  startFadeTimer();
+
+  document.body.addEventListener('click', function(e) {
+    if (e.target === btn) return;
+    if (btn.classList.contains('faded')) {
+      showButton();
+    }
+  });
+
+  btn.addEventListener('click', function() {
+    clearTimeout(fadeTimer);
+    if (target.requestFullscreen) {
+      target.requestFullscreen();
+    } else if (target.webkitRequestFullscreen) {
+      target.webkitRequestFullscreen();
+    }
+  });
+
+  function onFullscreenChange() {
+    var isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+    if (isFullscreen) {
+      btn.style.display = 'none';
+      clearTimeout(fadeTimer);
+    } else {
+      showButton();
+    }
+  }
+
+  document.addEventListener('fullscreenchange', onFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+});
+</script>
+</body>
+</html>
