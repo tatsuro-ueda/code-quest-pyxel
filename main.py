@@ -1377,6 +1377,11 @@ class Game:
         if self._pyxres_loaded:
             self._derive_world_from_tilemap()
             self._derive_dungeon_from_tilemap()
+            # D3: オートタイル変種を再計算して tilemap[0] に書き戻す。
+            # Code Maker で基底タイルを配置した場合、周辺タイルとの
+            # 繋がりをゲーム側で正しく再計算する必要がある。
+            self._bake_world_to_tilemap()
+            self._bake_dungeon_to_tilemap()
         else:
             self._bake_world_to_tilemap()
             self._bake_dungeon_to_tilemap()
@@ -1410,14 +1415,19 @@ class Game:
         dg = self.dungeon_template
         oy = self.DUNGEON_TM_OFFSET_Y
         derived = []
+        _miss = 0
         for y in range(len(dg)):
             row = []
             for x in range(len(dg[0])):
                 tu, tv = tilemap.pget(2 * x, oy + 2 * y)
                 key = (tu * 8, tv * 8)
                 tid = self.tile_id_by_pixel.get(key, T_FLOOR)
+                if key not in self.tile_id_by_pixel:
+                    _miss += 1
                 row.append(tid)
             derived.append(row)
+        if _miss:
+            print(f"[tilemap] dungeon derive: {_miss} tiles fell back to T_FLOOR")
         self.dungeon_template = derived
         # 階段の位置を再検索（編集で動いている可能性）
         for y in range(len(derived)):
@@ -1456,14 +1466,19 @@ class Game:
         """tilemap[0] から self.world_map を組み立てる（編集を反映）。"""
         tilemap = pyxel.tilemaps[0]
         derived = []
+        _miss = 0
         for y in range(MAP_H):
             row = []
             for x in range(MAP_W):
                 tu, tv = tilemap.pget(2 * x, 2 * y)
                 key = (tu * 8, tv * 8)
                 tid = self.tile_id_by_pixel.get(key, T_GRASS)
+                if key not in self.tile_id_by_pixel:
+                    _miss += 1
                 row.append(tid)
             derived.append(row)
+        if _miss:
+            print(f"[tilemap] world derive: {_miss} tiles fell back to T_GRASS")
         self.world_map = derived
 
     # ----- Image bank: layout (positions) と paint (pset) を分離 -----
