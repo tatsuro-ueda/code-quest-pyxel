@@ -5619,6 +5619,12 @@ class Game:
         self.battle_phase = "enemy_attack"
         self.battle_text_timer = 40
 
+    def _start_vfx(self, vfx_type):
+        cfg = VFX_FLASH.get(vfx_type)
+        if cfg:
+            self.vfx_type = vfx_type
+            self.vfx_timer = cfg["duration"]
+
     def _battle_victory(self):
         e = self.battle_enemy
         if self.battle_is_professor:
@@ -6522,6 +6528,15 @@ class Game:
 
         if self.debug_mode:
             self.text(130, 2, "DEBUG", 8)
+
+    def _draw_vfx_overlay(self):
+        if self.vfx_timer <= 0:
+            return
+        cfg = VFX_FLASH.get(self.vfx_type)
+        if not cfg:
+            return
+        if self.vfx_timer % 2 == 0:
+            pyxel.rect(0, 0, 256, 256, cfg["color"])
 
     def draw_battle(self):
         pyxel.cls(1)
