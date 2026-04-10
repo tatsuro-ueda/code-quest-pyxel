@@ -5382,6 +5382,8 @@ class Game:
         self.state = "battle"
 
     def update_battle(self):
+        if self.vfx_timer > 0:
+            self.vfx_timer -= 1
         if self.battle_phase == "menu":
             if self._btnp(UP_BUTTONS):
                 self.battle_menu = (self.battle_menu - 1) % 4
@@ -5443,6 +5445,7 @@ class Game:
                     return
                 self.player["mp"] -= spell["mp"]
                 self.sfx.play("magic")
+                self._start_vfx("flash_white")
                 self.battle_text = self._apply_spell_effect(spell)
                 self.battle_phase = "player_attack"
                 self.battle_text_timer = 30
@@ -5541,6 +5544,7 @@ class Game:
         if self.debug_mode:
             dmg = 9999
         self.sfx.play("attack")
+        self._start_vfx("flash_white")
         self.battle_enemy_hp = max(0, self.battle_enemy_hp - dmg)
         self.battle_text = self._dialog_text(
             random.choice(BATTLE_ATTACK_SCENES),
@@ -5605,6 +5609,7 @@ class Game:
         if self.debug_mode:
             dmg = 0
         self.sfx.play("hit")
+        self._start_vfx("flash_red")
         p["hp"] = max(0, p["hp"] - dmg)
         self.battle_text = self._dialog_text(
             self._enemy_hit_scene_name(),
@@ -6633,6 +6638,8 @@ class Game:
                     self.text(30, cy, f"{self._name(idata['name'])} x{item['qty']}", col)
                     if i == self.battle_item_select:
                         self.text(18, cy, ">", 10)
+
+        self._draw_vfx_overlay()
 
     def draw_menu(self):
         # Semi-transparent overlay
