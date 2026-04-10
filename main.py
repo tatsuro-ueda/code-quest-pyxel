@@ -4398,8 +4398,8 @@ ENCOUNTER_RATES = {
 }
 
 VFX_FLASH = {
-    "flash_white": {"color": 7, "duration": 4},
-    "flash_red":   {"color": 8, "duration": 6},
+    "flash_white": {"color": 7, "duration": 2},
+    "flash_red":   {"color": 8, "duration": 3},
 }
 
 BATTLE_ATTACK_SCENES = (
