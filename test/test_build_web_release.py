@@ -29,16 +29,16 @@ class TestGenerateSelector(unittest.TestCase):
             changes = ["スライムの HP を へらしたよ", "あたらしい まほう を ついか したよ"]
             result = generate_selector(
                 build_dir, ROOT,
-                pyxel_html_name="pyxel.html",
-                preview_html_name="pyxel-preview.html",
+                current_wrapper_name="play.html",
+                preview_wrapper_name="play-preview.html",
                 changes=changes,
             )
             self.assertTrue(result.exists())
             content = result.read_text(encoding="utf-8")
             self.assertIn("スライムの HP を へらしたよ", content)
             self.assertIn("あたらしい まほう を ついか したよ", content)
-            self.assertIn("pyxel-preview.html", content)
-            self.assertIn("pyxel.html", content)
+            self.assertIn("play-preview.html", content)
+            self.assertIn("play.html", content)
             self.assertIn("おためしばん", content)
             self.assertIn("もとのままばん", content)
         finally:
@@ -50,8 +50,8 @@ class TestGenerateSelector(unittest.TestCase):
         try:
             result = generate_selector(
                 build_dir, ROOT,
-                pyxel_html_name="pyxel.html",
-                preview_html_name="pyxel-preview.html",
+                current_wrapper_name="play.html",
+                preview_wrapper_name="play-preview.html",
                 changes=[],
             )
             self.assertTrue(result.exists())

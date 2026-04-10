@@ -123,8 +123,8 @@ def generate_selector(
     build_dir: Path,
     project_root: Path,
     *,
-    pyxel_html_name: str = "pyxel.html",
-    preview_html_name: str = "pyxel-preview.html",
+    current_wrapper_name: str = "play.html",
+    preview_wrapper_name: str = "play-preview.html",
     changes: list[str] | None = None,
 ) -> Path:
     """選択ページ（selector.html）を生成する"""
@@ -137,8 +137,8 @@ def generate_selector(
     html = (
         template
         .replace("{{CHANGE_LIST}}", change_list)
-        .replace("{{PYXEL_HTML_SRC}}", pyxel_html_name)
-        .replace("{{PREVIEW_HTML_SRC}}", preview_html_name)
+        .replace("{{CURRENT_WRAPPER_SRC}}", current_wrapper_name)
+        .replace("{{PREVIEW_WRAPPER_SRC}}", preview_wrapper_name)
     )
     output_path = build_dir / "index.html"
     output_path.write_text(html, encoding="utf-8")
@@ -232,11 +232,24 @@ def build_preview_release(
     preview_html_path = output_dir / "pyxel-preview.html"
     shutil.copy2(work_dir / f"{preview_app_name}.html", preview_html_path)
 
+    # --- ラッパーHTML（iframe + 全画面ボタン）を2つ生成 ---
+    current_wrapper = generate_wrapper(work_dir, root, pyxel_html_name="pyxel.html")
+    play_path = output_dir / "play.html"
+    shutil.copy2(current_wrapper, play_path)
+
+    preview_wrapper_dir = work_dir / "preview_wrapper"
+    preview_wrapper_dir.mkdir(parents=True, exist_ok=True)
+    preview_wrapper = generate_wrapper(
+        preview_wrapper_dir, root, pyxel_html_name="pyxel-preview.html"
+    )
+    play_preview_path = output_dir / "play-preview.html"
+    shutil.copy2(preview_wrapper, play_preview_path)
+
     # --- 選択ページ ---
     selector_path = generate_selector(
         work_dir, root,
-        pyxel_html_name="pyxel.html",
-        preview_html_name="pyxel-preview.html",
+        current_wrapper_name="play.html",
+        preview_wrapper_name="play-preview.html",
         changes=changes,
     )
     index_path = output_dir / "index.html"
