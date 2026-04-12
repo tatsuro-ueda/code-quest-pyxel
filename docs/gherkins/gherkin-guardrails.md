@@ -435,7 +435,7 @@ Scenario: Code Maker との互換性を維持する
 |---|---|---|---|---|
 | G1 | `src/generated/` 直接編集禁止 | J36 データ | PreToolUse hook | ツール拒否＋再指示 |
 | G2 | `*.pyxres` 直接編集禁止 | J37 コンテンツ | PreToolUse hook | ツール拒否 |
-| G3 | SSoT編集後の自動Codegen | J36 データ | PostToolUse hook | 自動再生成、失敗時は停止 |
+| G3 | SSoT編集後の自動Codegen + テスト | J36 データ | PostToolUse hook | 自動再生成 → pytest 130テスト実行、失敗時は停止 |
 | G4 | TILE_DATA ⇔ pyxres 整合チェック | J37 コンテンツ | `make build` | 不一致なら自動再生成 |
 | G5 | イメージバンク番号の競合検出 | J37 コンテンツ | PostToolUse lint | 警告 |
 | G6 | サウンド初期化順序の検証 | J37 コンテンツ | `make build` | ビルド失敗 |
@@ -447,7 +447,7 @@ Scenario: Code Maker との互換性を維持する
 | G12 | Code Maker 互換テスト | J41 技術基盤 | `make build` | ビルド失敗 |
 | G13 | 生成物の手編集検出 | J36 データ | `make build` 内 git diff | ビルド失敗 |
 | G14 | 直接import禁止（ローダ経由強制） | J36 データ | PreToolUse hook + lint | ツール拒否 |
-| G15 | テストコードによる挙動固定 | 全レイヤー | pytest | テスト失敗で検出 |
+| G15 | テストコードによる挙動固定 | 全レイヤー | PostToolUse hook (G3連動) + pytest | テスト失敗で停止 |
 
 ---
 
@@ -455,6 +455,9 @@ Scenario: Code Maker との互換性を維持する
 
 AIがコードを改変したとき、意図しない挙動変化をテスト失敗として検出する仕組み。
 hookは「触らせない」ガード、G15は「触った結果が壊れていないか」のガード。
+
+**実装状況**: G3の PostToolUse hook (guard_post_gen.sh) に統合済み。
+YAML編集 → codegen → pytest 130テスト自動実行。失敗時は exit 1 でAIに通知。
 
 ```gherkin
 Feature: AIの改変で既存の挙動が壊れたらテストが検出する
