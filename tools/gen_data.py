@@ -92,12 +92,18 @@ def generate_one(name: str) -> bool:
         "",
         f"{var_name}: {type_hint} = {_repr_value(data)}\n",
     ]
+    # read-only を一時解除して書き込み、書き込み後に再設定
+    import os, stat
+    if out_path.exists():
+        out_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
     out_path.write_text("\n".join(lines), encoding="utf-8")
+    out_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)  # read-only
 
     # ensure __init__.py exists
     init = GENERATED / "__init__.py"
     if not init.exists():
         init.write_text("", encoding="utf-8")
+        init.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
     print(f"  generated: {out_path.relative_to(ROOT)}")
     return True
