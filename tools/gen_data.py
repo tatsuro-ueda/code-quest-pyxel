@@ -17,8 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "assets"
 GENERATED = ROOT / "src" / "generated"
 
-sys.path.insert(0, str(ROOT))
-from src.simple_yaml import safe_load, SimpleYamlError  # noqa: E402
+import yaml
 
 HEADER = "# GENERATED - DO NOT EDIT  (source: assets/{yaml})\n"
 
@@ -79,8 +78,8 @@ def generate_one(name: str) -> bool:
         return False
 
     try:
-        data = safe_load(yaml_path.read_text(encoding="utf-8"))
-    except SimpleYamlError as e:
+        data = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as e:
         print(f"error: {yaml_path}: {e}", file=sys.stderr)
         return False
 

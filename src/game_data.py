@@ -8,7 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from src.simple_yaml import safe_load
+import yaml
 
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 
@@ -16,7 +16,7 @@ ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 def load_yaml(path: str | Path) -> Any:
     """Load any YAML file under the project."""
     text = Path(path).read_text(encoding="utf-8")
-    return safe_load(text)
+    return yaml.safe_load(text)
 
 
 # --- generated data (YAML → gen_data.py → here) ---

@@ -14,7 +14,7 @@ from src import game_data  # noqa: E402
 
 class LoadYamlTest(unittest.TestCase):
     def test_load_yaml_returns_dict_or_list(self):
-        result = game_data.load_yaml(ROOT / "assets" / "dialogue.yaml")
+        result = game_data.load_yaml(ROOT / "assets" / "enemies.yaml")
         self.assertTrue(isinstance(result, (dict, list)))
 
 
