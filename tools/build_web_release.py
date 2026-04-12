@@ -111,12 +111,17 @@ def build_web_release(
     shutil.copy2(work_dir / f"{app_name}.pyxapp", pyxapp_path)
     shutil.copy2(work_dir / f"{app_name}.html", html_path)
 
-    # カスタムHTMLラッパー生成
+    # カスタムHTMLラッパー生成 → play.html に保存
     wrapper_path = generate_wrapper(work_dir, root)
-    index_path = output_dir / "index.html"
-    shutil.copy2(wrapper_path, index_path)
+    play_path = output_dir / "play.html"
+    shutil.copy2(wrapper_path, play_path)
 
-    return pyxapp_path, html_path, index_path
+    # index.html が既に存在する場合（選択ページ等）は上書きしない
+    index_path = output_dir / "index.html"
+    if not index_path.exists():
+        shutil.copy2(wrapper_path, index_path)
+
+    return pyxapp_path, html_path, play_path
 
 
 def generate_selector(
