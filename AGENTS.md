@@ -3,65 +3,78 @@
 ## Scope
 
 - This file applies to `/home/exedev/code-quest-pyxel`.
-- Treat `/home/exedev/code-quest-pyxel` as the only current project.
-- Ignore sibling directories under `/home/exedev/game/*`. They are older variants and not part of the active project.
+- Treat this as the only current project.
 
 ## Current Runtime Truth
 
 - The runtime entrypoint is `main.py`.
-- The current implementation is a Pyxel + Python game, not a single-file HTML game.
-- `pyxel.html` and `pyxel.pyxapp` are distribution artifacts for playback/export.
-- `index.html` may exist as a static-hosting entrypoint that points to `pyxel.html`, but `pyxel.html` remains the underlying exported artifact.
-- If documentation and confirmed code disagree, trust the current code first and then update the docs.
+- The current implementation is a Pyxel + Python game.
+- `pyxel.html` and `pyxel.pyxapp` are distribution artifacts.
+- `index.html` is a selector page (2-version comparison for kids).
+- `play.html` is an iframe wrapper that loads `pyxel.html`.
+- If documentation and code disagree, trust the current code first.
 
 ## Primary Documents
 
-Read these first before changing gameplay, text, or project structure:
+- `docs/gherkins/` — customer journeys, gherkins, guardrails
+- `docs/steering/` — active task notes
+- `docs/steering/done/` — completed task notes
 
-- `docs/00-pyxel-design.md`
-- `docs/10-concept.md`
-- `docs/20-requirements.md`
-- `docs/30-story-concepts.md`
-- `docs/35-story-design.md`
-- `docs/50-map-concepts.md`
-- `docs/55-map-design.md`
-- `docs/60-visual-requirements.md`
-- `docs/65-visual-design.md`
-- `docs/70-audio-concepts.md`
-- `docs/75-audio-design.md`
-- `docs/80-sfx-concepts.md`
-- `docs/85-sfx-design.md`
-- `docs/95-testing.md`
-- `docs/97-acceptance.feature`
+## SSoT (Single Source of Truth) Data Flow
 
-## Supporting Documents
+Game data flows one-way. **Do not edit generated files directly.**
 
-Use these when working on dialogue or ending text:
+```
+assets/*.yaml (enemies, items, weapons, armors, spells, shops)
+  -> tools/gen_data.py
+  -> src/generated/*.py (DO NOT EDIT)
+  -> src/game_data.py (loader)
+  -> main.py
+```
 
-- `docs/38-cave-mission-dialogue.md`
-- `docs/39-playthrough-text.md`
-- `docs/87-ending-credits.md`
+## Guardrails — MUST FOLLOW
 
-## Legacy Review Documents
+### Files you MUST NOT edit directly
 
-These files currently contain older HTML-oriented assumptions. Do not treat them as the current source of truth until they are rewritten:
+| Path | Reason | What to do instead |
+|---|---|---|
+| `src/generated/*.py` | Auto-generated from YAML | Edit `assets/*.yaml`, then run `python tools/gen_data.py` |
+| `*.pyxres` | Binary resource (art/sound) | Use Pyxel Code Maker |
 
-- `docs/90-architecture.md`
-- `docs/92-functional-design.md`
+### Files you MUST NOT import directly
 
-When these documents conflict with `main.py` or `docs/00-pyxel-design.md`, follow the Pyxel implementation and update the docs.
+| Path | Reason | What to do instead |
+|---|---|---|
+| `from src.generated.*` | Use loader | `from src.game_data import ENEMIES` etc. |
+
+### After every change, run tests
+
+```bash
+python tools/gen_data.py    # Regenerate from YAML (if you edited YAML)
+python -m pytest test/ -q   # 130 tests — MUST ALL PASS before committing
+```
+
+**If any test fails, fix the issue before committing.** Do not skip tests.
+
+### Additional validation tools
+
+```bash
+python tools/test_headless.py      # G8: Headless startup test (1-frame draw)
+python tools/test_save_compat.py   # G10: Save data compatibility test
+python tools/test_web_compat.py    # G11: Web version test (Playwright)
+```
 
 ## Project Rules
 
-1. Keep project decisions scoped to `/home/exedev/code-quest-pyxel`.
-2. Prefer edits that make docs match the current Pyxel implementation.
-3. Do not reintroduce old HTML-only assumptions such as `index.html` as the runtime entrypoint unless the project is intentionally rewritten.
-4. Keep runtime-focused guidance aligned with `main.py`, Pyxel assets, and the current numbered docs.
-5. Treat distribution files separately from source files.
+1. Keep project decisions scoped to this repository.
+2. Do not edit `src/generated/` — edit `assets/*.yaml` instead.
+3. Do not edit `*.pyxres` — use Pyxel Code Maker.
+4. Run `pytest` after every change. All 130 tests must pass.
+5. Keep story/theme wording consistent with existing dialogue (hiragana for kids).
 
 ## Change Checklist
 
-- Confirm the change is for the Pyxel project, not an old sibling variant.
-- Check whether the docs already describe the current Pyxel behavior.
-- If a doc still describes the old HTML version, mark or update it instead of treating it as authoritative.
-- Keep story/theme wording consistent with the existing concept and story docs.
+- [ ] Edited the right source file (not a generated file)
+- [ ] Ran `python tools/gen_data.py` (if YAML was changed)
+- [ ] Ran `python -m pytest test/ -q` and all tests pass
+- [ ] Did not break the selector page (`index.html` → `play.html` → `pyxel.html`)
