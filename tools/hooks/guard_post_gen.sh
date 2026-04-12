@@ -31,10 +31,17 @@ if [[ ! -f "$GEN_SCRIPT" ]]; then
 fi
 
 # 自動codegen実行
-if python "$GEN_SCRIPT" 2>&1; then
-  echo "G3: assets/*.yaml の変更を検出し、src/generated/*.py を再生成しました。"
+if ! python "$GEN_SCRIPT" 2>&1; then
+  echo "G3: codegen に失敗しました。assets/*.yaml の内容を確認してください。"
+  exit 1
+fi
+echo "G3: assets/*.yaml の変更を検出し、src/generated/*.py を再生成しました。"
+
+# G15: テストで挙動が壊れていないか確認
+if python -m pytest test/ -q --tb=short 2>&1; then
+  echo "G15: 全テスト通過。"
   exit 0
 else
-  echo "G3: codegen に失敗しました。assets/*.yaml の内容を確認してください。"
+  echo "G15: テストが失敗しました。変更内容を確認してください。"
   exit 1
 fi
