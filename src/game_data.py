@@ -1,9 +1,8 @@
-"""Game data YAML loaders.
+"""Game data module.
 
-JS版 (`game/index.html`) のハードコードデータを `assets/*.yaml` に外部化し、
-ここから読み出す。`src/simple_yaml.safe_load` を流用する。
+Generated data (src/generated/) を import し、派生データを構築する。
+SSoT は assets/*.yaml → tools/gen_data.py → src/generated/*.py の一方通行。
 """
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -20,33 +19,40 @@ def load_yaml(path: str | Path) -> Any:
     return safe_load(text)
 
 
-def _load(name: str) -> Any:
-    return load_yaml(ASSETS_DIR / name)
+# --- generated data (YAML → gen_data.py → here) ---
+from src.generated.enemies import ENEMIES
+from src.generated.items import ITEMS
+from src.generated.weapons import WEAPONS
+from src.generated.armors import ARMORS
+from src.generated.spells import SPELLS
+from src.generated.shops import SHOPS
 
 
-def load_enemies() -> list[dict[str, Any]]:
-    return _load("enemies.yaml")
+# --- derived data ---
+
+def _build_zone_enemies(enemies: list[dict[str, Any]]) -> dict[int, list]:
+    """zone -> list[enemy] にグルーピング。ボス・教授等は除外。"""
+    by_zone: dict[int, list] = {}
+    for e in enemies:
+        if e.get("is_boss") or e.get("is_professor") or e.get("post_clear_only"):
+            continue
+        by_zone.setdefault(e["zone"], []).append(e)
+    return by_zone
 
 
-def load_items() -> list[dict[str, Any]]:
-    return _load("items.yaml")
+ZONE_ENEMIES = _build_zone_enemies(ENEMIES)
+BOSS_DATA = next(e for e in ENEMIES if e.get("is_boss"))
+PROFESSOR_DATA = next(e for e in ENEMIES if e.get("is_professor"))
+GLITCH_CLONE_DATA = next(e for e in ENEMIES if e.get("post_clear_only"))
+NOISE_GUARDIAN_DATA = next(e for e in ENEMIES if e.get("is_noise_guardian"))
+
+SPELL_BY_NAME = {s["name"]: s for s in SPELLS}
+
+INN_PRICES = SHOPS["inn_prices"]
+SHOP_LIST = SHOPS["shops"]
 
 
-def load_weapons() -> list[dict[str, Any]]:
-    return _load("weapons.yaml")
-
-
-def load_armors() -> list[dict[str, Any]]:
-    return _load("armors.yaml")
-
-
-def load_spells() -> list[dict[str, Any]]:
-    return _load("spells.yaml")
-
-
-def load_shops() -> dict[str, Any]:
-    return _load("shops.yaml")
-
+# --- boss phase logic ---
 
 def boss_phase(hp_ratio: float) -> str:
     """Return a phase label based on the boss HP ratio.
@@ -67,3 +73,29 @@ BOSS_PHASE_MESSAGES = {
     "phase2": "ボスの様子が変わった！",
     "phase3": "ボスは最後の力を振り絞っている！",
 }
+
+
+# --- backward-compatible loaders (for tests) ---
+
+def load_enemies() -> list[dict[str, Any]]:
+    return ENEMIES
+
+
+def load_items() -> list[dict[str, Any]]:
+    return ITEMS
+
+
+def load_weapons() -> list[dict[str, Any]]:
+    return WEAPONS
+
+
+def load_armors() -> list[dict[str, Any]]:
+    return ARMORS
+
+
+def load_spells() -> list[dict[str, Any]]:
+    return SPELLS
+
+
+def load_shops() -> dict[str, Any]:
+    return SHOPS

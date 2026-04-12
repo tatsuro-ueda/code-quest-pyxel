@@ -1118,14 +1118,17 @@ class AudioManager:
         self.pyxel.playm(music_index(scene_name), loop=True)
 
 # === inlined: src/game_data.py ===
-"""Game data — JS版 / 旧 YAML から移植した Python 定数。
+"""Game data — generated from assets/*.yaml via tools/gen_data.py.
 
-YAML ファイル依存を廃止。データ編集はこのファイルを直接書き換える。
-load_* 関数は旧API互換のため残してあるが、ファイル I/O は行わない。
+SSoT: assets/*.yaml → tools/gen_data.py → src/generated/*.py
+この定義を直接編集しないでください。YAML を編集して `make gen` を実行してください。
 """
 
 
 from typing import Any
+
+
+
 
 
 ENEMIES: list[dict[str, Any]] = [
@@ -1182,9 +1185,7 @@ ENEMIES: list[dict[str, Any]] = [
         'gold': 36,
         'zone': 1,
         'category': 'loop',
-        'spells': [
-            'ループブレイク',
-        ],
+        'spells': ['ループブレイク'],
         'can_poison': True,
         'desc': '「10かいくりかえす」でこうげき！',
     },
@@ -1199,10 +1200,7 @@ ENEMIES: list[dict[str, Any]] = [
         'gold': 180,
         'zone': 2,
         'category': 'condition',
-        'spells': [
-            'プリント',
-            'ループブレイク',
-        ],
+        'spells': ['プリント', 'ループブレイク'],
         'desc': '「もし○○なら」でガード！',
     },
     {
@@ -1244,9 +1242,7 @@ ENEMIES: list[dict[str, Any]] = [
         'gold': 2400,
         'zone': 3,
         'category': 'variable',
-        'spells': [
-            'プリント',
-        ],
+        'spells': ['プリント'],
         'desc': '「クローン」でぶんしん！',
     },
     {
@@ -1260,10 +1256,7 @@ ENEMIES: list[dict[str, Any]] = [
         'gold': 2200,
         'zone': 4,
         'category': 'composite',
-        'spells': [
-            'ループブレイク',
-            'コンパイル',
-        ],
+        'spells': ['ループブレイク', 'コンパイル'],
         'desc': 'ループ＋じょうけん＋へんすうがこんとん…',
     },
     {
@@ -1277,9 +1270,7 @@ ENEMIES: list[dict[str, Any]] = [
         'gold': 2600,
         'zone': 4,
         'category': 'composite',
-        'spells': [
-            'コンパイル',
-        ],
+        'spells': ['コンパイル'],
         'post_clear_only': True,
         'desc': 'ざんりゅうデータからふくせいされたグリッチ。まだりかいをきょんでいる。',
     },
@@ -1294,9 +1285,7 @@ ENEMIES: list[dict[str, Any]] = [
         'gold': 50,
         'zone': 2,
         'category': 'composite',
-        'spells': [
-            'ループブレイク',
-        ],
+        'spells': ['ループブレイク'],
         'can_poison': True,
         'is_noise_guardian': True,
         'desc': 'つうしんとうをまもるしゅごかいろ。',
@@ -1312,10 +1301,7 @@ ENEMIES: list[dict[str, Any]] = [
         'gold': 0,
         'zone': 5,
         'category': 'boss',
-        'spells': [
-            'コンパイル',
-            'ループブレイク',
-        ],
+        'spells': ['コンパイル', 'ループブレイク'],
         'is_boss': True,
         'desc': 'すべてのブロックをぼうそうさせたちょうほんにん！',
     },
@@ -1330,14 +1316,14 @@ ENEMIES: list[dict[str, Any]] = [
         'gold': 0,
         'zone': 6,
         'category': 'boss',
-        'spells': [
-            'コンパイル',
-            'リファクタリング',
-        ],
+        'spells': ['コンパイル', 'リファクタリング'],
         'is_professor': True,
         'desc': 'ちつじょのめいでせかいをとじようとするしはいしゃ。',
     },
 ]
+
+
+
 
 ITEMS: list[dict[str, Any]] = [
     {
@@ -1370,12 +1356,15 @@ ITEMS: list[dict[str, Any]] = [
     },
 ]
 
+
+
+
 WEAPONS: list[dict[str, Any]] = [
     {
         'name': 'すで',
         'atk': 0,
         'price': 0,
-        'buy_msg': '',
+        'buy_msg': {},
     },
     {
         'name': 'マウス',
@@ -1421,12 +1410,15 @@ WEAPONS: list[dict[str, Any]] = [
     },
 ]
 
+
+
+
 ARMORS: list[dict[str, Any]] = [
     {
         'name': 'ふだんぎ',
         'def': 0,
         'price': 0,
-        'buy_msg': '',
+        'buy_msg': {},
     },
     {
         'name': 'きほんのちしき',
@@ -1472,6 +1464,9 @@ ARMORS: list[dict[str, Any]] = [
     },
 ]
 
+
+
+
 SPELLS: list[dict[str, Any]] = [
     {
         'name': 'デバッグ',
@@ -1515,68 +1510,84 @@ SPELLS: list[dict[str, Any]] = [
     },
 ]
 
+
+
+
 SHOPS: dict[str, Any] = {
     'shops': [
         {
             'town': 'はじめのむら',
-            'items': [
-                0,
-                2,
-                3,
-            ],
-            'weapons': [
-                1,
-                2,
-            ],
-            'armors': [
-                1,
-                2,
-            ],
+            'items': [0, 2, 3],
+            'weapons': [1, 2],
+            'armors': [1, 2],
         },
         {
             'town': 'ロジックタウン',
-            'items': [
-                0,
-                1,
-                2,
-                3,
-            ],
-            'weapons': [
-                3,
-                4,
-            ],
-            'armors': [
-                3,
-                4,
-            ],
+            'items': [0, 1, 2, 3],
+            'weapons': [3, 4],
+            'armors': [3, 4],
         },
         {
             'town': 'アルゴリズムのまち',
-            'items': [
-                0,
-                1,
-                2,
-                3,
-            ],
-            'weapons': [
-                5,
-                6,
-                7,
-            ],
-            'armors': [
-                5,
-                6,
-                7,
-            ],
+            'items': [0, 1, 2, 3],
+            'weapons': [5, 6, 7],
+            'armors': [5, 6, 7],
         },
     ],
-    'inn_prices': [
-        5,
-        15,
-        40,
-    ],
+    'inn_prices': [5, 15, 40],
 }
 
+# --- derived data ---
+
+
+# --- derived data ---
+
+def _build_zone_enemies(enemies: list[dict[str, Any]]) -> dict[int, list]:
+    """zone -> list[enemy] にグルーピング。ボス・教授等は除外。"""
+    by_zone: dict[int, list] = {}
+    for e in enemies:
+        if e.get("is_boss") or e.get("is_professor") or e.get("post_clear_only"):
+            continue
+        by_zone.setdefault(e["zone"], []).append(e)
+    return by_zone
+
+
+ZONE_ENEMIES = _build_zone_enemies(ENEMIES)
+BOSS_DATA = next(e for e in ENEMIES if e.get("is_boss"))
+PROFESSOR_DATA = next(e for e in ENEMIES if e.get("is_professor"))
+GLITCH_CLONE_DATA = next(e for e in ENEMIES if e.get("post_clear_only"))
+NOISE_GUARDIAN_DATA = next(e for e in ENEMIES if e.get("is_noise_guardian"))
+
+SPELL_BY_NAME = {s["name"]: s for s in SPELLS}
+
+INN_PRICES = SHOPS["inn_prices"]
+SHOP_LIST = SHOPS["shops"]
+
+
+# --- boss phase logic ---
+
+def boss_phase(hp_ratio: float) -> str:
+    """Return a phase label based on the boss HP ratio.
+
+    JS版 `getBossPhases` 相当:
+      - hp_ratio > 0.6 → 'phase1'
+      - 0.3 < hp_ratio <= 0.6 → 'phase2'
+      - hp_ratio <= 0.3 → 'phase3'
+    """
+    if hp_ratio > 0.6:
+        return "phase1"
+    if hp_ratio > 0.3:
+        return "phase2"
+    return "phase3"
+
+
+BOSS_PHASE_MESSAGES = {
+    "phase2": "ボスの様子が変わった！",
+    "phase3": "ボスは最後の力を振り絞っている！",
+}
+
+
+# --- backward-compatible loaders (for tests) ---
 
 def load_enemies() -> list[dict[str, Any]]:
     return ENEMIES
@@ -1600,27 +1611,6 @@ def load_spells() -> list[dict[str, Any]]:
 
 def load_shops() -> dict[str, Any]:
     return SHOPS
-
-
-def boss_phase(hp_ratio: float) -> str:
-    """Return a phase label based on the boss HP ratio.
-
-    JS版 `getBossPhases` 相当:
-      - hp_ratio > 0.6 → 'phase1'
-      - 0.3 < hp_ratio <= 0.6 → 'phase2'
-      - hp_ratio <= 0.3 → 'phase3'
-    """
-    if hp_ratio > 0.6:
-        return "phase1"
-    if hp_ratio > 0.3:
-        return "phase2"
-    return "phase3"
-
-
-BOSS_PHASE_MESSAGES = {
-    "phase2": "ボスのようすがかわった！",
-    "phase3": "ボスはさいごのちからをふりしぼっている！",
-}
 
 # === inlined: src/dialogue_data.py ===
 """Dialogue data — 旧 dialogue.yaml / dialogue_en.yaml から移植。
