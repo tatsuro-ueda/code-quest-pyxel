@@ -1,23 +1,22 @@
-# アイテムデータ — JS版 game/index.html (行710-715) からの全4種移植
-# type: heal / mp_heal / cure_poison / warp
+# アイテムデータ
 
 - name: バグレポート
   type: heal
   value: 30
   price: 1
-  desc: HPを30回復
+  desc: HPを30かいふく
 - name: エナジードリンク
   type: mp_heal
   value: 20
   price: 4
-  desc: MPを20回復
+  desc: MPを20かいふく
 - name: アンチウイルス
   type: cure_poison
   value: 0
   price: 2
-  desc: バグ汚染を治す
+  desc: バグおせんをなおす
 - name: セーブポイント
   type: warp
   value: 0
   price: 5
-  desc: 最後の町に戻る
+  desc: さいごのまちにもどる

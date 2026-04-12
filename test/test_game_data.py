@@ -19,9 +19,9 @@ class LoadYamlTest(unittest.TestCase):
 
 
 class LoadEnemiesTest(unittest.TestCase):
-    def test_returns_12_enemies(self):
+    def test_returns_13_enemies(self):
         enemies = game_data.load_enemies()
-        self.assertEqual(len(enemies), 12)
+        self.assertEqual(len(enemies), 13)
 
     def test_each_enemy_has_required_keys(self):
         required = {"name", "sprite", "hp", "atk", "def", "agi", "exp", "gold", "zone", "category", "desc"}
@@ -31,9 +31,10 @@ class LoadEnemiesTest(unittest.TestCase):
 
     def test_boss_flags(self):
         enemies = {e["name"]: e for e in game_data.load_enemies()}
-        self.assertTrue(enemies["魔王グリッチ"].get("is_boss"))
+        self.assertTrue(enemies["まおうグリッチ"].get("is_boss"))
         self.assertTrue(enemies["プロフェッサー"].get("is_professor"))
-        self.assertTrue(enemies["魔王グリッチのクローン"].get("post_clear_only"))
+        self.assertTrue(enemies["まおうグリッチのクローン"].get("post_clear_only"))
+        self.assertTrue(enemies["ノイズガーディアン"].get("is_noise_guardian"))
 
     def test_zone_distribution(self):
         zones = [e["zone"] for e in game_data.load_enemies()]
@@ -46,7 +47,7 @@ class LoadWeaponsTest(unittest.TestCase):
     def test_returns_8_weapons_including_base(self):
         weapons = game_data.load_weapons()
         self.assertEqual(len(weapons), 8)  # 素手 + 7
-        self.assertEqual(weapons[0]["name"], "素手")
+        self.assertEqual(weapons[0]["name"], "すで")
 
     def test_each_weapon_has_required_keys(self):
         for w in game_data.load_weapons():
