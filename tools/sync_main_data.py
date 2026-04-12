@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync main.py's inlined game_data section from src/generated/*.
+"""Sync main.py's inlined data sections from src/generated/*.
 
 Usage:
     python tools/sync_main_data.py           # update main.py in place
@@ -16,6 +16,7 @@ GENERATED = ROOT / "src" / "generated"
 GAME_DATA = ROOT / "src" / "game_data.py"
 
 MARKER_START = "# === inlined: src/game_data.py ==="
+MARKER_DIALOGUE_START = "# === inlined: src/dialogue_data.py ==="
 MARKER_NEXT_SECTION = "# === inlined: src/"
 
 
@@ -84,16 +85,51 @@ def build_inlined_section() -> str:
     return "\n".join(data_lines)
 
 
-def sync(check_only: bool = False) -> int:
-    """Sync main.py's game_data section. Returns 0 on success, 1 on mismatch (check mode)."""
-    content = MAIN_PY.read_text(encoding="utf-8")
-    lines = content.split("\n")
+def _read_generated_definition_lines(name: str) -> list[str]:
+    """Return generated constant definitions without headers/imports."""
+    gen_file = GENERATED / f"{name}.py"
+    if not gen_file.exists():
+        print(f"error: {gen_file} not found. Run `make gen` first.", file=sys.stderr)
+        sys.exit(1)
 
-    # Find the game_data section
+    lines: list[str] = []
+    for line in gen_file.read_text(encoding="utf-8").splitlines():
+        if line.startswith("# GENERATED"):
+            continue
+        if line.startswith("from __future__"):
+            continue
+        if line.startswith("from typing"):
+            continue
+        lines.append(line)
+    return lines
+
+
+def build_inlined_dialogue_section() -> str:
+    """Build the inlined dialogue content from generated dialogue data."""
+    data_lines: list[str] = []
+    data_lines.append('"""Dialogue data — generated from assets/dialogue.yaml via tools/gen_data.py.')
+    data_lines.append("")
+    data_lines.append("SSoT: assets/dialogue.yaml → tools/gen_data.py → src/generated/dialogue.py")
+    data_lines.append('この定義を直接編集しないでください。assets/dialogue.yaml を編集して `make gen` を実行してください。')
+    data_lines.append('"""')
+    data_lines.append("")
+    data_lines.append("")
+    data_lines.append("from typing import Any")
+    data_lines.append("")
+    data_lines.extend(_read_generated_definition_lines("dialogue"))
+    return "\n".join(data_lines)
+
+
+def _replace_inlined_section(
+    lines: list[str],
+    marker_start: str,
+    new_section: str,
+) -> list[str]:
+    """Replace one # === inlined: ... === section in main.py."""
     start_idx = None
     end_idx = None
     for i, line in enumerate(lines):
-        if line.strip() == MARKER_START:
+        if line.strip() == marker_start:
             start_idx = i
         elif start_idx is not None and end_idx is None:
             if line.startswith(MARKER_NEXT_SECTION) and i > start_idx:
@@ -101,27 +137,38 @@ def sync(check_only: bool = False) -> int:
                 break
 
     if start_idx is None:
-        print(f"error: marker '{MARKER_START}' not found in main.py", file=sys.stderr)
-        return 1
+        print(f"error: marker '{marker_start}' not found in main.py", file=sys.stderr)
+        sys.exit(1)
 
     if end_idx is None:
-        print("error: could not find next section marker after game_data", file=sys.stderr)
-        return 1
+        print(f"error: could not find next section marker after {marker_start}", file=sys.stderr)
+        sys.exit(1)
 
-    new_section = build_inlined_section()
-    new_lines = lines[:start_idx + 1] + new_section.split("\n") + [""] + lines[end_idx:]
+    return lines[:start_idx + 1] + new_section.split("\n") + [""] + lines[end_idx:]
+
+
+def sync(check_only: bool = False) -> int:
+    """Sync main.py's generated data sections. Returns 0 on success, 1 on mismatch."""
+    content = MAIN_PY.read_text(encoding="utf-8")
+    lines = content.split("\n")
+    new_lines = _replace_inlined_section(lines, MARKER_START, build_inlined_section())
+    new_lines = _replace_inlined_section(
+        new_lines,
+        MARKER_DIALOGUE_START,
+        build_inlined_dialogue_section(),
+    )
     new_content = "\n".join(new_lines)
 
     if check_only:
         if content == new_content:
-            print("main.py game_data section is up to date.")
+            print("main.py generated sections are up to date.")
             return 0
         else:
-            print("main.py game_data section is STALE. Run `make gen` to update.", file=sys.stderr)
+            print("main.py generated sections are STALE. Run `make gen` to update.", file=sys.stderr)
             return 1
 
     MAIN_PY.write_text(new_content, encoding="utf-8")
-    print(f"  synced: main.py game_data section ({end_idx - start_idx - 1} → {len(new_section.splitlines())} lines)")
+    print("  synced: main.py generated sections")
     return 0
 
 

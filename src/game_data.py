@@ -26,6 +26,7 @@ from src.generated.weapons import WEAPONS
 from src.generated.armors import ARMORS
 from src.generated.spells import SPELLS
 from src.generated.shops import SHOPS
+from src.generated.dialogue import DIALOGUE_JA, DIALOGUE_EN
 
 
 # --- derived data ---
@@ -99,3 +100,11 @@ def load_spells() -> list[dict[str, Any]]:
 
 def load_shops() -> dict[str, Any]:
     return SHOPS
+
+
+def load_dialogue(language: str) -> dict[str, Any]:
+    if language == "ja":
+        return DIALOGUE_JA
+    if language == "en":
+        return DIALOGUE_EN
+    raise ValueError(f"unknown dialogue language: {language}")

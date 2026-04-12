@@ -1365,7 +1365,7 @@ WEAPONS: list[dict[str, Any]] = [
         'name': 'すで',
         'atk': 0,
         'price': 0,
-        'buy_msg': {},
+        'buy_msg': None,
     },
     {
         'name': 'マウス',
@@ -1419,7 +1419,7 @@ ARMORS: list[dict[str, Any]] = [
         'name': 'ふだんぎ',
         'def': 0,
         'price': 0,
-        'buy_msg': {},
+        'buy_msg': None,
     },
     {
         'name': 'きほんのちしき',
@@ -1613,20 +1613,30 @@ def load_spells() -> list[dict[str, Any]]:
 def load_shops() -> dict[str, Any]:
     return SHOPS
 
-# === inlined: src/dialogue_data.py ===
-"""Dialogue data — 旧 dialogue.yaml / dialogue_en.yaml から移植。
 
-YAML 依存を廃止。シナリオ追加・修正はこのファイルを直接書き換える。
+def load_dialogue(language: str) -> dict[str, Any]:
+    if language == "ja":
+        return DIALOGUE_JA
+    if language == "en":
+        return DIALOGUE_EN
+    raise ValueError(f"unknown dialogue language: {language}")
+
+# === inlined: src/dialogue_data.py ===
+"""Dialogue data — generated from assets/dialogue.yaml via tools/gen_data.py.
+
+SSoT: assets/dialogue.yaml → tools/gen_data.py → src/generated/dialogue.py
+この定義を直接編集しないでください。assets/dialogue.yaml を編集して `make gen` を実行してください。
 """
 
 
 from typing import Any
 
 
+
+
+
 DIALOGUE_JA: dict[str, Any] = {
-    'variables': [
-        'ProfessorPhase',
-    ],
+    'variables': ['ProfessorPhase'],
     'scenes': {
         'town.start.entry': {
             'text': 'はじめのむらへようこそ！',
@@ -1780,7 +1790,6 @@ DIALOGUE_JA: dict[str, Any] = {
         'castle.professor.accepted_04': {
             'text': 'そうしてにんはみな、おとなになっていくのだ……',
         },
-        # === 洞窟ミッション: 世界樹 ===
         'landmark.tree.first': {
             'text': 'せかいじゅ「おお……だれかおるのかの。\nみきのそばがあたたかい。だれかがたっとる。」',
             'next': 'landmark.tree.first_02',
@@ -1823,7 +1832,6 @@ DIALOGUE_JA: dict[str, Any] = {
         'landmark.tree.repeat_03': {
             'text': 'せかいじゅ「つかれたら ねもとにすわりなさい。\nひなたじゃから あたたかいぞ。」',
         },
-        # === 洞窟ミッション: 通信塔 ===
         'landmark.tower.first': {
             'text': 'つうしんとう「……またひとりきたか。とうろくしておく。」',
             'next': 'landmark.tower.first_02',
@@ -1862,14 +1870,12 @@ DIALOGUE_JA: dict[str, Any] = {
         'landmark.tower.epilogue': {
             'text': 'つうしんとう「……もうかいろはこわれた。おくるものもない。\nあのかたにはすまないが……もうおくれない。\n……これでよかったのかは、わからない。」',
         },
-        # === 洞窟ミッション: 洞窟入口 ===
         'cave.blocked': {
             'text': 'きょだいなねが どうくつのいりぐちをふさいでいる。\nよくみると、ねはこきざみにふるえている……',
         },
         'cave.unblocked': {
             'text': 'ねが……ゆっくりとほどけていく。',
         },
-        # === ノイズガーディアン戦闘 ===
         'boss.noise_guardian.intro': {
             'text': 'しゅごかいろが うごきだした！',
         },
@@ -1989,9 +1995,7 @@ DIALOGUE_JA: dict[str, Any] = {
 
 
 DIALOGUE_EN: dict[str, Any] = {
-    'variables': [
-        'ProfessorPhase',
-    ],
+    'variables': ['ProfessorPhase'],
     'scenes': {
         'town.start.entry': {
             'text': 'Welcome to the starter village!',
@@ -5952,10 +5956,19 @@ class Game:
             or self._btnp(RIGHT_BUTTONS)
         )
 
+    def _advance_dialog_page(self, index, lines):
+        next_index = index + 1
+        return next_index, next_index >= len(lines)
+
+    def _current_dialog_page_lines(self, lines, index, *, max_chars=28, max_rows=3):
+        if not lines or index < 0 or index >= len(lines):
+            return []
+        return self._wrap_text(lines[index], max_chars=max_chars)[:max_rows]
+
     def update_message(self):
         if self._any_advance_btnp():
-            self.msg_index += 1
-            if self.msg_index >= len(self.msg_lines):
+            self.msg_index, done = self._advance_dialog_page(self.msg_index, self.msg_lines)
+            if done:
                 self.state = self.prev_state
                 if self.msg_callback:
                     self.msg_callback()
@@ -5963,8 +5976,8 @@ class Game:
     def update_town(self):
         # Show message then return to map
         if self._any_advance_btnp():
-            self.msg_index += 1
-            if self.msg_index >= len(self.msg_lines):
+            self.msg_index, done = self._advance_dialog_page(self.msg_index, self.msg_lines)
+            if done:
                 self.state = "map"
 
     # ----- town_menu (Save Player Journey steering) -----
@@ -6254,8 +6267,11 @@ class Game:
     def update_professor_intro(self):
         if not self.professor_choice_active:
             if self._btnp(CONFIRM_BUTTONS):
-                self.professor_intro_idx += 1
-                if self.professor_intro_idx >= len(self.professor_intro_lines):
+                self.professor_intro_idx, done = self._advance_dialog_page(
+                    self.professor_intro_idx,
+                    self.professor_intro_lines,
+                )
+                if done:
                     self.professor_choice_active = True
             return
         # choice mode
@@ -6273,10 +6289,14 @@ class Game:
     def draw_professor_intro(self):
         pyxel.cls(0)
         if self.professor_intro_lines and self.professor_intro_idx < len(self.professor_intro_lines):
-            line = self.professor_intro_lines[self.professor_intro_idx]
-            # 横幅に応じて折返し
-            wrapped = self._wrap_text(line, max_chars=28)
-            for i, sub in enumerate(wrapped[:6]):
+            for i, sub in enumerate(
+                self._current_dialog_page_lines(
+                    self.professor_intro_lines,
+                    self.professor_intro_idx,
+                    max_chars=28,
+                    max_rows=6,
+                )
+            ):
                 self.text(16, 60 + i * 14, sub, 7)
             if not self.professor_choice_active and (pyxel.frame_count // 15) % 2:
                 self.text(228, 200, "v", 7)
@@ -6318,8 +6338,11 @@ class Game:
 
     def update_professor_ending_main(self):
         if self._btnp(CONFIRM_BUTTONS):
-            self.professor_ending_idx += 1
-            if self.professor_ending_idx >= len(self.professor_ending_lines):
+            self.professor_ending_idx, done = self._advance_dialog_page(
+                self.professor_ending_idx,
+                self.professor_ending_lines,
+            )
+            if done:
                 # フィールドに戻す（D8）。城タイル上のままなのでクールダウン
                 self._a_cooldown = True
                 self.state = "map"
@@ -6327,9 +6350,14 @@ class Game:
     def draw_professor_ending_main(self):
         pyxel.cls(0)
         if self.professor_ending_lines and self.professor_ending_idx < len(self.professor_ending_lines):
-            line = self.professor_ending_lines[self.professor_ending_idx]
-            wrapped = self._wrap_text(line, max_chars=28)
-            for i, sub in enumerate(wrapped[:6]):
+            for i, sub in enumerate(
+                self._current_dialog_page_lines(
+                    self.professor_ending_lines,
+                    self.professor_ending_idx,
+                    max_chars=28,
+                    max_rows=6,
+                )
+            ):
                 self.text(16, 80 + i * 14, sub, 10)
             if (pyxel.frame_count // 15) % 2:
                 self.text(228, 200, "v", 7)
@@ -6341,8 +6369,11 @@ class Game:
 
     def update_professor_ending_accepted(self):
         if self._btnp(CONFIRM_BUTTONS):
-            self.professor_ending_idx += 1
-            if self.professor_ending_idx >= len(self.professor_ending_lines):
+            self.professor_ending_idx, done = self._advance_dialog_page(
+                self.professor_ending_idx,
+                self.professor_ending_lines,
+            )
+            if done:
                 # 受諾エンド：professor_defeated は立てない。タイトルへ戻る
                 self.state = "title"
                 self._a_cooldown = True
@@ -6350,9 +6381,14 @@ class Game:
     def draw_professor_ending_accepted(self):
         pyxel.cls(0)
         if self.professor_ending_lines and self.professor_ending_idx < len(self.professor_ending_lines):
-            line = self.professor_ending_lines[self.professor_ending_idx]
-            wrapped = self._wrap_text(line, max_chars=28)
-            for i, sub in enumerate(wrapped[:6]):
+            for i, sub in enumerate(
+                self._current_dialog_page_lines(
+                    self.professor_ending_lines,
+                    self.professor_ending_idx,
+                    max_chars=28,
+                    max_rows=6,
+                )
+            ):
                 self.text(16, 90 + i * 14, sub, 6)
             if (pyxel.frame_count // 15) % 2:
                 self.text(228, 200, "v", 7)
@@ -6757,11 +6793,15 @@ class Game:
     def draw_message_window(self):
         pyxel.rect(8, 208, 240, 44, 0)
         pyxel.rectb(8, 208, 240, 44, 7)
-        if self.msg_lines and self.msg_index < len(self.msg_lines):
-            # Show current line and up to 2 more
-            start = self.msg_index
-            for i in range(min(3, len(self.msg_lines) - start)):
-                self.text(16, 214 + i * 12, self.msg_lines[start + i], 7)
+        for i, line in enumerate(
+            self._current_dialog_page_lines(
+                self.msg_lines,
+                self.msg_index,
+                max_chars=28,
+                max_rows=3,
+            )
+        ):
+            self.text(16, 214 + i * 12, line, 7)
         # Blink indicator
         if (pyxel.frame_count // 15) % 2:
             self.text(228, 240, "v", 7)

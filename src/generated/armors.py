@@ -10,7 +10,7 @@ ARMORS: list[dict[str, Any]] = [
         'name': 'ふだんぎ',
         'def': 0,
         'price': 0,
-        'buy_msg': {},
+        'buy_msg': None,
     },
     {
         'name': 'きほんのちしき',

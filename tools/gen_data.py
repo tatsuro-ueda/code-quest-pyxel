@@ -8,9 +8,9 @@ Usage:
 from __future__ import annotations
 
 import sys
-import textwrap
 from pathlib import Path
 from typing import Any
+import stat
 
 # -- paths ------------------------------------------------------------------
 ROOT = Path(__file__).resolve().parent.parent
@@ -29,6 +29,7 @@ TARGETS: dict[str, tuple[str, str]] = {
     "armors": ("ARMORS", "list[dict[str, Any]]"),
     "spells": ("SPELLS", "list[dict[str, Any]]"),
     "shops": ("SHOPS", "dict[str, Any]"),
+    "dialogue": ("DIALOGUE_JA", "dict[str, Any]"),
 }
 
 
@@ -59,6 +60,34 @@ def _repr_value(obj: Any, indent: int = 0) -> str:
     return repr(obj)
 
 
+def _write_generated_module(out_path: Path, lines: list[str]) -> None:
+    """Write a generated Python module and restore read-only permissions."""
+    if out_path.exists():
+        out_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+    out_path.write_text("\n".join(lines), encoding="utf-8")
+    out_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+
+
+def _dialogue_module_lines(data: Any) -> list[str]:
+    """Build the generated module for dialogue data."""
+    if not isinstance(data, dict):
+        raise TypeError("dialogue.yaml must be a mapping with 'ja' and 'en' keys")
+    if not isinstance(data.get("ja"), dict):
+        raise TypeError("dialogue.yaml: 'ja' must be a mapping")
+    if not isinstance(data.get("en"), dict):
+        raise TypeError("dialogue.yaml: 'en' must be a mapping")
+
+    return [
+        HEADER.format(yaml="dialogue.yaml"),
+        "from __future__ import annotations\n",
+        "from typing import Any\n",
+        "",
+        f"DIALOGUE_JA: dict[str, Any] = {_repr_value(data['ja'])}\n",
+        "",
+        f"DIALOGUE_EN: dict[str, Any] = {_repr_value(data['en'])}\n",
+    ]
+
+
 def generate_one(name: str) -> bool:
     """Generate src/generated/{name}.py from assets/{name}.yaml.
 
@@ -82,22 +111,27 @@ def generate_one(name: str) -> bool:
     except yaml.YAMLError as e:
         print(f"error: {yaml_path}: {e}", file=sys.stderr)
         return False
+    except OSError as e:
+        print(f"error: {yaml_path}: {e}", file=sys.stderr)
+        return False
 
     GENERATED.mkdir(parents=True, exist_ok=True)
 
-    lines = [
-        HEADER.format(yaml=f"{name}.yaml"),
-        "from __future__ import annotations\n",
-        "from typing import Any\n",
-        "",
-        f"{var_name}: {type_hint} = {_repr_value(data)}\n",
-    ]
-    # read-only を一時解除して書き込み、書き込み後に再設定
-    import os, stat
-    if out_path.exists():
-        out_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
-    out_path.write_text("\n".join(lines), encoding="utf-8")
-    out_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)  # read-only
+    if name == "dialogue":
+        try:
+            lines = _dialogue_module_lines(data)
+        except TypeError as e:
+            print(f"error: {yaml_path}: {e}", file=sys.stderr)
+            return False
+    else:
+        lines = [
+            HEADER.format(yaml=f"{name}.yaml"),
+            "from __future__ import annotations\n",
+            "from typing import Any\n",
+            "",
+            f"{var_name}: {type_hint} = {_repr_value(data)}\n",
+        ]
+    _write_generated_module(out_path, lines)
 
     # ensure __init__.py exists
     init = GENERATED / "__init__.py"
