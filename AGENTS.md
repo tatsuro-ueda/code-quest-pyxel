@@ -38,7 +38,7 @@ assets/*.yaml (enemies, items, weapons, armors, spells, shops)
 
 | Path | Reason | What to do instead |
 |---|---|---|
-| `src/generated/*.py` | Auto-generated from YAML | Edit `assets/*.yaml`, then run `python tools/gen_data.py` |
+| `src/generated/*.py` | Auto-generated from YAML, **read-only (chmod 444)**. Direct write → Permission denied | Edit `assets/*.yaml`, then run `python tools/gen_data.py` |
 | `*.pyxres` | Binary resource (art/sound) | Use Pyxel Code Maker |
 
 ### Files you MUST NOT import directly
@@ -55,6 +55,17 @@ python -m pytest test/ -q   # 130 tests — MUST ALL PASS before committing
 ```
 
 **If any test fails, fix the issue before committing.** Do not skip tests.
+
+**Note:** A git pre-commit hook also runs pytest automatically on every `git commit`. If tests fail, the commit is blocked.
+
+### Automated enforcement (no action needed)
+
+These protections run automatically — you do not need to invoke them:
+
+| Protection | When it runs | What happens |
+|---|---|---|
+| `src/generated/*.py` is read-only (chmod 444) | On every write attempt | Permission denied if you try to edit directly |
+| git pre-commit hook | On every `git commit` | pytest runs; commit blocked if tests fail |
 
 ### Additional validation tools
 

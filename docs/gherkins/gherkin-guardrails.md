@@ -433,7 +433,7 @@ Scenario: Code Maker との互換性を維持する
 
 | # | ガードレール | 対象レイヤー | 実装手段 | 違反時の挙動 |
 |---|---|---|---|---|
-| G1 | `src/generated/` 直接編集禁止 | J36 データ | PreToolUse hook | ツール拒否＋再指示 |
+| G1 | `src/generated/` 直接編集禁止 | J36 データ | PreToolUse hook + chmod 444 | ツール拒否＋再指示（OS権限でも拒否） |
 | G2 | `*.pyxres` 直接編集禁止 | J37 コンテンツ | PreToolUse hook | ツール拒否 |
 | G3 | SSoT編集後の自動Codegen + テスト | J36 データ | PostToolUse hook | 自動再生成 → pytest 130テスト実行、失敗時は停止 |
 | G4 | TILE_DATA ⇔ pyxres 整合チェック | J37 コンテンツ | `make build` | 不一致なら自動再生成 |
@@ -448,6 +448,19 @@ Scenario: Code Maker との互換性を維持する
 | G13 | 生成物の手編集検出 | J36 データ | `make build` 内 git diff | ビルド失敗 |
 | G14 | 直接import禁止（ローダ経由強制） | J36 データ | PreToolUse hook + lint | ツール拒否 |
 | G15 | テストコードによる挙動固定 | 全レイヤー | PostToolUse hook (G3連動) + pytest | テスト失敗で停止 |
+
+---
+
+## 防御層の全体像
+
+Claude Code 以外のツール（OpenAI Codex、人間の手動編集等）でも防御が効くよう、4層で守る。
+
+| 層 | 仕組み | Claude Code | Codex | 人間 |
+|---|---|---|---|---|
+| 1. Claude Code hooks (PreToolUse) | ファイル編集をツールレベルでブロック | ✅ | ❌ | ❌ |
+| 2. ファイル権限 (chmod 444) | `src/generated/*.py` を読み取り専用にしてOS レベルで書き込み拒否。`gen_data.py` だけが一時的に権限解除して書き込む | ✅ | ✅ | ✅ |
+| 3. AGENTS.md | SSoTルール・編集禁止ファイル・テスト必須を明記し、AIツールを指示で誘導 | ✅ | ✅ | — |
+| 4. git pre-commit hook | `git commit` 時に pytest 130テストを自動実行。失敗したらコミットをブロック | ✅ | ✅ | ✅ |
 
 ---
 
