@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 """Player factory and level/stat formulas.
 
 JS版 (`game/index.html` 行806-814) の `expForLevel`/`statsForLevel`/`MAX_LEVEL`
 を Python に移植した純粋関数群と、初期プレイヤー生成を担う。
 """
 
-from __future__ import annotations
 
 from typing import Any
 
@@ -69,5 +70,11 @@ def create_initial_player(start_x: int = 25, start_y: int = 6) -> dict[str, Any]
         "landmarkTreeSeen": False,
         "landmarkTowerSeen": False,
         "towerEpilogueSeen": False,
+        "treeAsked": False,
+        "towerNoiseCleared": False,
+        "professor_intro_seen": False,
+        "professor_defeated": False,
+        "professor_ending_seen": False,
         "dialog_flags": {},
+        "town_talk_idx": [0, 0, 0],
     }

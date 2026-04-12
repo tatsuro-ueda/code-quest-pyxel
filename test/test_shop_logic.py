@@ -24,6 +24,10 @@ def _purchase(player, kind, idx, weapons, armors, items):
     else:
         entry = items[idx]
     price = entry.get("price", 0)
+    if kind == "weapons" and player["weapon"] == idx:
+        return "owned"
+    if kind == "armors" and player["armor"] == idx:
+        return "owned"
     if player["gold"] < price:
         return "fail"
     player["gold"] -= price
@@ -61,6 +65,12 @@ class ShopPurchaseTest(unittest.TestCase):
         self.assertEqual(result, "fail")
         self.assertEqual(player["gold"], 5)
         self.assertEqual(player["weapon"], 0)
+
+    def test_purchase_weapon_already_owned_blocks_repurchase(self):
+        player = {"gold": 100, "weapon": 1, "armor": 0, "items": []}
+        result = _purchase(player, "weapons", 1, self.weapons, self.armors, self.items)
+        self.assertEqual(result, "owned")
+        self.assertEqual(player["gold"], 100)
 
     def test_purchase_item_adds_to_inventory(self):
         player = {"gold": 100, "weapon": 0, "armor": 0, "items": []}

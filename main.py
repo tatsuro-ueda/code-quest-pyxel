@@ -9,6 +9,7 @@ Known limitations on Code Maker:
 - save.json file I/O may not work; use the localStorage path
 """
 from __future__ import annotations
+import sys
 
 
 # === inlined: src/chiptune_tracks.py ===
@@ -4737,6 +4738,27 @@ class Game:
     # 配置して、画像バンク 0 だけを参照させる。
     DUNGEON_TM_OFFSET_Y = 110  # ワールド (0..99) の下に余白を入れて配置
 
+    def _tile_bank_layout_valid(self):
+        """イメージバンク 0 のピクセルが現在の TILE_DATA と一致するか検証する。
+
+        TILE_DATA の順序が変わるとレイアウト辞書の座標がずれ、
+        古い .pyxres のイメージバンクと不一致になる。全タイルの
+        先頭行をサンプリングして不一致を検出する。
+        """
+        bank = pyxel.images[0]
+        try:
+            for tid, data in TILE_DATA.items():
+                pos = self.tile_bank.get(tid)
+                if pos is None:
+                    return False
+                u, v = pos
+                for rx, expected in enumerate(data[0]):
+                    if bank.pget(u + rx, v) != expected:
+                        return False
+        except Exception:
+            return False
+        return True
+
     def _setup_world_tilemap(self):
         """World map と dungeon を `pyxel.tilemaps[0]` と同期する。
 
@@ -4760,18 +4782,36 @@ class Game:
             self.dungeon_spawn = (1, 1)
 
         if self._pyxres_loaded:
-            self._derive_world_from_tilemap()
-            self._derive_dungeon_from_tilemap()
-            # D3: オートタイル変種を再計算して tilemap[0] に書き戻す。
-            # Code Maker で基底タイルを配置した場合、周辺タイルとの
-            # 繋がりをゲーム側で正しく再計算する必要がある。
-            self._bake_world_to_tilemap()
-            self._bake_dungeon_to_tilemap()
+            if not self._tile_bank_layout_valid():
+                # TILE_DATA の順序が変わってイメージバンクとずれている。
+                # 古い tilemap を信用できないので再描画＋再ベイクする。
+                print("[tilemap] tile bank layout changed — regenerating image banks")
+                self._paint_tile_bank()
+                self._paint_sprite_bank()
+                self._paint_jp_font_bank()
+                self._bake_world_to_tilemap()
+                self._bake_dungeon_to_tilemap()
+                # Web環境では pyxel.save がダウンロードを誘発するので保存しない
+                if self._pyxres_path is not None and sys.platform != "emscripten":
+                    try:
+                        pyxel.save(str(self._pyxres_path))
+                        print(f"[tilemap] updated {self._pyxres_path}")
+                    except Exception as exc:
+                        print(f"[tilemap] could not save .pyxres: {exc}")
+            else:
+                self._derive_world_from_tilemap()
+                self._derive_dungeon_from_tilemap()
+                # D3: オートタイル変種を再計算して tilemap[0] に書き戻す。
+                # Code Maker で基底タイルを配置した場合、周辺タイルとの
+                # 繋がりをゲーム側で正しく再計算する必要がある。
+                self._bake_world_to_tilemap()
+                self._bake_dungeon_to_tilemap()
         else:
             self._bake_world_to_tilemap()
             self._bake_dungeon_to_tilemap()
             # ここで初めて .pyxres を保存（banks + tilemap）
-            if self._pyxres_path is not None:
+            # Web環境では pyxel.save がダウンロードを誘発するので保存しない
+            if self._pyxres_path is not None and sys.platform != "emscripten":
                 try:
                     self._pyxres_path.parent.mkdir(parents=True, exist_ok=True)
                     pyxel.save(str(self._pyxres_path))

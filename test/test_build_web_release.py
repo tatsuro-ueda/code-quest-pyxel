@@ -15,7 +15,9 @@ sys.path.insert(0, str(ROOT))
 from tools.build_web_release import (  # noqa: E402
     collect_release_paths,
     generate_selector,
+    generate_wrapper,
     promote,
+    validate_preview_files,
 )
 
 
@@ -61,6 +63,94 @@ class TestGenerateSelector(unittest.TestCase):
             shutil.rmtree(build_dir, ignore_errors=True)
 
 
+class TestSelectorDoesNotLinkDirectlyToPyxelHtml(unittest.TestCase):
+    """選択ページが pyxel*.html に直リンクせず wrapper 経由であること"""
+
+    def test_selector_links_to_wrappers_not_raw_pyxel(self):
+        build_dir = ROOT / ".build" / "test_selector_links"
+        build_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            result = generate_selector(
+                build_dir, ROOT,
+                current_wrapper_name="play.html",
+                preview_wrapper_name="play-preview.html",
+                changes=["test"],
+            )
+            content = result.read_text(encoding="utf-8")
+            # wrapper 経由のリンクが存在する
+            self.assertIn('href="play.html"', content)
+            self.assertIn('href="play-preview.html"', content)
+            # pyxel.html / pyxel-preview.html への直リンクがない
+            self.assertNotIn('href="pyxel.html"', content)
+            self.assertNotIn('href="pyxel-preview.html"', content)
+        finally:
+            shutil.rmtree(build_dir, ignore_errors=True)
+
+
+class TestWrapperEmbedsCorrectPyxelHtml(unittest.TestCase):
+    """wrapper が正しい pyxel HTML を iframe で埋め込むこと"""
+
+    def test_wrapper_for_current_embeds_pyxel_html(self):
+        build_dir = ROOT / ".build" / "test_wrapper_current"
+        build_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            result = generate_wrapper(build_dir, ROOT, pyxel_html_name="pyxel.html")
+            content = result.read_text(encoding="utf-8")
+            self.assertIn('src="pyxel.html"', content)
+            self.assertIn("allowfullscreen", content)
+        finally:
+            shutil.rmtree(build_dir, ignore_errors=True)
+
+    def test_wrapper_for_preview_embeds_pyxel_preview_html(self):
+        build_dir = ROOT / ".build" / "test_wrapper_preview"
+        build_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            result = generate_wrapper(build_dir, ROOT, pyxel_html_name="pyxel-preview.html")
+            content = result.read_text(encoding="utf-8")
+            self.assertIn('src="pyxel-preview.html"', content)
+        finally:
+            shutil.rmtree(build_dir, ignore_errors=True)
+
+
+class TestPreviewLinkChain(unittest.TestCase):
+    """selector → wrapper → pyxel のリンクチェーン全体が整合すること"""
+
+    def test_full_link_chain(self):
+        """selector→play.html→pyxel.html, selector→play-preview.html→pyxel-preview.html"""
+        build_dir = ROOT / ".build" / "test_chain"
+        build_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            # selector
+            selector = generate_selector(
+                build_dir, ROOT,
+                current_wrapper_name="play.html",
+                preview_wrapper_name="play-preview.html",
+                changes=["てすと"],
+            )
+            selector_content = selector.read_text(encoding="utf-8")
+
+            # wrappers
+            wrapper_dir = build_dir / "wrappers"
+            wrapper_dir.mkdir(exist_ok=True)
+            w_current = generate_wrapper(wrapper_dir, ROOT, pyxel_html_name="pyxel.html")
+            w_preview_dir = build_dir / "wrappers_p"
+            w_preview_dir.mkdir(exist_ok=True)
+            w_preview = generate_wrapper(w_preview_dir, ROOT, pyxel_html_name="pyxel-preview.html")
+
+            w_current_content = w_current.read_text(encoding="utf-8")
+            w_preview_content = w_preview.read_text(encoding="utf-8")
+
+            # chain: selector → play.html → pyxel.html
+            self.assertIn('href="play.html"', selector_content)
+            self.assertIn('src="pyxel.html"', w_current_content)
+
+            # chain: selector → play-preview.html → pyxel-preview.html
+            self.assertIn('href="play-preview.html"', selector_content)
+            self.assertIn('src="pyxel-preview.html"', w_preview_content)
+        finally:
+            shutil.rmtree(build_dir, ignore_errors=True)
+
+
 class TestPreviewBuildPrerequisites(unittest.TestCase):
     """--preview ビルドの前提条件テスト"""
 
@@ -69,13 +159,37 @@ class TestPreviewBuildPrerequisites(unittest.TestCase):
         fake_root = ROOT / ".build" / "test_no_preview"
         fake_root.mkdir(parents=True, exist_ok=True)
         try:
-            # main_preview.py が存在しないことを確認
             preview_path = fake_root / "main_preview.py"
             if preview_path.exists():
                 preview_path.unlink()
             with self.assertRaises(FileNotFoundError):
-                from tools.build_web_release import validate_preview_files
                 validate_preview_files(fake_root)
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
+
+    def test_preview_reads_changes_from_meta_json(self):
+        """preview_meta.json から変更リストを読めること"""
+        fake_root = ROOT / ".build" / "test_meta"
+        fake_root.mkdir(parents=True, exist_ok=True)
+        try:
+            (fake_root / "main_preview.py").write_text("# preview", encoding="utf-8")
+            (fake_root / "preview_meta.json").write_text(
+                json.dumps({"changes": ["HP を へらした", "まほう を ついか"]}),
+                encoding="utf-8",
+            )
+            _, changes = validate_preview_files(fake_root)
+            self.assertEqual(changes, ["HP を へらした", "まほう を ついか"])
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
+
+    def test_preview_works_without_meta_json(self):
+        """preview_meta.json がなくても動くこと（変更リストは空）"""
+        fake_root = ROOT / ".build" / "test_no_meta"
+        fake_root.mkdir(parents=True, exist_ok=True)
+        try:
+            (fake_root / "main_preview.py").write_text("# preview", encoding="utf-8")
+            _, changes = validate_preview_files(fake_root)
+            self.assertEqual(changes, [])
         finally:
             shutil.rmtree(fake_root, ignore_errors=True)
 
@@ -111,6 +225,33 @@ class TestPromote(unittest.TestCase):
         self.assertEqual(main_content, "# original")
         self.assertFalse((self.work_dir / "main_preview.py").exists())
         self.assertFalse((self.work_dir / "preview_meta.json").exists())
+
+
+class TestMainPyWebSafety(unittest.TestCase):
+    """main.py が Web 環境(emscripten)で安全に動くことを静的検証する"""
+
+    def setUp(self):
+        self.source = (ROOT / "main.py").read_text(encoding="utf-8")
+
+    def test_sys_is_imported(self):
+        """sys.platform を使っているなら import sys が必要"""
+        if "sys.platform" in self.source:
+            # 'import sys' が from __future__ の後、クラス定義の前にある
+            self.assertIn("import sys", self.source)
+
+    def test_pyxel_save_always_guarded_by_emscripten_check(self):
+        """pyxel.save() の全呼び出しが sys.platform != 'emscripten' で囲まれている"""
+        lines = self.source.split("\n")
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if "pyxel.save(" in stripped and not stripped.startswith("#"):
+                # この行より前の近くに emscripten ガードがあること
+                context = "\n".join(lines[max(0, i - 5) : i + 1])
+                self.assertIn(
+                    "emscripten",
+                    context,
+                    f"line {i+1}: pyxel.save() に emscripten ガードがありません:\n{line}",
+                )
 
 
 if __name__ == "__main__":

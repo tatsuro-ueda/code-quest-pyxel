@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 """Landmark proximity checks for overworld interactions.
 
 世界樹と通信塔を「初訪問 / 再訪問 / クリア後エピローグ」の3状態で扱う。
 JS版 `interactWorldTree` / `interactTower` / `queueTowerEpilogue` の簡易ポート。
 """
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 

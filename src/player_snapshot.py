@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 """Pure functions for serializing Game.player state to a savable dict.
 
 Only keys in SAVED_PLAYER_KEYS are persisted, preventing accidental leakage
 of debug-only or transient battle state into save files.
 """
-from __future__ import annotations
 
 from typing import Any
 
@@ -22,7 +23,10 @@ SAVED_PLAYER_KEYS: tuple[str, ...] = (
     "boss_defeated",
     "max_zone_reached",
     "landmarkTreeSeen", "landmarkTowerSeen",
+    "treeAsked", "towerNoiseCleared",
+    "professor_intro_seen", "professor_defeated", "professor_ending_seen",
     "dialog_flags",
+    "town_talk_idx",
 )
 
 

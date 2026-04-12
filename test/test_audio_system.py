@@ -17,6 +17,14 @@ class _FakeSound:
         self.set_calls.append((notes, tones, volumes, effects, speed))
 
 
+class _FakeMusic:
+    def __init__(self):
+        self.set_calls: list[tuple] = []
+
+    def set(self, seqs0, seqs1, seqs2, seqs3):
+        self.set_calls.append((seqs0, seqs1, seqs2, seqs3))
+
+
 class _FakeChannel:
     def __init__(self):
         self.gain = 0.125
@@ -25,12 +33,17 @@ class _FakeChannel:
 class _FakePyxel:
     def __init__(self):
         self.sounds = [_FakeSound() for _ in range(64)]
+        self.musics = [_FakeMusic() for _ in range(8)]
         self.channels = [_FakeChannel() for _ in range(4)]
         self.play_calls: list[tuple] = []
+        self.playm_calls: list[tuple] = []
         self.stop_calls: list = []
 
     def play(self, ch, snd, loop=False):
         self.play_calls.append((ch, snd, loop))
+
+    def playm(self, music_idx, loop=False):
+        self.playm_calls.append((music_idx, loop))
 
     def stop(self, ch=None):
         self.stop_calls.append(ch)
@@ -47,6 +60,7 @@ class AudioSystemTest(unittest.TestCase):
             choose_bgm_scene,
             drum_slot,
             melody_slot,
+            music_index,
             track_slot,
         )
 
@@ -55,6 +69,7 @@ class AudioSystemTest(unittest.TestCase):
         self.melody_slot = melody_slot
         self.bass_slot = bass_slot
         self.drum_slot = drum_slot
+        self.music_index = music_index
         self.track_slot = track_slot
         self.MELODY_CHANNEL = MELODY_CHANNEL
         self.BASS_CHANNEL = BASS_CHANNEL
@@ -69,10 +84,12 @@ class AudioSystemTest(unittest.TestCase):
             self.choose_bgm_scene(state="map", in_dungeon=False, zone=0),
             "town",
         )
-        self.assertEqual(
-            self.choose_bgm_scene(state="map", in_dungeon=False, zone=2),
-            "zone2",
-        )
+        # zone1/2/3 はすべて overworld にマップされる
+        for z in (1, 2, 3, 4):
+            self.assertEqual(
+                self.choose_bgm_scene(state="map", in_dungeon=False, zone=z),
+                "overworld",
+            )
         self.assertEqual(
             self.choose_bgm_scene(state="map", in_dungeon=True, zone=4),
             "dungeon",
@@ -91,6 +108,7 @@ class AudioSystemTest(unittest.TestCase):
             ),
             "battle",
         )
+        # ボスはフェーズによらず常に "boss"
         self.assertEqual(
             self.choose_bgm_scene(
                 state="battle",
@@ -101,7 +119,7 @@ class AudioSystemTest(unittest.TestCase):
                 battle_enemy_max_hp=500,
                 battle_phase="menu",
             ),
-            "boss1",
+            "boss",
         )
         self.assertEqual(
             self.choose_bgm_scene(
@@ -113,7 +131,7 @@ class AudioSystemTest(unittest.TestCase):
                 battle_enemy_max_hp=500,
                 battle_phase="enemy_attack",
             ),
-            "boss2",
+            "boss",
         )
         self.assertEqual(
             self.choose_bgm_scene(
@@ -151,24 +169,33 @@ class AudioSystemTest(unittest.TestCase):
         title_drum = fake_pyxel.sounds[self.drum_slot("title")].set_calls
         self.assertEqual(title_drum[0][1], "n")
 
-    def test_play_scene_starts_three_channels_and_skips_duplicate_calls(self):
+    def test_audio_manager_populates_music_slots(self):
+        fake_pyxel = _FakePyxel()
+        self.AudioManager(fake_pyxel)
+
+        # title music slot は [m_slot], [b_slot], [d_slot], [] で set される
+        title_music = fake_pyxel.musics[self.music_index("title")].set_calls
+        self.assertEqual(len(title_music), 1)
+        seqs0, seqs1, seqs2, seqs3 = title_music[0]
+        self.assertEqual(seqs0, [self.melody_slot("title")])
+        self.assertEqual(seqs1, [self.bass_slot("title")])
+        self.assertEqual(seqs2, [self.drum_slot("title")])
+        self.assertEqual(seqs3, [])  # ch3 は SFX 用に空
+
+    def test_play_scene_uses_playm_and_skips_duplicate_calls(self):
         fake_pyxel = _FakePyxel()
         manager = self.AudioManager(fake_pyxel)
 
         manager.play_scene("title")
         manager.play_scene("title")  # 重複呼び出しは無視
-        manager.play_scene("zone1")
+        manager.play_scene("overworld")
 
-        # title 3ch + zone1 3ch = 6 calls
+        # playm が2回（重複は無視）
         self.assertEqual(
-            fake_pyxel.play_calls,
+            fake_pyxel.playm_calls,
             [
-                (self.MELODY_CHANNEL, self.melody_slot("title"), True),
-                (self.BASS_CHANNEL, self.bass_slot("title"), True),
-                (self.DRUM_CHANNEL, self.drum_slot("title"), True),
-                (self.MELODY_CHANNEL, self.melody_slot("zone1"), True),
-                (self.BASS_CHANNEL, self.bass_slot("zone1"), True),
-                (self.DRUM_CHANNEL, self.drum_slot("zone1"), True),
+                (self.music_index("title"), True),
+                (self.music_index("overworld"), True),
             ],
         )
 
@@ -177,6 +204,12 @@ class AudioSystemTest(unittest.TestCase):
 
         for scene in TRACK_ORDER:
             self.assertEqual(self.track_slot(scene), self.melody_slot(scene))
+
+    def test_track_count_fits_pyxel_music_slots(self):
+        from src.audio_system import TRACK_ORDER
+
+        # Pyxel は musics[0..7] の8スロットしか持たない
+        self.assertLessEqual(len(TRACK_ORDER), 8)
 
 
 if __name__ == "__main__":

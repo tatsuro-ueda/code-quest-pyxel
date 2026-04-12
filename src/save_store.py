@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Persistence layer for Block Quest save data.
 
 Three implementations:
@@ -7,7 +9,6 @@ Three implementations:
 
 Use make_save_store() to pick the right one for the current environment.
 """
-from __future__ import annotations
 
 import json
 import os

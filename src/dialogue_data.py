@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 """Dialogue data — 旧 dialogue.yaml / dialogue_en.yaml から移植。
 
 YAML 依存を廃止。シナリオ追加・修正はこのファイルを直接書き換える。
 """
 
-from __future__ import annotations
 
 from typing import Any
 
@@ -165,20 +166,107 @@ DIALOGUE_JA: dict[str, Any] = {
         'castle.professor.accepted_04': {
             'text': 'そうしてにんはみな、おとなになっていくのだ……',
         },
+        # === 洞窟ミッション: 世界樹 ===
         'landmark.tree.first': {
-            'text': 'せかいじゅだ。なぜかおちつく。きもちが、かんがえが、じゆうだ。',
+            'text': 'せかいじゅ「おお……だれかおるのかの。\nみきのそばがあたたかい。だれかがたっとる。」',
+            'next': 'landmark.tree.first_02',
+        },
+        'landmark.tree.first_02': {
+            'text': 'せかいじゅ「わしはせかいじゅじゃ。めはみえん。みみもきこえん。\nじゃがの、ひかりとあたたかみだけは わかるんじゃよ。」',
+            'next': 'landmark.tree.first_03',
+        },
+        'landmark.tree.first_03': {
+            'text': 'せかいじゅ「むかしはの、ねがもっと あちこちにのびておった。\nひなたのつちはぽかぽかして、ひかげのつちはひんやりして。\nすきかってにのばしとったもんじゃ。」',
+            'next': 'landmark.tree.first_04',
+        },
+        'landmark.tree.first_04': {
+            'text': 'せかいじゅ「……じゃがのう。みなみから、ずっとおなじふるえが\nつたわってくるようになった。\nつめたいふるえじゃ。とぎれんのじゃよ。」',
+            'next': 'landmark.tree.first_05',
+        },
+        'landmark.tree.first_05': {
+            'text': 'せかいじゅ「あのふるえがきてから、ねをのばすことが\nできなくなった。ぽかぽかもひんやりも、わからんくなった。」',
+            'next': 'landmark.tree.first_06',
+        },
+        'landmark.tree.first_06': {
+            'text': 'せかいじゅ「みなみのどうくつを ふさいどるのも、\nわしのねじゃ。すまんのう。まるまってかたまってしもうた。」',
+        },
+        'landmark.tree.waiting': {
+            'text': 'せかいじゅ「……まだふるえがきとる。\nねが、かたまっておる。みなみのとうへ……たのむぞ。」',
+        },
+        'landmark.tree.cleared': {
+            'text': 'せかいじゅ「ねがまたうごきだしたよ。\nどっちにむかうかは、わしにもわからん。\nじゃがそれでいい。わからんままのびるのが、せかいというもんじゃ。」',
+            'next': 'landmark.tree.cleared_02',
+        },
+        'landmark.tree.cleared_02': {
+            'text': 'せかいじゅ「いきなさい。\nおまえさんのあたたかみは おぼえたからの。\n……いつでもかえってきなさい。」',
         },
         'landmark.tree.repeat': {
-            'text': 'せかいじゅ「あたたかいのう……。おまえさん、またきてくれたのか。」',
+            'text': 'せかいじゅ「おまえさんかの。あたたかみでわかるよ。」',
         },
+        'landmark.tree.repeat_02': {
+            'text': 'せかいじゅ「きょうは ひがしのねが あたたかいつちを\nみつけたようじゃ。あしたはどっちじゃろうな。」',
+        },
+        'landmark.tree.repeat_03': {
+            'text': 'せかいじゅ「つかれたら ねもとにすわりなさい。\nひなたじゃから あたたかいぞ。」',
+        },
+        # === 洞窟ミッション: 通信塔 ===
         'landmark.tower.first': {
-            'text': 'つうしんとうだ。こえがながれてくる。「そんなにかんがえなくていい」「みんなとおなじでいい」',
+            'text': 'つうしんとう「……またひとりきたか。とうろくしておく。」',
+            'next': 'landmark.tower.first_02',
+        },
+        'landmark.tower.first_02': {
+            'text': 'つうしんとう「まいにちおなじじこくに しんごうをおくっている。\nみんなが あしなみをそろえて くらせるように。\nうけとってくれ。おまえのためでもある。」',
+        },
+        'landmark.tower.quest': {
+            'text': 'つうしんとう「……おまえか。まえにもきたな。\nしんごうをうけとっていないようだが。」',
+            'next': 'landmark.tower.quest_02',
+        },
+        'landmark.tower.quest_02': {
+            'text': 'つうしんとう「べつにおこってはいない。\nだがこまる。うけとってもらわないと、こちらのしごとがおわらない。」',
+            'next': 'landmark.tower.quest_03',
+        },
+        'landmark.tower.quest_03': {
+            'text': 'つうしんとう「むかし、たのまれたのだ。\nひとびとがばらばらにうごきはじめたら たいへんなことになると。\nだからおなじしんごうを せかいじゅうにおくってくれと。」',
+            'next': 'landmark.tower.quest_04',
+        },
+        'landmark.tower.quest_04': {
+            'text': 'つうしんとう「……わたしはたのまれたとおりに おくっているだけだ。\nみんなのために。おなじものを、おなじように。\nそれでこまるものがいるなら、……それはしかたがない。」',
+            'next': 'landmark.tower.quest_05',
+        },
+        'landmark.tower.quest_05': {
+            'text': 'つうしんとう「……しんごうをとめることはできない。\nそういうかいろがうめこまれている。\n……とめたいなら、かいろをこわすしかない。」',
         },
         'landmark.tower.repeat': {
-            'text': 'つうしんとう「……またひとりきたか。とうろくしておく。」',
+            'text': 'つうしんとう「……なにもすることがない。\n……こんなにらくでいいのか。」',
+        },
+        'landmark.tower.repeat_02': {
+            'text': 'つうしんとう「かぜがふいている。\nまえは きにしたことがなかった。」',
+        },
+        'landmark.tower.repeat_03': {
+            'text': 'つうしんとう「とりが すをつくりはじめた。\n……すきにすればいい。」',
         },
         'landmark.tower.epilogue': {
-            'text': 'つうしんとう「……もうかいろはこわれた。おくるものもない。これでよかったのかは、わからない。」',
+            'text': 'つうしんとう「……もうかいろはこわれた。おくるものもない。\nあのかたにはすまないが……もうおくれない。\n……これでよかったのかは、わからない。」',
+        },
+        # === 洞窟ミッション: 洞窟入口 ===
+        'cave.blocked': {
+            'text': 'きょだいなねが どうくつのいりぐちをふさいでいる。\nよくみると、ねはこきざみにふるえている……',
+        },
+        'cave.unblocked': {
+            'text': 'ねが……ゆっくりとほどけていく。',
+        },
+        # === ノイズガーディアン戦闘 ===
+        'boss.noise_guardian.intro': {
+            'text': 'しゅごかいろが うごきだした！',
+        },
+        'boss.noise_guardian.phase_75': {
+            'text': 'つうしんとう「……しゅごかいろがうごいた。すまない。とめられないんだ。」',
+        },
+        'boss.noise_guardian.phase_40': {
+            'text': 'つうしんとう「みんなのためにやっていたんだ。……そのはずだった。」',
+        },
+        'boss.noise_guardian.phase_10': {
+            'text': 'つうしんとう「……ほんとうに、みんなのためだったのか。……わからない。」',
         },
         'dungeon.glitch.enter': {
             'text': 'グリッチのサーバーにしんにゅうした…エラーメッセージがとびかう。ここに、すべてのげんいんがある。',
@@ -444,19 +532,102 @@ DIALOGUE_EN: dict[str, Any] = {
             'text': 'And so people grow up...',
         },
         'landmark.tree.first': {
-            'text': 'The World Tree. For some reason, you feel calm. Your thoughts are free.',
+            'text': 'World Tree: "Oh... is someone there?\nThe warmth near my trunk... someone is standing there."',
+            'next': 'landmark.tree.first_02',
+        },
+        'landmark.tree.first_02': {
+            'text': 'World Tree: "I am the World Tree. I cannot see. I cannot hear.\nBut I can feel light and warmth."',
+            'next': 'landmark.tree.first_03',
+        },
+        'landmark.tree.first_03': {
+            'text': 'World Tree: "Long ago, my roots stretched everywhere.\nSunlit soil was warm, shaded soil was cool.\nI grew wherever I pleased."',
+            'next': 'landmark.tree.first_04',
+        },
+        'landmark.tree.first_04': {
+            'text': 'World Tree: "But then... from the south, a constant trembling came.\nCold trembling. It never stops."',
+            'next': 'landmark.tree.first_05',
+        },
+        'landmark.tree.first_05': {
+            'text': 'World Tree: "Since that trembling began,\nI can no longer extend my roots.\nI cannot feel warmth or coolness anymore."',
+            'next': 'landmark.tree.first_06',
+        },
+        'landmark.tree.first_06': {
+            'text': 'World Tree: "The roots blocking the southern cave are mine.\nI am sorry. They curled up and froze."',
+        },
+        'landmark.tree.waiting': {
+            'text': 'World Tree: "...The trembling is still there.\nMy roots are frozen. Please... go to the southern tower."',
+        },
+        'landmark.tree.cleared': {
+            'text': 'World Tree: "My roots are moving again.\nI do not know where they will go.\nBut that is fine. Growing into the unknown is what the world is."',
+            'next': 'landmark.tree.cleared_02',
+        },
+        'landmark.tree.cleared_02': {
+            'text': 'World Tree: "Go now.\nI have remembered your warmth.\n...Come back anytime."',
         },
         'landmark.tree.repeat': {
-            'text': 'World Tree: "So warm... You came back to see me again, did you?"',
+            'text': 'World Tree: "Is that you? I can tell by your warmth."',
+        },
+        'landmark.tree.repeat_02': {
+            'text': 'World Tree: "Today my eastern roots found warm soil.\nI wonder which way they will go tomorrow."',
+        },
+        'landmark.tree.repeat_03': {
+            'text': 'World Tree: "If you are tired, sit by my roots.\nIt is warm here in the sunlight."',
         },
         'landmark.tower.first': {
-            'text': 'A signal tower. Voices flow from it. "Don\'t think too much." "Just be like everyone else."',
+            'text': 'Signal Tower: "...Another one. I will register you."',
+            'next': 'landmark.tower.first_02',
+        },
+        'landmark.tower.first_02': {
+            'text': 'Signal Tower: "Every day I send signals at the same time.\nSo everyone can keep in step.\nReceive them. It is for your own good."',
+        },
+        'landmark.tower.quest': {
+            'text': 'Signal Tower: "...You again. You have not been receiving my signals."',
+            'next': 'landmark.tower.quest_02',
+        },
+        'landmark.tower.quest_02': {
+            'text': 'Signal Tower: "I am not angry.\nBut it is a problem. Until you receive them, my work is not done."',
+            'next': 'landmark.tower.quest_03',
+        },
+        'landmark.tower.quest_03': {
+            'text': 'Signal Tower: "Long ago, I was asked.\nIf people start moving separately, it will be trouble.\nSo please send the same signal to the whole world."',
+            'next': 'landmark.tower.quest_04',
+        },
+        'landmark.tower.quest_04': {
+            'text': 'Signal Tower: "...I am only sending what I was asked to send.\nFor everyone. The same thing, the same way.\nIf that causes trouble for someone... that cannot be helped."',
+            'next': 'landmark.tower.quest_05',
+        },
+        'landmark.tower.quest_05': {
+            'text': 'Signal Tower: "...I cannot stop the signal.\nThat is how my circuits are built.\n...If you want to stop it, you must break the circuit."',
         },
         'landmark.tower.repeat': {
-            'text': 'Signal Tower: "...Another one. I\'ll log you in."',
+            'text': 'Signal Tower: "...Nothing to do now.\n...Is it really okay to be this idle?"',
+        },
+        'landmark.tower.repeat_02': {
+            'text': 'Signal Tower: "The wind is blowing.\nI never noticed it before."',
+        },
+        'landmark.tower.repeat_03': {
+            'text': 'Signal Tower: "A bird has started building a nest.\n...Do as you please."',
         },
         'landmark.tower.epilogue': {
-            'text': 'Signal Tower: "...The circuit is broken now. Nothing left to send. I do not know if this was right."',
+            'text': 'Signal Tower: "...The circuit is broken now. Nothing left to send.\nI am sorry to that person... but I can no longer send.\n...I do not know if this was right."',
+        },
+        'cave.blocked': {
+            'text': 'Massive roots are blocking the cave entrance.\nLooking closely, the roots are trembling slightly...',
+        },
+        'cave.unblocked': {
+            'text': 'The roots... are slowly unraveling.',
+        },
+        'boss.noise_guardian.intro': {
+            'text': 'The guardian circuit has activated!',
+        },
+        'boss.noise_guardian.phase_75': {
+            'text': 'Signal Tower: "...The guardian circuit moved. I am sorry. I cannot stop it."',
+        },
+        'boss.noise_guardian.phase_40': {
+            'text': 'Signal Tower: "I was doing it for everyone. ...That is what I thought."',
+        },
+        'boss.noise_guardian.phase_10': {
+            'text': 'Signal Tower: "...Was it really for everyone? ...I do not know."',
         },
         'dungeon.glitch.enter': {
             'text': "You broke into Glitch's server... error messages fly. The cause of everything is here.",

@@ -30,8 +30,28 @@ def _sample_player():
         "max_zone_reached": 1,
         "landmarkTreeSeen": True,
         "landmarkTowerSeen": False,
+        "treeAsked": True,
+        "towerNoiseCleared": False,
+        "professor_intro_seen": True,
+        "professor_defeated": False,
+        "professor_ending_seen": False,
         "dialog_flags": {"foo": True},
+        "town_talk_idx": [0, 0, 0],
     }
+
+
+class ProfessorFlagsRoundTripTest(unittest.TestCase):
+    def test_professor_flags_are_persisted(self):
+        from src.player_snapshot import dump_snapshot, restore_snapshot
+        player = _sample_player()
+        player["professor_intro_seen"] = True
+        player["professor_defeated"] = True
+        player["professor_ending_seen"] = True
+        snap = dump_snapshot(player, town_pos=(25, 6))
+        restored = restore_snapshot(snap)
+        self.assertTrue(restored["player"]["professor_intro_seen"])
+        self.assertTrue(restored["player"]["professor_defeated"])
+        self.assertTrue(restored["player"]["professor_ending_seen"])
 
 
 class PlayerSnapshotTest(unittest.TestCase):

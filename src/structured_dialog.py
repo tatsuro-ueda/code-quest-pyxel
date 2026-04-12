@@ -1,21 +1,14 @@
-"""Structured YAML-backed dialogue runtime for Block Quest."""
-
 from __future__ import annotations
 
-import sys
+"""Structured dialogue runtime for Block Quest.
+
+データソースは src/dialogue_data.py の Python 定数（DIALOGUE_JA / DIALOGUE_EN）。
+旧 YAML ローダーは廃止済み。
+"""
+
+
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
-
-if sys.platform == "emscripten":
-    _yaml = None
-else:
-    try:
-        import yaml as _yaml
-    except ModuleNotFoundError:
-        _yaml = None
-
-from src.simple_yaml import safe_load as simple_yaml_safe_load
 
 
 class DialogValidationError(ValueError):
@@ -43,23 +36,25 @@ class StructuredDialogRunner:
     _SCENE_KEYS = {"speaker", "text", "set", "choices", "next", "variants"}
     _VARIANT_KEYS = {"when", "speaker", "text", "set", "choices", "next"}
 
-    def __init__(self, source_path: str | Path):
-        self.source_path = Path(source_path)
-        raw = self._safe_load(self.source_path.read_text(encoding="utf-8"))
-        if not isinstance(raw, dict):
-            raise DialogValidationError("dialogue root must be a mapping")
+    def __init__(self, source: "dict[str, Any]"):
+        """Accept a pre-parsed dict only (YAML loader is removed).
 
+        互換のため文字列パスも形式的に受け取れるが、その場合は呼び出し元の
+        バグである可能性が高いので例外を投げる。
+        """
+        if not isinstance(source, dict):
+            raise DialogValidationError(
+                "StructuredDialogRunner now requires a dict (no YAML loader); "
+                f"got {type(source).__name__}"
+            )
+        raw = source
+        self.source_path = None
         self.variables = self._validate_variables(raw.get("variables"))
         self.scenes = self._validate_scenes(raw.get("scenes"))
 
         self._mutable_state: dict[str, Any] = {}
         self._extra_context: dict[str, Any] = {}
         self._current_step: DialogStep | None = None
-
-    def _safe_load(self, text: str) -> Any:
-        if _yaml is not None:
-            return _yaml.safe_load(text)
-        return simple_yaml_safe_load(text)
 
     def start(
         self,

@@ -68,13 +68,13 @@ class InputBindingsTest(unittest.TestCase):
             any_btnp(FakePyxel(pressed={"KEY_SPACE"}), module["CONFIRM_BUTTONS"])
         )
         self.assertTrue(
-            any_btnp(FakePyxel(pressed={"GAMEPAD1_BUTTON_A"}), module["CONFIRM_BUTTONS"])
+            any_btnp(FakePyxel(pressed={"GAMEPAD1_BUTTON_B"}), module["CONFIRM_BUTTONS"])
         )
         self.assertTrue(
             any_btnp(FakePyxel(pressed={"KEY_ESCAPE"}), module["CANCEL_BUTTONS"])
         )
         self.assertTrue(
-            any_btnp(FakePyxel(pressed={"GAMEPAD1_BUTTON_B"}), module["CANCEL_BUTTONS"])
+            any_btnp(FakePyxel(pressed={"GAMEPAD1_BUTTON_A"}), module["CANCEL_BUTTONS"])
         )
 
     def test_title_start_buttons_accept_gamepad_start(self):
@@ -95,9 +95,9 @@ class InputBindingsTest(unittest.TestCase):
         self.assertIn("GAMEPAD1_BUTTON_DPAD_RIGHT", module["RIGHT_BUTTONS"])
         self.assertIn("GAMEPAD1_BUTTON_DPAD_DOWN", module["DOWN_BUTTONS"])
         self.assertIn("KEY_SPACE", module["CONFIRM_BUTTONS"])
-        self.assertIn("GAMEPAD1_BUTTON_A", module["CONFIRM_BUTTONS"])
+        self.assertIn("GAMEPAD1_BUTTON_B", module["CONFIRM_BUTTONS"])
         self.assertIn("KEY_ESCAPE", module["CANCEL_BUTTONS"])
-        self.assertIn("GAMEPAD1_BUTTON_B", module["CANCEL_BUTTONS"])
+        self.assertIn("GAMEPAD1_BUTTON_A", module["CANCEL_BUTTONS"])
         self.assertIn("GAMEPAD1_BUTTON_BACK", module["CANCEL_BUTTONS"])
         self.assertIn("GAMEPAD1_BUTTON_START", module["TITLE_START_BUTTONS"])
         self.assertNotIn("GAMEPAD1_BUTTON_START", module["CONFIRM_BUTTONS"])
@@ -108,7 +108,7 @@ class InputBindingsTest(unittest.TestCase):
         pyxel = FakePyxel()
 
         tracker.update(pyxel)
-        pyxel._held = {"GAMEPAD1_BUTTON_A"}
+        pyxel._held = {"GAMEPAD1_BUTTON_B"}
         tracker.update(pyxel)
         self.assertTrue(tracker.btn(module["CONFIRM_BUTTONS"]))
         self.assertTrue(tracker.btnp(module["CONFIRM_BUTTONS"]))
