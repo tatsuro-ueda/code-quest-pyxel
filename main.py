@@ -3238,6 +3238,7 @@ T_FLOWER = 13; T_ROCK = 14; T_MUSHROOM = 15; T_CACTUS = 16; T_BUSH = 17
 # マルチタイルランドマーク（2x2、通行不可）
 T_BIGTREE_TL = 18; T_BIGTREE_TR = 19; T_BIGTREE_BL = 20; T_BIGTREE_BR = 21
 T_TOWER_TL = 22; T_TOWER_TR = 23; T_TOWER_BL = 24; T_TOWER_BR = 25
+T_BOSS_TRIGGER = 26  # ダンジョン最奥のボストリガー
 
 # 上り階段（青背景に黄色の階段絵）
 TILE_STAIR_UP = [
@@ -3257,6 +3258,26 @@ TILE_STAIR_UP = [
     [ 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 1],
     [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+]
+
+# ボストリガー（暗い床に赤い核）
+TILE_BOSS_TRIGGER = [
+    [ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+    [ 5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 5, 5, 5, 5, 5, 5],
+    [ 5, 5, 5, 5, 5, 8, 2, 2, 2, 2, 8, 5, 5, 5, 5, 5],
+    [ 5, 5, 5, 5, 8, 2, 2, 8, 8, 2, 2, 8, 5, 5, 5, 5],
+    [ 5, 5, 5, 8, 2, 2, 8, 8, 8, 8, 2, 2, 8, 5, 5, 5],
+    [ 5, 5, 8, 2, 2, 8, 8, 7, 7, 8, 8, 2, 2, 8, 5, 5],
+    [ 5, 8, 2, 2, 8, 8, 7, 10,10, 7, 8, 8, 2, 2, 8, 5],
+    [ 5, 8, 2, 8, 8, 7,10, 8, 8,10, 7, 8, 8, 2, 8, 5],
+    [ 5, 8, 2, 8, 8, 7,10, 8, 8,10, 7, 8, 8, 2, 8, 5],
+    [ 5, 8, 2, 2, 8, 8, 7,10,10, 7, 8, 8, 2, 2, 8, 5],
+    [ 5, 5, 8, 2, 2, 8, 8, 7, 7, 8, 8, 2, 2, 8, 5, 5],
+    [ 5, 5, 5, 8, 2, 2, 8, 8, 8, 8, 2, 2, 8, 5, 5, 5],
+    [ 5, 5, 5, 5, 8, 2, 2, 8, 8, 2, 2, 8, 5, 5, 5, 5],
+    [ 5, 5, 5, 5, 5, 8, 2, 2, 2, 2, 8, 5, 5, 5, 5, 5],
+    [ 5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 5, 5, 5, 5, 5, 5],
+    [ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
 ]
 
 # 装飾タイル: 草原+花（赤8・黄10の花が散在）
@@ -3513,6 +3534,7 @@ TILE_DATA = {
     T_BIGTREE_BL: TILE_BIGTREE_BL, T_BIGTREE_BR: TILE_BIGTREE_BR,
     T_TOWER_TL: TILE_TOWER_TL, T_TOWER_TR: TILE_TOWER_TR,
     T_TOWER_BL: TILE_TOWER_BL, T_TOWER_BR: TILE_TOWER_BR,
+    T_BOSS_TRIGGER: TILE_BOSS_TRIGGER,
 }
 
 DECORATION_TILES = {T_FLOWER, T_ROCK, T_MUSHROOM, T_CACTUS, T_BUSH}
@@ -4354,6 +4376,13 @@ def generate_dungeon(seed=99):
         sx = rooms[0][0] + 1
         sy = rooms[0][1] + 1
         grid[sy][sx] = T_STAIR_UP
+        # 最後の部屋を終点として、ボストリガーを1マスだけ置く
+        brx, bry, brw, brh = rooms[-1]
+        bx = brx + brw // 2
+        by = bry + brh // 2
+        if (bx, by) == (sx, sy):
+            bx = min(brx + brw - 1, bx + 1)
+        grid[by][bx] = T_BOSS_TRIGGER
     return grid, rooms
 
 def get_zone(tile_y, in_dungeon=False):
@@ -5221,6 +5250,11 @@ class Game:
                 self._dialog_lines("dungeon.glitch.exit"),
                 callback=callback,
             )
+            return
+
+        if p["in_dungeon"] and tile == T_BOSS_TRIGGER:
+            if not p.get("boss_defeated"):
+                self._start_battle(BOSS_DATA, is_boss=True)
             return
 
         # Town entry → open the town menu (D6)
