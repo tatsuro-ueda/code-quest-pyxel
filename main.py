@@ -6578,6 +6578,8 @@ class Game:
         # Draw landmark highlights (#13)
         if not p["in_dungeon"]:
             self._draw_landmark_highlights()
+        else:
+            self._draw_dungeon_boss_marker(current_map)
 
         # Draw hero
         hero_sx = p["x"] * 16 - self.cam_x
@@ -6586,6 +6588,26 @@ class Game:
         bp = self.sprite_bank.get(sprite_key)
         if bp:
             pyxel.blt(hero_sx, hero_sy, 1, bp[0], bp[1], 16, 16, 0)
+
+    def _draw_dungeon_boss_marker(self, current_map):
+        """ダンジョン最奥のボス位置に目印キャラを描く。"""
+        p = self.player
+        if p.get("boss_defeated"):
+            return
+        bp = self.sprite_bank.get("hero_down")
+        if bp is None:
+            return
+
+        for ty, row in enumerate(current_map):
+            for tx, tile in enumerate(row):
+                if tile != T_BOSS_TRIGGER:
+                    continue
+                sx = tx * 16 - self.cam_x
+                sy = ty * 16 - self.cam_y + 24
+                if sx < -16 or sx > 256 or sy < 8 or sy > 256:
+                    return
+                pyxel.blt(sx, sy, 1, bp[0], bp[1], 16, 16, 0)
+                return
 
     def _draw_landmark_highlights(self):
         """ランドマーク強調描画。フレーム枠とパルスで「目印」を示す。

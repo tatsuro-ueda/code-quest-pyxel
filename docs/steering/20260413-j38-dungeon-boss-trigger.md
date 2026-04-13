@@ -3,7 +3,7 @@ status: open
 priority: high
 scheduled: 2026-04-13T22:18:48.990+0000
 dateCreated: 2026-04-13T22:18:48.990+0000
-dateModified: 2026-04-13T22:37:00.000+0000
+dateModified: 2026-04-13T22:52:10.443+0000
 tags:
   - task
   - j38
@@ -14,7 +14,7 @@ tags:
 
 # 2026年4月13日 J38 ダンジョン最奥でボス戦が始まるようにする
 
-> 状態：(5) Discussion
+> 状態：(6) Discussion
 > 次のゲート：（ユーザー）実装着手 or 仕様修正
 
 ---
@@ -38,7 +38,8 @@ flowchart TB
         direction TB
         A1["プレイヤーがダンジョンに入る"]
         A1 --> A2["最奥の部屋まで進む"]
-        A2 --> A3["最後の部屋のボスタイルを踏む"]
+        A2 --> A2B["主人公と同じ見た目の目印で終点が見て分かる"]
+        A2B --> A3["最後の部屋のボスタイルを踏む"]
         A3 --> A4["ボス戦が開始する"]
         A4 --> A_END["撃破または敗北まで、ダンジョン探索の終点として自然につながる"]
     end
@@ -51,7 +52,7 @@ flowchart TB
     classDef endNew fill:#c3e6cb,stroke:#155724,color:#000000,font-weight:bold;
 
     class B1,B2,B3 oldStyle;
-    class A1,A2,A3,A4 newStyle;
+    class A1,A2,A2B,A3,A4 newStyle;
     class B_END endOld;
     class A_END endNew;
 ```
@@ -63,11 +64,13 @@ flowchart TB
 - `_build_zone_enemies()` では `is_boss=True` の敵がランダムエンカウントから除外されており、通常戦闘では出てこない
 - `_start_battle(BOSS_DATA, is_boss=True)` を起動する経路が存在せず、`BOSS_DATA` が実質的に未接続になっている
 - その結果、プレイヤーは最奥まで進んでもボスに会えず、ダンジョンの締めが抜けたままになっている
+- さらに、最奥に着いても「どこがボス位置か」を示す見た目の目印がなく、子どもには探索の終点が分かりにくい
 
 ### 今回の方針
 
 - ボスはランダム遭遇ではなく、ダンジョン最奥の部屋に置く明示トリガーとして扱う
 - 最後の部屋に「ここが終点だ」と分かるボスタイルを1か所だけ配置し、踏んだ瞬間にボス戦へ入る流れを作る
+- ボスタイルの位置には主人公と同じ見た目の目印キャラを重ね描きし、近づくだけで終点だと分かるようにする
 - ボス戦開始条件は「最奥部屋に到達した」「まだボス未撃破」の2点に絞り、通常探索や通常エンカウントとは分離する
 - ボス撃破後は再度同じボス戦が始まらないようにしつつ、既存のダンジョン入退場や探索フローは壊さない
 - まずは「遭遇手段がない幽霊状態」を解消することを優先し、追加演出や報酬拡張は今回の外に置く
@@ -214,15 +217,17 @@ flowchart TD
 - 最奥の目印は `main.py` 内のコード定義タイルとして追加する。`*.pyxres` を直接触らずに済み、tilemap bake/derive の往復でも保持できる
 - `generate_dungeon()` では `rooms` が存在する場合に `rooms[-1]` を終点部屋として扱い、部屋内の代表1マスへボストリガータイルを置く。入口階段のある `rooms[0]` とは別位置を保証する
 - `Game._check_tile_events()` にダンジョン内ボストリガー分岐を足し、`p["in_dungeon"] and not p["boss_defeated"]` のときだけ `_start_battle(BOSS_DATA, is_boss=True)` を呼ぶ
+- ボス位置の分かりやすさは NPC 追加ではなく `draw_map()` の描画オーバーレイで解決する。イベント判定は `T_BOSS_TRIGGER` のまま維持し、表示だけを後から重ねる
+- 目印キャラには既存の `hero_down` スプライトを再利用し、`boss_defeated=True` になったら描画しない。これで撃破後は自然に消え、追加の状態管理を増やさずに済む
 - ボス撃破後はタイルを消さなくても `boss_defeated` ガードで再発火を防げる。既存の「階段または外周脱出で ending へ進む」流れはそのまま残せる
 - ランダムエンカウント側は現状維持とする。`_build_zone_enemies()` が `is_boss=True` を除外し続けること自体は正しく、今回の修正対象ではない
 
 ### 既存ファイルとの対応
 
 - `main.py`
-  ボストリガータイル定義、`generate_dungeon()` の終点配置、`Game._check_tile_events()` の踏み判定を追加する主対象
+  ボストリガータイル定義、`generate_dungeon()` の終点配置、`Game._check_tile_events()` の踏み判定、`draw_map()` の目印キャラ描画を追加する主対象
 - `test/test_dungeon_boss_trigger.py`（新規想定）
-  最奥部屋配置、踏み判定、再発火防止、通常探索回帰を固定する
+  最奥部屋配置、踏み判定、再発火防止、目印キャラの表示 / 非表示、通常探索回帰を固定する
 - 既存の `test/test_audio_system.py`
   既に `battle_is_boss=True` で boss BGM へ入る経路を押さえているため、ここは回帰確認だけで足りる
 
@@ -230,6 +235,7 @@ flowchart TD
 
 - まず pure 寄りのテストで `generate_dungeon()` の最奥配置を固定する
 - 次に `Game` を軽量生成するテストで `_check_tile_events()` が `BOSS_DATA` を `is_boss=True` 付きで起動することを確認する
+- 追加で `draw_map()` が未撃破時だけ最奥の目印キャラを描き、撃破後は描かないことを確認する
 - 追加で `boss_defeated=True` 時に同じタイルを踏んでも再戦しないこと、通常床のランダムエンカウントにボスが混ざらないことを確認する
 - 最後に `python -m pytest test/ -q` を回して dialogue / audio / 既存 dungeon 導線への回帰がないことを確認する
 
@@ -267,12 +273,24 @@ flowchart TD
 - [x] `generate_dungeon()` で `rooms[-1]` の代表1マスへボストリガータイルを配置した
 - [x] `Game._check_tile_events()` にダンジョン内ボストリガー分岐を追加した
 - [x] `boss_defeated=True` 時は同じタイルを踏んでも再戦しないことを focused test で確認した
+- [x] 同テストに、未撃破時だけ `draw_map()` が最奥の目印キャラを描く focused test を追加した
+- [x] `main.py` の `draw_map()` に主人公スプライトを使う目印キャラ描画を追加した
+- [x] `boss_defeated=True` 時は目印キャラも描かれないことを focused test で確認した
 - [x] `python -m pytest test/test_dungeon_boss_trigger.py -q` で focused test を Green にした
 - [x] `python -m pytest test/ -q` で全体回帰を確認した
 
 ---
 
-## 5) Discussion（記録・反省）
+## 5) 結果
+
+- ダンジョン最奥の `T_BOSS_TRIGGER` を踏むと `BOSS_DATA` のボス戦が始まり、探索終点が実際に機能するようになった
+- 最奥部屋には主人公と同じ見た目の目印キャラが立つようになり、子どもが魔王の場所を見た目で見つけやすくなった
+- `boss_defeated=True` になると、同じタイルでも再戦せず、目印キャラも自動で消える
+- 回帰確認として `python -m pytest test/test_dungeon_boss_trigger.py -q` では `5 passed`、`python -m pytest test/ -q` では `153 passed, 2 skipped` を確認済み
+
+---
+
+## 6) Discussion（記録・反省）
 
 > Observe → Think → Act を刻む。未来の自分が復元できることが目的。
 
@@ -293,3 +311,9 @@ flowchart TD
 **Observe**：`test/test_dungeon_boss_trigger.py` を先に追加すると、現状コードには `T_BOSS_TRIGGER` 自体が存在せず Red になった。根本原因どおり、欠けていたのは「終点タイル」と「踏み判定」だった。
 **Think**：この修正は `zone` や通常エンカウントへ触れずに閉じられる。`main.py` のタイル定義、`generate_dungeon()` の最奥配置、`_check_tile_events()` の分岐だけで要件を満たせるのが確認できた。
 **Act**：ボストリガータイルをコード定義で追加し、最奥部屋へ1マス配置、踏んだら `_start_battle(BOSS_DATA, is_boss=True)` を呼ぶよう実装した。`python -m pytest test/test_dungeon_boss_trigger.py -q` は `3 passed`、`python -m pytest test/ -q` は `149 passed, 2 skipped`。`python tools/test_headless.py` は sandbox の Pyxel/音声環境で停止したため、補助検証としては未完了。
+
+### 2026年4月13日 22:52（目印キャラ追加）
+
+**Observe**：ボストリガー自体は復旧したが、最奥部屋に着いてもどのマスを踏めばよいかが視覚的に弱く、子どもには「魔王の場所」が少し見つけにくかった。
+**Think**：新しい NPC 管理やタイル絵差し替えまで広げる必要はない。既存の `T_BOSS_TRIGGER` をそのまま使い、`draw_map()` で主人公スプライトを重ねるだけなら、見た目の改善だけを小さく足せる。
+**Act**：`draw_map()` から最奥ボスタイルに主人公と同じ見た目の目印キャラを描くようにし、`boss_defeated=True` 後は描画を止めた。`test/test_dungeon_boss_trigger.py` に「未撃破なら表示」「撃破後は非表示」を追加し、focused test は `5 passed` になった。

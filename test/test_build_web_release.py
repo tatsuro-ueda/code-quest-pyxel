@@ -15,7 +15,9 @@ sys.path.insert(0, str(ROOT))
 from tools.build_web_release import (  # noqa: E402
     collect_release_paths,
     generate_selector,
+    generate_top_selector,
     generate_wrapper,
+    load_top_page_changes,
     promote,
     validate_preview_files,
 )
@@ -60,6 +62,49 @@ class TestGenerateSelector(unittest.TestCase):
             content = result.read_text(encoding="utf-8")
             self.assertIn("おためしばん", content)
         finally:
+            shutil.rmtree(build_dir, ignore_errors=True)
+
+
+class TestTopPageChanges(unittest.TestCase):
+    def test_load_top_page_changes_reads_json(self):
+        fake_root = ROOT / ".build" / "test_top_changes"
+        fake_root.mkdir(parents=True, exist_ok=True)
+        try:
+            (fake_root / "top_changes.json").write_text(
+                json.dumps({"changes": ["ボスを ついか", "さいごの へやを しゅうせい"]}),
+                encoding="utf-8",
+            )
+            changes = load_top_page_changes(fake_root)
+            self.assertEqual(changes, ["ボスを ついか", "さいごの へやを しゅうせい"])
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
+
+    def test_generate_top_selector_uses_top_changes_json(self):
+        fake_root = ROOT / ".build" / "test_top_selector_root"
+        build_dir = ROOT / ".build" / "test_top_selector_out"
+        (fake_root / "templates").mkdir(parents=True, exist_ok=True)
+        build_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            shutil.copy2(ROOT / "templates" / "selector.html", fake_root / "templates" / "selector.html")
+            (fake_root / "top_changes.json").write_text(
+                json.dumps({"changes": ["ボスを ついか", "さいごの へやで たたかえる"]}),
+                encoding="utf-8",
+            )
+
+            result = generate_top_selector(
+                build_dir,
+                fake_root,
+                current_wrapper_name="play.html",
+                preview_wrapper_name="play-preview.html",
+            )
+
+            content = result.read_text(encoding="utf-8")
+            self.assertIn("ボスを ついか", content)
+            self.assertIn("さいごの へやで たたかえる", content)
+            self.assertIn('href="play.html"', content)
+            self.assertIn('href="play-preview.html"', content)
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
             shutil.rmtree(build_dir, ignore_errors=True)
 
 
@@ -108,6 +153,27 @@ class TestWrapperEmbedsCorrectPyxelHtml(unittest.TestCase):
             result = generate_wrapper(build_dir, ROOT, pyxel_html_name="pyxel-preview.html")
             content = result.read_text(encoding="utf-8")
             self.assertIn('src="pyxel-preview.html"', content)
+        finally:
+            shutil.rmtree(build_dir, ignore_errors=True)
+
+    def test_wrapper_embeds_play_session_logging_config(self):
+        build_dir = ROOT / ".build" / "test_wrapper_logging"
+        build_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            result = generate_wrapper(
+                build_dir,
+                ROOT,
+                pyxel_html_name="pyxel.html",
+                page_kind="current",
+                session_api_base="/internal/play-sessions",
+            )
+            content = result.read_text(encoding="utf-8")
+            self.assertIn('data-page-kind="current"', content)
+            self.assertIn("/internal/play-sessions", content)
+            self.assertIn("/start", content)
+            self.assertIn("/heartbeat", content)
+            self.assertIn("/end", content)
+            self.assertIn("navigator.sendBeacon", content)
         finally:
             shutil.rmtree(build_dir, ignore_errors=True)
 

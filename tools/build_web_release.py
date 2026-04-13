@@ -19,6 +19,7 @@ RELEASE_FILES = (
     Path("assets/blockquest.pyxres"),
 )
 RELEASE_DIRS = ()
+TOP_CHANGES_FILE = Path("top_changes.json")
 
 
 def collect_release_paths(root: Path) -> list[Path]:
@@ -68,11 +69,23 @@ def resolve_pyxel_command(root: Path) -> list[str]:
     raise FileNotFoundError("Unable to find a Pyxel CLI or Python environment with Pyxel")
 
 
-def generate_wrapper(build_dir: Path, project_root: Path, pyxel_html_name: str = "pyxel.html") -> Path:
+def generate_wrapper(
+    build_dir: Path,
+    project_root: Path,
+    pyxel_html_name: str = "pyxel.html",
+    *,
+    page_kind: str = "current",
+    session_api_base: str = "/internal/play-sessions",
+) -> Path:
     """カスタムHTMLラッパーを生成する"""
     template_path = project_root / "templates" / "wrapper.html"
     template = template_path.read_text(encoding="utf-8")
-    wrapper_html = template.replace("{{PYXEL_HTML_SRC}}", pyxel_html_name)
+    wrapper_html = (
+        template
+        .replace("{{PYXEL_HTML_SRC}}", pyxel_html_name)
+        .replace("{{PAGE_KIND}}", page_kind)
+        .replace("{{SESSION_API_BASE}}", session_api_base)
+    )
     output_path = build_dir / "index.html"
     output_path.write_text(wrapper_html, encoding="utf-8")
     return output_path
@@ -112,14 +125,19 @@ def build_web_release(
     shutil.copy2(work_dir / f"{app_name}.html", html_path)
 
     # カスタムHTMLラッパー生成 → play.html に保存
-    wrapper_path = generate_wrapper(work_dir, root)
+    wrapper_path = generate_wrapper(work_dir, root, page_kind="current")
     play_path = output_dir / "play.html"
     shutil.copy2(wrapper_path, play_path)
 
-    # index.html が既に存在する場合（選択ページ等）は上書きしない
+    # トップ画面は source of truth から毎回再生成する
     index_path = output_dir / "index.html"
-    if not index_path.exists():
-        shutil.copy2(wrapper_path, index_path)
+    selector_path = generate_top_selector(
+        work_dir,
+        root,
+        current_wrapper_name="play.html",
+        preview_wrapper_name="play-preview.html",
+    )
+    shutil.copy2(selector_path, index_path)
 
     return pyxapp_path, html_path, play_path
 
@@ -148,6 +166,39 @@ def generate_selector(
     output_path = build_dir / "index.html"
     output_path.write_text(html, encoding="utf-8")
     return output_path
+
+
+def load_top_page_changes(root: Path) -> list[str]:
+    """normal build 用のトップ画面変更点を読み込む。"""
+    root = root.resolve()
+    changes_path = root / TOP_CHANGES_FILE
+    if not changes_path.is_file():
+        return []
+    data = json.loads(changes_path.read_text(encoding="utf-8"))
+    changes = data.get("changes", [])
+    if not isinstance(changes, list):
+        raise ValueError(
+            f"{changes_path} must contain a JSON object with a 'changes' list"
+        )
+    return [str(change) for change in changes]
+
+
+def generate_top_selector(
+    build_dir: Path,
+    project_root: Path,
+    *,
+    current_wrapper_name: str = "play.html",
+    preview_wrapper_name: str = "play-preview.html",
+) -> Path:
+    """トップ画面用 JSON を読んで selector を生成する。"""
+    changes = load_top_page_changes(project_root)
+    return generate_selector(
+        build_dir,
+        project_root,
+        current_wrapper_name=current_wrapper_name,
+        preview_wrapper_name=preview_wrapper_name,
+        changes=changes,
+    )
 
 
 def validate_preview_files(root: Path) -> tuple[Path, list[str]]:
@@ -238,14 +289,16 @@ def build_preview_release(
     shutil.copy2(work_dir / f"{preview_app_name}.html", preview_html_path)
 
     # --- ラッパーHTML（iframe + 全画面ボタン）を2つ生成 ---
-    current_wrapper = generate_wrapper(work_dir, root, pyxel_html_name="pyxel.html")
+    current_wrapper = generate_wrapper(
+        work_dir, root, pyxel_html_name="pyxel.html", page_kind="current"
+    )
     play_path = output_dir / "play.html"
     shutil.copy2(current_wrapper, play_path)
 
     preview_wrapper_dir = work_dir / "preview_wrapper"
     preview_wrapper_dir.mkdir(parents=True, exist_ok=True)
     preview_wrapper = generate_wrapper(
-        preview_wrapper_dir, root, pyxel_html_name="pyxel-preview.html"
+        preview_wrapper_dir, root, pyxel_html_name="pyxel-preview.html", page_kind="preview"
     )
     play_preview_path = output_dir / "play-preview.html"
     shutil.copy2(preview_wrapper, play_preview_path)
