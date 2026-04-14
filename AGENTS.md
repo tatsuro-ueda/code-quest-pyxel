@@ -20,6 +20,27 @@
 - `docs/steering/` — active task notes
 - `docs/steering/done/` — completed task notes
 
+## Required Reading Before Certain Changes
+
+Before implementing changes in any of these areas:
+- build / release flow
+- `index.html` / selector page
+- `play.html` / wrapper
+- preview / promote flow
+- top-page change descriptions (`top_changes.json`, `preview_meta.json`)
+
+you MUST read these documents first:
+- `docs/gherkins/customer-journeys.md`
+- `docs/gherkins/gherkin-platform.md`
+- the matching active task note in `docs/steering/` if one exists
+- the most relevant completed note in `docs/steering/done/` for the same area
+
+At minimum, also inspect the current implementation and tests before editing:
+- `tools/build_web_release.py`
+- `test/test_build_web_release.py`
+
+If docs and code disagree, identify the mismatch explicitly in the task note before implementation.
+
 ## SSoT (Single Source of Truth) Data Flow
 
 Game data flows one-way. **Do not edit generated files directly.**
