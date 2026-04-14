@@ -4,6 +4,7 @@
 
 - This file applies to `/home/exedev/code-quest-pyxel`.
 - Treat this as the only current project.
+- Do not infer runtime or deploy settings from other directories, services, or repos unless they explicitly point to `code-quest-pyxel`.
 
 ## Current Runtime Truth
 
@@ -28,6 +29,7 @@ Before implementing changes in any of these areas:
 - `play.html` / wrapper
 - preview / promote flow
 - top-page change descriptions (`top_changes.json`, `preview_meta.json`)
+- runtime / deploy / logs / public URL
 
 you MUST read these documents first:
 - `docs/gherkins/customer-journeys.md`
@@ -40,6 +42,26 @@ At minimum, also inspect the current implementation and tests before editing:
 - `test/test_build_web_release.py`
 
 If docs and code disagree, identify the mismatch explicitly in the task note before implementation.
+
+## Human Expectation Check
+
+- `done` means what a human would naturally expect from the task title, not just "the code exists" or "tests pass".
+- If a task says access logs are visible, the public runtime must actually record public traffic.
+- If a task says web delivery works, verify the real served URL and the real process serving it.
+- When the user points out a mismatch, treat it as a signal that the human expectation may be right. Check reality before defending the existing note.
+
+For runtime / deploy / logs / share URL / build pipeline tasks, do not close the task note until all of these are true:
+- the actual public path or VM path is identified
+- the actual serving process is identified
+- the real endpoint or file update is verified on that path
+- the real runtime artifact (`.runtime/*.sqlite3`, served HTML, live endpoint, etc.) is checked directly
+
+Every new steering note in these areas MUST include:
+- what a human will believe is true when this note is marked `done`
+- what real-world path/process/file proves it
+- what exact live verification was run before closing it
+
+Use `docs/steering/_template.md` when creating new task notes.
 
 ## SSoT (Single Source of Truth) Data Flow
 
@@ -110,3 +132,4 @@ python tools/test_web_compat.py    # G11: Web version test (Playwright)
 - [ ] Ran `python tools/gen_data.py` (if YAML was changed)
 - [ ] Ran `python -m pytest test/ -q` and all tests pass
 - [ ] Did not break the selector page (`index.html` → `play.html` → `pyxel.html`)
+- [ ] For runtime/deploy/log/share tasks, verified the real public path/process and not just local code/tests
