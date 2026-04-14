@@ -5484,7 +5484,7 @@ class Game:
                             else "battle.normal.run.fail"
                         )
                         self.battle_text = self._dialog_text(scene_name)
-                        self.battle_phase = "enemy_attack"
+                        self.battle_phase = "player_attack"
                         self.battle_text_timer = 30
 
         elif self.battle_phase == "spell_select":
