@@ -1,20 +1,21 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-04-12T23:57:09.000+0900
 dateCreated: 2026-04-12T23:57:09.000+0900
-dateModified: 2026-04-12T23:57:09.000+0900
+dateModified: 2026-04-13T23:05:15+00:00
 tags:
   - task
   - j38
   - preview
   - build
+  - archived
 ---
 
 # 2026年4月12日 J38 preview build を current に混ぜない
 
-> 状態：(1) Journey
-> 次のゲート：（ユーザー）Gherkin へ進むか確認
+> 状態：(5) Discussion
+> 次のゲート：（ユーザー）必要なら preview 運用の案内整備 or 次タスク
 
 ---
 
@@ -63,6 +64,7 @@ flowchart TB
 - preview build と current build の役割をコード上ではっきり分ける
 - AI に変更を頼んだときは preview 側にだけ成果物が出る流れを先に守る
 - 承認後にだけ current 側へ昇格する流れを、J31/J32 の仕様どおりに整理する
+- 通常 `build` は current 用のまま残し、preview build は `--preview` の別入口にする
 
 ### 委任度
 
@@ -129,82 +131,28 @@ flowchart TD
 
 ## 3) Design（どうやるか）
 
-- **関連スキル・MCP**：（余計なものをロードしない）
-
-```mermaid
-flowchart LR
-    subgraph INPUT["インプット"]
-        I1[〜]
-        I2[〜]
-    end
-
-    subgraph PROCESS["処理・変換"]
-        P1[〜]
-        P2[〜]
-    end
-
-    subgraph OUTPUT["アウトプット"]
-        O1[〜]
-    end
-
-    INPUT --> PROCESS --> OUTPUT
-
-    classDef io fill:#e2e3f1,stroke:#3949ab,color:#000000;
-    classDef proc fill:#fff3cd,stroke:#856404,color:#000000;
-    classDef out fill:#d4edda,stroke:#155724,color:#000000;
-
-    class I1,I2 io;
-    class P1,P2 proc;
-    class O1 out;
-```
-
-```mermaid
-flowchart TD
-    D1[① Journey確認] --> D2[② Gherkin承認]
-    D2 -->|ゲート1: ユーザー| D3[③ Design・計画]
-    D3 --> D4[④ Tasklist実行]
-    D4 -->|ゲート2: ユーザー| D5[⑤ 検証]
-    D5 -->|ゲート3: ユーザー| D6[反省・ルール化]
-    D5 -->|Gherkinに不足| D4
-
-    classDef gate fill:#e2e3f1,stroke:#3949ab;
-    classDef done fill:#d4edda,stroke:#155724;
-
-    class D2,D4,D5 gate;
-    class D6 done;
-```
+- **関連スキル・MCP**：`manage-tasknotes`、`superpowers:verification-before-completion`
+- `tools/build_web_release.py`
+  通常 build は `build_web_release()` のまま current 用に残し、preview 用は `build_preview_release()` と CLI の `--preview` で分離する
+- `tools/build_web_release.py`
+  `validate_preview_files()` で `main_preview.py` と `preview_meta.json` を受け、preview 側の stage だけ `main.py` を差し替えて `pyxel-preview.html` / `play-preview.html` / `index.html` を生成する
+- `tools/build_web_release.py`
+  `promote(choice="preview"|"current")` で承認/却下後の後始末をまとめ、承認時だけ `main.py` を preview 内容へ昇格させる
+- `Makefile`
+  `make build` は current 配信用の通常 build のまま維持し、AI 変更確認用の preview build は明示的に `python tools/build_web_release.py --preview` を使う
+- `test/test_build_web_release.py`
+  preview 前提条件、昇格、selector -> wrapper -> html の導線をテストで固定し、J31/J32 の「混ぜない」を回帰させない
 
 ---
 
 ## 4) Tasklist
 
-```mermaid
-flowchart TD
-    T2["（CC）計画立案\n/superpowers:writing-plans"]
-    T2 --> T2C{"CoVe:\nGherkinを全て満たせるか?"}
-    T2C -->|NG| T2
-    T2C -->|OK| T4["（CC）1ステップ実行\n→ Discussion記録 → Gherkinチェック"]
-    T4 --> T4C{"CoVe:\n期待通りか?"}
-    T4C -->|NG| T4
-    T4C -->|OK| T5{全ステップ完了?}
-    T5 -->|No| T4
-    T5 -->|Yes| T7["（CC）まとめ"]
-    T7 --> T7C{"CoVe:\n全Gherkin満たされているか?"}
-    T7C -->|NG| T4
-    T7C -->|OK| DONE[✓ 完了]
-
-    classDef done fill:#d4edda,stroke:#155724,color:#000000;
-    classDef cove fill:#fff3cd,stroke:#856404,color:#000000;
-
-    class DONE done;
-    class T2C,T4C,T7C cove;
-```
-
-> 必ず上から順に実施。CCがCoVeで自力検証しながら進める。
-
-- [ ] （CC）`/superpowers:writing-plans` で計画を立てる（このセクションに記入）
-- [ ] （CC）作業を1ステップ実行 → **5) Discussion に記録** → Gherkinチェック → 次へ
-- [ ] （CC）作業結果をまとめ、全Gherkinを満たしているかCoVeで検証
+- [x] `tools/build_web_release.py` に preview/current の責務を分ける入口を追加する
+- [x] `main_preview.py` と `preview_meta.json` を preview build 専用入力として扱う
+- [x] current と preview の両方の Pyxel HTML / wrapper / selector を生成できるようにする
+- [x] `--promote preview|current` で承認・却下後の昇格/掃除を一箇所にまとめる
+- [x] selector -> `play.html` / `play-preview.html` -> `pyxel.html` / `pyxel-preview.html` の導線をテストで固定する
+- [x] `python -m pytest test/test_build_web_release.py -q` と `python -m pytest test/ -q` で回帰確認する
 
 ---
 
@@ -224,9 +172,15 @@ flowchart TD
 **Think**：次回は J38 の `Gherkin` から再開し、`make build` / `--preview` / `--promote` の責務分離を仕様に沿って整理するのが最短。
 **Act**：再開ポイントをノートに追記した。
 
+### 2026年4月13日 23:05（実装整理・完了化）
+
+**Observe**：`tools/build_web_release.py` には、すでに `validate_preview_files()`、`build_preview_release()`、`promote()`、CLI の `--preview` / `--promote` が実装されていた。`test/test_build_web_release.py` でも preview 前提条件、昇格、selector から preview/current を辿る導線が固定されている。
+**Think**：J38 で保留だった「通常 build を current 用に残すか」「preview build を別入口にするか」は、実装上は「通常 build は current のまま、preview は `--preview` の別入口」で解決済みだった。未完了だったのはタスクノートの更新だけだった。
+**Act**：J38 を `docs/steering/done/` へ移し、`python -m pytest test/test_build_web_release.py -q` の `16 passed` と `python -m pytest test/ -q` の `153 passed, 2 skipped` を根拠に完了扱いへ更新した。
+
 ---
 
 ### 反省とルール化
 
-- 記入先：observe-situation / manage-tasknotes / CLAUDE.md
-- 次にやること：
+- 記入先：observe-situation / manage-tasknotes / AGENTS.md
+- 次にやること：必要なら `--preview` / `--promote` の親向け運用手順を README か別ノートへ明文化する

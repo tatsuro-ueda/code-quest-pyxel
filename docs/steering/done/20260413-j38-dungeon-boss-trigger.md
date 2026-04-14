@@ -1,21 +1,22 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-04-13T22:18:48.990+0000
 dateCreated: 2026-04-13T22:18:48.990+0000
-dateModified: 2026-04-13T22:52:10.443+0000
+dateModified: 2026-04-13T23:08:12+00:00
 tags:
   - task
   - j38
   - dungeon
   - boss
   - event
+  - archived
 ---
 
 # 2026年4月13日 J38 ダンジョン最奥でボス戦が始まるようにする
 
 > 状態：(6) Discussion
-> 次のゲート：（ユーザー）実装着手 or 仕様修正
+> 次のゲート：（ユーザー）必要なら実画面確認 or 次タスク
 
 ---
 
@@ -317,3 +318,9 @@ flowchart TD
 **Observe**：ボストリガー自体は復旧したが、最奥部屋に着いてもどのマスを踏めばよいかが視覚的に弱く、子どもには「魔王の場所」が少し見つけにくかった。
 **Think**：新しい NPC 管理やタイル絵差し替えまで広げる必要はない。既存の `T_BOSS_TRIGGER` をそのまま使い、`draw_map()` で主人公スプライトを重ねるだけなら、見た目の改善だけを小さく足せる。
 **Act**：`draw_map()` から最奥ボスタイルに主人公と同じ見た目の目印キャラを描くようにし、`boss_defeated=True` 後は描画を止めた。`test/test_dungeon_boss_trigger.py` に「未撃破なら表示」「撃破後は非表示」を追加し、focused test は `5 passed` になった。
+
+### 2026年4月13日 23:08（完了処理）
+
+**Observe**：J38 は `Tasklist` も `結果` も埋まっており、実装ファイルと focused test も現行ツリーに残っていたが、ノートだけが `status: open` のままだった。  
+**Think**：必要なのは仕様追加ではなく、fresh な回帰確認を付けて完了扱いへ整理することだけだった。  
+**Act**：`python -m pytest test/test_dungeon_boss_trigger.py -q` で `5 passed`、`python -m pytest test/ -q` で `153 passed, 2 skipped` を再確認し、J38 を `docs/steering/done/` へ移した。
