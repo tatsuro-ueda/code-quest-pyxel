@@ -1,35 +1,33 @@
 #!/usr/bin/env python3
 """G11: Web版動作テスト (Playwright)
 
-Web版をローカルHTTPサーバで起動し、Playwright (Chromium Headless) で
-ページを開いてコンソールエラーがないか検証する。
+Web版を同一オリジンのランタイムサーバで起動し、Playwright (Chromium Headless)
+で `play.html` を開いてコンソールエラーがないか検証する。
 
 使い方:
     python tools/test_web_compat.py
 
 exit 0 = テスト通過、exit 1 = テスト失敗
 """
-import http.server
 import sys
-import threading
 import time
 import traceback
 from pathlib import Path
 
+from web_runtime_server import make_server
+
 # Web版のHTMLファイル
 ROOT = Path(__file__).resolve().parent.parent
-HTML_PATH = ROOT / "pyxel.html"
+HTML_PATH = ROOT / "play.html"
 SERVE_DIR = ROOT
 PORT = 8899
 WAIT_SECONDS = 10  # ゲーム初期化を待つ秒数
+DB_PATH = ROOT / ".build" / "test_web_compat" / "play_sessions.sqlite3"
 
 
 def start_server():
     """バックグラウンドでHTTPサーバを起動"""
-    handler = http.server.SimpleHTTPRequestHandler
-    httpd = http.server.HTTPServer(("127.0.0.1", PORT), handler)
-    httpd.timeout = 1
-    return httpd
+    return make_server(SERVE_DIR, host="127.0.0.1", port=PORT, db_path=DB_PATH)
 
 
 def main():
@@ -44,14 +42,10 @@ def main():
         print("SKIP: playwright がインストールされていません")
         return 0
 
-    # HTTPサーバをバックグラウンドで起動
-    import os
-    original_dir = os.getcwd()
-    os.chdir(SERVE_DIR)
     httpd = start_server()
-    server_thread = threading.Thread(target=lambda: [httpd.handle_request() for _ in range(300)], daemon=True)
+    import threading
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     server_thread.start()
-    os.chdir(original_dir)
 
     errors = []
     warnings = []
@@ -79,7 +73,7 @@ def main():
             page.on("crash", on_crash)
 
             # ページを開く
-            url = f"http://127.0.0.1:{PORT}/pyxel.html"
+            url = f"http://127.0.0.1:{PORT}/play.html"
             print(f"Opening {url} ...")
             page.goto(url, wait_until="domcontentloaded", timeout=30000)
 

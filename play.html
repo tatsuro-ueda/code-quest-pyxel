@@ -54,7 +54,7 @@ html, body {
 }
 </style>
 </head>
-<body>
+<body data-page-kind="current" data-session-api-base="/internal/play-sessions">
 <iframe id="game-frame" src="pyxel.html" allowfullscreen></iframe>
 <button id="fullscreen-btn">ぜんがめんであそぶ</button>
 <p id="fallback-msg">ホームがめんについかすると ぜんがめんであそべます</p>
@@ -63,7 +63,67 @@ document.addEventListener('DOMContentLoaded', function() {
   var btn = document.getElementById('fullscreen-btn');
   var fallbackMsg = document.getElementById('fallback-msg');
   var target = document.documentElement;
+  var root = document.body;
   var fadeTimer = null;
+  var pageKind = root.dataset.pageKind || 'current';
+  var sessionApiBase = root.dataset.sessionApiBase || '/internal/play-sessions';
+  var sessionId = window.crypto && window.crypto.randomUUID
+    ? window.crypto.randomUUID()
+    : String(Date.now()) + '-' + Math.random().toString(16).slice(2);
+  var heartbeatTimer = null;
+  var sessionStarted = false;
+
+  function postJson(path, payload) {
+    return fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true
+    }).catch(function() {});
+  }
+
+  function sendBeaconJson(path, payload) {
+    if (!navigator.sendBeacon) {
+      return postJson(path, payload);
+    }
+    var blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    navigator.sendBeacon(path, blob);
+    return Promise.resolve();
+  }
+
+  function isoNow() {
+    return new Date().toISOString();
+  }
+
+  function startSession() {
+    if (sessionStarted) return;
+    sessionStarted = true;
+    postJson(sessionApiBase + '/start', {
+      session_id: sessionId,
+      page_kind: pageKind,
+      started_at: isoNow()
+    });
+  }
+
+  function heartbeatSession() {
+    if (!sessionStarted || document.visibilityState !== 'visible') return;
+    postJson(sessionApiBase + '/heartbeat', {
+      session_id: sessionId,
+      seen_at: isoNow()
+    });
+  }
+
+  function endSession(clean) {
+    if (!sessionStarted) return;
+    sendBeaconJson(sessionApiBase + '/end', {
+      session_id: sessionId,
+      ended_at: isoNow(),
+      ended_cleanly: clean
+    });
+  }
+
+  startSession();
+  heartbeatTimer = setInterval(heartbeatSession, 15000);
 
   var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
@@ -123,6 +183,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.addEventListener('fullscreenchange', onFullscreenChange);
   document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      endSession(false);
+      return;
+    }
+    heartbeatSession();
+  });
+
+  window.addEventListener('pagehide', function() {
+    endSession(true);
+  });
+
+  window.addEventListener('beforeunload', function() {
+    endSession(true);
+  });
 });
 </script>
 </body>
