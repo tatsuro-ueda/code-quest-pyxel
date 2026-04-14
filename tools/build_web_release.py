@@ -20,6 +20,15 @@ RELEASE_FILES = (
 )
 RELEASE_DIRS = ()
 TOP_CHANGES_FILE = Path("top_changes.json")
+NORMAL_CHANGE_LIST_DEPENDENCIES = RELEASE_FILES + (
+    Path("templates/wrapper.html"),
+    Path("templates/selector.html"),
+)
+PREVIEW_CHANGE_LIST_DEPENDENCIES = (
+    Path("main_preview.py"),
+    Path("templates/wrapper.html"),
+    Path("templates/selector.html"),
+)
 
 
 def collect_release_paths(root: Path) -> list[Path]:
@@ -54,6 +63,70 @@ def stage_release(root: Path, stage_dir: Path) -> list[Path]:
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)
     return copied_paths
+
+
+def _revision_timestamp(root: Path, rel_path: Path) -> float:
+    path = root / rel_path
+    if not path.exists():
+        return 0.0
+
+    git_dir = root / ".git"
+    if git_dir.exists():
+        tracked = subprocess.run(
+            ["git", "ls-files", "--error-unmatch", "--", rel_path.as_posix()],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if tracked.returncode != 0:
+            return path.stat().st_mtime
+
+        dirty = subprocess.run(
+            ["git", "diff", "--quiet", "HEAD", "--", rel_path.as_posix()],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if dirty.returncode == 1:
+            return path.stat().st_mtime
+
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%ct", "--", rel_path.as_posix()],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return float(result.stdout.strip())
+
+    return path.stat().st_mtime
+
+
+def validate_change_list_freshness(
+    root: Path,
+    *,
+    changes_rel_path: Path,
+    dependency_paths: tuple[Path, ...],
+) -> None:
+    root = root.resolve()
+    changes_path = root / changes_rel_path
+    if not changes_path.exists():
+        return
+
+    changes_timestamp = _revision_timestamp(root, changes_rel_path)
+    for dependency in dependency_paths:
+        dependency_path = root / dependency
+        if not dependency_path.exists():
+            continue
+        dependency_timestamp = _revision_timestamp(root, dependency)
+        if dependency_timestamp > changes_timestamp:
+            raise ValueError(
+                f"{changes_rel_path} is older than {dependency}. "
+                "Update the change list so selector text matches the shipped content."
+            )
 
 
 def resolve_pyxel_command(root: Path) -> list[str]:
@@ -174,6 +247,11 @@ def load_top_page_changes(root: Path) -> list[str]:
     changes_path = root / TOP_CHANGES_FILE
     if not changes_path.is_file():
         return []
+    validate_change_list_freshness(
+        root,
+        changes_rel_path=TOP_CHANGES_FILE,
+        dependency_paths=NORMAL_CHANGE_LIST_DEPENDENCIES,
+    )
     data = json.loads(changes_path.read_text(encoding="utf-8"))
     changes = data.get("changes", [])
     if not isinstance(changes, list):
@@ -213,6 +291,11 @@ def validate_preview_files(root: Path) -> tuple[Path, list[str]]:
     meta_path = root / "preview_meta.json"
     changes: list[str] = []
     if meta_path.is_file():
+        validate_change_list_freshness(
+            root,
+            changes_rel_path=Path("preview_meta.json"),
+            dependency_paths=PREVIEW_CHANGE_LIST_DEPENDENCIES,
+        )
         data = json.loads(meta_path.read_text(encoding="utf-8"))
         changes = data.get("changes", [])
     return preview_py, changes

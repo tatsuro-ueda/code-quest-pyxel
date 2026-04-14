@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sys
 import unittest
@@ -106,6 +107,25 @@ class TestTopPageChanges(unittest.TestCase):
         finally:
             shutil.rmtree(fake_root, ignore_errors=True)
             shutil.rmtree(build_dir, ignore_errors=True)
+
+    def test_load_top_page_changes_rejects_stale_json(self):
+        fake_root = ROOT / ".build" / "test_stale_top_changes"
+        fake_root.mkdir(parents=True, exist_ok=True)
+        try:
+            top_changes = fake_root / "top_changes.json"
+            main_py = fake_root / "main.py"
+            top_changes.write_text(
+                json.dumps({"changes": ["ふるい せつめい"]}),
+                encoding="utf-8",
+            )
+            main_py.write_text("# newer gameplay change", encoding="utf-8")
+            os.utime(top_changes, (1_000_000_000, 1_000_000_000))
+            os.utime(main_py, (1_000_000_100, 1_000_000_100))
+
+            with self.assertRaises(ValueError):
+                load_top_page_changes(fake_root)
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
 
 
 class TestSelectorDoesNotLinkDirectlyToPyxelHtml(unittest.TestCase):
@@ -245,6 +265,26 @@ class TestPreviewBuildPrerequisites(unittest.TestCase):
             )
             _, changes = validate_preview_files(fake_root)
             self.assertEqual(changes, ["HP を へらした", "まほう を ついか"])
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
+
+    def test_preview_rejects_stale_meta_json(self):
+        """main_preview.py のほうが新しいのに preview_meta.json が古いと失敗する"""
+        fake_root = ROOT / ".build" / "test_stale_meta"
+        fake_root.mkdir(parents=True, exist_ok=True)
+        try:
+            preview_py = fake_root / "main_preview.py"
+            meta_json = fake_root / "preview_meta.json"
+            preview_py.write_text("# newer preview", encoding="utf-8")
+            meta_json.write_text(
+                json.dumps({"changes": ["ふるい せつめい"]}),
+                encoding="utf-8",
+            )
+            os.utime(meta_json, (1_000_000_000, 1_000_000_000))
+            os.utime(preview_py, (1_000_000_100, 1_000_000_100))
+
+            with self.assertRaises(ValueError):
+                validate_preview_files(fake_root)
         finally:
             shutil.rmtree(fake_root, ignore_errors=True)
 
