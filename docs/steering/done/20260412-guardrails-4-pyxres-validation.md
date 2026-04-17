@@ -22,7 +22,7 @@ G4, G6
 
 ---
 
-## 1. Journey
+## 1. 改善対象ジャーニー
 
 ```mermaid
 flowchart TB
@@ -46,9 +46,9 @@ flowchart TB
   class A3 good
 ```
 
-## 2. Gherkin
+## 2. カスタマージャーニーgherkin
 
-根拠: [`gherkin-guardrails.md`](../gherkins/gherkin-guardrails.md) J37
+根拠: [`cj-gherkin-guardrails.md`](../product-requirements/cj-gherkin-guardrails.md) CJG37
 
 ```gherkin
 Feature: pyxresとコード定数の整合性をビルド時に検証する
@@ -95,7 +95,7 @@ Scenario: pyxel.load()後にサウンドが再初期化されている
 
 ## 4. Tasklist
 
-- [x] Gherkin記載（G8カバー済みであることを明記）
+- [x] カスタマージャーニーgherkin記載（G8カバー済みであることを明記）
 - 追加実装なし
 
 ## 5. Discussion

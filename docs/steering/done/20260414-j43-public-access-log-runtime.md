@@ -21,10 +21,10 @@ tags:
 
 ---
 
-## 1) Journey（どこへ行くか）
+## 1) 改善対象ジャーニー
 
-- **根拠となる journey**：`docs/gherkins/customer-journeys.md` の `J43: 実公開で遊ばれた記録が見える`
-- **関連する journey**：`docs/gherkins/customer-journeys.md` の `J21: 友達に見せる`
+- **根拠となるカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ43: 実公開で遊ばれた記録が見える`
+- **関連するカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ21: 友達に見せる`
 - **深層的目的**：このVMで実際に公開している URL で遊ばれた事実が `.runtime/play_sessions.sqlite3` に残り、親が「届いているか」を勘ではなく記録で確認できる状態へ戻す
 - **やらないこと**：このタスクで分析ダッシュボードを作ること、行動分析を細かく増やすこと、共有導線そのものを全面刷新すること
 
@@ -53,8 +53,8 @@ flowchart TB
 
 - `play.html` は `/internal/play-sessions/start|heartbeat|end` へ `POST` する設計になっている
 - しかし、このVMで `code-quest-pyxel` を配っている実サーバは `python3 -m http.server 8888 --bind 0.0.0.0` で、`POST /internal/play-sessions/start` に `501 Unsupported method` を返す
-- そのため、実公開URLで人が遊んでいても `.runtime/play_sessions.sqlite3` は増えず、J43 の「実公開で遊ばれた記録が見える」を満たせていない
-- J21 の task note では `tools/web_runtime_server.py` を前提にしていたが、実運用の公開経路はそこへつながっていない
+- そのため、実公開URLで人が遊んでいても `.runtime/play_sessions.sqlite3` は増えず、CJ43 の「実公開で遊ばれた記録が見える」を満たせていない
+- CJ21 の task note では `tools/web_runtime_server.py` を前提にしていたが、実運用の公開経路はそこへつながっていない
 
 ### 今回の方針
 
@@ -69,7 +69,7 @@ flowchart TB
 
 ---
 
-## 2) Gherkin（完了条件）
+## 2) カスタマージャーニーgherkin（完了条件）
 
 ### シナリオ1：正常系（実公開URLのプレイ記録が残る）
 
@@ -77,15 +77,15 @@ flowchart TB
 
 ### シナリオ2：異常系（静的サーバのまま見逃さない）
 
-> {実公開サーバが静的ファイルしか配っていない} で {`/internal/play-sessions/start` へ疎通確認する} と {未対応が検知され、J43 未達のまま done としない}
+> {実公開サーバが静的ファイルしか配っていない} で {`/internal/play-sessions/start` へ疎通確認する} と {未対応が検知され、CJ43 未達のまま done としない}
 
 ### シナリオ3：回帰確認（共有導線を壊さない）
 
 > {実公開ログ経路を直した} で {`index.html -> play.html -> pyxel.html` を開く} と {これまでどおり遊べて、追加でログだけが残る}
 
-### 対応する gherkin
+### 対応するカスタマージャーニーgherkin
 
-- `docs/gherkins/gherkin-platform.md` `J43`
+- `docs/product-requirements/cj-gherkin-platform.md` `CJG43`
 - `Scenario: 親が実公開のアクセスログで遊ばれているか確認できる`
 - `Scenario: 公開サーバがログAPIを持たないなら見逃さない`
 
@@ -124,7 +124,7 @@ flowchart TB
 
 ## 4) Tasklist
 
-- [x] `J21` と `J43` の責務分離を docs 上で反映する
+- [x] `CJ21` と `CJ43` の責務分離を docs 上で反映する
 - [x] 実公開URLを配っているプロセスを `code-quest-pyxel` に限定して特定する
 - [x] 実公開プロセスが `POST /internal/play-sessions/*` を受けられない根本原因を固定する
 - [x] 実公開サーバを `tools/web_runtime_server.py` 相当へ差し替える
@@ -140,9 +140,9 @@ flowchart TB
 
 ### 2026年4月14日 00:35（起票）
 
-**Observe**：`J21` は done だが、`.runtime/play_sessions.sqlite3` は空だった。一方で、このVMの `code-quest-pyxel` は `python3 -m http.server 8888 --bind 0.0.0.0` で配られており、`play.html` が送る `POST /internal/play-sessions/start` に対して `501 Unsupported method` を返していた。  
-**Think**：問題は「ログ機能がない」ことではなく、「J21 で作ったログ機能が実公開導線につながっていない」ことだった。これは `J21` よりも `J43: 実公開で遊ばれた記録が見える` の未達として扱う方が自然。  
-**Act**：`customer-journeys.md` と `gherkin-platform.md` で J43 を新設し、実公開ログ経路の修正タスクとしてこの note を起票した。
+**Observe**：`CJ21` は done だが、`.runtime/play_sessions.sqlite3` は空だった。一方で、このVMの `code-quest-pyxel` は `python3 -m http.server 8888 --bind 0.0.0.0` で配られており、`play.html` が送る `POST /internal/play-sessions/start` に対して `501 Unsupported method` を返していた。  
+**Think**：問題は「ログ機能がない」ことではなく、「CJ21 で作ったログ機能が実公開導線につながっていない」ことだった。これは `CJ21` よりも `CJ43: 実公開で遊ばれた記録が見える` の未達として扱う方が自然。  
+**Act**：`customer-journeys.md` と `cj-gherkin-platform.md` で `CJ43` を新設し、実公開ログ経路の修正タスクとしてこの note を起票した。
 
 ### 2026年4月14日 00:42（実公開導線の修正・確認）
 

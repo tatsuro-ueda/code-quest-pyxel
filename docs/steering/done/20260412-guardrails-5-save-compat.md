@@ -22,7 +22,7 @@ G10
 
 ---
 
-## 1. Journey
+## 1. 改善対象ジャーニー
 
 ```mermaid
 flowchart TB
@@ -46,9 +46,9 @@ flowchart TB
   class A3 good
 ```
 
-## 2. Gherkin
+## 2. カスタマージャーニーgherkin
 
-根拠: [`gherkin-guardrails.md`](../gherkins/gherkin-guardrails.md) J40
+根拠: [`cj-gherkin-guardrails.md`](../product-requirements/cj-gherkin-guardrails.md) CJG40
 
 ```gherkin
 Feature: 既存セーブデータとの互換性を検証する
@@ -125,4 +125,4 @@ tools/test_save_compat.py      ← セーブ互換テストスクリプト
 ## 5. Discussion
 
 - 2026-04-12 起票
-- 2026-04-12 Gherkin・Design記入。現行のdump/restore構造が既にフィールド追加・削除に安全な設計
+- 2026-04-12 カスタマージャーニーgherkin・Design記入。現行のdump/restore構造が既にフィールド追加・削除に安全な設計

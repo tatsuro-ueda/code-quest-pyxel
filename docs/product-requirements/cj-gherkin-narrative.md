@@ -1,12 +1,12 @@
-# Gherkin: Narrative（ダイアログ・ストーリー・ナビ）
+# カスタマージャーニーgherkin: Narrative（ダイアログ・ストーリー・ナビ）
 
-- 対象ジャーニー: J09, J14, J27, J30
+- 対象カスタマージャーニー: CJ09, CJ14, CJ27, CJ30
 - 根拠: [`customer-journeys.md`](./customer-journeys.md)
 - structure-design の中心: dialogue_data, structured_dialog, ストーリー分岐、エンディング
 
 ---
 
-## J09: セリフを変えたい
+## CJG09: セリフを変えたい
 
 ```gherkin
 Scenario: NPCのセリフを変更するとテストプレイで即座に反映される
@@ -35,7 +35,7 @@ Scenario: ひらがな表記でセリフが表示される
 
 ---
 
-## J14: マップが広すぎて迷う
+## CJG14: マップが広すぎて迷う
 
 ```gherkin
 Scenario: 次の目的地へのガイドが表示できる
@@ -53,7 +53,7 @@ Scenario: ガイドがストーリー進行に連動する
 
 ---
 
-## J27: ストーリーの分岐を作る
+## CJG27: ストーリーの分岐を作る
 
 ```gherkin
 Scenario: ダイアログに選択肢を追加できる
@@ -83,7 +83,7 @@ Scenario: 選択結果がゲーム状態に反映される
 
 ---
 
-## J30: エンディングを自分たちで書く
+## CJG30: エンディングを自分たちで書く
 
 ```gherkin
 Scenario: エンディングのセリフを変更できる

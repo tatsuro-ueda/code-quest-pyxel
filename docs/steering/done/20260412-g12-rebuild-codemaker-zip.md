@@ -17,7 +17,7 @@ tags:
 
 ---
 
-## 1) Journey（どこへ行くか）
+## 1) 改善対象ジャーニー
 
 - **深層的目的**：Code Makerで遊ぶゲームをWeb版と同じ最新版にする
 - **やらないこと**：build_codemaker.pyのインライン処理（main.pyは既にインライン済み）
@@ -66,7 +66,7 @@ flowchart TB
 
 ---
 
-## 2) Gherkin（完了条件）
+## 2) カスタマージャーニーgherkin（完了条件）
 
 ### シナリオ1：zip内のmain.pyがプロジェクトのmain.pyと同一
 

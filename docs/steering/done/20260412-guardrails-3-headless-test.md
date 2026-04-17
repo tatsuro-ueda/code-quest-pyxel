@@ -22,7 +22,7 @@ G8, G9
 
 ---
 
-## 1. Journey
+## 1. 改善対象ジャーニー
 
 ```mermaid
 flowchart TB
@@ -46,9 +46,9 @@ flowchart TB
   class A3 good
 ```
 
-## 2. Gherkin
+## 2. カスタマージャーニーgherkin
 
-根拠: [`gherkin-guardrails.md`](../gherkins/gherkin-guardrails.md) J35
+根拠: [`cj-gherkin-guardrails.md`](../product-requirements/cj-gherkin-guardrails.md) CJG35
 
 ```gherkin
 Feature: 壊れた版を子どもに届けない
@@ -156,7 +156,7 @@ Makefile がないため、当面は手動またはhookから呼ぶ。
 ## 5. Discussion
 
 - 2026-04-12 起票
-- 2026-04-12 Journey承認 → Gherkin・Design記入
+- 2026-04-12 改善対象ジャーニー承認 → カスタマージャーニーgherkin・Design記入
 - 2026-04-12 Pyxel 2.8.10 で headless=True ネイティブサポート確認
 - 2026-04-12 初回スコープ: G8のみ、G9は後日
 - 2026-04-12 G8 実装完了。ヘッドレス起動+1フレーム描画テスト通過確認

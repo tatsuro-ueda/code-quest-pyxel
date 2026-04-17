@@ -1,12 +1,12 @@
-# Gherkin: AV（BGM・SFX・VFX）
+# カスタマージャーニーgherkin: AV（BGM・SFX・VFX）
 
-- 対象ジャーニー: J11, J15-J19, J24
+- 対象カスタマージャーニー: CJ11, CJ15-CJ19, CJ24
 - 根拠: [`customer-journeys.md`](./customer-journeys.md)
 - structure-design の中心: audio_system, chiptune_tracks, SFXトリガー, VFX描画
 
 ---
 
-## J15: フィールドBGMをゾーンごとに付ける
+## CJG15: フィールドBGMをゾーンごとに付ける
 
 ```gherkin
 Scenario: ゾーンが変わるとBGMが切り替わる
@@ -32,7 +32,7 @@ Scenario: AIが方針からBGMデータを生成できる
 
 ---
 
-## J16: 戦闘BGMを付ける
+## CJG16: 戦闘BGMを付ける
 
 ```gherkin
 Scenario: 戦闘開始時にBGMが戦闘曲に切り替わる
@@ -50,7 +50,7 @@ Scenario: 戦闘終了後にフィールドBGMに戻る
 
 ---
 
-## J11: BGMの雰囲気を変えたい
+## CJG11: BGMの雰囲気を変えたい
 
 ```gherkin
 Scenario: 既存BGMの曲調を変更できる
@@ -70,7 +70,7 @@ Scenario: BGM変更が他のゾーンに影響しない
 
 ---
 
-## J17: 効果音をイベントに紐づける
+## CJG17: 効果音をイベントに紐づける
 
 ```gherkin
 Scenario: 攻撃時にSFXが再生される
@@ -103,7 +103,7 @@ Scenario: AIが方針からSFXデータを生成できる
 
 ---
 
-## J24: 効果音を自分で作る
+## CJG24: 効果音を自分で作る
 
 ```gherkin
 Scenario: Code MakerのSoundエディタでSFXを編集できる
@@ -122,7 +122,7 @@ Scenario: Soundエディタで編集したSFXがゲーム内で使われる
 
 ---
 
-## J18: ダメージ演出を付ける
+## CJG18: ダメージ演出を付ける
 
 ```gherkin
 Scenario: 敵にダメージを与えたとき画面フラッシュが発生する
@@ -148,7 +148,7 @@ Scenario: VFXがゲームの動作を妨げない
 
 ---
 
-## J19: 場面転換の演出
+## CJG19: 場面転換の演出
 
 ```gherkin
 Scenario: 町に入るときフェードアウト/フェードインする

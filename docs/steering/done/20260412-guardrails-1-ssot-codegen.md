@@ -30,7 +30,7 @@ df015fa
 
 ---
 
-## 1. Journey
+## 1. 改善対象ジャーニー
 
 ```mermaid
 flowchart TB
@@ -56,7 +56,7 @@ flowchart TB
   class A4 good
 ```
 
-## 2. Gherkin
+## 2. カスタマージャーニーgherkin
 
 1. YAML編集 → gen実行 → src/generated/ にPythonファイル生成される
 2. make gen で全データ種別を一括生成できる
@@ -95,5 +95,5 @@ Makefile に gen / build ターゲット追加
 ## 5. Discussion
 
 - 2026-04-12 起票: SSoT + Codegen基盤の必要性を整理
-- 2026-04-12 Journey承認 → Gherkin記入
+- 2026-04-12 改善対象ジャーニー承認 → カスタマージャーニーgherkin記入
 - 2026-04-12 実装完了 (df015fa)

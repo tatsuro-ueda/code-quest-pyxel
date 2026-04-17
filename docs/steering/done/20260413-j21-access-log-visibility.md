@@ -19,7 +19,7 @@ tags:
 
 ---
 
-## 1) Journey（どこへ行くか）
+## 1) 改善対象ジャーニー
 
 - **深層的目的**：共有したゲームが「少しだけ触られた」のか「しばらく遊ばれた」のかを親が把握できるようにして、次の声かけや改善判断につなげる
 - **やらないこと**：プレイ内容の完全リプレイ、個人特定を前提にした追跡、会員登録機能の追加、ゲーム本編の遊び方変更
@@ -56,7 +56,7 @@ flowchart TB
 
 ### 現状
 
-- `docs/gherkins/gherkin-platform.md` の J21-4 は「日別・ページ別のアクセス数」が中心だが、今回ほしいのは件数だけでなく「どれくらい遊んでいたか」の手がかり
+- `docs/product-requirements/cj-gherkin-platform.md` の CJG21-4 は「日別・ページ別のアクセス数」が中心だが、今回ほしいのは件数だけでなく「どれくらい遊んでいたか」の手がかり
 - 現在のリポジトリには `index.html` / `play.html` / `pyxel.html` などの Web 配信物はあるが、プレイ時間の長短を内部で残す仕組みは見当たらない
 - そのため今は URL を送った後に、「開かれた」こと以上の情報がなく、すぐ離脱したのか、夢中で遊んだのかを区別できない
 
@@ -69,11 +69,11 @@ flowchart TB
 
 ### 委任度
 
-- 🟢 CC主導で Journey の再定義は進められる。次は「何をもって短い/長いと見るか」を Gherkin で固定すればよい
+- 🟢 CC主導で改善対象ジャーニーの再定義は進められる。次は「何をもって短い/長いと見るか」をカスタマージャーニーgherkinで固定すればよい
 
 ---
 
-## 2) Gherkin（完了条件）
+## 2) カスタマージャーニーgherkin（完了条件）
 
 ### シナリオ1：短時間プレイだと分かる
 
@@ -148,7 +148,7 @@ flowchart TD
 
 ### 委任度
 
-- 🟢 CC主導で Gherkin は固まった。Tasklist ではセッション開始・途中経過・終了をどの粒度で実装するかへ落とし込める
+- 🟢 CC主導でカスタマージャーニーgherkin は固まった。Tasklist ではセッション開始・途中経過・終了をどの粒度で実装するかへ落とし込める
 
 ---
 
@@ -265,7 +265,7 @@ flowchart TD
 - [x] `tools/build_web_release.py` の `generate_wrapper()` を拡張し、`play.html` と `play-preview.html` に `page_kind=current|preview` と内部ログAPIパスを埋め込めるようにする
 - [x] `tools/report_play_sessions.py` を新規作成し、日別・ページ別の session 数、平均 `active_seconds`、`short / middle / long` 件数を端末で確認できるようにする
 - [x] `tools/test_web_compat.py` を `play.html` ベースの確認へ寄せるか、必要ならログAPI込みの補助テストを追加して、共有導線と iframe 表示が壊れていないことを確認する
-- [x] `python -m pytest test/ -q` と `python tools/test_web_compat.py` を実行し、タスクノートの Gherkin に対して不足がないか CoVe で見直す
+- [x] `python -m pytest test/ -q` と `python tools/test_web_compat.py` を実行し、タスクノートのカスタマージャーニーgherkin に対して不足がないか CoVe で見直す
 
 ---
 

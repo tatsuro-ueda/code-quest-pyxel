@@ -19,7 +19,7 @@ tags:
 
 ---
 
-## 1) Journey（どこへ行くか）
+## 1) 改善対象ジャーニー
 
 - **深層的目的**：セリフの元データを1か所にまとめる
 - **やらないこと**：セリフ表示ロジックのバグ修正、他データ種別のSSoT化、大きな呼び出し側リファクタ
@@ -74,7 +74,7 @@ flowchart TB
 
 ---
 
-## 2) Gherkin（完了条件）
+## 2) カスタマージャーニーgherkin（完了条件）
 
 ### シナリオ1：正常系（dialogue を YAML から一方通行で生成できる）
 
@@ -183,7 +183,7 @@ flowchart TD
     D4 --> D5["⑤ tools/sync_main_data.py で main.py の dialogue 節を同期"]
     D5 --> D6["⑥ make gen と対象テストで確認"]
     D6 --> D7["⑦ python -m pytest test/ -q で全体確認"]
-    D7 --> DONE["✓ Gherkin を満たしたら完了"]
+    D7 --> DONE["✓ カスタマージャーニーgherkin を満たしたら完了"]
 
     classDef gate fill:#e2e3f1,stroke:#3949ab,color:#000000;
     classDef done fill:#d4edda,stroke:#155724,color:#000000;
@@ -224,7 +224,7 @@ flowchart TD
     T6 --> T6C{"Green になったか?"}
     T6C -->|No| T3
     T6C -->|Yes| T7["⑦ python -m pytest test/ -q"]
-    T7 --> T7C{"全Gherkinを満たしたか?"}
+    T7 --> T7C{"全カスタマージャーニーgherkinを満たしたか?"}
     T7C -->|No| T1
     T7C -->|Yes| DONE["✓ Discussionへ進む"]
 
@@ -254,7 +254,7 @@ flowchart TD
 - [x] `python -m pytest test/ -q` を実行し、既存テスト群が壊れていないことを確認する
 - [x] `python tools/sync_main_data.py --check` を実行し、`main.py` 同期が保たれていることを確認する
 - [x] `python tools/test_headless.py` は sandbox 上で終了が不安定だったため補助確認扱いにし、結果を `5) Discussion` に記録する
-- [x] 結果を `5) Discussion` に記録し、Gherkin 3本をすべて満たしたかを CoVe で確認する
+- [x] 結果を `5) Discussion` に記録し、カスタマージャーニーgherkin 3本をすべて満たしたかを CoVe で確認する
 
 ---
 

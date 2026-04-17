@@ -22,7 +22,7 @@ G11, G12
 
 ---
 
-## 1. Journey
+## 1. 改善対象ジャーニー
 
 ```mermaid
 flowchart TB
@@ -46,9 +46,9 @@ flowchart TB
   class A3 good
 ```
 
-## 2. Gherkin
+## 2. カスタマージャーニーgherkin
 
-根拠: [`gherkin-guardrails.md`](../gherkins/gherkin-guardrails.md) J41
+根拠: [`cj-gherkin-guardrails.md`](../product-requirements/cj-gherkin-guardrails.md) CJG41
 
 ```gherkin
 Feature: 技術基盤の変更がWeb配信を壊さない
@@ -110,7 +110,7 @@ tools/test_web_compat.py    ← Playwright によるWeb版動作テスト
 
 ## 4. Tasklist
 
-- [x] Gherkin記載
+- [x] カスタマージャーニーgherkin記載
 - [x] Playwright + Chromium Headless インストール
 - [x] `tools/test_web_compat.py` — Web版動作テスト作成
 - [x] テスト通過確認（10秒間クラッシュ・致命的エラーなし）

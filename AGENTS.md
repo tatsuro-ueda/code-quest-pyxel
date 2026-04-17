@@ -17,7 +17,7 @@
 
 ## Primary Documents
 
-- `docs/gherkins/` — customer journeys, gherkins, guardrails
+- `docs/product-requirements/` — customer journeys, gherkins, guardrails
 - `docs/steering/` — active task notes
 - `docs/steering/done/` — completed task notes
 
@@ -32,8 +32,8 @@ Before implementing changes in any of these areas:
 - runtime / deploy / logs / public URL
 
 you MUST read these documents first:
-- `docs/gherkins/customer-journeys.md`
-- `docs/gherkins/gherkin-platform.md`
+- `docs/product-requirements/customer-journeys.md`
+- `docs/product-requirements/cj-gherkin-platform.md`
 - the matching active task note in `docs/steering/` if one exists
 - the most relevant completed note in `docs/steering/done/` for the same area
 

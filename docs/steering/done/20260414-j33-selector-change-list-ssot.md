@@ -23,10 +23,10 @@ tags:
 
 ---
 
-## 1) Journey（どこへ行くか）
+## 1) 改善対象ジャーニー
 
-- **根拠となる journey**：`docs/gherkins/customer-journeys.md` の `J31: 子どもが変更を承認する`
-- **直接対応する journey**：`docs/gherkins/customer-journeys.md` の `J33: 子どもが変更を選んで適用する`
+- **根拠となるカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
+- **直接対応するカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
 - **深層的目的**：選択ページの「何が変わったか」が実際に配信される変更内容と一致し、子どもが説明を信じて承認・比較できる状態に戻す
 - **やらないこと**：このタスクで戦闘ロジックそのものを再修正すること、トップページの全面デザイン刷新をすること、変更文言のコピーライティングだけを単独で磨くこと
 
@@ -62,7 +62,7 @@ flowchart TB
 
 ### 今回の方針
 
-- この問題は `J31` の「変更内容が子どもに理解できる」と `J33` の「おためし版に含まれる変更一覧が表示される」を同時に破る不具合として扱う
+- この問題は `CJ31` の「変更内容が子どもに理解できる」と `CJ33` の「おためし版に含まれる変更一覧が表示される」を同時に破る不具合として扱う
 - まず normal build / preview build の両方で、変更説明がどこから来るべきかを整理する
 - そのうえで、説明と実変更がずれたまま build/push できる経路を潰す
 - 運用で毎回人間が覚えて更新する前提を減らし、最低でも build/test でズレを検知できる形へ寄せる
@@ -73,7 +73,7 @@ flowchart TB
 
 ---
 
-## 2) Gherkin（完了条件）
+## 2) カスタマージャーニーgherkin（完了条件）
 
 ### シナリオ1：正常系（子どもが変更内容を正しく理解できる）
 
@@ -87,11 +87,11 @@ flowchart TB
 
 > {change list の SoT を見直した} で {normal build / preview build を行う} と {`index.html` から `play.html` / `play-preview.html` への導線と比較フローはそのまま維持される}
 
-### 対応する gherkin
+### 対応するカスタマージャーニーgherkin
 
-- `docs/gherkins/gherkin-platform.md` `J31`
+- `docs/product-requirements/cj-gherkin-platform.md` `CJG31`
 - `Scenario: 変更内容が子どもに理解できる`
-- `docs/gherkins/gherkin-platform.md` `J33`
+- `docs/product-requirements/cj-gherkin-platform.md` `CJG33`
 - `Scenario: おためし版に含まれる変更一覧が表示される`
 
 ---
@@ -147,17 +147,17 @@ flowchart TB
 ### 2026年4月14日 00:10（起票）
 
 **Observe**：`make build` は通っているのに、`index.html` の変更説明は「ダンジョンの おくに ボスを ついか」のままで、直前に反映した `逃走失敗後に敵ターンが来ない` 修正が選択ページへ出ていなかった。`index.html` は build 時に再生成されているが、その説明は `top_changes.json` 依存のまま残っていた。  
-**Think**：これは build failure ではなく SoT failure で、子どもが選択ページを見ても「今回何が変わったか」を正しく理解できない。`J31` の承認判断と `J33` の変更一覧理解を壊すため、重大なバグとして扱うべき。  
-**Act**：`J31/J33` を根拠に、選択ページの change list SoT を見直す task note を起票した。
+**Think**：これは build failure ではなく SoT failure で、子どもが選択ページを見ても「今回何が変わったか」を正しく理解できない。`CJ31` の承認判断と `CJ33` の変更一覧理解を壊すため、重大なバグとして扱うべき。  
+**Act**：`CJ31/CJ33` を根拠に、選択ページの change list SoT を見直す task note を起票した。
 
 ### 2026年4月14日 00:18（修正・検証完了）
 
-**Observe**：基本文書を読み直すと、中心は `J21` ではなく `J31/J33` だった。問題は「友達に見せる」ことより、「子どもが選択ページの説明を信じて比較・承認する」導線が壊れていたことだった。コード上の根本原因は、normal build の `top_changes.json` と preview build の `preview_meta.json` に freshness guard がなく、実配信ソースより古い説明でも build が通っていた点にあった。  
-**Think**：手動更新を前提に残すにしても、少なくとも stale metadata を build/test で検知できなければ `J31/J33` は守れない。今回の最小修正は、change list metadata を消すことではなく、「対応するソースより古ければ失敗する」guardrail を build script に入れることだった。  
-**Act**：`customer-journeys.md` と `gherkin-platform.md` を `J31/J33` 軸で補強し、`test/test_build_web_release.py` に stale `top_changes.json` / stale `preview_meta.json` の failing test を追加した。`tools/build_web_release.py` に freshness validation を実装し、`top_changes.json` も current 内容へ更新した。検証は `python -m pytest test/test_build_web_release.py -q` で `18 passed`、`make build` で `157 passed, 2 skipped` + `tools/build_web_release.py` 完了、`python tools/test_web_compat.py` で `OK: Web版テスト通過` を確認した。
+**Observe**：基本文書を読み直すと、中心は `CJ21` ではなく `CJ31/CJ33` だった。問題は「友達に見せる」ことより、「子どもが選択ページの説明を信じて比較・承認する」導線が壊れていたことだった。コード上の根本原因は、normal build の `top_changes.json` と preview build の `preview_meta.json` に freshness guard がなく、実配信ソースより古い説明でも build が通っていた点にあった。  
+**Think**：手動更新を前提に残すにしても、少なくとも stale metadata を build/test で検知できなければ `CJ31/CJ33` は守れない。今回の最小修正は、change list metadata を消すことではなく、「対応するソースより古ければ失敗する」guardrail を build script に入れることだった。  
+**Act**：`customer-journeys.md` と `cj-gherkin-platform.md` を `CJ31/CJ33` 軸で補強し、`test/test_build_web_release.py` に stale `top_changes.json` / stale `preview_meta.json` の failing test を追加した。`tools/build_web_release.py` に freshness validation を実装し、`top_changes.json` も current 内容へ更新した。検証は `python -m pytest test/test_build_web_release.py -q` で `18 passed`、`make build` で `157 passed, 2 skipped` + `tools/build_web_release.py` 完了、`python tools/test_web_compat.py` で `OK: Web版テスト通過` を確認した。
 
 ### 2026年4月14日 00:20（運用ルール固定）
 
 **Observe**：今回のズレは、実装ミスだけでなく「関連 docs を先に読む」ルールが開発ガイドに明文化されていなかったことも再発要因になっていた。  
-**Think**：selector / preview / build flow を触るときは、少なくとも `customer-journeys.md`、`gherkin-platform.md`、対応 task note、`tools/build_web_release.py`、`test/test_build_web_release.py` を読む手順を固定すべき。  
+**Think**：selector / preview / build flow を触るときは、少なくとも `customer-journeys.md`、`cj-gherkin-platform.md`、対応 task note、`tools/build_web_release.py`、`test/test_build_web_release.py` を読む手順を固定すべき。  
 **Act**：`AGENTS.md` に pre-read ルールを追記し、build / selector / preview / release-note 変更前の必読文書を明記した。
