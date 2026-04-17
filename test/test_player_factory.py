@@ -59,7 +59,7 @@ class CreateInitialPlayerTest(unittest.TestCase):
             "x", "y", "hp", "max_hp", "mp", "max_mp",
             "atk", "def", "agi", "lv", "exp", "gold",
             "weapon", "armor", "items", "spells",
-            "poisoned", "in_dungeon", "boss_defeated",
+            "poisoned", "in_dungeon", "glitch_lord_defeated",
             "max_zone_reached", "landmarkTreeSeen", "landmarkTowerSeen",
             "dialog_flags",
         ):

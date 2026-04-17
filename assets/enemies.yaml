@@ -157,7 +157,7 @@
   spells:
     - コンパイル
     - ループブレイク
-  is_boss: true
+  is_glitch_lord: true
   desc: すべてのブロックをぼうそうさせたちょうほんにん！
 - name: プロフェッサー
   sprite: professor

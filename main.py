@@ -250,14 +250,14 @@ def find_landmark_at(player_x: int, player_y: int) -> LandmarkEvent | None:
     return None
 
 
-def resolve_scene(event: LandmarkEvent, flags: dict[str, bool], boss_defeated: bool) -> str:
+def resolve_scene(event: LandmarkEvent, flags: dict[str, bool], glitch_lord_defeated: bool) -> str:
     """Decide which scene to play for an event based on player flags."""
     # First visit
     if not flags.get(event.flag_name, False):
         return event.scene_name
     # Boss defeated and epilogue not yet played
     if (
-        boss_defeated
+        glitch_lord_defeated
         and event.epilogue_scene
         and event.epilogue_flag
         and not flags.get(event.epilogue_flag, False)
@@ -332,7 +332,7 @@ def create_initial_player(start_x: int = 25, start_y: int = 6) -> dict[str, Any]
         "spells": [],
         "poisoned": False,
         "in_dungeon": False,
-        "boss_defeated": False,
+        "glitch_lord_defeated": False,
         "max_zone_reached": 0,
         "landmarkTreeSeen": False,
         "landmarkTowerSeen": False,
@@ -367,7 +367,7 @@ SAVED_PLAYER_KEYS: tuple[str, ...] = (
     "items", "spells",
     "poisoned",
     "in_dungeon",
-    "boss_defeated",
+    "glitch_lord_defeated",
     "max_zone_reached",
     "landmarkTreeSeen", "landmarkTowerSeen",
     "treeAsked", "towerNoiseCleared",
@@ -398,8 +398,11 @@ def restore_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
         {"player": dict, "town_pos": tuple[int, int]}
     """
     raw_pos = snapshot["town_pos"]
+    player = dict(snapshot["player"])
+    if "glitch_lord_defeated" not in player and "boss_defeated" in player:
+        player["glitch_lord_defeated"] = bool(player.pop("boss_defeated"))
     return {
-        "player": dict(snapshot["player"]),
+        "player": player,
         "town_pos": (int(raw_pos[0]), int(raw_pos[1])),
     }
 
@@ -1049,7 +1052,7 @@ def choose_bgm_scene(
     state: str,
     in_dungeon: bool,
     zone: int,
-    battle_is_boss: bool = False,
+    battle_is_glitch_lord: bool = False,
     battle_enemy_hp: int = 0,
     battle_enemy_max_hp: int = 0,
     battle_phase: str = "menu",
@@ -1066,7 +1069,7 @@ def choose_bgm_scene(
     if state == "battle":
         if battle_phase == "result" and battle_enemy_hp <= 0:
             return "victory"
-        if battle_is_boss:
+        if battle_is_glitch_lord:
             return "boss"
         return "battle"
     if state == "town":
@@ -1303,7 +1306,7 @@ ENEMIES: list[dict[str, Any]] = [
         'zone': 5,
         'category': 'boss',
         'spells': ['コンパイル', 'ループブレイク'],
-        'is_boss': True,
+        'is_glitch_lord': True,
         'desc': 'すべてのブロックをぼうそうさせたちょうほんにん！',
     },
     {
@@ -1544,17 +1547,22 @@ SHOPS: dict[str, Any] = {
 # --- derived data ---
 
 def _build_zone_enemies(enemies: list[dict[str, Any]]) -> dict[int, list]:
-    """zone -> list[enemy] にグルーピング。ボス・教授等は除外。"""
+    """zone -> list[enemy] にグルーピング。イベント敵やボス等は除外。"""
     by_zone: dict[int, list] = {}
     for e in enemies:
-        if e.get("is_boss") or e.get("is_professor") or e.get("post_clear_only"):
+        if (
+            e.get("is_glitch_lord")
+            or e.get("is_professor")
+            or e.get("post_clear_only")
+            or e.get("is_noise_guardian")
+        ):
             continue
         by_zone.setdefault(e["zone"], []).append(e)
     return by_zone
 
 
 ZONE_ENEMIES = _build_zone_enemies(ENEMIES)
-BOSS_DATA = next(e for e in ENEMIES if e.get("is_boss"))
+GLITCH_LORD_DATA = next(e for e in ENEMIES if e.get("is_glitch_lord"))
 PROFESSOR_DATA = next(e for e in ENEMIES if e.get("is_professor"))
 GLITCH_CLONE_DATA = next(e for e in ENEMIES if e.get("post_clear_only"))
 NOISE_GUARDIAN_DATA = next(e for e in ENEMIES if e.get("is_noise_guardian"))
@@ -1567,7 +1575,7 @@ SHOP_LIST = SHOPS["shops"]
 
 # --- boss phase logic ---
 
-def boss_phase(hp_ratio: float) -> str:
+def glitch_lord_phase(hp_ratio: float) -> str:
     """Return a phase label based on the boss HP ratio.
 
     JS版 `getBossPhases` 相当:
@@ -1582,7 +1590,7 @@ def boss_phase(hp_ratio: float) -> str:
     return "phase3"
 
 
-BOSS_PHASE_MESSAGES = {
+GLITCH_LORD_PHASE_MESSAGES = {
     "phase2": "ボスの様子が変わった！",
     "phase3": "ボスは最後の力を振り絞っている！",
 }
@@ -3238,7 +3246,7 @@ T_FLOWER = 13; T_ROCK = 14; T_MUSHROOM = 15; T_CACTUS = 16; T_BUSH = 17
 # マルチタイルランドマーク（2x2、通行不可）
 T_BIGTREE_TL = 18; T_BIGTREE_TR = 19; T_BIGTREE_BL = 20; T_BIGTREE_BR = 21
 T_TOWER_TL = 22; T_TOWER_TR = 23; T_TOWER_BL = 24; T_TOWER_BR = 25
-T_BOSS_TRIGGER = 26  # ダンジョン最奥のボストリガー
+T_GLITCH_LORD_TRIGGER = 26  # ダンジョン最奥のボストリガー
 
 # 上り階段（青背景に黄色の階段絵）
 TILE_STAIR_UP = [
@@ -3534,7 +3542,7 @@ TILE_DATA = {
     T_BIGTREE_BL: TILE_BIGTREE_BL, T_BIGTREE_BR: TILE_BIGTREE_BR,
     T_TOWER_TL: TILE_TOWER_TL, T_TOWER_TR: TILE_TOWER_TR,
     T_TOWER_BL: TILE_TOWER_BL, T_TOWER_BR: TILE_TOWER_BR,
-    T_BOSS_TRIGGER: TILE_BOSS_TRIGGER,
+    T_GLITCH_LORD_TRIGGER: TILE_BOSS_TRIGGER,
 }
 
 DECORATION_TILES = {T_FLOWER, T_ROCK, T_MUSHROOM, T_CACTUS, T_BUSH}
@@ -4382,7 +4390,7 @@ def generate_dungeon(seed=99):
         by = bry + brh // 2
         if (bx, by) == (sx, sy):
             bx = min(brx + brw - 1, bx + 1)
-        grid[by][bx] = T_BOSS_TRIGGER
+        grid[by][bx] = T_GLITCH_LORD_TRIGGER
     return grid, rooms
 
 def get_zone(tile_y, in_dungeon=False):
@@ -4400,17 +4408,22 @@ _ALL_ENEMIES = ENEMIES
 
 
 def _build_zone_enemies(enemies):
-    """zone -> list[enemy] にグルーピング。post_clear_only/is_boss/is_professor は除外。"""
+    """zone -> list[enemy] にグルーピング。イベント敵やボス等は除外。"""
     by_zone: dict[int, list] = {}
     for e in enemies:
-        if e.get("is_boss") or e.get("is_professor") or e.get("post_clear_only"):
+        if (
+            e.get("is_glitch_lord")
+            or e.get("is_professor")
+            or e.get("post_clear_only")
+            or e.get("is_noise_guardian")
+        ):
             continue
         by_zone.setdefault(e["zone"], []).append(e)
     return by_zone
 
 
 ZONE_ENEMIES = _build_zone_enemies(_ALL_ENEMIES)
-BOSS_DATA = next(e for e in _ALL_ENEMIES if e.get("is_boss"))
+GLITCH_LORD_DATA = next(e for e in _ALL_ENEMIES if e.get("is_glitch_lord"))
 PROFESSOR_DATA = next(e for e in _ALL_ENEMIES if e.get("is_professor"))
 GLITCH_CLONE_DATA = next(e for e in _ALL_ENEMIES if e.get("post_clear_only"))
 NOISE_GUARDIAN_DATA = next(e for e in _ALL_ENEMIES if e.get("is_noise_guardian"))
@@ -4617,7 +4630,7 @@ class Game:
         self.vfx_type = ""
         self.battle_item_select = 0
         self.battle_spell_select = 0
-        self.battle_is_boss = False
+        self.battle_is_glitch_lord = False
         self.battle_is_professor = False
         self.battle_boss_phase = "phase1"
 
@@ -5229,10 +5242,9 @@ class Game:
                 p["x"] = self.world_return_x
                 p["y"] = self.world_return_y
                 self.dungeon_map = None
-                callback = self._enter_ending if p["boss_defeated"] else None
                 self._enter_message(
                     self._dialog_lines("dungeon.glitch.exit"),
-                    callback=callback,
+                    callback=None,
                 )
                 return
 
@@ -5245,16 +5257,15 @@ class Game:
             p["x"] = self.world_return_x
             p["y"] = self.world_return_y
             self.dungeon_map = None
-            callback = self._enter_ending if p.get("boss_defeated") else None
             self._enter_message(
                 self._dialog_lines("dungeon.glitch.exit"),
-                callback=callback,
+                callback=None,
             )
             return
 
-        if p["in_dungeon"] and tile == T_BOSS_TRIGGER:
-            if not p.get("boss_defeated"):
-                self._start_battle(BOSS_DATA, is_boss=True)
+        if p["in_dungeon"] and tile == T_GLITCH_LORD_TRIGGER:
+            if not p.get("glitch_lord_defeated"):
+                self._start_battle(GLITCH_LORD_DATA, is_glitch_lord=True)
             return
 
         # Town entry → open the town menu (D6)
@@ -5267,7 +5278,7 @@ class Game:
         # Castle still uses the legacy in-place dialog
         if tile == T_CASTLE:
             # クリア後の隠し導線：プロフェッサー編へ
-            if self.player.get("boss_defeated") and (nx, ny) == (25, 6):
+            if self.player.get("glitch_lord_defeated") and (nx, ny) == (25, 6):
                 self._enter_professor_intro()
                 return
             scene = TOWN_DIALOG_SCENES.get((nx, ny))
@@ -5308,14 +5319,14 @@ class Game:
 
         # Random encounter
         if not self.debug_mode:
-            if p["in_dungeon"] and p["boss_defeated"]:
+            if p["in_dungeon"] and p["glitch_lord_defeated"]:
                 return
             rate = ENCOUNTER_RATES.get(tile, 0)
             if rate > 0 and random.random() < rate:
                 zone = get_zone(p["y"], p["in_dungeon"])
                 enemies = ZONE_ENEMIES.get(zone, ZONE_ENEMIES[0])
                 enemy_template = random.choice(enemies)
-                self._start_battle(enemy_template, is_boss=False)
+                self._start_battle(enemy_template, is_glitch_lord=False)
 
     def _check_landmark_events(self):
         if self.player["in_dungeon"]:
@@ -5382,7 +5393,7 @@ class Game:
             if cleared:
                 # エピローグ（ボス撃破後）
                 if (
-                    p.get("boss_defeated")
+                    p.get("glitch_lord_defeated")
                     and landmark.epilogue_scene
                     and not p.get(landmark.epilogue_flag, False)
                 ):
@@ -5404,7 +5415,7 @@ class Game:
     def _start_noise_guardian_battle(self):
         """ノイズガーディアン強制戦闘を開始する。"""
         self._noise_guardian_battle = True
-        self._start_battle(NOISE_GUARDIAN_DATA, is_boss=False)
+        self._start_battle(NOISE_GUARDIAN_DATA, is_glitch_lord=False)
         self.battle_text = self._dialog_text("boss.noise_guardian.intro")
 
     def _on_noise_guardian_defeated(self):
@@ -5432,7 +5443,7 @@ class Game:
             if msg:
                 self.battle_text = (self.battle_text + " " + msg).strip()
 
-    def _start_battle(self, enemy_template, is_boss=False, is_professor=False):
+    def _start_battle(self, enemy_template, is_glitch_lord=False, is_professor=False):
         self.sfx.play("encounter")
         self.battle_enemy = dict(enemy_template)
         self.battle_enemy_hp = enemy_template["hp"]
@@ -5442,10 +5453,10 @@ class Game:
         self.battle_text_timer = 0
         self.battle_item_select = 0
         self.battle_spell_select = 0
-        self.battle_is_boss = is_boss
+        self.battle_is_glitch_lord = is_glitch_lord
         self.battle_is_professor = is_professor
         self.battle_boss_phase = "phase1" if not is_professor else "100"
-        if is_boss:
+        if is_glitch_lord:
             self.battle_text = self._dialog_text("boss.glitch.intro")
         self.state = "battle"
 
@@ -5473,14 +5484,14 @@ class Game:
                     self.battle_phase = "item_select"
                     self.battle_item_select = 0
                 elif self.battle_menu == 3:  # Run
-                    if not self.battle_is_boss and random.random() < 0.5:
+                    if not self.battle_is_glitch_lord and random.random() < 0.5:
                         self.battle_text = self._dialog_text("battle.normal.run.success")
                         self.battle_phase = "result"
                         self.battle_text_timer = 60
                     else:
                         scene_name = (
                             "boss.glitch.run.fail"
-                            if self.battle_is_boss
+                            if self.battle_is_glitch_lord
                             else "battle.normal.run.fail"
                         )
                         self.battle_text = self._dialog_text(scene_name)
@@ -5594,9 +5605,9 @@ class Game:
                         self.player["professor_defeated"] = True
                         self._enter_professor_ending_main()
                     else:
-                        if self.battle_is_boss and self.battle_enemy_hp <= 0:
+                        if self.battle_is_glitch_lord and self.battle_enemy_hp <= 0:
                             self.sfx.play("boss_defeat")
-                            self.player["boss_defeated"] = True
+                            self.player["glitch_lord_defeated"] = True
                         # ノイズガーディアン撃破 → エピローグへ
                         if getattr(self, "_noise_guardian_battle", False) and self.battle_enemy_hp <= 0:
                             self._on_noise_guardian_defeated()
@@ -5619,11 +5630,11 @@ class Game:
             enemy=e["name"],
             dmg=dmg,
         )
-        self._check_boss_phase_transition()
+        self._check_glitch_lord_phase_transition()
         self.battle_phase = "player_attack"
         self.battle_text_timer = 40
 
-    def _check_boss_phase_transition(self):
+    def _check_glitch_lord_phase_transition(self):
         """ボスのHPが閾値を跨いだら phase を更新し、移行メッセージを差し込む。"""
         if self.battle_enemy is None:
             return
@@ -5631,7 +5642,7 @@ class Game:
         if getattr(self, "_noise_guardian_battle", False):
             self._check_noise_guardian_phase()
             return
-        if not (self.battle_is_boss or self.battle_is_professor):
+        if not (self.battle_is_glitch_lord or self.battle_is_professor):
             return
         max_hp = self.battle_enemy["hp"]
         if max_hp <= 0:
@@ -5648,10 +5659,10 @@ class Game:
                 if transition_msg:
                     self.battle_text = (self.battle_text + " " + transition_msg).strip()
             return
-        new_phase = boss_phase(ratio)
+        new_phase = glitch_lord_phase(ratio)
         if new_phase != self.battle_boss_phase:
             self.battle_boss_phase = new_phase
-            transition_msg = BOSS_PHASE_MESSAGES.get(new_phase)
+            transition_msg = GLITCH_LORD_PHASE_MESSAGES.get(new_phase)
             if transition_msg:
                 # 既存ダメージメッセージに連結
                 self.battle_text = (self.battle_text + " " + transition_msg).strip()
@@ -5919,7 +5930,7 @@ class Game:
         self.msg_callback = callback
 
     def _professor_phase(self):
-        if self.player["boss_defeated"]:
+        if self.player["glitch_lord_defeated"]:
             return "late"
         max_zone = self.player["max_zone_reached"]
         if max_zone >= 3:
@@ -5952,13 +5963,13 @@ class Game:
         self.state = "ending"
 
     def _enemy_hit_scene_name(self):
-        if self.battle_is_boss:
+        if self.battle_is_glitch_lord:
             return "boss.glitch.enemy_hit"
         category = self.battle_enemy.get("category", "sequential")
         return ENEMY_HIT_SCENES.get(category, ENEMY_HIT_SCENES["sequential"])
 
     def _victory_scene_name(self):
-        if self.battle_is_boss:
+        if self.battle_is_glitch_lord:
             return "boss.glitch.defeat"
         zone = get_zone(self.player["y"], self.player["in_dungeon"])
         return VICTORY_SCENES_BY_ZONE.get(zone, "battle.normal.victory.early")
@@ -5969,7 +5980,7 @@ class Game:
             state=self.state,
             in_dungeon=self.player["in_dungeon"],
             zone=get_zone(self.player["y"], self.player["in_dungeon"]),
-            battle_is_boss=self.battle_is_boss,
+            battle_is_glitch_lord=self.battle_is_glitch_lord,
             battle_enemy_hp=self.battle_enemy_hp,
             battle_enemy_max_hp=battle_enemy_max_hp,
             battle_phase=self.battle_phase,
@@ -6579,7 +6590,7 @@ class Game:
         if not p["in_dungeon"]:
             self._draw_landmark_highlights()
         else:
-            self._draw_dungeon_boss_marker(current_map)
+            self._draw_dungeon_glitch_lord_marker(current_map)
 
         # Draw hero
         hero_sx = p["x"] * 16 - self.cam_x
@@ -6589,10 +6600,10 @@ class Game:
         if bp:
             pyxel.blt(hero_sx, hero_sy, 1, bp[0], bp[1], 16, 16, 0)
 
-    def _draw_dungeon_boss_marker(self, current_map):
+    def _draw_dungeon_glitch_lord_marker(self, current_map):
         """ダンジョン最奥のボス位置に目印キャラを描く。"""
         p = self.player
-        if p.get("boss_defeated"):
+        if p.get("glitch_lord_defeated"):
             return
         bp = self.sprite_bank.get("hero_down")
         if bp is None:
@@ -6600,7 +6611,7 @@ class Game:
 
         for ty, row in enumerate(current_map):
             for tx, tile in enumerate(row):
-                if tile != T_BOSS_TRIGGER:
+                if tile != T_GLITCH_LORD_TRIGGER:
                     continue
                 sx = tx * 16 - self.cam_x
                 sy = ty * 16 - self.cam_y + 24
@@ -6614,13 +6625,13 @@ class Game:
 
         - 世界樹 (32, 9)：常時、緑のパルス枠
         - 通信塔 (40, 32)：常時、紫のパルス枠
-        - 城 (25, 6)：boss_defeated 後のみ、黄色のパルス枠（プロフェッサー編発見導線）
+        - 城 (25, 6)：glitch_lord_defeated 後のみ、黄色のパルス枠（プロフェッサー編発見導線）
         """
         p = self.player
         marks = [
             (32, 9, 11, True),   # 世界樹: 緑
             (40, 32, 2, True),   # 通信塔: 紫
-            (25, 6, 10, p.get("boss_defeated", False)),  # 城: 黄（クリア後のみ）
+            (25, 6, 10, p.get("glitch_lord_defeated", False)),  # 城: 黄（クリア後のみ）
         ]
         # パルス（明滅）：30フレームで1周期
         pulse = (pyxel.frame_count // 8) % 4

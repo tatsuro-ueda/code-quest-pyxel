@@ -28,14 +28,14 @@ class WorldTreeResolveTest(unittest.TestCase):
         self.event = _by_scene("landmark.tree")
 
     def test_first_visit_returns_first_scene(self):
-        scene = resolve_scene(self.event, {}, boss_defeated=False)
+        scene = resolve_scene(self.event, {}, glitch_lord_defeated=False)
         self.assertEqual(scene, "landmark.tree.first")
 
     def test_repeat_visit_returns_repeat_scene(self):
         scene = resolve_scene(
             self.event,
             {"landmarkTreeSeen": True},
-            boss_defeated=False,
+            glitch_lord_defeated=False,
         )
         self.assertEqual(scene, "landmark.tree.repeat")
 
@@ -45,14 +45,14 @@ class TowerResolveTest(unittest.TestCase):
         self.event = _by_scene("landmark.tower")
 
     def test_first_visit_returns_first_scene(self):
-        scene = resolve_scene(self.event, {}, boss_defeated=False)
+        scene = resolve_scene(self.event, {}, glitch_lord_defeated=False)
         self.assertEqual(scene, "landmark.tower.first")
 
     def test_repeat_visit_pre_boss_returns_repeat(self):
         scene = resolve_scene(
             self.event,
             {"landmarkTowerSeen": True},
-            boss_defeated=False,
+            glitch_lord_defeated=False,
         )
         self.assertEqual(scene, "landmark.tower.repeat")
 
@@ -60,7 +60,7 @@ class TowerResolveTest(unittest.TestCase):
         scene = resolve_scene(
             self.event,
             {"landmarkTowerSeen": True},
-            boss_defeated=True,
+            glitch_lord_defeated=True,
         )
         self.assertEqual(scene, "landmark.tower.epilogue")
 
@@ -68,7 +68,7 @@ class TowerResolveTest(unittest.TestCase):
         scene = resolve_scene(
             self.event,
             {"landmarkTowerSeen": True, "towerEpilogueSeen": True},
-            boss_defeated=True,
+            glitch_lord_defeated=True,
         )
         self.assertEqual(scene, "landmark.tower.repeat")
 

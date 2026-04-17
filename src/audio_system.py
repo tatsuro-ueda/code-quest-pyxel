@@ -59,7 +59,7 @@ def choose_bgm_scene(
     state: str,
     in_dungeon: bool,
     zone: int,
-    battle_is_boss: bool = False,
+    battle_is_glitch_lord: bool = False,
     battle_enemy_hp: int = 0,
     battle_enemy_max_hp: int = 0,
     battle_phase: str = "menu",
@@ -76,7 +76,7 @@ def choose_bgm_scene(
     if state == "battle":
         if battle_phase == "result" and battle_enemy_hp <= 0:
             return "victory"
-        if battle_is_boss:
+        if battle_is_glitch_lord:
             return "boss"
         return "battle"
     if state == "town":

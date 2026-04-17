@@ -29,19 +29,19 @@ class LoadEnemiesTest(unittest.TestCase):
             missing = required - enemy.keys()
             self.assertFalse(missing, f"{enemy.get('name')} missing keys: {missing}")
 
-    def test_boss_flags(self):
+    def test_special_boss_flags(self):
         enemies = {e["name"]: e for e in game_data.load_enemies()}
-        self.assertTrue(enemies["まおうグリッチ"].get("is_boss"))
+        self.assertTrue(enemies["まおうグリッチ"].get("is_glitch_lord"))
         self.assertTrue(enemies["プロフェッサー"].get("is_professor"))
         self.assertTrue(enemies["まおうグリッチのクローン"].get("post_clear_only"))
         self.assertTrue(enemies["ノイズガーディアン"].get("is_noise_guardian"))
+        self.assertEqual(game_data.GLITCH_LORD_DATA["name"], "まおうグリッチ")
 
     def test_zone_distribution(self):
         zones = [e["zone"] for e in game_data.load_enemies()]
         self.assertIn(0, zones)
         self.assertIn(5, zones)
         self.assertIn(6, zones)
-
 
 class LoadWeaponsTest(unittest.TestCase):
     def test_returns_8_weapons_including_base(self):
@@ -129,24 +129,24 @@ class LoadShopsTest(unittest.TestCase):
                 self.assertIn(key, shop)
 
 
-class BossPhaseTest(unittest.TestCase):
+class GlitchLordPhaseTest(unittest.TestCase):
     def test_phase1_at_full_hp(self):
-        self.assertEqual(game_data.boss_phase(1.0), "phase1")
+        self.assertEqual(game_data.glitch_lord_phase(1.0), "phase1")
 
     def test_phase1_just_above_threshold(self):
-        self.assertEqual(game_data.boss_phase(0.61), "phase1")
+        self.assertEqual(game_data.glitch_lord_phase(0.61), "phase1")
 
     def test_phase2_at_60_percent(self):
-        self.assertEqual(game_data.boss_phase(0.6), "phase2")
+        self.assertEqual(game_data.glitch_lord_phase(0.6), "phase2")
 
     def test_phase2_at_31_percent(self):
-        self.assertEqual(game_data.boss_phase(0.31), "phase2")
+        self.assertEqual(game_data.glitch_lord_phase(0.31), "phase2")
 
     def test_phase3_at_30_percent(self):
-        self.assertEqual(game_data.boss_phase(0.3), "phase3")
+        self.assertEqual(game_data.glitch_lord_phase(0.3), "phase3")
 
     def test_phase3_at_zero(self):
-        self.assertEqual(game_data.boss_phase(0.0), "phase3")
+        self.assertEqual(game_data.glitch_lord_phase(0.0), "phase3")
 
 
 if __name__ == "__main__":

@@ -95,13 +95,13 @@ class AudioSystemTest(unittest.TestCase):
             "dungeon",
         )
 
-    def test_choose_bgm_scene_for_battle_boss_and_ending(self):
+    def test_choose_bgm_scene_for_battle_glitch_lord_and_ending(self):
         self.assertEqual(
             self.choose_bgm_scene(
                 state="battle",
                 in_dungeon=False,
                 zone=1,
-                battle_is_boss=False,
+                battle_is_glitch_lord=False,
                 battle_enemy_hp=30,
                 battle_enemy_max_hp=100,
                 battle_phase="menu",
@@ -114,7 +114,7 @@ class AudioSystemTest(unittest.TestCase):
                 state="battle",
                 in_dungeon=True,
                 zone=4,
-                battle_is_boss=True,
+                battle_is_glitch_lord=True,
                 battle_enemy_hp=250,
                 battle_enemy_max_hp=500,
                 battle_phase="menu",
@@ -126,7 +126,7 @@ class AudioSystemTest(unittest.TestCase):
                 state="battle",
                 in_dungeon=True,
                 zone=4,
-                battle_is_boss=True,
+                battle_is_glitch_lord=True,
                 battle_enemy_hp=150,
                 battle_enemy_max_hp=500,
                 battle_phase="enemy_attack",
@@ -138,7 +138,7 @@ class AudioSystemTest(unittest.TestCase):
                 state="battle",
                 in_dungeon=True,
                 zone=4,
-                battle_is_boss=True,
+                battle_is_glitch_lord=True,
                 battle_enemy_hp=0,
                 battle_enemy_max_hp=500,
                 battle_phase="result",

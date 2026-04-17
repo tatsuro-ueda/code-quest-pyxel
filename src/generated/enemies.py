@@ -176,7 +176,7 @@ ENEMIES: list[dict[str, Any]] = [
         'zone': 5,
         'category': 'boss',
         'spells': ['コンパイル', 'ループブレイク'],
-        'is_boss': True,
+        'is_glitch_lord': True,
         'desc': 'すべてのブロックをぼうそうさせたちょうほんにん！',
     },
     {

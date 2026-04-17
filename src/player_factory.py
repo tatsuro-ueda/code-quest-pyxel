@@ -65,7 +65,7 @@ def create_initial_player(start_x: int = 25, start_y: int = 6) -> dict[str, Any]
         "spells": [],
         "poisoned": False,
         "in_dungeon": False,
-        "boss_defeated": False,
+        "glitch_lord_defeated": False,
         "max_zone_reached": 0,
         "landmarkTreeSeen": False,
         "landmarkTowerSeen": False,

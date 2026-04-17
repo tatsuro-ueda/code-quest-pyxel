@@ -33,7 +33,7 @@ class BattleRunLogicTest(unittest.TestCase):
         game.battle_menu = 3
         game.battle_text = ""
         game.battle_text_timer = 0
-        game.battle_is_boss = False
+        game.battle_is_glitch_lord = False
         game.battle_is_professor = False
         game.battle_enemy = {"name": "Slime", "atk": 8, "def": 1}
         game.battle_enemy_hp = 10

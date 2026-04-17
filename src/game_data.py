@@ -32,17 +32,22 @@ from src.generated.dialogue import DIALOGUE_JA, DIALOGUE_EN
 # --- derived data ---
 
 def _build_zone_enemies(enemies: list[dict[str, Any]]) -> dict[int, list]:
-    """zone -> list[enemy] にグルーピング。ボス・教授等は除外。"""
+    """zone -> list[enemy] にグルーピング。イベント敵やボス等は除外。"""
     by_zone: dict[int, list] = {}
     for e in enemies:
-        if e.get("is_boss") or e.get("is_professor") or e.get("post_clear_only"):
+        if (
+            e.get("is_glitch_lord")
+            or e.get("is_professor")
+            or e.get("post_clear_only")
+            or e.get("is_noise_guardian")
+        ):
             continue
         by_zone.setdefault(e["zone"], []).append(e)
     return by_zone
 
 
 ZONE_ENEMIES = _build_zone_enemies(ENEMIES)
-BOSS_DATA = next(e for e in ENEMIES if e.get("is_boss"))
+GLITCH_LORD_DATA = next(e for e in ENEMIES if e.get("is_glitch_lord"))
 PROFESSOR_DATA = next(e for e in ENEMIES if e.get("is_professor"))
 GLITCH_CLONE_DATA = next(e for e in ENEMIES if e.get("post_clear_only"))
 NOISE_GUARDIAN_DATA = next(e for e in ENEMIES if e.get("is_noise_guardian"))
@@ -55,7 +60,7 @@ SHOP_LIST = SHOPS["shops"]
 
 # --- boss phase logic ---
 
-def boss_phase(hp_ratio: float) -> str:
+def glitch_lord_phase(hp_ratio: float) -> str:
     """Return a phase label based on the boss HP ratio.
 
     JS版 `getBossPhases` 相当:
@@ -70,7 +75,7 @@ def boss_phase(hp_ratio: float) -> str:
     return "phase3"
 
 
-BOSS_PHASE_MESSAGES = {
+GLITCH_LORD_PHASE_MESSAGES = {
     "phase2": "ボスの様子が変わった！",
     "phase3": "ボスは最後の力を振り絞っている！",
 }

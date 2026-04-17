@@ -26,7 +26,7 @@ def _sample_player():
         "spells": [],
         "poisoned": False,
         "in_dungeon": False,
-        "boss_defeated": False,
+        "glitch_lord_defeated": False,
         "max_zone_reached": 1,
         "landmarkTreeSeen": True,
         "landmarkTowerSeen": False,
@@ -85,6 +85,22 @@ class PlayerSnapshotTest(unittest.TestCase):
         restored = restore_snapshot(snap)
         self.assertEqual(restored["player"]["hp"], 5)
         self.assertNotIn("max_hp", restored["player"])
+
+    def test_restore_accepts_legacy_boss_defeated_key(self):
+        snap = {
+            "save_version": SAVE_VERSION,
+            "town_pos": [20, 12],
+            "player": {
+                "x": 20,
+                "y": 12,
+                "boss_defeated": True,
+            },
+        }
+
+        restored = restore_snapshot(snap)
+
+        self.assertTrue(restored["player"]["glitch_lord_defeated"])
+        self.assertNotIn("boss_defeated", restored["player"])
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ SAVED_PLAYER_KEYS: tuple[str, ...] = (
     "items", "spells",
     "poisoned",
     "in_dungeon",
-    "boss_defeated",
+    "glitch_lord_defeated",
     "max_zone_reached",
     "landmarkTreeSeen", "landmarkTowerSeen",
     "treeAsked", "towerNoiseCleared",
@@ -51,7 +51,10 @@ def restore_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
         {"player": dict, "town_pos": tuple[int, int]}
     """
     raw_pos = snapshot["town_pos"]
+    player = dict(snapshot["player"])
+    if "glitch_lord_defeated" not in player and "boss_defeated" in player:
+        player["glitch_lord_defeated"] = bool(player.pop("boss_defeated"))
     return {
-        "player": dict(snapshot["player"]),
+        "player": player,
         "town_pos": (int(raw_pos[0]), int(raw_pos[1])),
     }

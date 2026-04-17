@@ -71,14 +71,14 @@ def find_landmark_at(player_x: int, player_y: int) -> LandmarkEvent | None:
     return None
 
 
-def resolve_scene(event: LandmarkEvent, flags: dict[str, bool], boss_defeated: bool) -> str:
+def resolve_scene(event: LandmarkEvent, flags: dict[str, bool], glitch_lord_defeated: bool) -> str:
     """Decide which scene to play for an event based on player flags."""
     # First visit
     if not flags.get(event.flag_name, False):
         return event.scene_name
     # Boss defeated and epilogue not yet played
     if (
-        boss_defeated
+        glitch_lord_defeated
         and event.epilogue_scene
         and event.epilogue_flag
         and not flags.get(event.epilogue_flag, False)
