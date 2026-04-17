@@ -78,25 +78,15 @@ h1 {
 <div class="container">
   <h1>ブロッククエスト</h1>
 
-  <div class="version-card">
-    <h2>おためしばん</h2>
-    <ul class="changes">
-      {{CHANGE_LIST}}
-    </ul>
-    <a class="play-btn" href="{{PREVIEW_WRAPPER_SRC}}">あそんでみる</a>
-  </div>
+{{PREVIEW_CARD}}
 
   <div class="version-card">
     <h2>もとのままばん</h2>
-    <p class="desc">いままでと おなじ</p>
+{{CURRENT_CARD_BODY}}
     <a class="play-btn" href="{{CURRENT_WRAPPER_SRC}}">あそんでみる</a>
   </div>
 
-  <p class="hint">
-    りょうほう あそんだら<br>
-    おとうさんに おしえてね！<br>
-    「こっちが いい！」って
-  </p>
+{{HINT_BLOCK}}
 </div>
 </body>
 </html>

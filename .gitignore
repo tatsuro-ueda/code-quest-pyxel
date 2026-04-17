@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .build/
 .runtime/
+.preview_snapshot.py
 mock/
 .DS_Store
 *.egg-info/
