@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Sync main.py's inlined data sections from src/generated/*.
+"""Sync bundled game's inlined data sections from src/generated/*.
 
 Usage:
-    python tools/sync_main_data.py           # update main.py in place
+    python tools/sync_main_data.py           # update main.py / main_preview.py in place
     python tools/sync_main_data.py --check   # verify without modifying (exit 1 if stale)
 """
 from __future__ import annotations
@@ -11,9 +11,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-MAIN_PY = ROOT / "main.py"
 GENERATED = ROOT / "src" / "generated"
 GAME_DATA = ROOT / "src" / "game_data.py"
+SYNC_TARGETS = (
+    ROOT / "main.py",
+    ROOT / "main_preview.py",
+)
 
 MARKER_START = "# === inlined: src/game_data.py ==="
 MARKER_DIALOGUE_START = "# === inlined: src/dialogue_data.py ==="
@@ -125,7 +128,7 @@ def _replace_inlined_section(
     marker_start: str,
     new_section: str,
 ) -> list[str]:
-    """Replace one # === inlined: ... === section in main.py."""
+    """Replace one # === inlined: ... === section in a bundled game file."""
     start_idx = None
     end_idx = None
     for i, line in enumerate(lines):
@@ -137,7 +140,7 @@ def _replace_inlined_section(
                 break
 
     if start_idx is None:
-        print(f"error: marker '{marker_start}' not found in main.py", file=sys.stderr)
+        print(f"error: marker '{marker_start}' not found in target file", file=sys.stderr)
         sys.exit(1)
 
     if end_idx is None:
@@ -147,9 +150,9 @@ def _replace_inlined_section(
     return lines[:start_idx + 1] + new_section.split("\n") + [""] + lines[end_idx:]
 
 
-def sync(check_only: bool = False) -> int:
-    """Sync main.py's generated data sections. Returns 0 on success, 1 on mismatch."""
-    content = MAIN_PY.read_text(encoding="utf-8")
+def sync_file(target_path: Path, check_only: bool = False) -> int:
+    """Sync one bundled game file. Returns 0 on success, 1 on mismatch."""
+    content = target_path.read_text(encoding="utf-8")
     lines = content.split("\n")
     new_lines = _replace_inlined_section(lines, MARKER_START, build_inlined_section())
     new_lines = _replace_inlined_section(
@@ -161,15 +164,28 @@ def sync(check_only: bool = False) -> int:
 
     if check_only:
         if content == new_content:
-            print("main.py generated sections are up to date.")
+            print(f"{target_path.name} generated sections are up to date.")
             return 0
         else:
-            print("main.py generated sections are STALE. Run `make gen` to update.", file=sys.stderr)
+            print(
+                f"{target_path.name} generated sections are STALE. Run `make gen` to update.",
+                file=sys.stderr,
+            )
             return 1
 
-    MAIN_PY.write_text(new_content, encoding="utf-8")
-    print("  synced: main.py generated sections")
+    target_path.write_text(new_content, encoding="utf-8")
+    print(f"  synced: {target_path.name} generated sections")
     return 0
+
+
+def sync(check_only: bool = False) -> int:
+    """Sync all bundled game files that exist in the repo."""
+    exit_code = 0
+    for target_path in SYNC_TARGETS:
+        if not target_path.exists():
+            continue
+        exit_code = max(exit_code, sync_file(target_path, check_only=check_only))
+    return exit_code
 
 
 def main() -> int:

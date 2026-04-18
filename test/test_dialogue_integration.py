@@ -1,13 +1,62 @@
 from __future__ import annotations
 
+import ast
+import sys
+import types
 import unittest
 from pathlib import Path
 
 
 PYXEL_ROOT = Path(__file__).resolve().parent.parent
+SCENE_PREFIXES = {"battle", "boss", "castle", "dungeon", "ending", "landmark", "town"}
+
+
+def load_bundled_module(path: Path, module_name: str):
+    source = path.read_text(encoding="utf-8")
+    source = source.replace("\ngame = Game()\ngame.start()\n", "\n")
+    module = types.ModuleType(module_name)
+    module.__file__ = str(path.resolve())
+    sys.modules[module_name] = module
+    exec(compile(source, module.__file__, "exec"), module.__dict__)
+    return module
+
+
+def extract_dialog_scene_ids(path: Path) -> set[str]:
+    scene_ids: set[str] = set()
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
+            continue
+        value = node.value
+        parts = value.split(".")
+        if len(parts) < 3:
+            continue
+        if parts[0] not in SCENE_PREFIXES:
+            continue
+        if "{" in value or value.endswith("_"):
+            continue
+        if not all(part.replace("_", "").isalnum() for part in parts):
+            continue
+        scene_ids.add(value)
+    return scene_ids
 
 
 class DialogueIntegrationTest(unittest.TestCase):
+    def assert_bundled_dialogue_covers_runtime_scene_ids(
+        self,
+        filename: str,
+        module_name: str,
+    ):
+        path = PYXEL_ROOT / filename
+        module = load_bundled_module(path, module_name)
+        scene_ids = extract_dialog_scene_ids(path)
+
+        missing_ja = sorted(scene for scene in scene_ids if scene not in module.DIALOGUE_JA["scenes"])
+        missing_en = sorted(scene for scene in scene_ids if scene not in module.DIALOGUE_EN["scenes"])
+
+        self.assertEqual(missing_ja, [], f"{filename} missing JA scenes: {missing_ja}")
+        self.assertEqual(missing_en, [], f"{filename} missing EN scenes: {missing_en}")
+
     def test_main_references_scene_names_instead_of_runtime_text(self):
         """main.py がダイアログシーン名を参照していること。
 
@@ -61,6 +110,23 @@ class DialogueIntegrationTest(unittest.TestCase):
             "fullscreen_dialog",
         ):
             self.assertIn(expected, preview_text)
+
+    def test_main_preview_inlines_preview_only_glitch_intro_scene(self):
+        preview_text = (PYXEL_ROOT / "main_preview.py").read_text(encoding="utf-8")
+
+        self.assertIn("'boss.glitch.prebattle_01': {", preview_text)
+
+    def test_main_inlined_dialogue_covers_runtime_scene_ids(self):
+        self.assert_bundled_dialogue_covers_runtime_scene_ids(
+            "main.py",
+            "main_dialogue_scene_coverage_test",
+        )
+
+    def test_main_preview_inlined_dialogue_covers_runtime_scene_ids(self):
+        self.assert_bundled_dialogue_covers_runtime_scene_ids(
+            "main_preview.py",
+            "main_preview_dialogue_scene_coverage_test",
+        )
 
     def test_main_uses_shared_input_bindings(self):
         """main.py が入力バインディングのシンボルを使っていること。"""
