@@ -52,6 +52,16 @@ class DialogueIntegrationTest(unittest.TestCase):
         ):
             self.assertIn(scene_name, landmark_text)
 
+    def test_main_preview_references_preview_only_glitch_intro_scene(self):
+        preview_text = (PYXEL_ROOT / "main_preview.py").read_text(encoding="utf-8")
+
+        for expected in (
+            "boss.glitch.prebattle_01",
+            "_enter_glitch_lord_intro",
+            "fullscreen_dialog",
+        ):
+            self.assertIn(expected, preview_text)
+
     def test_main_uses_shared_input_bindings(self):
         """main.py が入力バインディングのシンボルを使っていること。"""
         main_text = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8")
@@ -137,6 +147,18 @@ class ProfessorDialogueTest(unittest.TestCase):
 
     def test_silent_victory_scene_exists(self):
         self.assertIn("castle.professor.silent_victory", self.runner.scenes)
+
+
+class GlitchLordDialogueTest(unittest.TestCase):
+    def setUp(self):
+        from src.structured_dialog import StructuredDialogRunner
+        from src.dialogue_data import DIALOGUE_JA
+        self.runner = StructuredDialogRunner(DIALOGUE_JA)
+
+    def test_prebattle_intro_chains_multiple_lines(self):
+        lines = self.runner.load_all_lines("boss.glitch.prebattle_01")
+        self.assertGreaterEqual(len(lines), 3)
+        self.assertTrue(all(lines))
 
 
 if __name__ == "__main__":

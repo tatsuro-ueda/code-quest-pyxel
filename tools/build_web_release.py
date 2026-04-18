@@ -36,12 +36,12 @@ PREVIEW_OUTPUT_FILES = (
     Path("pyxel-preview.html"),
 )
 PREVIEW_META_FILE = Path("preview_meta.json")
-PREVIEW_SNAPSHOT_FILE = Path(".preview_snapshot.py")
-STEERING_NOTES_DIR = Path("docs/steering")
-STEERING_TEMPLATE_NOTE = STEERING_NOTES_DIR / "_template.md"
+PREVIEW_SELECTOR_LABEL = "開発版"
+CURRENT_SELECTOR_LABEL = "本番"
 PREVIEW_AUTO_CHANGE_RULES = (
     ("つうしんとうの ノイズガーディアンが フィールドに でない", ("is_noise_guardian",)),
     ("まおうを たおしたあとも つづきに すすめる", ("dungeon.glitch.exit", "callback=None")),
+    ("まおうまえに おはなしが はじまる", ("_enter_glitch_lord_intro", "boss.glitch.prebattle_01")),
 )
 
 
@@ -138,65 +138,6 @@ def _revision_timestamp(root: Path, rel_path: Path) -> float:
             return float(result.stdout.strip())
 
     return path.stat().st_mtime
-
-
-def _parse_task_note_frontmatter(path: Path) -> tuple[str, list[str]]:
-    text = path.read_text(encoding="utf-8")
-    lines = text.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return "", []
-
-    status = ""
-    tags: list[str] = []
-    in_tags = False
-    for line in lines[1:]:
-        stripped = line.strip()
-        if stripped == "---":
-            break
-        if stripped.startswith("status:"):
-            status = stripped.split(":", 1)[1].strip()
-            in_tags = False
-            continue
-        if stripped == "tags:":
-            in_tags = True
-            continue
-        if in_tags and stripped.startswith("- "):
-            tags.append(stripped[2:].strip())
-            continue
-        if in_tags and stripped and not line.startswith(" "):
-            in_tags = False
-
-    return status, tags
-
-
-def find_open_preview_request_notes(root: Path) -> list[Path]:
-    root = root.resolve()
-    notes_dir = root / STEERING_NOTES_DIR
-    if not notes_dir.is_dir():
-        return []
-
-    notes: list[Path] = []
-    for path in sorted(notes_dir.glob("*.md")):
-        if path == root / STEERING_TEMPLATE_NOTE:
-            continue
-        status, tags = _parse_task_note_frontmatter(path)
-        if status != "open":
-            continue
-        if "preview" not in tags:
-            continue
-        notes.append(path)
-    return notes
-
-
-def resolve_active_preview_request(root: Path) -> tuple[Path, str]:
-    root = root.resolve()
-    notes = find_open_preview_request_notes(root)
-    if len(notes) != 1:
-        raise ValueError(
-            "Expected exactly one open preview task note in docs/steering/ with a 'preview' tag."
-        )
-    note_path = notes[0]
-    return note_path.relative_to(root), _file_sha256(note_path)
 
 
 def validate_change_list_freshness(
@@ -309,68 +250,22 @@ def load_preview_meta(root: Path, *, validate_hashes: bool = False) -> list[str]
         preview_path = root / "main_preview.py"
         base_current_hash = str(data.get("base_current_hash", ""))
         preview_hash = str(data.get("preview_hash", ""))
-        request_note_path = str(data.get("request_note_path", ""))
         if not base_current_hash or not preview_hash:
             raise ValueError(f"{meta_path} must contain current and preview hashes")
-        if not request_note_path:
-            raise ValueError(f"{meta_path} must contain preview request note metadata")
         if main_path.is_file() and base_current_hash != _file_sha256(main_path):
             raise ValueError(f"{meta_path} no longer matches main.py")
         if preview_path.is_file() and preview_hash != _file_sha256(preview_path):
             raise ValueError(f"{meta_path} no longer matches main_preview.py")
-        current_request_path, _current_request_hash = resolve_active_preview_request(root)
-        if request_note_path != current_request_path.as_posix():
-            raise ValueError(f"{meta_path} no longer matches the current preview task note")
     return [str(change) for change in changes]
-
-
-def write_preview_snapshot(root: Path) -> Path:
-    root = root.resolve()
-    preview_path = root / "main_preview.py"
-    snapshot_path = root / PREVIEW_SNAPSHOT_FILE
-    shutil.copy2(preview_path, snapshot_path)
-    return snapshot_path
-
-
-def roll_forward_approved_preview(root: Path) -> bool:
-    root = root.resolve()
-    data = load_preview_meta_payload(root)
-    if data is None:
-        return False
-
-    request_note_path = str(data.get("request_note_path", ""))
-    request_note_hash = str(data.get("request_note_hash", ""))
-    if not request_note_path or not request_note_hash:
-        return False
-
-    current_request_path, _current_request_hash = resolve_active_preview_request(root)
-    if request_note_path == current_request_path.as_posix():
-        return False
-
-    snapshot_path = root / PREVIEW_SNAPSHOT_FILE
-    if not snapshot_path.is_file():
-        raise ValueError(f"Cannot roll forward previous preview without {snapshot_path}")
-
-    preview_hash = str(data.get("preview_hash", ""))
-    if preview_hash and _file_sha256(snapshot_path) != preview_hash:
-        raise ValueError(f"{snapshot_path} no longer matches preview_meta.json")
-
-    shutil.copy2(snapshot_path, root / "main.py")
-    (root / PREVIEW_META_FILE).unlink()
-    return True
-
 
 def write_preview_meta(root: Path, changes: list[str]) -> Path:
     root = root.resolve()
     main_path = root / "main.py"
     preview_path = root / "main_preview.py"
     meta_path = root / PREVIEW_META_FILE
-    request_note_path, request_note_hash = resolve_active_preview_request(root)
     payload = {
         "base_current_hash": _file_sha256(main_path),
         "preview_hash": _file_sha256(preview_path),
-        "request_note_path": request_note_path.as_posix(),
-        "request_note_hash": request_note_hash,
         "changes": changes,
     }
     meta_path.write_text(
@@ -505,7 +400,7 @@ def generate_selector(
             change_list = ""
         preview_card = (
             '  <div class="version-card">\n'
-            '    <h2>おためしばん</h2>\n'
+            f"    <h2>{PREVIEW_SELECTOR_LABEL}</h2>\n"
             '    <ul class="changes">\n'
             f"{change_list}\n"
             '    </ul>\n'
@@ -641,7 +536,6 @@ def promote(root: Path, *, choice: str) -> None:
     main_py = root / "main.py"
     preview_py = root / "main_preview.py"
     meta_json = root / "preview_meta.json"
-    snapshot_py = root / PREVIEW_SNAPSHOT_FILE
 
     if choice == "preview":
         if preview_py.is_file():
@@ -657,8 +551,16 @@ def promote(root: Path, *, choice: str) -> None:
         preview_py.unlink()
     if meta_json.is_file():
         meta_json.unlink()
-    if snapshot_py.is_file():
-        snapshot_py.unlink()
+
+
+def approve_preview(root: Path, *, output_dir: Path | None = None, work_dir: Path | None = None) -> None:
+    promote(root, choice="preview")
+    build_web_release(root, output_dir=output_dir, work_dir=work_dir)
+
+
+def reject_preview(root: Path, *, output_dir: Path | None = None, work_dir: Path | None = None) -> None:
+    promote(root, choice="current")
+    build_web_release(root, output_dir=output_dir, work_dir=work_dir)
 
 
 def build_preview_release(
@@ -669,10 +571,8 @@ def build_preview_release(
 ) -> tuple[Path, Path, Path, Path]:
     """2版ビルド: もとのまま版 + おためし版 + 選択ページ"""
     root = root.resolve()
-    roll_forward_approved_preview(root)
     preview_py, changes = validate_preview_files(root)
     preview_meta_path = write_preview_meta(root, changes)
-    write_preview_snapshot(root)
     output_dir = output_dir.resolve() if output_dir else root
     work_dir = work_dir.resolve() if work_dir else (root / ".build" / "web_release")
     pyxel_command = resolve_pyxel_command(root)
@@ -754,16 +654,21 @@ def build_preview_release(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build Block Quest web release")
-    parser.add_argument("--preview", action="store_true",
-                        help="Build 2-version preview (requires main_preview.py)")
-    parser.add_argument("--promote", choices=["preview", "current"],
-                        help="Promote preview or keep current, then clean up")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--preview", action="store_true",
+                       help="Build 2-version preview (requires main_preview.py)")
+    group.add_argument("--approve-preview", action="store_true",
+                       help="Approve the current preview, rebuild current, and clean preview inputs")
+    group.add_argument("--reject-preview", action="store_true",
+                       help="Reject the current preview, keep current, and clean preview inputs")
     args = parser.parse_args()
 
-    if args.promote:
-        promote(ROOT, choice=args.promote)
-        print(f"Promoted '{args.promote}'. Running normal build...")
-        build_web_release(ROOT)
+    if args.approve_preview:
+        approve_preview(ROOT)
+        print("Approved preview and rebuilt current release.")
+    elif args.reject_preview:
+        reject_preview(ROOT)
+        print("Rejected preview and rebuilt current release.")
     elif args.preview:
         html, preview_html, index = build_preview_release(ROOT)
         print(f"Preview build complete:\n  {html}\n  {preview_html}\n  {index}")

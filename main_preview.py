@@ -4634,13 +4634,18 @@ class Game:
         self.battle_is_professor = False
         self.battle_boss_phase = "phase1"
 
+        # Shared fullscreen dialogue state
+        self.fullscreen_dialog_lines: list[str] = []
+        self.fullscreen_dialog_idx = 0
+        self.fullscreen_dialog_text_color = 7
+        self.fullscreen_dialog_start_y = 80
+        self.fullscreen_dialog_max_rows = 6
+        self.fullscreen_dialog_on_complete = None
+
         # Professor encounter state
-        self.professor_intro_lines: list[str] = []
-        self.professor_intro_idx = 0
         self.professor_choice_active = False
+        self.professor_choice_prompt = ""
         self.professor_choice_cursor = 1  # 0=うけいれる / 1=ことわる
-        self.professor_ending_lines: list[str] = []
-        self.professor_ending_idx = 0
 
         # Menu state
         self.menu_cursor = 0
@@ -5104,6 +5109,8 @@ class Game:
             self.update_menu()
         elif self.state == "message":
             self.update_message()
+        elif self.state == "fullscreen_dialog":
+            self.update_fullscreen_dialog()
         elif self.state == "town":
             self.update_town()
         elif self.state == "town_menu":
@@ -5244,7 +5251,7 @@ class Game:
                 self.dungeon_map = None
                 self._enter_message(
                     self._dialog_lines("dungeon.glitch.exit"),
-                    callback=None,
+                    callback=self._dungeon_exit_callback(),
                 )
                 return
 
@@ -5259,13 +5266,13 @@ class Game:
             self.dungeon_map = None
             self._enter_message(
                 self._dialog_lines("dungeon.glitch.exit"),
-                callback=None,
+                callback=self._dungeon_exit_callback(),
             )
             return
 
         if p["in_dungeon"] and tile == T_GLITCH_LORD_TRIGGER:
             if not p.get("glitch_lord_defeated"):
-                self._start_battle(GLITCH_LORD_DATA, is_glitch_lord=True)
+                self._enter_glitch_lord_intro()
             return
 
         # Town entry → open the town menu (D6)
@@ -5953,10 +5960,58 @@ class Game:
             extra_context=extra_context,
         )
 
+    def _dungeon_exit_callback(self):
+        if self.player.get("glitch_lord_defeated"):
+            return self._enter_ending
+        return None
+
     def _enter_message(self, lines, callback=None):
         self.show_message(lines, callback=callback)
         self.prev_state = "map"
         self.state = "message"
+
+    def _enter_fullscreen_dialog(
+        self,
+        lines,
+        *,
+        text_color=7,
+        start_y=80,
+        max_rows=6,
+        on_complete=None,
+    ):
+        self.fullscreen_dialog_on_complete = on_complete
+        if not lines:
+            self.fullscreen_dialog_lines = []
+            self.fullscreen_dialog_idx = 0
+            if on_complete:
+                on_complete()
+            return
+        self.fullscreen_dialog_lines = lines
+        self.fullscreen_dialog_idx = 0
+        self.fullscreen_dialog_text_color = text_color
+        self.fullscreen_dialog_start_y = start_y
+        self.fullscreen_dialog_max_rows = max_rows
+        self.state = "fullscreen_dialog"
+
+    def _finish_fullscreen_dialog(self):
+        on_complete = self.fullscreen_dialog_on_complete
+        self.fullscreen_dialog_lines = []
+        self.fullscreen_dialog_idx = 0
+        self.fullscreen_dialog_on_complete = None
+        if on_complete:
+            on_complete()
+
+    def _start_glitch_lord_battle(self):
+        self._start_battle(GLITCH_LORD_DATA, is_glitch_lord=True)
+
+    def _enter_glitch_lord_intro(self):
+        self._enter_fullscreen_dialog(
+            self._dialog_lines("boss.glitch.prebattle_01"),
+            text_color=7,
+            start_y=72,
+            max_rows=6,
+            on_complete=self._start_glitch_lord_battle,
+        )
 
     def _enter_ending(self):
         self.ending_lines = self._dialog_lines("ending.main.line01")
@@ -6017,6 +6072,15 @@ class Game:
                 self.state = self.prev_state
                 if self.msg_callback:
                     self.msg_callback()
+
+    def update_fullscreen_dialog(self):
+        if self._btnp(CONFIRM_BUTTONS):
+            self.fullscreen_dialog_idx, done = self._advance_dialog_page(
+                self.fullscreen_dialog_idx,
+                self.fullscreen_dialog_lines,
+            )
+            if done:
+                self._finish_fullscreen_dialog()
 
     def update_town(self):
         # Show message then return to map
@@ -6303,21 +6367,29 @@ class Game:
         else:
             scene = "castle.professor.intro_01"
         p["professor_intro_seen"] = True
-        self.professor_intro_lines = self._dialog_lines(scene)
-        self.professor_intro_idx = 0
         self.professor_choice_active = False
+        intro_lines = self._dialog_lines(scene)
+        if intro_lines:
+            self.professor_choice_prompt = intro_lines[-1]
+            intro_pages = intro_lines[:-1]
+        else:
+            self.professor_choice_prompt = self._dialog_text("castle.professor.intro_choice")
+            intro_pages = []
         self.professor_choice_cursor = 1  # default: ことわる
+        self._enter_fullscreen_dialog(
+            intro_pages,
+            text_color=7,
+            start_y=60,
+            max_rows=6,
+            on_complete=self._enter_professor_intro_choice,
+        )
+
+    def _enter_professor_intro_choice(self):
+        self.professor_choice_active = True
         self.state = "professor_intro"
 
     def update_professor_intro(self):
         if not self.professor_choice_active:
-            if self._btnp(CONFIRM_BUTTONS):
-                self.professor_intro_idx, done = self._advance_dialog_page(
-                    self.professor_intro_idx,
-                    self.professor_intro_lines,
-                )
-                if done:
-                    self.professor_choice_active = True
             return
         # choice mode
         if self._btnp(UP_BUTTONS) or self._btnp(DOWN_BUTTONS):
@@ -6333,18 +6405,10 @@ class Game:
 
     def draw_professor_intro(self):
         pyxel.cls(0)
-        if self.professor_intro_lines and self.professor_intro_idx < len(self.professor_intro_lines):
-            for i, sub in enumerate(
-                self._current_dialog_page_lines(
-                    self.professor_intro_lines,
-                    self.professor_intro_idx,
-                    max_chars=28,
-                    max_rows=6,
-                )
-            ):
-                self.text(16, 60 + i * 14, sub, 7)
-            if not self.professor_choice_active and (pyxel.frame_count // 15) % 2:
-                self.text(228, 200, "v", 7)
+        for i, sub in enumerate(
+            self._wrap_text(self.professor_choice_prompt, max_chars=28)[:6]
+        ):
+            self.text(16, 60 + i * 14, sub, 7)
         if self.professor_choice_active:
             labels = (
                 ["うけいれる", "ことわる"]
@@ -6377,66 +6441,44 @@ class Game:
         else:
             scene = "castle.professor.epilogue_01"
         p["professor_ending_seen"] = True
-        self.professor_ending_lines = self._dialog_lines(scene)
-        self.professor_ending_idx = 0
-        self.state = "professor_ending_main"
+        self._enter_fullscreen_dialog(
+            self._dialog_lines(scene),
+            text_color=10,
+            start_y=80,
+            max_rows=6,
+            on_complete=self._finish_professor_ending_main,
+        )
+
+    def _finish_professor_ending_main(self):
+        # フィールドに戻す（D8）。城タイル上のままなのでクールダウン
+        self._a_cooldown = True
+        self.state = "map"
 
     def update_professor_ending_main(self):
-        if self._btnp(CONFIRM_BUTTONS):
-            self.professor_ending_idx, done = self._advance_dialog_page(
-                self.professor_ending_idx,
-                self.professor_ending_lines,
-            )
-            if done:
-                # フィールドに戻す（D8）。城タイル上のままなのでクールダウン
-                self._a_cooldown = True
-                self.state = "map"
+        self.update_fullscreen_dialog()
 
     def draw_professor_ending_main(self):
-        pyxel.cls(0)
-        if self.professor_ending_lines and self.professor_ending_idx < len(self.professor_ending_lines):
-            for i, sub in enumerate(
-                self._current_dialog_page_lines(
-                    self.professor_ending_lines,
-                    self.professor_ending_idx,
-                    max_chars=28,
-                    max_rows=6,
-                )
-            ):
-                self.text(16, 80 + i * 14, sub, 10)
-            if (pyxel.frame_count // 15) % 2:
-                self.text(228, 200, "v", 7)
+        self.draw_fullscreen_dialog()
 
     def _enter_professor_ending_accepted(self):
-        self.professor_ending_lines = self._dialog_lines("castle.professor.accepted_01")
-        self.professor_ending_idx = 0
-        self.state = "professor_ending_accepted"
+        self._enter_fullscreen_dialog(
+            self._dialog_lines("castle.professor.accepted_01"),
+            text_color=6,
+            start_y=90,
+            max_rows=6,
+            on_complete=self._finish_professor_ending_accepted,
+        )
+
+    def _finish_professor_ending_accepted(self):
+        # 受諾エンド：professor_defeated は立てない。タイトルへ戻る
+        self.state = "title"
+        self._a_cooldown = True
 
     def update_professor_ending_accepted(self):
-        if self._btnp(CONFIRM_BUTTONS):
-            self.professor_ending_idx, done = self._advance_dialog_page(
-                self.professor_ending_idx,
-                self.professor_ending_lines,
-            )
-            if done:
-                # 受諾エンド：professor_defeated は立てない。タイトルへ戻る
-                self.state = "title"
-                self._a_cooldown = True
+        self.update_fullscreen_dialog()
 
     def draw_professor_ending_accepted(self):
-        pyxel.cls(0)
-        if self.professor_ending_lines and self.professor_ending_idx < len(self.professor_ending_lines):
-            for i, sub in enumerate(
-                self._current_dialog_page_lines(
-                    self.professor_ending_lines,
-                    self.professor_ending_idx,
-                    max_chars=28,
-                    max_rows=6,
-                )
-            ):
-                self.text(16, 90 + i * 14, sub, 6)
-            if (pyxel.frame_count // 15) % 2:
-                self.text(228, 200, "v", 7)
+        self.draw_fullscreen_dialog()
 
     # -----------------------------------------------------------------
     # DRAW
@@ -6460,6 +6502,8 @@ class Game:
             self.draw_map()
             self.draw_status_bar()
             self.draw_message_window()
+        elif self.state == "fullscreen_dialog":
+            self.draw_fullscreen_dialog()
         elif self.state == "town":
             self.draw_map()
             self.draw_status_bar()
@@ -6872,6 +6916,29 @@ class Game:
         # Blink indicator
         if (pyxel.frame_count // 15) % 2:
             self.text(228, 240, "v", 7)
+
+    def draw_fullscreen_dialog(self):
+        pyxel.cls(0)
+        if (
+            self.fullscreen_dialog_lines
+            and self.fullscreen_dialog_idx < len(self.fullscreen_dialog_lines)
+        ):
+            for i, sub in enumerate(
+                self._current_dialog_page_lines(
+                    self.fullscreen_dialog_lines,
+                    self.fullscreen_dialog_idx,
+                    max_chars=28,
+                    max_rows=self.fullscreen_dialog_max_rows,
+                )
+            ):
+                self.text(
+                    16,
+                    self.fullscreen_dialog_start_y + i * 14,
+                    sub,
+                    self.fullscreen_dialog_text_color,
+                )
+            if (pyxel.frame_count // 15) % 2:
+                self.text(228, 200, "v", 7)
 
     def draw_ending(self):
         pyxel.cls(1)

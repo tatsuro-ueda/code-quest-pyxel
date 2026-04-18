@@ -5244,7 +5244,7 @@ class Game:
                 self.dungeon_map = None
                 self._enter_message(
                     self._dialog_lines("dungeon.glitch.exit"),
-                    callback=None,
+                    callback=self._dungeon_exit_callback(),
                 )
                 return
 
@@ -5259,7 +5259,7 @@ class Game:
             self.dungeon_map = None
             self._enter_message(
                 self._dialog_lines("dungeon.glitch.exit"),
-                callback=None,
+                callback=self._dungeon_exit_callback(),
             )
             return
 
@@ -5952,6 +5952,11 @@ class Game:
             state=self.player["dialog_flags"],
             extra_context=extra_context,
         )
+
+    def _dungeon_exit_callback(self):
+        if self.player.get("glitch_lord_defeated"):
+            return self._enter_ending
+        return None
 
     def _enter_message(self, lines, callback=None):
         self.show_message(lines, callback=callback)

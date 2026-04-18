@@ -1,8 +1,7 @@
-"""Tests for tools/build_web_release.py preview/promote features."""
+"""Tests for tools/build_web_release.py preview release flow."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import shutil
@@ -16,7 +15,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT))
 
 from tools.build_web_release import (  # noqa: E402
-    PREVIEW_SNAPSHOT_FILE,
+    approve_preview,
     build_preview_release,
     build_web_release,
     collect_release_paths,
@@ -24,9 +23,10 @@ from tools.build_web_release import (  # noqa: E402
     generate_top_selector,
     generate_wrapper,
     load_top_page_changes,
+    main as build_web_release_main,
     promote,
+    reject_preview,
     resolve_pyxel_command,
-    roll_forward_approved_preview,
     validate_preview_files,
 )
 
@@ -58,34 +58,6 @@ def copy_web_release_fixture(dst_root: Path, *, include_preview: bool = False) -
             if (dst_root / "top_changes.json").exists():
                 os.utime(dst_root / "top_changes.json", None)
 
-
-def write_preview_request_note(
-    dst_root: Path,
-    *,
-    filename: str = "20260416-j49-test-preview.md",
-    status: str = "open",
-) -> Path:
-    steering_dir = dst_root / "docs" / "steering"
-    steering_dir.mkdir(parents=True, exist_ok=True)
-    note_path = steering_dir / filename
-    note_path.write_text(
-        "---\n"
-        f"status: {status}\n"
-        "priority: high\n"
-        "scheduled: 2026-04-16T07:30:00+00:00\n"
-        "dateCreated: 2026-04-16T07:30:00+00:00\n"
-        "dateModified: 2026-04-16T07:30:00+00:00\n"
-        "tags:\n"
-        "  - task\n"
-        "  - preview\n"
-        "  - selector\n"
-        "---\n\n"
-        "# Test preview request\n",
-        encoding="utf-8",
-    )
-    return note_path
-
-
 class TestGenerateSelector(unittest.TestCase):
     """selector.html テンプレートから index.html を生成するテスト"""
 
@@ -106,8 +78,10 @@ class TestGenerateSelector(unittest.TestCase):
             self.assertIn("あたらしい まほう を ついか したよ", content)
             self.assertIn("play-preview.html", content)
             self.assertIn("play.html", content)
-            self.assertIn("おためしばん", content)
-            self.assertIn("もとのままばん", content)
+            self.assertIn("開発版", content)
+            self.assertIn("本番", content)
+            self.assertNotIn("おためしばん", content)
+            self.assertNotIn("もとのままばん", content)
         finally:
             shutil.rmtree(build_dir, ignore_errors=True)
 
@@ -123,7 +97,7 @@ class TestGenerateSelector(unittest.TestCase):
             )
             self.assertTrue(result.exists())
             content = result.read_text(encoding="utf-8")
-            self.assertIn("おためしばん", content)
+            self.assertIn("開発版", content)
         finally:
             shutil.rmtree(build_dir, ignore_errors=True)
 
@@ -139,10 +113,10 @@ class TestGenerateSelector(unittest.TestCase):
                 changes=["にげる しっぱいを しゅうせい"],
             )
             content = result.read_text(encoding="utf-8")
-            self.assertNotIn("おためしばん", content)
+            self.assertNotIn("開発版", content)
             self.assertNotIn("play-preview.html", content)
             self.assertNotIn("りょうほう あそんだら", content)
-            self.assertIn("もとのままばん", content)
+            self.assertIn("本番", content)
             self.assertIn("play.html", content)
         finally:
             shutil.rmtree(build_dir, ignore_errors=True)
@@ -219,8 +193,8 @@ class TestTopPageChanges(unittest.TestCase):
 
             content = result.read_text(encoding="utf-8")
             self.assertIn("まおうを たおしたあとも ぼうけんが つづく", content)
-            self.assertNotIn("おためしばん", content)
-            self.assertIn("もとのままばん", content)
+            self.assertNotIn("開発版", content)
+            self.assertIn("本番", content)
         finally:
             shutil.rmtree(fake_root, ignore_errors=True)
             shutil.rmtree(build_dir, ignore_errors=True)
@@ -390,6 +364,28 @@ class TestPreviewBuildPrerequisites(unittest.TestCase):
         finally:
             shutil.rmtree(fake_root, ignore_errors=True)
 
+    def test_preview_generates_glitch_lord_conversation_change_from_diff(self):
+        fake_root = ROOT / ".build" / "test_glitch_lord_preview_meta"
+        fake_root.mkdir(parents=True, exist_ok=True)
+        try:
+            (fake_root / "main.py").write_text(
+                "tile == T_GLITCH_LORD_TRIGGER\n"
+                "self._start_battle(GLITCH_LORD_DATA, is_glitch_lord=True)\n",
+                encoding="utf-8",
+            )
+            (fake_root / "main_preview.py").write_text(
+                "tile == T_GLITCH_LORD_TRIGGER\n"
+                "self._enter_glitch_lord_intro()\n"
+                "boss.glitch.prebattle_01\n",
+                encoding="utf-8",
+            )
+
+            _, changes = validate_preview_files(fake_root)
+
+            self.assertEqual(changes, ["まおうまえに おはなしが はじまる"])
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
+
     def test_preview_ignores_manual_preview_meta_json(self):
         """preview_meta.json があっても入力としては信用せず差分から決める"""
         fake_root = ROOT / ".build" / "test_stale_meta"
@@ -442,7 +438,7 @@ class TestResolvePyxelCommand(unittest.TestCase):
 
 
 class TestPromote(unittest.TestCase):
-    """--promote コマンドのテスト"""
+    """preview 採否の内部ヘルパを検証する"""
 
     def setUp(self):
         self.work_dir = ROOT / ".build" / "test_promote"
@@ -472,6 +468,50 @@ class TestPromote(unittest.TestCase):
         self.assertEqual(main_content, "# original")
         self.assertFalse((self.work_dir / "main_preview.py").exists())
         self.assertFalse((self.work_dir / "preview_meta.json").exists())
+
+
+class TestCliDispatch(unittest.TestCase):
+    def test_preview_flag_dispatches_preview_build(self):
+        with (
+            patch.object(sys, "argv", ["build_web_release.py", "--preview"]),
+            patch("tools.build_web_release.build_preview_release", return_value=("a", "b", "c")) as preview_build,
+            patch("builtins.print") as print_mock,
+        ):
+            build_web_release_main()
+
+        preview_build.assert_called_once_with(ROOT)
+        print_mock.assert_called_once()
+
+    def test_approve_preview_flag_dispatches_approve(self):
+        with (
+            patch.object(sys, "argv", ["build_web_release.py", "--approve-preview"]),
+            patch("tools.build_web_release.approve_preview") as approve,
+            patch("builtins.print") as print_mock,
+        ):
+            build_web_release_main()
+
+        approve.assert_called_once_with(ROOT)
+        print_mock.assert_called_once_with("Approved preview and rebuilt current release.")
+
+    def test_reject_preview_flag_dispatches_reject(self):
+        with (
+            patch.object(sys, "argv", ["build_web_release.py", "--reject-preview"]),
+            patch("tools.build_web_release.reject_preview") as reject,
+            patch("builtins.print") as print_mock,
+        ):
+            build_web_release_main()
+
+        reject.assert_called_once_with(ROOT)
+        print_mock.assert_called_once_with("Rejected preview and rebuilt current release.")
+
+    def test_no_flag_dispatches_normal_build(self):
+        with (
+            patch.object(sys, "argv", ["build_web_release.py"]),
+            patch("tools.build_web_release.build_web_release") as normal_build,
+        ):
+            build_web_release_main()
+
+        normal_build.assert_called_once_with(ROOT)
 
 
 class TestMainPyWebSafety(unittest.TestCase):
@@ -523,7 +563,7 @@ class TestNormalBuildWithoutPreviewSource(unittest.TestCase):
         self.assertFalse((self.output_dir / "play-preview.html").exists())
         self.assertFalse((self.output_dir / "pyxel-preview.html").exists())
         self.assertNotIn("play-preview.html", index_content)
-        self.assertNotIn("おためしばん", index_content)
+        self.assertNotIn("開発版", index_content)
         self.assertIn('href="play.html?v=', index_content)
 
         play_content = (self.output_dir / "play.html").read_text(encoding="utf-8")
@@ -564,7 +604,7 @@ class TestNormalBuildWithStalePreviewMeta(unittest.TestCase):
         self.assertFalse((self.output_dir / "play-preview.html").exists())
         self.assertFalse((self.output_dir / "pyxel-preview.html").exists())
         self.assertNotIn("ふるい せつめい", index_content)
-        self.assertNotIn("おためしばん", index_content)
+        self.assertNotIn("開発版", index_content)
 
 
 class TestPreviewBuildUsesVersionedLinks(unittest.TestCase):
@@ -575,7 +615,6 @@ class TestPreviewBuildUsesVersionedLinks(unittest.TestCase):
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.work_dir.mkdir(parents=True, exist_ok=True)
         copy_web_release_fixture(self.project_root, include_preview=True)
-        self.note_path = write_preview_request_note(self.project_root)
 
     def tearDown(self):
         shutil.rmtree(self.project_root, ignore_errors=True)
@@ -589,14 +628,14 @@ class TestPreviewBuildUsesVersionedLinks(unittest.TestCase):
 
         self.assertIn('href="play.html?v=', index_content)
         self.assertIn('href="play-preview.html?v=', index_content)
-        self.assertIn("つうしんとうの ノイズガーディアンが フィールドに でない", index_content)
+        self.assertIn("まおうまえに おはなしが はじまる", index_content)
         self.assertIn('src="pyxel.html?v=', play_content)
         self.assertIn('src="pyxel-preview.html?v=', play_preview_content)
         meta = json.loads((self.project_root / "preview_meta.json").read_text(encoding="utf-8"))
-        self.assertEqual(meta["changes"], ["つうしんとうの ノイズガーディアンが フィールドに でない"])
+        self.assertEqual(meta["changes"], ["まおうまえに おはなしが はじまる"])
 
 
-class TestPreviewBuildBindsToRequestNote(unittest.TestCase):
+class TestPreviewBuildMetadata(unittest.TestCase):
     def setUp(self):
         self.project_root = ROOT / ".build" / "test_preview_request_note_root"
         self.output_dir = self.project_root / "out"
@@ -604,95 +643,61 @@ class TestPreviewBuildBindsToRequestNote(unittest.TestCase):
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.work_dir.mkdir(parents=True, exist_ok=True)
         copy_web_release_fixture(self.project_root, include_preview=True)
-        self.note_path = write_preview_request_note(self.project_root)
 
     def tearDown(self):
         shutil.rmtree(self.project_root, ignore_errors=True)
 
-    def test_preview_meta_records_current_request_note(self):
+    def test_preview_meta_records_hashes_for_current_candidate_only(self):
         build_preview_release(self.project_root, output_dir=self.output_dir, work_dir=self.work_dir)
 
         meta = json.loads((self.project_root / "preview_meta.json").read_text(encoding="utf-8"))
-        self.assertEqual(
-            meta["request_note_path"],
-            str(self.note_path.relative_to(self.project_root)).replace("\\", "/"),
-        )
-        self.assertTrue(meta["request_note_hash"])
-        snapshot_path = self.project_root / PREVIEW_SNAPSHOT_FILE
-        self.assertTrue(snapshot_path.exists())
-        self.assertEqual(
-            snapshot_path.read_text(encoding="utf-8"),
-            (self.project_root / "main_preview.py").read_text(encoding="utf-8"),
-        )
+        self.assertTrue(meta["base_current_hash"])
+        self.assertTrue(meta["preview_hash"])
+        self.assertNotIn("request_note_path", meta)
+        self.assertNotIn("request_note_hash", meta)
 
 
-class TestPreviewRollForward(unittest.TestCase):
+class TestPreviewBuildDoesNotRollForwardAutomatically(unittest.TestCase):
     def setUp(self):
-        self.project_root = ROOT / ".build" / "test_preview_roll_forward_root"
+        self.project_root = ROOT / ".build" / "test_preview_no_roll_forward_root"
         self.project_root.mkdir(parents=True, exist_ok=True)
-        old_note = write_preview_request_note(
-            self.project_root,
-            filename="20260415-j48-old-preview.md",
-            status="done",
-        )
-        self.current_note = write_preview_request_note(
-            self.project_root,
-            filename="20260416-j49-new-preview.md",
-            status="open",
-        )
         self.original_main = "dungeon.glitch.exit callback=_enter_ending\n"
-        self.approved_preview = "dungeon.glitch.exit callback=None\n"
-        self.new_preview = self.approved_preview + "is_noise_guardian\n"
+        self.new_preview = "dungeon.glitch.exit callback=None\nis_noise_guardian\n"
         (self.project_root / "main.py").write_text(self.original_main, encoding="utf-8")
         (self.project_root / "main_preview.py").write_text(self.new_preview, encoding="utf-8")
-        (self.project_root / PREVIEW_SNAPSHOT_FILE).write_text(
-            self.approved_preview,
-            encoding="utf-8",
-        )
-        (self.project_root / "preview_meta.json").write_text(
-            json.dumps(
-                {
-                    "base_current_hash": hashlib.sha256(self.original_main.encode("utf-8")).hexdigest(),
-                    "preview_hash": hashlib.sha256(self.approved_preview.encode("utf-8")).hexdigest(),
-                    "request_note_path": str(old_note.relative_to(self.project_root)).replace("\\", "/"),
-                    "request_note_hash": hashlib.sha256(old_note.read_bytes()).hexdigest(),
-                    "changes": ["まおうを たおしたあとも つづきに すすめる"],
-                }
-            ),
-            encoding="utf-8",
-        )
 
     def tearDown(self):
         shutil.rmtree(self.project_root, ignore_errors=True)
 
-    def test_roll_forward_promotes_previous_preview_before_diffing_new_request(self):
-        promoted = roll_forward_approved_preview(self.project_root)
+    def test_build_preview_release_leaves_current_unchanged_until_approved(self):
+        _, changes = validate_preview_files(self.project_root)
 
-        self.assertTrue(promoted)
         self.assertEqual(
             (self.project_root / "main.py").read_text(encoding="utf-8"),
-            self.approved_preview,
+            self.original_main,
         )
-        self.assertFalse((self.project_root / "preview_meta.json").exists())
+        self.assertEqual(
+            changes,
+            [
+                "つうしんとうの ノイズガーディアンが フィールドに でない",
+                "まおうを たおしたあとも つづきに すすめる",
+            ],
+        )
 
-        _, changes = validate_preview_files(self.project_root)
-        self.assertEqual(changes, ["つうしんとうの ノイズガーディアンが フィールドに でない"])
 
-
-class TestNormalBuildWithMismatchedPreviewRequestNote(unittest.TestCase):
+class TestNormalBuildWithStalePreviewArtifacts(unittest.TestCase):
     def setUp(self):
-        self.project_root = ROOT / ".build" / "test_normal_build_mismatched_preview_request_root"
+        self.project_root = ROOT / ".build" / "test_normal_build_stale_preview_artifact_root"
         self.output_dir = self.project_root / "out"
         self.work_dir = self.project_root / "work"
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.work_dir.mkdir(parents=True, exist_ok=True)
         copy_web_release_fixture(self.project_root, include_preview=True)
-        self.current_note = write_preview_request_note(self.project_root)
 
     def tearDown(self):
         shutil.rmtree(self.project_root, ignore_errors=True)
 
-    def test_normal_build_hides_preview_when_request_note_does_not_match(self):
+    def test_normal_build_hides_preview_when_preview_meta_hashes_do_not_match(self):
         (self.output_dir / "play-preview.html").write_text("preview wrapper", encoding="utf-8")
         (self.output_dir / "pyxel-preview.html").write_text("preview build", encoding="utf-8")
         os.utime((self.output_dir / "play-preview.html"), None)
@@ -700,14 +705,8 @@ class TestNormalBuildWithMismatchedPreviewRequestNote(unittest.TestCase):
         (self.project_root / "preview_meta.json").write_text(
             json.dumps(
                 {
-                    "base_current_hash": hashlib.sha256(
-                        (self.project_root / "main.py").read_bytes()
-                    ).hexdigest(),
-                    "preview_hash": hashlib.sha256(
-                        (self.project_root / "main_preview.py").read_bytes()
-                    ).hexdigest(),
-                    "request_note_path": "docs/steering/20260415-j40-old-preview.md",
-                    "request_note_hash": "old-note-hash",
+                    "base_current_hash": "stale-main",
+                    "preview_hash": "stale-preview",
                     "changes": ["ふるい せつめい"],
                 }
             ),
@@ -720,31 +719,64 @@ class TestNormalBuildWithMismatchedPreviewRequestNote(unittest.TestCase):
         self.assertFalse((self.output_dir / "play-preview.html").exists())
         self.assertFalse((self.output_dir / "pyxel-preview.html").exists())
         self.assertNotIn("ふるい せつめい", index_content)
-        self.assertNotIn("おためしばん", index_content)
+        self.assertNotIn("開発版", index_content)
 
 
-class TestNormalBuildWithMatchingPreviewRequestNote(unittest.TestCase):
+class TestNormalBuildWithMatchingPreviewArtifacts(unittest.TestCase):
     def setUp(self):
-        self.project_root = ROOT / ".build" / "test_normal_build_matching_preview_request_root"
+        self.project_root = ROOT / ".build" / "test_normal_build_matching_preview_artifact_root"
         self.output_dir = self.project_root / "out"
         self.work_dir = self.project_root / "work"
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.work_dir.mkdir(parents=True, exist_ok=True)
         copy_web_release_fixture(self.project_root, include_preview=True)
-        write_preview_request_note(self.project_root)
 
     def tearDown(self):
         shutil.rmtree(self.project_root, ignore_errors=True)
 
-    def test_normal_build_keeps_preview_when_request_note_matches(self):
+    def test_normal_build_keeps_preview_when_hashes_match(self):
         build_preview_release(self.project_root, output_dir=self.output_dir, work_dir=self.work_dir)
         build_web_release(self.project_root, output_dir=self.output_dir, work_dir=self.work_dir)
 
         index_content = (self.output_dir / "index.html").read_text(encoding="utf-8")
-        self.assertIn("おためしばん", index_content)
-        self.assertIn("つうしんとうの ノイズガーディアンが フィールドに でない", index_content)
+        self.assertIn("開発版", index_content)
+        self.assertIn("まおうまえに おはなしが はじまる", index_content)
         self.assertTrue((self.output_dir / "play-preview.html").exists())
         self.assertTrue((self.output_dir / "pyxel-preview.html").exists())
+
+
+class TestExplicitPreviewCommands(unittest.TestCase):
+    def setUp(self):
+        self.project_root = ROOT / ".build" / "test_explicit_preview_commands_root"
+        self.output_dir = self.project_root / "out"
+        self.work_dir = self.project_root / "work"
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.work_dir.mkdir(parents=True, exist_ok=True)
+        copy_web_release_fixture(self.project_root, include_preview=True)
+        build_preview_release(self.project_root, output_dir=self.output_dir, work_dir=self.work_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.project_root, ignore_errors=True)
+
+    def test_approve_preview_promotes_candidate_then_rebuilds_current(self):
+        approve_preview(self.project_root, output_dir=self.output_dir, work_dir=self.work_dir)
+
+        self.assertFalse((self.project_root / "main_preview.py").exists())
+        self.assertFalse((self.project_root / "preview_meta.json").exists())
+        index_content = (self.output_dir / "index.html").read_text(encoding="utf-8")
+        self.assertNotIn("開発版", index_content)
+
+    def test_reject_preview_discards_candidate_then_rebuilds_current(self):
+        original_main = (self.project_root / "main.py").read_text(encoding="utf-8")
+
+        reject_preview(self.project_root, output_dir=self.output_dir, work_dir=self.work_dir)
+
+        self.assertEqual(
+            (self.project_root / "main.py").read_text(encoding="utf-8"),
+            original_main,
+        )
+        self.assertFalse((self.project_root / "main_preview.py").exists())
+        self.assertFalse((self.project_root / "preview_meta.json").exists())
 
 
 if __name__ == "__main__":

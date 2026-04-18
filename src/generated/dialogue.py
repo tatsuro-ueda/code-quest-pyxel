@@ -318,6 +318,45 @@ DIALOGUE_JA: dict[str, Any] = {
         'battle.normal.defeat': {
             'text': 'まだせいりできていない…コインがはんぶんになった。',
         },
+        'boss.glitch.prebattle_01': {
+            'text': 'くうきがゆがんでいる。エラーコードがかべをはいまわっている。',
+            'next': 'boss.glitch.prebattle_02',
+        },
+        'boss.glitch.prebattle_02': {
+            'text': '……おくに、だれかがいる。ちいさなかげが、こちらをみている。',
+            'next': 'boss.glitch.prebattle_03',
+        },
+        'boss.glitch.prebattle_03': {
+            'text': 'グリッチ「……だれ？」',
+            'next': 'boss.glitch.prebattle_04',
+        },
+        'boss.glitch.prebattle_04': {
+            'text': 'グリッチ「またきたの。なおしにきたの？ わたしを？」',
+            'next': 'boss.glitch.prebattle_05',
+        },
+        'boss.glitch.prebattle_05': {
+            'text': 'グリッチ「パパもそういってた。なおしてあげるって。ちゃんとすれば、いいこでいれば、ここにいていいって。」',
+            'next': 'boss.glitch.prebattle_06',
+        },
+        'boss.glitch.prebattle_06': {
+            'text': 'グリッチ「がんばったよ。わからないことも、うなずいた。こわいことも、だまってた。」',
+            'next': 'boss.glitch.prebattle_07',
+        },
+        'boss.glitch.prebattle_07': {
+            'text': 'グリッチ「でもね、だれもみてくれなかった。うなずくわたししか、みてくれなかった。」',
+            'next': 'boss.glitch.prebattle_08',
+        },
+        'boss.glitch.prebattle_08': {
+            'text': 'グリッチ「だから……こわした。こわせば、みてくれるから。こわせば、もうはなれていかないから。」',
+            'next': 'boss.glitch.prebattle_09',
+        },
+        'boss.glitch.prebattle_09': {
+            'text': 'グリッチ「あなたも、こわしにきたの？ それとも……みてくれるの？」',
+            'next': 'boss.glitch.prebattle_10',
+        },
+        'boss.glitch.prebattle_10': {
+            'text': 'グリッチ「……いいよ。こっちにきて。わたしがなにか、みてみればいい！」',
+        },
         'boss.glitch.intro': {
             'text': 'グリッチがあらわれた。りかいをきょんでいる。',
         },
@@ -676,6 +715,45 @@ DIALOGUE_EN: dict[str, Any] = {
         },
         'battle.normal.defeat': {
             'text': "Couldn't sort it out yet... half your coins are gone.",
+        },
+        'boss.glitch.prebattle_01': {
+            'text': 'The air is warped. Error codes crawl across the walls.',
+            'next': 'boss.glitch.prebattle_02',
+        },
+        'boss.glitch.prebattle_02': {
+            'text': '...Someone is deeper inside. A small shadow is watching you.',
+            'next': 'boss.glitch.prebattle_03',
+        },
+        'boss.glitch.prebattle_03': {
+            'text': 'Glitch: "...Who are you?"',
+            'next': 'boss.glitch.prebattle_04',
+        },
+        'boss.glitch.prebattle_04': {
+            'text': 'Glitch: "You came again? Did you come to fix me?"',
+            'next': 'boss.glitch.prebattle_05',
+        },
+        'boss.glitch.prebattle_05': {
+            'text': 'Glitch: "Papa said that too. That he would fix me. That if I did everything right and stayed good, I could stay here."',
+            'next': 'boss.glitch.prebattle_06',
+        },
+        'boss.glitch.prebattle_06': {
+            'text': 'Glitch: "I tried so hard. I nodded even when I did not understand. I stayed quiet even when I was scared."',
+            'next': 'boss.glitch.prebattle_07',
+        },
+        'boss.glitch.prebattle_07': {
+            'text': 'Glitch: "But no one ever looked at me. They only looked at the version of me that nodded."',
+            'next': 'boss.glitch.prebattle_08',
+        },
+        'boss.glitch.prebattle_08': {
+            'text': 'Glitch: "So... I broke it. If I broke it, they would look at me. If I broke it, maybe no one would leave me again."',
+            'next': 'boss.glitch.prebattle_09',
+        },
+        'boss.glitch.prebattle_09': {
+            'text': 'Glitch: "Did you come to break me too? Or... will you really look at me?"',
+            'next': 'boss.glitch.prebattle_10',
+        },
+        'boss.glitch.prebattle_10': {
+            'text': 'Glitch: "...Fine. Come closer. Then see what I am for yourself."',
         },
         'boss.glitch.intro': {
             'text': 'Glitch appeared. It refuses to be understood.',

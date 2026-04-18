@@ -225,12 +225,13 @@ Scenario: 「もとのままばん」で変更前を体験できる
 ```
 
 ```gherkin
-Scenario: 次の依頼が来ると前のおためし版がもとのまま版へ繰り上がる
-  Given 前の依頼のおためし版が残っている
-  And 子どもから明示的な却下は出ていない
-  When 親が次の変更を頼んで新しいおためし版をビルドする
-  Then 前のおためし版の内容が main.py として配信される
-  And 新しい依頼の差分だけが新しいおためし版に残る
+Scenario: 親が昇格コマンドを実行したときだけ current が更新される
+  Given 親がAIに変更を頼んでおためし版を build した
+  And 子どもが遊び比べて「おためしばんがいい」と決めた
+  When 親が `python tools/build_web_release.py --approve-preview` を実行する
+  Then main.py はおためし版の内容へ更新される
+  And おためし版は取り下げられる
+  And もとのまま版には承認後の内容が配信される
 ```
 
 ```gherkin
@@ -258,7 +259,7 @@ Scenario: 選択ページの変更説明が実際の配信内容と一致する
 Scenario: 遊び比べた後に却下するともとのまま版が維持される
   Given 子どもが両方のバージョンで遊んだ
   When 子どもが「もとのままがいい！」と親に伝える
-  And 親がおためし版を取り下げる
+  And 親が `python tools/build_web_release.py --reject-preview` を実行する
   Then main.py は変わらない
   And おためし版が削除され、変更前の状態が維持される
 ```
@@ -273,10 +274,10 @@ Scenario: 却下後に別の案を試せる
 ```
 
 ```gherkin
-Scenario: 却下したおためし版は次の依頼で自動 current にしない
+Scenario: 却下したおためし版は自動で current にしない
   Given 子どもが前のおためし版を却下した
   And main.py は却下前の current のままである
-  When 親が次の変更を頼む
+  When 親が次の変更を頼んで新しいおためし版を build する
   Then 却下した preview を current へ繰り上げない
   And 次の依頼はその current から新しいおためし版を作る
 ```
@@ -303,18 +304,18 @@ Scenario: 変更一覧はおためし版から自動生成される
 
 ```gherkin
 Scenario: 変更一覧は今の依頼に対応するおためし版だけを説明する
-  Given 前の依頼の preview artifact が残っている
-  And 今の依頼に対応するおためし版がない
+  Given 古い preview artifact が残っている
+  And いま有効な main_preview.py または preview_meta.json がない
   When 選択ページを表示する
-  Then 前の preview の変更一覧を今の依頼の説明として表示しない
-  And 今の依頼に対応するおためし版がないなら一覧も出さない
+  Then 古い preview の変更一覧を現在の説明として表示しない
+  And いま有効なおためし版がないなら一覧も出さない
 ```
 
 ```gherkin
-Scenario: 前のおためし版を繰り上げたあとは新しい差分だけを説明する
-  Given 前の依頼のおためし版が current へ繰り上がった
-  When 次の依頼のおためし版を build する
-  Then 変更一覧は前回ぶんを含まず次の依頼の差分だけを説明する
+Scenario: 新しいおためし版を作り直したら一覧もその候補だけを説明する
+  Given 以前のおためし版とは別の変更で新しい main_preview.py を作った
+  When 親が新しいおためし版を build する
+  Then 変更一覧は現在の main_preview.py の差分だけを説明する
   And 子どもが「今回どこを変えたか」だけを読める
 ```
 
@@ -330,7 +331,7 @@ Scenario: 変更一覧が実際のおためし版とずれるなら build で検
 Scenario: 変更を段階的に入れたい場合は複数回のビルドで対応する
   Given 親がAIに3つの変更を頼みたい
   When 親が1つ目の変更だけでおためし版をビルドする
-  And 子どもが承認して昇格する
+  And 子どもが承認したあと親が `python tools/build_web_release.py --approve-preview` を実行する
   And 次に2つ目の変更でおためし版をビルドする
   Then 各変更が1つずつ遊び比べて判断される
 ```
