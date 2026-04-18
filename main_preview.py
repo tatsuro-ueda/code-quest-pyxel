@@ -6367,7 +6367,10 @@ class Game:
 
     def update_ending(self):
         if self._btnp(CONFIRM_BUTTONS):
-            self.state = "title"
+            self.player["in_dungeon"] = False
+            self.dungeon_map = None
+            self._a_cooldown = True
+            self.state = "map"
 
     # ----- Professor encounter (隠し章) -----
     # ----- AI でしゅうせい (Code Maker と外部 AI の橋渡し) -----

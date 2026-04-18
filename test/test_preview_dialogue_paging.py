@@ -67,3 +67,24 @@ class PreviewDialoguePagingTest(unittest.TestCase):
         args, kwargs = game._enter_fullscreen_dialog.call_args
         self.assertEqual(args[0], ["page 1", "page 2"])
         self.assertEqual(kwargs["on_complete"], game._enter_professor_intro_choice)
+
+    def test_update_ending_returns_post_boss_clear_to_map(self):
+        game = self.make_game()
+        game.player = {
+            "glitch_lord_defeated": True,
+            "professor_intro_seen": False,
+            "professor_defeated": False,
+            "in_dungeon": True,
+            "x": 40,
+            "y": 32,
+        }
+        game._a_cooldown = False
+        game._btnp = lambda buttons: buttons == self.preview.CONFIRM_BUTTONS
+        game.state = "ending"
+
+        self.preview.Game.update_ending(game)
+
+        self.assertEqual(game.state, "map")
+        self.assertFalse(game.player["in_dungeon"])
+        self.assertEqual((game.player["x"], game.player["y"]), (40, 32))
+        self.assertTrue(game._a_cooldown)

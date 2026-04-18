@@ -110,6 +110,27 @@ class DialoguePagingTest(unittest.TestCase):
         self.assertEqual(game.professor_intro_idx, 2)
         self.assertTrue(game.professor_choice_active)
 
+    def test_update_ending_returns_post_boss_clear_to_map(self):
+        game = self.make_game()
+        game.player = {
+            "glitch_lord_defeated": True,
+            "professor_intro_seen": False,
+            "professor_defeated": False,
+            "in_dungeon": True,
+            "x": 40,
+            "y": 32,
+        }
+        game._a_cooldown = False
+        game._btnp = lambda buttons: buttons == self.main.CONFIRM_BUTTONS
+        game.state = "ending"
+
+        self.main.Game.update_ending(game)
+
+        self.assertEqual(game.state, "map")
+        self.assertFalse(game.player["in_dungeon"])
+        self.assertEqual((game.player["x"], game.player["y"]), (40, 32))
+        self.assertTrue(game._a_cooldown)
+
 
 if __name__ == "__main__":
     unittest.main()
