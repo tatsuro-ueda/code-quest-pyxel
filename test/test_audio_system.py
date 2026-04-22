@@ -51,7 +51,7 @@ class _FakePyxel:
 
 class AudioSystemTest(unittest.TestCase):
     def setUp(self):
-        from src.audio_system import (
+        from src.shared.services.audio_system import (
             AudioManager,
             BASS_CHANNEL,
             DRUM_CHANNEL,
@@ -199,14 +199,35 @@ class AudioSystemTest(unittest.TestCase):
             ],
         )
 
+    def test_set_enabled_stops_and_restores_bgm(self):
+        fake_pyxel = _FakePyxel()
+        manager = self.AudioManager(fake_pyxel)
+
+        manager.play_scene("title")
+        manager.set_enabled(False)
+        manager.play_scene("overworld")
+        manager.set_enabled(True)
+
+        self.assertEqual(
+            fake_pyxel.playm_calls,
+            [
+                (self.music_index("title"), True),
+                (self.music_index("overworld"), True),
+            ],
+        )
+        self.assertEqual(
+            fake_pyxel.stop_calls,
+            [self.MELODY_CHANNEL, self.BASS_CHANNEL, self.DRUM_CHANNEL],
+        )
+
     def test_track_slot_aliases_melody_slot(self):
-        from src.audio_system import TRACK_ORDER
+        from src.shared.services.audio_system import TRACK_ORDER
 
         for scene in TRACK_ORDER:
             self.assertEqual(self.track_slot(scene), self.melody_slot(scene))
 
     def test_track_count_fits_pyxel_music_slots(self):
-        from src.audio_system import TRACK_ORDER
+        from src.shared.services.audio_system import TRACK_ORDER
 
         # Pyxel は musics[0..7] の8スロットしか持たない
         self.assertLessEqual(len(TRACK_ORDER), 8)

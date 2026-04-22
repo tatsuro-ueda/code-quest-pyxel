@@ -1,4 +1,4 @@
-"""Tests for src/player_factory."""
+"""Tests for src.shared.services.player_state."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.player_factory import (  # noqa: E402
+from src.shared.services.player_state import (  # noqa: E402
     MAX_LEVEL,
     create_initial_player,
     exp_for_level,
@@ -61,7 +61,7 @@ class CreateInitialPlayerTest(unittest.TestCase):
             "weapon", "armor", "items", "spells",
             "poisoned", "in_dungeon", "glitch_lord_defeated",
             "max_zone_reached", "landmarkTreeSeen", "landmarkTowerSeen",
-            "dialog_flags",
+            "dialog_flags", "bgm_enabled", "sfx_enabled", "vfx_enabled",
         ):
             self.assertIn(key, p)
 
@@ -80,6 +80,12 @@ class CreateInitialPlayerTest(unittest.TestCase):
         p = create_initial_player()
         self.assertEqual(p["lv"], 1)
         self.assertEqual(p["exp"], 0)
+
+    def test_av_settings_default_to_enabled(self):
+        p = create_initial_player()
+        self.assertTrue(p["bgm_enabled"])
+        self.assertTrue(p["sfx_enabled"])
+        self.assertTrue(p["vfx_enabled"])
 
 
 if __name__ == "__main__":

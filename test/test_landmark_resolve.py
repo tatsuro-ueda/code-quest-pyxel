@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.landmark_events import (  # noqa: E402
+from src.shared.services.landmark_events import (  # noqa: E402
     LANDMARK_EVENTS,
     find_landmark_at,
     resolve_scene,

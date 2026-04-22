@@ -18,19 +18,25 @@ BUTTON_GROUPS = (
 
 
 def any_btn(pyxel_module, button_names) -> bool:
+    """グループ内のいずれかのボタンが押下中なら True を返す。"""
     return any(pyxel_module.btn(getattr(pyxel_module, name)) for name in button_names)
 
 
 def any_btnp(pyxel_module, button_names) -> bool:
+    """グループ内のいずれかのボタンがこのフレームで押されたなら True を返す。"""
     return any(pyxel_module.btnp(getattr(pyxel_module, name)) for name in button_names)
 
 
 class InputStateTracker:
+    """キー＋ゲームパッドをグループ単位で扱い、自前で btn / btnp を追跡する。"""
+
     def __init__(self):
+        """全ボタングループを未押下状態で初期化する。"""
         self._held = {button_names: False for button_names in BUTTON_GROUPS}
         self._pressed = {button_names: False for button_names in BUTTON_GROUPS}
 
     def update(self, pyxel_module):
+        """毎フレーム Pyxel から入力を取り、held と pressed を更新する。"""
         next_held = {}
         next_pressed = {}
         for button_names in BUTTON_GROUPS:
@@ -41,7 +47,9 @@ class InputStateTracker:
         self._pressed = next_pressed
 
     def btn(self, button_names) -> bool:
+        """指定グループが押下中か返す。"""
         return self._held.get(button_names, False)
 
     def btnp(self, button_names) -> bool:
+        """指定グループがこのフレームで新たに押されたか返す。"""
         return self._pressed.get(button_names, False)

@@ -8,7 +8,7 @@ from pathlib import Path
 PYXEL_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PYXEL_ROOT))
 
-from src.structured_dialog import (  # noqa: E402
+from src.scenes.dialog.model import (  # noqa: E402
     DialogValidationError,
     StructuredDialogRunner,
 )
@@ -151,10 +151,10 @@ class StructuredDialogRunnerTest(unittest.TestCase):
 
 
 class DialogueDataSmokeTest(unittest.TestCase):
-    """src/dialogue_data.py に同梱された両言語データの基本動作を検証する。"""
+    """src.game_data から読める両言語データの基本動作を検証する。"""
 
     def setUp(self):
-        from src.dialogue_data import DIALOGUE_JA, DIALOGUE_EN
+        from src.game_data import DIALOGUE_JA, DIALOGUE_EN
         self.ja_runner = StructuredDialogRunner(DIALOGUE_JA)
         self.en_runner = StructuredDialogRunner(DIALOGUE_EN)
 

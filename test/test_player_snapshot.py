@@ -7,7 +7,7 @@ from pathlib import Path
 PYXEL_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PYXEL_ROOT))
 
-from src.player_snapshot import (
+from src.shared.services.player_state import (
     SAVE_VERSION,
     SAVED_PLAYER_KEYS,
     dump_snapshot,
@@ -35,6 +35,9 @@ def _sample_player():
         "professor_intro_seen": True,
         "professor_defeated": False,
         "professor_ending_seen": False,
+        "bgm_enabled": True,
+        "sfx_enabled": False,
+        "vfx_enabled": True,
         "dialog_flags": {"foo": True},
         "town_talk_idx": [0, 0, 0],
     }
@@ -42,7 +45,7 @@ def _sample_player():
 
 class ProfessorFlagsRoundTripTest(unittest.TestCase):
     def test_professor_flags_are_persisted(self):
-        from src.player_snapshot import dump_snapshot, restore_snapshot
+        from src.shared.services.player_state import dump_snapshot, restore_snapshot
         player = _sample_player()
         player["professor_intro_seen"] = True
         player["professor_defeated"] = True
@@ -78,6 +81,22 @@ class PlayerSnapshotTest(unittest.TestCase):
         for key in SAVED_PLAYER_KEYS:
             self.assertEqual(restored["player"][key], player[key], key)
         self.assertEqual(restored["town_pos"], (20, 12))
+
+    def test_restore_adds_defaults_for_missing_av_settings(self):
+        snap = {
+            "save_version": SAVE_VERSION,
+            "town_pos": [20, 12],
+            "player": {
+                "x": 20,
+                "y": 12,
+            },
+        }
+
+        restored = restore_snapshot(snap)
+
+        self.assertTrue(restored["player"]["bgm_enabled"])
+        self.assertTrue(restored["player"]["sfx_enabled"])
+        self.assertTrue(restored["player"]["vfx_enabled"])
 
     def test_restore_does_not_require_all_keys(self):
         player = {"x": 1, "y": 2, "hp": 5}

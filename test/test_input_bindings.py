@@ -26,7 +26,7 @@ class FakePyxel:
 
 class InputBindingsTest(unittest.TestCase):
     def _load_module(self):
-        from src.input_bindings import (
+        from src.shared.services.input_bindings import (
             CANCEL_BUTTONS,
             CONFIRM_BUTTONS,
             DOWN_BUTTONS,

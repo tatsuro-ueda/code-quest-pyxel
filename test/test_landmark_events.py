@@ -12,7 +12,7 @@ sys.path.insert(0, str(PYXEL_ROOT))
 class LandmarkEventRoutingTest(unittest.TestCase):
     def _load_module(self):
         try:
-            from src.landmark_events import find_landmark_event
+            from src.shared.services.landmark_events import find_landmark_event
         except ImportError as exc:
             self.fail(f"missing landmark_events module: {exc}")
         return find_landmark_event

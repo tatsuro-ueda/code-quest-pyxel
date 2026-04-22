@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
 
-from src.play_session_logging import end_session, start_session
+from src.shared.services.play_session_logging import end_session, start_session
 
 
 def load_report_module():
@@ -37,25 +37,25 @@ class ReportPlaySessionsTest(unittest.TestCase):
     def seed_sessions(self):
         start_session(
             self.db_path,
-            session_id="short-current",
-            page_kind="current",
+            session_id="short-production",
+            page_kind="production",
             started_at=self.base,
         )
         end_session(
             self.db_path,
-            session_id="short-current",
+            session_id="short-production",
             ended_at=self.base + timedelta(seconds=45),
             ended_cleanly=True,
         )
         start_session(
             self.db_path,
-            session_id="long-preview",
-            page_kind="preview",
+            session_id="long-development",
+            page_kind="development",
             started_at=self.base + timedelta(hours=1),
         )
         end_session(
             self.db_path,
-            session_id="long-preview",
+            session_id="long-development",
             ended_at=self.base + timedelta(hours=1, seconds=360),
             ended_cleanly=True,
         )
@@ -67,8 +67,8 @@ class ReportPlaySessionsTest(unittest.TestCase):
         rendered = self.report_mod.render_summary(rows)
 
         self.assertIn("2026-04-13", rendered)
-        self.assertIn("current", rendered)
-        self.assertIn("preview", rendered)
+        self.assertIn("production", rendered)
+        self.assertIn("development", rendered)
         self.assertIn("short=1", rendered)
         self.assertIn("long=1", rendered)
         self.assertIn("avg=45s", rendered)
