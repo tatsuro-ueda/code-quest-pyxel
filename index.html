@@ -65,12 +65,70 @@ h1 {
 .play-btn:active {
   background: #c5c6d9;
 }
+.sub-link {
+  display: inline-block;
+  font-size: 13px;
+  color: #b9c0ff;
+  text-decoration: none;
+}
+.sub-link:hover,
+.sub-link:focus {
+  text-decoration: underline;
+}
+.sub-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 10px;
+}
+.secondary-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: sans-serif;
+  background: #2f365f;
+  color: #f4f6ff;
+  border: 1px solid #6d79c7;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.import-input {
+  width: 100%;
+  margin: 0 0 10px 0;
+  color: #ddd;
+}
+.import-status {
+  font-size: 13px;
+  color: #cfd6ff;
+  margin: 10px 0 0 0;
+  min-height: 1.2em;
+}
 .hint {
   text-align: center;
   font-size: 14px;
   color: #aaa;
   margin-top: 24px;
   line-height: 1.8;
+}
+.owner-link {
+  text-align: center;
+  font-size: 11px;
+  color: #777;
+  margin-top: 16px;
+}
+.owner-link a {
+  color: #8f95d8;
+  text-decoration: none;
+}
+.owner-link a:hover,
+.owner-link a:focus {
+  text-decoration: underline;
 }
 </style>
 </head>
@@ -83,13 +141,25 @@ h1 {
     <ul class="changes">
       <li>まおうまえに おはなしが はじまる</li>
     </ul>
-    <a class="play-btn" href="play-preview.html?v=1776527397">あそんでみる</a>
+    <a class="play-btn" href="development/play.html?v=1776681027">あそんでみる</a>
+    <div class="sub-links">
+      <a class="sub-link" href="development/code-maker.zip?v=1776681027" download>リソースファイルをダウンロード</a>
+      <a class="sub-link" href="https://kitao.github.io/pyxel/wasm/code-maker/" target="_blank" rel="noopener noreferrer">リソースエディタを開く</a>
+    </div>
+  </div>
+
+  <div class="version-card" id="codemaker-import-panel">
+    <h2>Code Maker から もどす</h2>
+    <p class="desc">code-maker.zip を このブラウザに ほぞんします<br>がぞう、マップ、こうかおん、おんがくだけを とりこみます<br>プログラムは とりこみません</p>
+    <input class="import-input" id="codemaker-import-input" type="file" accept=".zip,application/zip">
+    <button class="secondary-btn" id="codemaker-import-button" type="button">zip を とりこむ</button>
+    <p class="import-status" id="codemaker-import-status">zip を えらんでください</p>
   </div>
 
   <div class="version-card">
     <h2>本番</h2>
     <p class="desc">いままでと おなじ</p>
-    <a class="play-btn" href="play.html?v=1776527386">あそんでみる</a>
+    <a class="play-btn" href="production/play.html?v=1776680933">あそんでみる</a>
   </div>
 
   <p class="hint">
@@ -97,6 +167,106 @@ h1 {
     おとうさんに おしえてね！<br>
     「こっちが いい！」って
   </p>
+  <p class="owner-link">
+    コード編集:
+    <a id="code-server-link" href="http://127.0.0.1:8081/" target="_blank" rel="noopener noreferrer">code-server :8081</a>
+  </p>
 </div>
+<script>
+(async function () {
+  var link = document.getElementById("code-server-link");
+  if (!link || !window.location || !window.location.hostname) {
+    return;
+  }
+  var protocol = window.location.protocol;
+  if (protocol !== "http:" && protocol !== "https:") {
+    protocol = "http:";
+  }
+  link.href = protocol + "//" + window.location.hostname + ":8081/";
+(function () {
+  var importInput = document.getElementById("codemaker-import-input");
+  var importButton = document.getElementById("codemaker-import-button");
+  var importStatus = document.getElementById("codemaker-import-status");
+  if (!importInput || !importButton || !importStatus || !window.localStorage) {
+    return;
+  }
+
+  var ZIP_STORAGE_KEY = "blockquest_codemaker_zip_v1";
+  var META_STORAGE_KEY = "blockquest_codemaker_zip_meta_v1";
+
+  function setStatus(text) {
+    importStatus.textContent = text;
+  }
+
+  function loadStoredMeta() {
+    var rawMeta = window.localStorage.getItem(META_STORAGE_KEY);
+    if (!rawMeta) {
+      return null;
+    }
+    try {
+      return JSON.parse(rawMeta);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function renderStoredStatus() {
+    var storedMeta = loadStoredMeta();
+    if (storedMeta && storedMeta.source_name) {
+      setStatus("さいごに ほぞんした zip: " + storedMeta.source_name);
+      return;
+    }
+    setStatus("zip を えらんでください");
+  }
+
+  function bytesToBase64(bytes) {
+    var chunkSize = 0x8000;
+    var parts = [];
+    for (var index = 0; index < bytes.length; index += chunkSize) {
+      var chunk = bytes.subarray(index, index + chunkSize);
+      var binary = "";
+      for (var chunkIndex = 0; chunkIndex < chunk.length; chunkIndex += 1) {
+        binary += String.fromCharCode(chunk[chunkIndex]);
+      }
+      parts.push(binary);
+    }
+    return window.btoa(parts.join(""));
+  }
+
+  async function storeBrowserImport(file) {
+    var bytes = new Uint8Array(await file.arrayBuffer());
+    window.localStorage.setItem(ZIP_STORAGE_KEY, bytesToBase64(bytes));
+    window.localStorage.setItem(
+      META_STORAGE_KEY,
+      JSON.stringify({
+        source_name: file.name || "code-maker.zip",
+        stored_at: new Date().toISOString()
+      })
+    );
+  }
+
+  renderStoredStatus();
+
+  importButton.addEventListener("click", async function () {
+    if (!importInput.files || !importInput.files.length) {
+      renderStoredStatus();
+      return;
+    }
+    var file = importInput.files[0];
+    importButton.disabled = true;
+    setStatus("ほぞん ちゅう...");
+    try {
+      await storeBrowserImport(file);
+      setStatus("このブラウザに ほぞんしました。つぎに ひらくゲームで つかいます");
+    } catch (error) {
+      setStatus("このブラウザに ほぞんできませんでした");
+    } finally {
+      importButton.disabled = false;
+    }
+  });
+})();
+
+})();
+</script>
 </body>
 </html>

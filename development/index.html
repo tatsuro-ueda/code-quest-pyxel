@@ -54,8 +54,8 @@ html, body {
 }
 </style>
 </head>
-<body data-page-kind="preview" data-session-api-base="/internal/play-sessions">
-<iframe id="game-frame" src="pyxel-preview.html?v=1776527397" allowfullscreen></iframe>
+<body data-page-kind="development" data-session-api-base="/internal/play-sessions">
+<iframe id="game-frame" src="pyxel.html?v=1776681027" allowfullscreen></iframe>
 <button id="fullscreen-btn">ぜんがめんであそぶ</button>
 <p id="fallback-msg">ホームがめんについかすると ぜんがめんであそべます</p>
 <script>
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var target = document.documentElement;
   var root = document.body;
   var fadeTimer = null;
-  var pageKind = root.dataset.pageKind || 'current';
+  var pageKind = root.dataset.pageKind || 'production';
   var sessionApiBase = root.dataset.sessionApiBase || '/internal/play-sessions';
   var sessionId = window.crypto && window.crypto.randomUUID
     ? window.crypto.randomUUID()

@@ -1,0 +1,11 @@
+{
+  "base_production_hash": "2c7402d93ebad45eccea242a4263170f163c4ee43646c8ec87a2693e3d019a61",
+  "development_hash": "890baddb2c034d019ae4500e47835bf89e54b9b8792ed05af11fb95154a0afbf",
+  "base_resource_hash": "7c3a49e6d1ad7ccf614e8d7d953cdfafa9ad93d958566d070111f35ac6d669f5",
+  "development_resource_hash": "7c3a49e6d1ad7ccf614e8d7d953cdfafa9ad93d958566d070111f35ac6d669f5",
+  "uses_preview_code": true,
+  "uses_imported_resource": false,
+  "changes": [
+    "まおうまえに おはなしが はじまる"
+  ]
+}
