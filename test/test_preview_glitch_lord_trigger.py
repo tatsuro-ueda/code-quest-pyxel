@@ -12,10 +12,10 @@ sys.path.insert(0, str(ROOT))
 
 
 def load_preview_module():
-    source = (ROOT / "main_preview.py").read_text(encoding="utf-8")
+    source = (ROOT / "main_development.py").read_text(encoding="utf-8")
     source = source.replace("\ngame = Game()\ngame.start()\n", "\n")
     module = types.ModuleType("main_preview_for_glitch_lord_trigger_test")
-    module.__file__ = str((ROOT / "main_preview.py").resolve())
+    module.__file__ = str((ROOT / "main_development.py").resolve())
     sys.modules[module.__name__] = module
     exec(compile(source, module.__file__, "exec"), module.__dict__)
     return module

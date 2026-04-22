@@ -50,14 +50,14 @@ class SyncMainDialogueTest(unittest.TestCase):
 # === inlined: src/game_data.py ===
 OLD_GAME_DATA
 
-# === inlined: src/dialogue_data.py ===
+# === inlined: src/generated/dialogue.py ===
 OLD_DIALOGUE_DATA
 
 # === inlined: src/jp_font_data.py ===
 footer
 """
         with tempfile.TemporaryDirectory() as tmp_dir:
-            target = Path(tmp_dir) / "main_preview.py"
+            target = Path(tmp_dir) / "main_development.py"
             target.write_text(stub, encoding="utf-8")
 
             result = sync_main_data.sync_file(target)

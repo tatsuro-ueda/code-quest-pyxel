@@ -2,7 +2,7 @@
 """Sync bundled game's inlined data sections from src/generated/*.
 
 Usage:
-    python tools/sync_main_data.py           # update main.py / main_preview.py in place
+    python tools/sync_main_data.py           # update main.py / main_development.py in place
     python tools/sync_main_data.py --check   # verify without modifying (exit 1 if stale)
 """
 from __future__ import annotations
@@ -15,11 +15,11 @@ GENERATED = ROOT / "src" / "generated"
 GAME_DATA = ROOT / "src" / "game_data.py"
 SYNC_TARGETS = (
     ROOT / "main.py",
-    ROOT / "main_preview.py",
+    ROOT / "main_development.py",
 )
 
 MARKER_START = "# === inlined: src/game_data.py ==="
-MARKER_DIALOGUE_START = "# === inlined: src/dialogue_data.py ==="
+MARKER_DIALOGUE_START = "# === inlined: src/generated/dialogue.py ==="
 MARKER_NEXT_SECTION = "# === inlined: src/"
 
 

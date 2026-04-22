@@ -127,7 +127,7 @@ CHIPTUNE_TRACKS: dict[str, dict] = {
     },
 }
 
-# === inlined: src/input_bindings.py ===
+# === inlined: src/shared/services/input_bindings.py ===
 
 
 UP_BUTTONS = ("KEY_UP", "GAMEPAD1_BUTTON_DPAD_UP")
@@ -269,7 +269,7 @@ def resolve_scene(event: LandmarkEvent, flags: dict[str, bool], glitch_lord_defe
 # === inlined: src/player_factory.py ===
 """Player factory and level/stat formulas.
 
-JS版 (`game/index.html` 行806-814) の `expForLevel`/`statsForLevel`/`MAX_LEVEL`
+旧JS版の `expForLevel` / `statsForLevel` / `MAX_LEVEL`
 を Python に移植した純粋関数群と、初期プレイヤー生成を担う。
 """
 
@@ -342,6 +342,9 @@ def create_initial_player(start_x: int = 25, start_y: int = 6) -> dict[str, Any]
         "professor_intro_seen": False,
         "professor_defeated": False,
         "professor_ending_seen": False,
+        "bgm_enabled": True,
+        "sfx_enabled": True,
+        "vfx_enabled": True,
         "dialog_flags": {},
         "town_talk_idx": [0, 0, 0],
     }
@@ -372,6 +375,7 @@ SAVED_PLAYER_KEYS: tuple[str, ...] = (
     "landmarkTreeSeen", "landmarkTowerSeen",
     "treeAsked", "towerNoiseCleared",
     "professor_intro_seen", "professor_defeated", "professor_ending_seen",
+    "bgm_enabled", "sfx_enabled", "vfx_enabled",
     "dialog_flags",
     "town_talk_idx",
 )
@@ -401,12 +405,15 @@ def restore_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
     player = dict(snapshot["player"])
     if "glitch_lord_defeated" not in player and "boss_defeated" in player:
         player["glitch_lord_defeated"] = bool(player.pop("boss_defeated"))
+    player.setdefault("bgm_enabled", True)
+    player.setdefault("sfx_enabled", True)
+    player.setdefault("vfx_enabled", True)
     return {
         "player": player,
         "town_pos": (int(raw_pos[0]), int(raw_pos[1])),
     }
 
-# === inlined: src/save_store.py ===
+# === inlined: src/shared/services/save_store.py ===
 """Persistence layer for Block Quest save data.
 
 Three implementations:
@@ -540,6 +547,81 @@ def make_save_store(file_path: Path) -> SaveStore:
     except ImportError:
         return FileSaveStore(file_path)
 
+# === inlined: src/shared/services/browser_resource_override.py ===
+
+import base64
+import io
+from zipfile import BadZipFile, ZipFile
+
+
+BROWSER_IMPORT_ZIP_KEY = "blockquest_codemaker_zip_v1"
+BROWSER_IMPORT_META_KEY = "blockquest_codemaker_zip_meta_v1"
+RESOURCE_ENTRY_NAME = "my_resource.pyxres"
+CODE_ENTRY_NAME = "main.py"
+
+
+def _load_browser_import_payload(js_module):
+    raw_zip = js_module.localStorage.getItem(BROWSER_IMPORT_ZIP_KEY)
+    raw_meta = js_module.localStorage.getItem(BROWSER_IMPORT_META_KEY)
+    if raw_zip is None or raw_meta is None:
+        return None
+    try:
+        meta = json.loads(str(raw_meta))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(meta, dict):
+        return None
+    return str(raw_zip), meta
+
+
+def _extract_browser_import_resource(archive_bytes: bytes) -> bytes:
+    try:
+        zip_file = ZipFile(io.BytesIO(archive_bytes))
+    except BadZipFile as exc:
+        raise ValueError("Code Maker zip として読めません") from exc
+
+    with zip_file:
+        entries = zip_file.namelist()
+        exact_path = f"block-quest/{RESOURCE_ENTRY_NAME}"
+        if exact_path in entries:
+            resource_entry = exact_path
+        else:
+            matches = [
+                entry
+                for entry in entries
+                if entry.endswith(f"/{RESOURCE_ENTRY_NAME}") or entry == RESOURCE_ENTRY_NAME
+            ]
+            if not matches:
+                raise ValueError("Code Maker zip に my_resource.pyxres がありません")
+            if len(matches) != 1:
+                raise ValueError("Code Maker zip に my_resource.pyxres が複数あります")
+            resource_entry = matches[0]
+        return zip_file.read(resource_entry)
+
+
+def stage_browser_imported_resource(runtime_root: Path, *, js_module=None) -> Path | None:
+    runtime_root = Path(runtime_root).resolve()
+    if js_module is None:
+        try:
+            import js as js_module  # type: ignore[import-not-found]
+        except ImportError:
+            return None
+
+    payload = _load_browser_import_payload(js_module)
+    if payload is None:
+        return None
+
+    raw_zip, _meta = payload
+    try:
+        archive_bytes = base64.b64decode(raw_zip.encode("ascii"), validate=True)
+        resource_bytes = _extract_browser_import_resource(archive_bytes)
+    except (TypeError, ValueError):
+        return None
+
+    target_path = runtime_root / RESOURCE_ENTRY_NAME
+    target_path.write_bytes(resource_bytes)
+    return target_path
+
 # === inlined: src/sfx_system.py ===
 """Sound effects (SFX) for ブロッククエスト.
 
@@ -657,28 +739,49 @@ class SfxSystem:
     def __init__(self, pyxel_module):
         self.pyxel = pyxel_module
         self._slots: dict[str, int] = {}
+        self.enabled = True
         self._load()
         # SE用チャンネルのゲインを設定
         self.pyxel.channels[SFX_CHANNEL].gain = 0.5
+
+    def _slot_has_sound(self, slot: int) -> bool:
+        """Code Maker / pyxel.load() 済み slot があればそれを優先する."""
+        sound = self.pyxel.sounds[slot]
+        for attr in ("notes", "tones", "volumes", "effects"):
+            try:
+                if len(getattr(sound, attr)) > 0:
+                    return True
+            except Exception:
+                continue
+        return False
 
     def _load(self):
         for i, (name, sd) in enumerate(SFX_DEFINITIONS.items()):
             slot = SFX_BASE_SLOT + i
             self._slots[name] = slot
+            if self._slot_has_sound(slot):
+                continue
             self.pyxel.sounds[slot].set(
                 sd["notes"], sd["tone"], sd["volume"], sd["effect"], sd["speed"]
             )
 
     def play(self, name: str):
+        if not self.enabled:
+            return
         slot = self._slots.get(name)
         if slot is None:
             return
         self.pyxel.play(SFX_CHANNEL, slot, loop=False)
 
-# === inlined: src/structured_dialog.py ===
+    def set_enabled(self, enabled: bool):
+        self.enabled = bool(enabled)
+        if not self.enabled:
+            self.pyxel.stop(SFX_CHANNEL)
+
+# === inlined: src/scenes/dialog/model.py ===
 """Structured dialogue runtime for Block Quest.
 
-データソースは src/dialogue_data.py の Python 定数（DIALOGUE_JA / DIALOGUE_EN）。
+データソースは src/generated/dialogue.py の Python 定数（DIALOGUE_JA / DIALOGUE_EN）。
 旧 YAML ローダーは廃止済み。
 """
 
@@ -993,7 +1096,7 @@ class StructuredDialogRunner:
                 f"scene '{owner}' {field_name} uses undeclared variables: {names}"
             )
 
-# === inlined: src/audio_system.py ===
+# === inlined: src/shared/services/audio_system.py ===
 """BGMサブシステム.
 
 シーン名 → Pyxel music スロットのマッピング。
@@ -1085,6 +1188,7 @@ class AudioManager:
     def __init__(self, pyxel_module):
         self.pyxel = pyxel_module
         self.current_scene: str | None = None
+        self.enabled = True
         self._load_tracks()
 
     def _load_tracks(self):
@@ -1114,12 +1218,32 @@ class AudioManager:
         if self.current_scene == scene_name:
             return
         self.current_scene = scene_name
+        if not self.enabled:
+            return
         gain = CHIPTUNE_TRACKS[scene_name]["gain"]
         self.pyxel.channels[MELODY_CHANNEL].gain = gain
         self.pyxel.channels[BASS_CHANNEL].gain = gain * 0.7
         self.pyxel.channels[DRUM_CHANNEL].gain = gain * 0.5
         # 1回の playm で3チャンネル同時再生
         self.pyxel.playm(music_index(scene_name), loop=True)
+
+    def set_enabled(self, enabled: bool):
+        enabled = bool(enabled)
+        if self.enabled == enabled:
+            return
+        self.enabled = enabled
+        if not enabled:
+            self.pyxel.stop(MELODY_CHANNEL)
+            self.pyxel.stop(BASS_CHANNEL)
+            self.pyxel.stop(DRUM_CHANNEL)
+            return
+        if self.current_scene is None:
+            return
+        gain = CHIPTUNE_TRACKS[self.current_scene]["gain"]
+        self.pyxel.channels[MELODY_CHANNEL].gain = gain
+        self.pyxel.channels[BASS_CHANNEL].gain = gain * 0.7
+        self.pyxel.channels[DRUM_CHANNEL].gain = gain * 0.5
+        self.pyxel.playm(music_index(self.current_scene), loop=True)
 
 # === inlined: src/game_data.py ===
 """Game data — generated from assets/*.yaml via tools/gen_data.py.
@@ -1629,7 +1753,7 @@ def load_dialogue(language: str) -> dict[str, Any]:
         return DIALOGUE_EN
     raise ValueError(f"unknown dialogue language: {language}")
 
-# === inlined: src/dialogue_data.py ===
+# === inlined: src/generated/dialogue.py ===
 """Dialogue data — generated from assets/dialogue.yaml via tools/gen_data.py.
 
 SSoT: assets/dialogue.yaml → tools/gen_data.py → src/generated/dialogue.py
@@ -4664,7 +4788,7 @@ class Game:
         self.has_jp_font = bool(JP_FONT_LAYOUT)
         self.audio = AudioManager(pyxel)
         self.sfx = SfxSystem(pyxel)
-        # has_jp_font に応じて日本語/英語ダイアログを選択（src/dialogue_data.py 由来）
+        # has_jp_font に応じて日本語/英語ダイアログを選択（src/generated/dialogue.py 由来）
         dialogue_data = DIALOGUE_JA if self.has_jp_font else DIALOGUE_EN
         self.dialog = StructuredDialogRunner(dialogue_data)
 
@@ -4677,7 +4801,7 @@ class Game:
 
         # Image bank: .pyxres があればロード、無ければプログラム描画
         self._setup_image_banks()
-        # pyxel.load() で sounds が上書きされるので SFX を再初期化
+        # slot 番号の対応は維持しつつ、import 済み SFX は上書きしない
         self.sfx = SfxSystem(pyxel)
         self.audio = AudioManager(pyxel)
 
@@ -4689,6 +4813,7 @@ class Game:
         self.dungeon_rooms = None
 
         self.player = create_initial_player()
+        self._apply_av_settings()
 
         self.state = "splash"
         self.splash_frame = 0
@@ -4742,7 +4867,9 @@ class Game:
         self._a_cooldown = False
 
         # Title cursor (D8)
-        self.title_cursor = 0  # 0=はじめから, 1=つづきから
+        self.title_cursor = 0  # 0=はじめから, 1=つづきから, 2=せってい
+        self.settings_cursor = 0
+        self.settings_origin = "title"
 
         # Save store (D1/D12/D17)
         save_path = Path(__file__).resolve().parent / "save.json"
@@ -4799,6 +4926,7 @@ class Game:
 
         # Code Maker互換: my_resource.pyxres をルート直下から探し、無ければ assets/ から
         root = Path(__file__).resolve().parent
+        stage_browser_imported_resource(root)
         candidates = [
             root / "my_resource.pyxres",
             root / "assets" / "blockquest.pyxres",
@@ -4986,18 +5114,34 @@ class Game:
                     return
 
     def _bake_world_to_tilemap(self):
-        """self.world_map を tilemap[0] に焼き込む（基底タイルのみ）。
+        """self.world_map を tilemap[0] に焼き込む。
 
-        オートタイルはゲーム描画時に draw_map() でリアルタイム解決するため、
-        エディタ用の tilemap[0] には基底タイルだけを書き込む。
-        これによりエディタ表示とゲーム論理マップが一致する。
+        Code Maker / Resource Editor で見える形を実ゲームと揃えるため、
+        道と水辺はここで見た目用の変種タイルまで解決して書き込む。
+        逆変換時は _build_reverse_tile_map() で基底タイルへ戻す。
         """
         tilemap = pyxel.tilemaps[0]
         wm = self.world_map
         for y in range(MAP_H):
             for x in range(MAP_W):
                 tile = wm[y][x]
-                u, v = self.tile_bank.get(tile, self.tile_bank[T_GRASS])
+                if tile == T_PATH:
+                    variant = get_path_variant(wm, x, y)
+                    u, v = self.path_variant_bank.get(
+                        id(variant),
+                        self.tile_bank[T_PATH],
+                    )
+                elif tile == T_WATER:
+                    variant = get_shore_variant(wm, x, y)
+                    if variant is None:
+                        u, v = self.tile_bank[T_WATER]
+                    else:
+                        u, v = self.shore_variant_bank.get(
+                            id(variant),
+                            self.tile_bank[T_WATER],
+                        )
+                else:
+                    u, v = self.tile_bank.get(tile, self.tile_bank[T_GRASS])
                 tu, tv = u // 8, v // 8
                 tilemap.pset(2 * x,     2 * y,     (tu,     tv))
                 tilemap.pset(2 * x + 1, 2 * y,     (tu + 1, tv))
@@ -5180,6 +5324,8 @@ class Game:
             self.update_battle()
         elif self.state == "menu":
             self.update_menu()
+        elif self.state == "settings":
+            self.update_settings()
         elif self.state == "message":
             self.update_message()
         elif self.state == "town":
@@ -5209,19 +5355,29 @@ class Game:
 
     def update_title(self):
         if self._btnp(UP_BUTTONS):
-            self.title_cursor = (self.title_cursor - 1) % 2
+            self.title_cursor = (self.title_cursor - 1) % 3
             self.sfx.play("cursor")
             return
         if self._btnp(DOWN_BUTTONS):
-            self.title_cursor = (self.title_cursor + 1) % 2
+            self.title_cursor = (self.title_cursor + 1) % 3
             self.sfx.play("cursor")
             return
         if self._btnp(CONFIRM_BUTTONS) or self._btnp(TITLE_START_BUTTONS):
             self.sfx.play("select")
             if self.title_cursor == 0:
                 # はじめから: プレイヤー状態をクリーンに作り直す
+                settings = {
+                    "bgm_enabled": self.player.get("bgm_enabled", True),
+                    "sfx_enabled": self.player.get("sfx_enabled", True),
+                    "vfx_enabled": self.player.get("vfx_enabled", True),
+                }
                 self.player = create_initial_player()
+                self.player.update(settings)
+                self._apply_av_settings()
                 self.state = "map"
+                return
+            if self.title_cursor == 2:
+                self._open_settings("title")
                 return
             # つづきから — has_save が False ならグレーアウト（D8 / P9）
             if not self._has_save:
@@ -5240,6 +5396,7 @@ class Game:
         restored = restore_snapshot(snap)
         for key, value in restored["player"].items():
             self.player[key] = value
+        self._apply_av_settings()
         tx, ty = restored["town_pos"]
         self.player["x"] = tx
         self.player["y"] = ty
@@ -5782,6 +5939,8 @@ class Game:
         self.battle_text_timer = 40
 
     def _start_vfx(self, vfx_type):
+        if not self.player.get("vfx_enabled", True):
+            return
         cfg = VFX_FLASH.get(vfx_type)
         if cfg:
             self.vfx_type = vfx_type
@@ -5834,7 +5993,7 @@ class Game:
                     p["spells"].append(spell["name"])
 
     def update_menu(self):
-        menu_items = ["ステータス", "アイテム", "そうび", "AIでしゅうせい", "とじる"]
+        menu_items = self._menu_labels()
         if self.menu_sub is None:
             if self._btnp(UP_BUTTONS):
                 self.menu_cursor = (self.menu_cursor - 1) % len(menu_items)
@@ -5857,8 +6016,10 @@ class Game:
                     self.menu_sub = "equip"
                     self.menu_item_cursor = 0
                 elif self.menu_cursor == 3:
-                    self._enter_ai_help()
+                    self._open_settings("menu")
                 elif self.menu_cursor == 4:
+                    self._enter_ai_help()
+                elif self.menu_cursor == 5:
                     self.state = "map"
         elif self.menu_sub == "status":
             if self._btnp(CANCEL_BUTTONS) or self._btnp(CONFIRM_BUTTONS):
@@ -5902,6 +6063,68 @@ class Game:
             if self._btnp(DOWN_BUTTONS):
                 self.menu_item_cursor = (self.menu_item_cursor + 1) % 2
                 self.sfx.play("cursor")
+
+    def _menu_labels(self):
+        if self.has_jp_font:
+            return ["ステータス", "アイテム", "そうび", "せってい", "AIでしゅうせい", "とじる"]
+        return ["STATUS", "ITEMS", "EQUIP", "SETTINGS", "AI HELP", "CLOSE"]
+
+    def _open_settings(self, origin: str):
+        self.settings_origin = origin
+        self.settings_cursor = 0
+        self.menu_sub = None
+        self.state = "settings"
+
+    def _settings_rows(self):
+        return [
+            ("all_av", self._t("ぜんぶ", "ALL")),
+            ("bgm_enabled", self._t("BGM", "BGM")),
+            ("sfx_enabled", self._t("こうかおん", "SFX")),
+            ("vfx_enabled", self._t("ひかり", "FLASH")),
+            ("back", self._t("もどる", "BACK")),
+        ]
+
+    def _settings_return_state(self):
+        return "menu" if self.settings_origin == "menu" else "title"
+
+    def _apply_av_settings(self):
+        self.audio.set_enabled(self.player.get("bgm_enabled", True))
+        self.sfx.set_enabled(self.player.get("sfx_enabled", True))
+
+    def _toggle_setting(self, key: str):
+        if key == "all_av":
+            next_value = not (
+                self.player.get("bgm_enabled", True)
+                and self.player.get("sfx_enabled", True)
+                and self.player.get("vfx_enabled", True)
+            )
+            self.player["bgm_enabled"] = next_value
+            self.player["sfx_enabled"] = next_value
+            self.player["vfx_enabled"] = next_value
+            self._apply_av_settings()
+            return
+        self.player[key] = not self.player.get(key, True)
+        self._apply_av_settings()
+
+    def update_settings(self):
+        rows = self._settings_rows()
+        if self._btnp(UP_BUTTONS):
+            self.settings_cursor = (self.settings_cursor - 1) % len(rows)
+            self.sfx.play("cursor")
+            return
+        if self._btnp(DOWN_BUTTONS):
+            self.settings_cursor = (self.settings_cursor + 1) % len(rows)
+            self.sfx.play("cursor")
+            return
+        if self._btnp(CANCEL_BUTTONS):
+            self.state = self._settings_return_state()
+            return
+        if self._btnp(LEFT_BUTTONS) or self._btnp(RIGHT_BUTTONS) or self._btnp(CONFIRM_BUTTONS):
+            key, _label = rows[self.settings_cursor]
+            if key == "back":
+                self.state = self._settings_return_state()
+                return
+            self._toggle_setting(key)
 
     def _apply_spell_effect(self, spell) -> str:
         """Apply a spell effect (heal or attack). Caller is responsible for MP cost."""
@@ -6059,8 +6282,11 @@ class Game:
 
     def _sync_audio(self):
         battle_enemy_max_hp = self.battle_enemy["hp"] if self.battle_enemy else 0
+        state_for_audio = self.state
+        if self.state == "settings" and self.settings_origin == "title":
+            state_for_audio = "title"
         scene_name = choose_bgm_scene(
-            state=self.state,
+            state=state_for_audio,
             in_dungeon=self.player["in_dungeon"],
             zone=get_zone(self.player["y"], self.player["in_dungeon"]),
             battle_is_glitch_lord=self.battle_is_glitch_lord,
@@ -6068,6 +6294,7 @@ class Game:
             battle_enemy_max_hp=battle_enemy_max_hp,
             battle_phase=self.battle_phase,
         )
+        self.audio.set_enabled(self.player.get("bgm_enabled", True))
         self.audio.play_scene(scene_name)
 
     def _any_advance_btnp(self) -> bool:
@@ -6542,6 +6769,13 @@ class Game:
             self.draw_map()
             self.draw_status_bar()
             self.draw_menu()
+        elif self.state == "settings":
+            if self.settings_origin == "menu":
+                self.draw_map()
+                self.draw_status_bar()
+            else:
+                self.draw_title()
+            self.draw_settings()
         elif self.state == "message":
             self.draw_map()
             self.draw_status_bar()
@@ -6604,10 +6838,11 @@ class Game:
         labels = [
             self._t("はじめから", "NEW GAME"),
             self._t("つづきから", "CONTINUE"),
+            self._t("せってい", "SETTINGS"),
         ]
         for i, label in enumerate(labels):
             ly = 150 + i * 16
-            enabled = (i == 0) or self._has_save
+            enabled = (i != 1) or self._has_save
             base_color = 7 if enabled else 5
             color = 10 if (i == self.title_cursor and enabled) else base_color
             marker = ">" if i == self.title_cursor else " "
@@ -6754,6 +6989,8 @@ class Game:
             self.text(130, 2, "DEBUG", 8)
 
     def _draw_vfx_overlay(self):
+        if not self.player.get("vfx_enabled", True):
+            return
         if self.vfx_timer <= 0:
             return
         cfg = VFX_FLASH.get(self.vfx_type)
@@ -6865,11 +7102,7 @@ class Game:
         pyxel.rect(20, 30, 216, 200, 1)
         pyxel.rectb(20, 30, 216, 200, 7)
 
-        menu_labels = (
-            ["ステータス", "アイテム", "そうび", "とじる"]
-            if self.has_jp_font
-            else ["STATUS", "ITEMS", "EQUIP", "AI HELP", "CLOSE"]
-        )
+        menu_labels = self._menu_labels()
         for i, label in enumerate(menu_labels):
             cy = 40 + i * 16
             col = 10 if i == self.menu_cursor and self.menu_sub is None else 6
@@ -6924,6 +7157,30 @@ class Game:
                 self.text(56, cy, label, col)
                 if i == self.menu_item_cursor:
                     self.text(46, cy, ">", 10)
+
+    def draw_settings(self):
+        pyxel.rect(28, 54, 200, 148, 1)
+        pyxel.rectb(28, 54, 200, 148, 7)
+        self.text(92, 66, self._t("せってい", "SETTINGS"), 10)
+        for i, (key, label) in enumerate(self._settings_rows()):
+            cy = 94 + i * 22
+            col = 10 if i == self.settings_cursor else 6
+            marker = ">" if i == self.settings_cursor else " "
+            if key == "back":
+                value = ""
+            elif key == "all_av":
+                value = "ON" if (
+                    self.player.get("bgm_enabled", True)
+                    and self.player.get("sfx_enabled", True)
+                    and self.player.get("vfx_enabled", True)
+                ) else "OFF"
+            else:
+                value = "ON" if self.player.get(key, True) else "OFF"
+            row = f"{marker} {label}"
+            if value:
+                row = f"{row}: {value}"
+            self.text(44, cy, row, col)
+        self.text(44, 176, self._t("けっていで きりかえ", "Press confirm to toggle"), 7)
 
     def draw_town_menu(self):
         # Background: show the map underneath so players keep their bearings.

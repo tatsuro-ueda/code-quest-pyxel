@@ -64,7 +64,7 @@ class DialogueIntegrationTest(unittest.TestCase):
         from src.xxx import パターンではなく、シンボル自体の存在を検証する。
         """
         main_text = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8")
-        landmark_text = (PYXEL_ROOT / "src" / "landmark_events.py").read_text(
+        landmark_text = (PYXEL_ROOT / "src" / "shared" / "services" / "landmark_events.py").read_text(
             encoding="utf-8"
         )
 
@@ -102,7 +102,7 @@ class DialogueIntegrationTest(unittest.TestCase):
             self.assertIn(scene_name, landmark_text)
 
     def test_main_preview_references_preview_only_glitch_intro_scene(self):
-        preview_text = (PYXEL_ROOT / "main_preview.py").read_text(encoding="utf-8")
+        preview_text = (PYXEL_ROOT / "main_development.py").read_text(encoding="utf-8")
 
         for expected in (
             "boss.glitch.prebattle_01",
@@ -112,7 +112,7 @@ class DialogueIntegrationTest(unittest.TestCase):
             self.assertIn(expected, preview_text)
 
     def test_main_preview_inlines_preview_only_glitch_intro_scene(self):
-        preview_text = (PYXEL_ROOT / "main_preview.py").read_text(encoding="utf-8")
+        preview_text = (PYXEL_ROOT / "main_development.py").read_text(encoding="utf-8")
 
         self.assertIn("'boss.glitch.prebattle_01': {", preview_text)
 
@@ -124,7 +124,7 @@ class DialogueIntegrationTest(unittest.TestCase):
 
     def test_main_preview_inlined_dialogue_covers_runtime_scene_ids(self):
         self.assert_bundled_dialogue_covers_runtime_scene_ids(
-            "main_preview.py",
+            "main_development.py",
             "main_preview_dialogue_scene_coverage_test",
         )
 
@@ -184,8 +184,8 @@ class DialogueIntegrationTest(unittest.TestCase):
 
 class ProfessorDialogueTest(unittest.TestCase):
     def setUp(self):
-        from src.structured_dialog import StructuredDialogRunner
-        from src.dialogue_data import DIALOGUE_JA
+        from src.scenes.dialog.model import StructuredDialogRunner
+        from src.game_data import DIALOGUE_JA
         self.runner = StructuredDialogRunner(DIALOGUE_JA)
 
     def test_intro_chains_to_choice_prompt(self):
@@ -217,8 +217,8 @@ class ProfessorDialogueTest(unittest.TestCase):
 
 class GlitchLordDialogueTest(unittest.TestCase):
     def setUp(self):
-        from src.structured_dialog import StructuredDialogRunner
-        from src.dialogue_data import DIALOGUE_JA
+        from src.scenes.dialog.model import StructuredDialogRunner
+        from src.game_data import DIALOGUE_JA
         self.runner = StructuredDialogRunner(DIALOGUE_JA)
 
     def test_prebattle_intro_chains_multiple_lines(self):

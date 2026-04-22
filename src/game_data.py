@@ -61,13 +61,7 @@ SHOP_LIST = SHOPS["shops"]
 # --- boss phase logic ---
 
 def glitch_lord_phase(hp_ratio: float) -> str:
-    """Return a phase label based on the boss HP ratio.
-
-    JS版 `getBossPhases` 相当:
-      - hp_ratio > 0.6 → 'phase1'
-      - 0.3 < hp_ratio <= 0.6 → 'phase2'
-      - hp_ratio <= 0.3 → 'phase3'
-    """
+    """ボスHP比からフェーズ名（phase1/2/3）を返す（JS版 getBossPhases 相当）。"""
     if hp_ratio > 0.6:
         return "phase1"
     if hp_ratio > 0.3:
@@ -84,30 +78,37 @@ GLITCH_LORD_PHASE_MESSAGES = {
 # --- backward-compatible loaders (for tests) ---
 
 def load_enemies() -> list[dict[str, Any]]:
+    """テスト向け互換API：敵データ一覧を返す。"""
     return ENEMIES
 
 
 def load_items() -> list[dict[str, Any]]:
+    """テスト向け互換API：アイテム一覧を返す。"""
     return ITEMS
 
 
 def load_weapons() -> list[dict[str, Any]]:
+    """テスト向け互換API：武器一覧を返す。"""
     return WEAPONS
 
 
 def load_armors() -> list[dict[str, Any]]:
+    """テスト向け互換API：防具一覧を返す。"""
     return ARMORS
 
 
 def load_spells() -> list[dict[str, Any]]:
+    """テスト向け互換API：呪文一覧を返す。"""
     return SPELLS
 
 
 def load_shops() -> dict[str, Any]:
+    """テスト向け互換API：ショップ設定全体を返す。"""
     return SHOPS
 
 
 def load_dialogue(language: str) -> dict[str, Any]:
+    """指定言語（ja/en）の会話データを返す。未知の言語は ValueError。"""
     if language == "ja":
         return DIALOGUE_JA
     if language == "en":

@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src import game_data  # noqa: E402
-from src.player_factory import create_initial_player  # noqa: E402
+from src.shared.services.player_state import create_initial_player  # noqa: E402
 
 
 def _learn_for_level(player, spells, level):

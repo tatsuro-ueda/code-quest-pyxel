@@ -112,6 +112,7 @@ class TestStartVfx(unittest.TestCase):
 
     def _make_game(self):
         g = object.__new__(M.Game)
+        g.player = {"vfx_enabled": True}
         g.vfx_timer = 0
         g.vfx_type = ""
         return g
@@ -134,6 +135,13 @@ class TestStartVfx(unittest.TestCase):
         self.assertEqual(g.vfx_timer, 0)
         self.assertEqual(g.vfx_type, "")
 
+    def test_start_vfx_ignored_when_vfx_disabled(self):
+        g = self._make_game()
+        g.player["vfx_enabled"] = False
+        g._start_vfx("flash_white")
+        self.assertEqual(g.vfx_timer, 0)
+        self.assertEqual(g.vfx_type, "")
+
 
 @unittest.skipUnless(IMPORTED, "main.py import failed")
 class TestDrawVfxOverlay(unittest.TestCase):
@@ -141,6 +149,7 @@ class TestDrawVfxOverlay(unittest.TestCase):
 
     def _make_game(self):
         g = object.__new__(M.Game)
+        g.player = {"vfx_enabled": True}
         g.vfx_timer = 0
         g.vfx_type = ""
         return g
@@ -178,6 +187,16 @@ class TestDrawVfxOverlay(unittest.TestCase):
         g.vfx_type = "flash_red"
         g._draw_vfx_overlay()
         pyxel.rect.assert_called_once_with(0, 0, 256, 256, 8)
+
+    def test_no_overlay_when_vfx_disabled(self):
+        import pyxel
+        pyxel.rect.reset_mock()
+        g = self._make_game()
+        g.player["vfx_enabled"] = False
+        g.vfx_timer = 4
+        g.vfx_type = "flash_white"
+        g._draw_vfx_overlay()
+        pyxel.rect.assert_not_called()
 
 
 if __name__ == "__main__":
