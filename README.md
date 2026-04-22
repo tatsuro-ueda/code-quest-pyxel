@@ -6,7 +6,7 @@
 
 ## ブラウザで遊ぶ
 
-**▶ [いますぐ遊ぶ（GitHub Pages）](https://tatsuro-ueda.github.io/code-quest-pyxel/pyxel.html)**
+**▶ [いますぐ遊ぶ（GitHub Pages）](https://tatsuro-ueda.github.io/code-quest-pyxel/)**
 
 ブラウザだけで動きます。インストール不要。スマホでも遊べます。
 
@@ -43,10 +43,10 @@ python main.py
 
 ## Pyxel Code Maker で遊ぶ・改造する
 
-[Pyxel Code Maker](https://kitao.github.io/pyxel/wasm/code-maker.html) にアップロードする場合は、[`code-maker.zip`](code-maker.zip) を使ってください。コード全体が1つの `main.py` にインライン化されています。
+[Pyxel Code Maker](https://kitao.github.io/pyxel/wasm/code-maker.html) にアップロードする場合は、[`production/code-maker.zip`](production/code-maker.zip) を使ってください。コード全体が1つの `main.py` にインライン化されています。
 
 ```
-code-maker.zip
+production/code-maker.zip
 └── block-quest/
     ├── main.py            (5,902 行・全モジュールをインライン化)
     └── my_resource.pyxres
@@ -54,16 +54,22 @@ code-maker.zip
 
 ## 配布物
 
-- [`pyxel.html`](pyxel.html) — ブラウザ版（GitHub Pages で自動配信）
-- [`pyxel.pyxapp`](pyxel.pyxapp) — Pyxel デスクトップ版（`pyxel run pyxel.pyxapp` で起動）
-- [`code-maker.zip`](code-maker.zip) — Pyxel Code Maker アップロード用
+- [`index.html`](index.html) — 本番と開発版を比べる root selector
+- [`production/pyxel.html`](production/pyxel.html) — 本番ブラウザ版
+- [`production/pyxel.pyxapp`](production/pyxel.pyxapp) — 本番デスクトップ版
+- [`production/code-maker.zip`](production/code-maker.zip) — 本番 Code Maker アップロード用
+- [`development/pyxel.html`](development/pyxel.html) — 開発版ブラウザ版
+- [`development/pyxel.pyxapp`](development/pyxel.pyxapp) — 開発版デスクトップ版
+- [`development/code-maker.zip`](development/code-maker.zip) — 開発版 Code Maker アップロード用
 
 ## ドキュメント
 
-設計と開発の経緯は `docs/` 配下にまとめています：
+設計と開発の経緯は次にまとめています：
 
-- [`docs/05-pyxel-code-maker-jouney.md`](docs/05-pyxel-code-maker-jouney.md) — Pyxel Code Maker と Anthropic Claude を組み合わせて子どもと作るゲームの設計原則
-- [`docs/steering/`](docs/steering/) — 機能ごとのジャーニー・受け入れ条件・設計書
+- [`docs/customer-problem.md`](docs/customer-problem.md) — この製品で何を解決したいか
+- [`docs/customer-journeys.md`](docs/customer-journeys.md) — 子どもと親にどんな体験を作るか
+- [`docs/cj-gherkin-platform.md`](docs/cj-gherkin-platform.md) — 体験をどう約束し、どう確かめるか
+- [`steering/`](steering/) — 機能ごとの task note と完了記録
 
 ## ライセンス
 
