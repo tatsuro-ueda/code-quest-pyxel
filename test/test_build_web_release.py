@@ -41,6 +41,7 @@ def copy_web_release_fixture(dst_root: Path, *, include_preview: bool = False) -
     (dst_root / "templates").mkdir(parents=True, exist_ok=True)
 
     shutil.copy2(ROOT / "main.py", dst_root / "main.py")
+    shutil.copytree(ROOT / "src", dst_root / "src")
     shutil.copy2(ROOT / "assets" / "blockquest.pyxres", dst_root / "assets" / "blockquest.pyxres")
     shutil.copy2(ROOT / "assets" / "umplus_j10r.bdf", dst_root / "assets" / "umplus_j10r.bdf")
     shutil.copy2(ROOT / "templates" / "wrapper.html", dst_root / "templates" / "wrapper.html")
@@ -51,18 +52,19 @@ def copy_web_release_fixture(dst_root: Path, *, include_preview: bool = False) -
         os.utime(dst_root / "top_changes.json", None)
     if include_preview:
         shutil.copy2(ROOT / "main_development.py", dst_root / "main_development.py")
-        main_path = dst_root / "main.py"
-        preview_path = dst_root / "main_development.py"
-        if main_path.read_text(encoding="utf-8") == preview_path.read_text(encoding="utf-8"):
-            main_path.write_text(
-                main_path.read_text(encoding="utf-8").replace(
-                    '\n            or e.get("is_noise_guardian")',
-                    "",
-                ),
-                encoding="utf-8",
-            )
-            if (dst_root / "top_changes.json").exists():
-                os.utime(dst_root / "top_changes.json", None)
+
+
+def write_runtime_sources(
+    root: Path,
+    *,
+    production_text: str,
+    preview_text: str | None = None,
+) -> None:
+    runtime_dir = root / "src" / "runtime"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    (runtime_dir / "main_runtime.py").write_text(production_text, encoding="utf-8")
+    if preview_text is not None:
+        (runtime_dir / "main_development_runtime.py").write_text(preview_text, encoding="utf-8")
 
 
 def production_dir(output_dir: Path) -> Path:
@@ -334,7 +336,8 @@ class TestTopPageChanges(unittest.TestCase):
         fake_root.mkdir(parents=True, exist_ok=True)
         try:
             top_changes = fake_root / "top_changes.json"
-            main_py = fake_root / "main.py"
+            main_py = fake_root / "src" / "runtime" / "main_runtime.py"
+            main_py.parent.mkdir(parents=True, exist_ok=True)
             top_changes.write_text(
                 json.dumps({"changes": ["ふるい せつめい"]}),
                 encoding="utf-8",
@@ -345,6 +348,30 @@ class TestTopPageChanges(unittest.TestCase):
 
             with self.assertRaises(ValueError):
                 load_top_page_changes(fake_root)
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
+
+    def test_load_top_page_changes_ignores_newer_root_wrapper(self):
+        fake_root = ROOT / ".build" / "test_top_changes_ignores_wrapper"
+        fake_root.mkdir(parents=True, exist_ok=True)
+        try:
+            top_changes = fake_root / "top_changes.json"
+            runtime_py = fake_root / "src" / "runtime" / "main_runtime.py"
+            wrapper_py = fake_root / "main.py"
+            runtime_py.parent.mkdir(parents=True, exist_ok=True)
+
+            top_changes.write_text(
+                json.dumps({"changes": ["いまの せつめい"]}),
+                encoding="utf-8",
+            )
+            runtime_py.write_text("# current runtime", encoding="utf-8")
+            wrapper_py.write_text("# thin wrapper changed later", encoding="utf-8")
+
+            os.utime(runtime_py, (1_000_000_000, 1_000_000_000))
+            os.utime(top_changes, (1_000_000_100, 1_000_000_100))
+            os.utime(wrapper_py, (1_000_000_200, 1_000_000_200))
+
+            self.assertEqual(load_top_page_changes(fake_root), ["いまの せつめい"])
         finally:
             shutil.rmtree(fake_root, ignore_errors=True)
 
@@ -479,15 +506,19 @@ class TestPreviewBuildPrerequisites(unittest.TestCase):
         fake_root = ROOT / ".build" / "test_meta"
         fake_root.mkdir(parents=True, exist_ok=True)
         try:
-            (fake_root / "main.py").write_text(
-                "def _build_zone_enemies(enemies):\n    return []\n",
+            (fake_root / "main.py").write_text("from src.runtime.main_runtime import run\n", encoding="utf-8")
+            (fake_root / "main_development.py").write_text(
+                "from src.runtime.main_development_runtime import run\n",
                 encoding="utf-8",
             )
-            (fake_root / "main_development.py").write_text(
+            write_runtime_sources(
+                fake_root,
+                production_text=
+                "def _build_zone_enemies(enemies):\n    return []\n",
+                preview_text=
                 "def _build_zone_enemies(enemies):\n"
                 "    if e.get(\"is_noise_guardian\"):\n"
                 "        return []\n",
-                encoding="utf-8",
             )
             _, changes = validate_development_files(fake_root)
             self.assertEqual(changes, ["つうしんとうの ノイズガーディアンが フィールドに でない"])
@@ -498,16 +529,20 @@ class TestPreviewBuildPrerequisites(unittest.TestCase):
         fake_root = ROOT / ".build" / "test_glitch_lord_preview_meta"
         fake_root.mkdir(parents=True, exist_ok=True)
         try:
-            (fake_root / "main.py").write_text(
-                "tile == T_GLITCH_LORD_TRIGGER\n"
-                "self._start_battle(GLITCH_LORD_DATA, is_glitch_lord=True)\n",
+            (fake_root / "main.py").write_text("from src.runtime.main_runtime import run\n", encoding="utf-8")
+            (fake_root / "main_development.py").write_text(
+                "from src.runtime.main_development_runtime import run\n",
                 encoding="utf-8",
             )
-            (fake_root / "main_development.py").write_text(
+            write_runtime_sources(
+                fake_root,
+                production_text=
+                "tile == T_GLITCH_LORD_TRIGGER\n"
+                "self._start_battle(GLITCH_LORD_DATA, is_glitch_lord=True)\n",
+                preview_text=
                 "tile == T_GLITCH_LORD_TRIGGER\n"
                 "self._enter_glitch_lord_intro()\n"
                 "boss.glitch.prebattle_01\n",
-                encoding="utf-8",
             )
 
             _, changes = validate_development_files(fake_root)
@@ -521,15 +556,19 @@ class TestPreviewBuildPrerequisites(unittest.TestCase):
         fake_root = ROOT / ".build" / "test_stale_meta"
         fake_root.mkdir(parents=True, exist_ok=True)
         try:
-            (fake_root / "main.py").write_text(
-                "def _build_zone_enemies(enemies):\n    return []\n",
+            (fake_root / "main.py").write_text("from src.runtime.main_runtime import run\n", encoding="utf-8")
+            (fake_root / "main_development.py").write_text(
+                "from src.runtime.main_development_runtime import run\n",
                 encoding="utf-8",
             )
-            (fake_root / "main_development.py").write_text(
+            write_runtime_sources(
+                fake_root,
+                production_text=
+                "def _build_zone_enemies(enemies):\n    return []\n",
+                preview_text=
                 "def _build_zone_enemies(enemies):\n"
                 "    if e.get(\"is_noise_guardian\"):\n"
                 "        return []\n",
-                encoding="utf-8",
             )
             (fake_root / "development_meta.json").write_text(
                 json.dumps({"changes": ["ふるい せつめい"]}),
@@ -547,8 +586,16 @@ class TestPreviewBuildPrerequisites(unittest.TestCase):
         fake_root.mkdir(parents=True, exist_ok=True)
         try:
             content = "print('same')\n"
-            (fake_root / "main.py").write_text(content, encoding="utf-8")
-            (fake_root / "main_development.py").write_text(content, encoding="utf-8")
+            (fake_root / "main.py").write_text("from src.runtime.main_runtime import run\n", encoding="utf-8")
+            (fake_root / "main_development.py").write_text(
+                "from src.runtime.main_development_runtime import run\n",
+                encoding="utf-8",
+            )
+            write_runtime_sources(
+                fake_root,
+                production_text=content,
+                preview_text=content,
+            )
 
             with self.assertRaises(ValueError):
                 validate_development_files(fake_root)
@@ -598,6 +645,13 @@ class TestPromote(unittest.TestCase):
         (self.work_dir / "main.py").write_text("# original", encoding="utf-8")
         # main_development.py を作成
         (self.work_dir / "main_development.py").write_text("# preview", encoding="utf-8")
+        (self.work_dir / "src" / "runtime").mkdir(parents=True, exist_ok=True)
+        (self.work_dir / "src" / "runtime" / "main_runtime.py").write_text(
+            "# original runtime", encoding="utf-8"
+        )
+        (self.work_dir / "src" / "runtime" / "main_development_runtime.py").write_text(
+            "# preview runtime", encoding="utf-8"
+        )
         # development_meta.json を作成
         (self.work_dir / "development_meta.json").write_text(
             json.dumps({"changes": ["test"]}), encoding="utf-8"
@@ -609,8 +663,11 @@ class TestPromote(unittest.TestCase):
     def test_promote_preview_replaces_main(self):
         promote(self.work_dir, choice="development")
         main_content = (self.work_dir / "main.py").read_text(encoding="utf-8")
-        self.assertEqual(main_content, "# preview")
+        runtime_content = (self.work_dir / "src" / "runtime" / "main_runtime.py").read_text(encoding="utf-8")
+        self.assertEqual(main_content, "# original")
+        self.assertEqual(runtime_content, "# preview runtime")
         self.assertFalse((self.work_dir / "main_development.py").exists())
+        self.assertFalse((self.work_dir / "src" / "runtime" / "main_development_runtime.py").exists())
         self.assertFalse((self.work_dir / "development_meta.json").exists())
 
     def test_promote_current_removes_preview(self):
@@ -618,6 +675,7 @@ class TestPromote(unittest.TestCase):
         main_content = (self.work_dir / "main.py").read_text(encoding="utf-8")
         self.assertEqual(main_content, "# original")
         self.assertFalse((self.work_dir / "main_development.py").exists())
+        self.assertFalse((self.work_dir / "src" / "runtime" / "main_development_runtime.py").exists())
         self.assertFalse((self.work_dir / "development_meta.json").exists())
 
 
@@ -666,10 +724,10 @@ class TestCliDispatch(unittest.TestCase):
 
 
 class TestMainPyWebSafety(unittest.TestCase):
-    """main.py が Web 環境(emscripten)で安全に動くことを静的検証する"""
+    """production runtime が Web 環境(emscripten)で安全に動くことを静的検証する"""
 
     def setUp(self):
-        self.source = (ROOT / "main.py").read_text(encoding="utf-8")
+        self.source = (ROOT / "src" / "runtime" / "main_runtime.py").read_text(encoding="utf-8")
 
     def test_sys_is_imported(self):
         """sys.platform を使っているなら import sys が必要"""
@@ -731,7 +789,7 @@ class TestNormalBuildWithoutPreviewSource(unittest.TestCase):
         self.assertEqual(
             current_main,
             build_codemaker_main_text(
-                (self.project_root / "main.py").read_text(encoding="utf-8")
+                (self.project_root / "src" / "runtime" / "main_runtime.py").read_text(encoding="utf-8")
             ),
         )
 
@@ -813,13 +871,13 @@ class TestPreviewBuildUsesVersionedLinks(unittest.TestCase):
         self.assertEqual(
             current_main,
             build_codemaker_main_text(
-                (self.project_root / "main.py").read_text(encoding="utf-8")
+                (self.project_root / "src" / "runtime" / "main_runtime.py").read_text(encoding="utf-8")
             ),
         )
         self.assertEqual(
             preview_main,
             build_codemaker_main_text(
-                (self.project_root / "main_development.py").read_text(encoding="utf-8")
+                (self.project_root / "src" / "runtime" / "main_development_runtime.py").read_text(encoding="utf-8")
             ),
         )
 
@@ -903,13 +961,13 @@ class TestResourceOnlyDevelopmentBuild(unittest.TestCase):
         self.assertEqual(
             production_main,
             build_codemaker_main_text(
-                (self.project_root / "main.py").read_text(encoding="utf-8")
+                (self.project_root / "src" / "runtime" / "main_runtime.py").read_text(encoding="utf-8")
             ),
         )
         self.assertEqual(
             development_main,
             build_codemaker_main_text(
-                (self.project_root / "main.py").read_text(encoding="utf-8")
+                (self.project_root / "src" / "runtime" / "main_runtime.py").read_text(encoding="utf-8")
             ),
         )
         self.assertEqual(
@@ -947,8 +1005,16 @@ class TestPreviewBuildDoesNotRollForwardAutomatically(unittest.TestCase):
         self.project_root.mkdir(parents=True, exist_ok=True)
         self.original_main = "dungeon.glitch.exit callback=_enter_ending\n"
         self.new_preview = "dungeon.glitch.exit callback=None\nis_noise_guardian\n"
-        (self.project_root / "main.py").write_text(self.original_main, encoding="utf-8")
-        (self.project_root / "main_development.py").write_text(self.new_preview, encoding="utf-8")
+        (self.project_root / "main.py").write_text("from src.runtime.main_runtime import run\n", encoding="utf-8")
+        (self.project_root / "main_development.py").write_text(
+            "from src.runtime.main_development_runtime import run\n",
+            encoding="utf-8",
+        )
+        write_runtime_sources(
+            self.project_root,
+            production_text=self.original_main,
+            preview_text=self.new_preview,
+        )
 
     def tearDown(self):
         shutil.rmtree(self.project_root, ignore_errors=True)
@@ -957,7 +1023,7 @@ class TestPreviewBuildDoesNotRollForwardAutomatically(unittest.TestCase):
         _, changes = validate_development_files(self.project_root)
 
         self.assertEqual(
-            (self.project_root / "main.py").read_text(encoding="utf-8"),
+            (self.project_root / "src" / "runtime" / "main_runtime.py").read_text(encoding="utf-8"),
             self.original_main,
         )
         self.assertEqual(

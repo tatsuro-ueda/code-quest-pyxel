@@ -147,12 +147,14 @@ def promote(root: Path, *, choice: str) -> None:
     root = root.resolve()
     main_py = root / "main.py"
     preview_py = root / "main_development.py"
+    runtime_py = root / "src" / "runtime" / "main_runtime.py"
+    preview_runtime_py = root / "src" / "runtime" / "main_development_runtime.py"
     meta_json = root / DEVELOPMENT_META_FILE
 
     if choice == "development":
-        if preview_py.is_file():
-            shutil.copy2(preview_py, main_py)
-            preview_py.unlink()
+        if preview_runtime_py.is_file():
+            shutil.copy2(preview_runtime_py, runtime_py)
+            preview_runtime_py.unlink()
         promote_imported_resource(root)
     elif choice == "production":
         clear_imported_resource(root)
@@ -161,6 +163,8 @@ def promote(root: Path, *, choice: str) -> None:
 
     if preview_py.is_file():
         preview_py.unlink()
+    if choice == "production" and preview_runtime_py.is_file():
+        preview_runtime_py.unlink()
     if meta_json.is_file():
         meta_json.unlink()
 

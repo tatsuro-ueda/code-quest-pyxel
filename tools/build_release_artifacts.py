@@ -11,7 +11,7 @@ RELEASE_FILES = (
     Path("assets/umplus_j10r.bdf"),
     Path("assets/blockquest.pyxres"),
 )
-RELEASE_DIRS = ()
+RELEASE_DIRS = (Path("src"),)
 PRODUCTION_DIR = Path("production")
 DEVELOPMENT_DIR = Path("development")
 PRODUCTION_PYXAPP_FILE = PRODUCTION_DIR / "pyxel.pyxapp"
@@ -137,8 +137,13 @@ def build_codemaker_release(
     output_path: Path,
 ) -> Path:
     root = root.resolve()
+    resolved_main_source = main_source
+    if main_source.resolve() == (root / "main.py").resolve():
+        resolved_main_source = root / "src" / "runtime" / "main_runtime.py"
+    elif main_source.resolve() == (root / "main_development.py").resolve():
+        resolved_main_source = root / "src" / "runtime" / "main_development_runtime.py"
     return build_codemaker_zip(
-        main_source,
+        resolved_main_source,
         pyxres=resource_source,
         output=output_path,
     )

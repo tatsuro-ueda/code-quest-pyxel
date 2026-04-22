@@ -15,6 +15,8 @@ from src.shared.services.codemaker_resource_store import (
 
 
 DEVELOPMENT_META_FILE = Path("development_meta.json")
+PRODUCTION_RUNTIME_FILE = Path("src/runtime/main_runtime.py")
+DEVELOPMENT_RUNTIME_FILE = Path("src/runtime/main_development_runtime.py")
 RESOURCE_IMPORT_CHANGE = "Code Maker の resource を とりこんだ"
 DEVELOPMENT_AUTO_CHANGE_RULES = (
     ("つうしんとうの ノイズガーディアンが フィールドに でない", ("is_noise_guardian",)),
@@ -26,6 +28,7 @@ DEVELOPMENT_AUTO_CHANGE_RULES = (
 @dataclass(frozen=True)
 class DevelopmentCandidate:
     main_source: Path
+    runtime_source: Path
     resource_source: Path
     changes: list[str]
     uses_preview_code: bool
@@ -140,24 +143,24 @@ def _resource_override_differs_from_base(root: Path, imported_resource_path: Pat
 
 def build_development_change_list(root: Path) -> list[str]:
     root = root.resolve()
-    main_path = root / "main.py"
-    preview_path = root / "main_development.py"
+    main_path = root / PRODUCTION_RUNTIME_FILE
+    preview_path = root / DEVELOPMENT_RUNTIME_FILE
     if not main_path.is_file():
-        raise FileNotFoundError(f"main.py not found at {main_path}")
+        raise FileNotFoundError(f"production runtime not found at {main_path}")
     if not preview_path.is_file():
-        raise FileNotFoundError(f"main_development.py not found at {preview_path}")
+        raise FileNotFoundError(f"development runtime not found at {preview_path}")
 
     main_text = main_path.read_text(encoding="utf-8")
     preview_text = preview_path.read_text(encoding="utf-8")
     if main_text == preview_text:
-        raise ValueError("main_development.py must contain at least one 開発版専用変更")
+        raise ValueError("main_development_runtime.py must contain at least one 開発版専用変更")
 
     diff_lines = list(
         difflib.unified_diff(
             main_text.splitlines(),
             preview_text.splitlines(),
-            fromfile="main.py",
-            tofile="main_development.py",
+            fromfile=PRODUCTION_RUNTIME_FILE.as_posix(),
+            tofile=DEVELOPMENT_RUNTIME_FILE.as_posix(),
             lineterm="",
         )
     )
@@ -182,14 +185,22 @@ def resolve_development_candidate(root: Path) -> DevelopmentCandidate:
     root = root.resolve()
     main_path = root / "main.py"
     preview_path = root / "main_development.py"
+    production_runtime_path = root / PRODUCTION_RUNTIME_FILE
+    preview_runtime_path = root / DEVELOPMENT_RUNTIME_FILE
     resource_path = root / "assets" / "blockquest.pyxres"
     imported_resource_path = get_imported_resource_path(root)
 
     uses_preview_code = False
     main_source = main_path
-    if preview_path.is_file() and preview_path.read_text(encoding="utf-8") != main_path.read_text(encoding="utf-8"):
+    runtime_source = production_runtime_path
+    if (
+        preview_path.is_file()
+        and preview_runtime_path.is_file()
+        and preview_runtime_path.read_text(encoding="utf-8") != production_runtime_path.read_text(encoding="utf-8")
+    ):
         uses_preview_code = True
         main_source = preview_path
+        runtime_source = preview_runtime_path
 
     uses_imported_resource = _resource_override_differs_from_base(root, imported_resource_path)
     resource_source = imported_resource_path if uses_imported_resource and imported_resource_path is not None else resource_path
@@ -205,6 +216,7 @@ def resolve_development_candidate(root: Path) -> DevelopmentCandidate:
 
     return DevelopmentCandidate(
         main_source=main_source,
+        runtime_source=runtime_source,
         resource_source=resource_source,
         changes=list(dict.fromkeys(changes)),
         uses_preview_code=uses_preview_code,
@@ -215,6 +227,7 @@ def resolve_development_candidate(root: Path) -> DevelopmentCandidate:
 def build_development_dependency_paths(root: Path, candidate: DevelopmentCandidate) -> tuple[Path, ...]:
     dependency_paths = [
         Path("main.py"),
+        PRODUCTION_RUNTIME_FILE,
         Path("assets/blockquest.pyxres"),
         Path("templates/wrapper.html"),
         Path("templates/selector.html"),
@@ -222,7 +235,7 @@ def build_development_dependency_paths(root: Path, candidate: DevelopmentCandida
         DEVELOPMENT_META_FILE,
     ]
     if candidate.uses_preview_code:
-        dependency_paths.append(Path("main_development.py"))
+        dependency_paths.extend([Path("main_development.py"), DEVELOPMENT_RUNTIME_FILE])
     if candidate.uses_imported_resource:
         dependency_paths.extend([IMPORT_MANIFEST, IMPORT_RESOURCE])
     return tuple(dict.fromkeys(dependency_paths))
@@ -256,8 +269,8 @@ def load_development_meta(root: Path, *, validate_hashes: bool = False) -> list[
         raise ValueError(f"{meta_path} must contain a JSON object with a 'changes' list")
 
     if validate_hashes:
-        main_path = root / "main.py"
-        preview_path = root / "main_development.py"
+        main_path = root / PRODUCTION_RUNTIME_FILE
+        preview_path = root / DEVELOPMENT_RUNTIME_FILE
         base_resource_path = root / "assets" / "blockquest.pyxres"
         uses_preview_code = bool(data.get("uses_preview_code", True))
         uses_imported_resource = bool(data.get("uses_imported_resource", False))
@@ -288,12 +301,12 @@ def load_development_meta(root: Path, *, validate_hashes: bool = False) -> list[
 
 def write_development_meta(root: Path, candidate: DevelopmentCandidate) -> Path:
     root = root.resolve()
-    main_path = root / "main.py"
+    main_path = root / PRODUCTION_RUNTIME_FILE
     resource_path = root / "assets" / "blockquest.pyxres"
     meta_path = root / DEVELOPMENT_META_FILE
     payload = {
         "base_production_hash": file_sha256(main_path),
-        "development_hash": file_sha256(candidate.main_source),
+        "development_hash": file_sha256(candidate.runtime_source),
         "base_resource_hash": file_sha256(resource_path),
         "development_resource_hash": file_sha256(candidate.resource_source),
         "uses_preview_code": candidate.uses_preview_code,

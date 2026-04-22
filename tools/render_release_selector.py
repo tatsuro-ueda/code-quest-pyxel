@@ -13,8 +13,15 @@ from tools.resolve_release_source_of_truth import load_development_meta, validat
 TOP_CHANGES_FILE = Path("top_changes.json")
 NORMAL_CHANGE_LIST_DEPENDENCIES = (
     Path("main.py"),
+    Path("src/runtime/main_runtime.py"),
     Path("assets/umplus_j10r.bdf"),
-    Path("assets/blockquest.pyxres"),
+    Path("templates/wrapper.html"),
+    Path("templates/selector.html"),
+    Path("templates/codemaker_import_ui.js"),
+)
+TOP_CHANGE_LIST_FRESHNESS_DEPENDENCIES = (
+    Path("src/runtime/main_runtime.py"),
+    Path("assets/umplus_j10r.bdf"),
     Path("templates/wrapper.html"),
     Path("templates/selector.html"),
     Path("templates/codemaker_import_ui.js"),
@@ -131,7 +138,7 @@ def load_top_page_changes(root: Path) -> list[str]:
     validate_change_list_freshness(
         root,
         changes_rel_path=TOP_CHANGES_FILE,
-        dependency_paths=NORMAL_CHANGE_LIST_DEPENDENCIES,
+        dependency_paths=TOP_CHANGE_LIST_FRESHNESS_DEPENDENCIES,
     )
     data = json.loads(changes_path.read_text(encoding="utf-8"))
     changes = data.get("changes", [])

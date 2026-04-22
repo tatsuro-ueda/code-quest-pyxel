@@ -140,10 +140,11 @@ h1 {
     <h2>開発版</h2>
     <ul class="changes">
       <li>まおうまえに おはなしが はじまる</li>
+      <li>Code Maker の resource を とりこんだ</li>
     </ul>
-    <a class="play-btn" href="development/play.html?v=1776681027">あそんでみる</a>
+    <a class="play-btn" href="development/play.html?v=1776899599">あそんでみる</a>
     <div class="sub-links">
-      <a class="sub-link" href="development/code-maker.zip?v=1776681027" download>リソースファイルをダウンロード</a>
+      <a class="sub-link" id="codemaker-download-link" href="development/code-maker.zip?v=1776899599" download>リソースファイルをダウンロード</a>
       <a class="sub-link" href="https://kitao.github.io/pyxel/wasm/code-maker/" target="_blank" rel="noopener noreferrer">リソースエディタを開く</a>
     </div>
   </div>
@@ -159,7 +160,7 @@ h1 {
   <div class="version-card">
     <h2>本番</h2>
     <p class="desc">いままでと おなじ</p>
-    <a class="play-btn" href="production/play.html?v=1776680933">あそんでみる</a>
+    <a class="play-btn" href="production/play.html?v=1776875301">あそんでみる</a>
   </div>
 
   <p class="hint">
@@ -193,6 +194,7 @@ h1 {
 
   var ZIP_STORAGE_KEY = "blockquest_codemaker_zip_v1";
   var META_STORAGE_KEY = "blockquest_codemaker_zip_meta_v1";
+  var SERVER_IMPORT_PATH = "/internal/codemaker-resource-import";
 
   function setStatus(text) {
     importStatus.textContent = text;
@@ -213,7 +215,7 @@ h1 {
   function renderStoredStatus() {
     var storedMeta = loadStoredMeta();
     if (storedMeta && storedMeta.source_name) {
-      setStatus("さいごに ほぞんした zip: " + storedMeta.source_name);
+      setStatus("さいごに このブラウザへ ほぞんした zip: " + storedMeta.source_name);
       return;
     }
     setStatus("zip を えらんでください");
@@ -233,6 +235,18 @@ h1 {
     return window.btoa(parts.join(""));
   }
 
+  function clearBrowserImport() {
+    if (typeof window.localStorage.removeItem === "function") {
+      window.localStorage.removeItem(ZIP_STORAGE_KEY);
+      window.localStorage.removeItem(META_STORAGE_KEY);
+      return;
+    }
+    if (typeof window.localStorage.setItem === "function") {
+      window.localStorage.setItem(ZIP_STORAGE_KEY, "");
+      window.localStorage.setItem(META_STORAGE_KEY, "");
+    }
+  }
+
   async function storeBrowserImport(file) {
     var bytes = new Uint8Array(await file.arrayBuffer());
     window.localStorage.setItem(ZIP_STORAGE_KEY, bytesToBase64(bytes));
@@ -245,6 +259,26 @@ h1 {
     );
   }
 
+  async function importZipViaServer(file) {
+    var payload = await file.arrayBuffer();
+    var response = await fetch(SERVER_IMPORT_PATH, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/zip",
+        "X-Filename": file.name || "code-maker.zip"
+      },
+      body: payload
+    });
+    if (!response.ok) {
+      throw new Error("server import failed");
+    }
+    try {
+      return await response.json();
+    } catch (error) {
+      return {};
+    }
+  }
+
   renderStoredStatus();
 
   importButton.addEventListener("click", async function () {
@@ -254,12 +288,18 @@ h1 {
     }
     var file = importInput.files[0];
     importButton.disabled = true;
-    setStatus("ほぞん ちゅう...");
+    setStatus("とりこみ ちゅう...");
     try {
-      await storeBrowserImport(file);
-      setStatus("このブラウザに ほぞんしました。つぎに ひらくゲームで つかいます");
+      await importZipViaServer(file);
+      clearBrowserImport();
+      setStatus("server に とりこみました。ほかの ききでも development で つかえます");
     } catch (error) {
-      setStatus("このブラウザに ほぞんできませんでした");
+      try {
+        await storeBrowserImport(file);
+        setStatus("server が つかえないので このブラウザに ほぞんしました");
+      } catch (storageError) {
+        setStatus("server にも このブラウザにも ほぞんできませんでした");
+      }
     } finally {
       importButton.disabled = false;
     }

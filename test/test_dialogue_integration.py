@@ -8,6 +8,8 @@ from pathlib import Path
 
 
 PYXEL_ROOT = Path(__file__).resolve().parent.parent
+MAIN_RUNTIME = PYXEL_ROOT / "src" / "runtime" / "main_runtime.py"
+PREVIEW_RUNTIME = PYXEL_ROOT / "src" / "runtime" / "main_development_runtime.py"
 SCENE_PREFIXES = {"battle", "boss", "castle", "dungeon", "ending", "landmark", "town"}
 
 
@@ -63,7 +65,7 @@ class DialogueIntegrationTest(unittest.TestCase):
         main.py は単一ファイル構造（src/*.py をインライン含む）のため、
         from src.xxx import パターンではなく、シンボル自体の存在を検証する。
         """
-        main_text = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8")
+        main_text = MAIN_RUNTIME.read_text(encoding="utf-8")
         landmark_text = (PYXEL_ROOT / "src" / "shared" / "services" / "landmark_events.py").read_text(
             encoding="utf-8"
         )
@@ -102,7 +104,7 @@ class DialogueIntegrationTest(unittest.TestCase):
             self.assertIn(scene_name, landmark_text)
 
     def test_main_preview_references_preview_only_glitch_intro_scene(self):
-        preview_text = (PYXEL_ROOT / "main_development.py").read_text(encoding="utf-8")
+        preview_text = PREVIEW_RUNTIME.read_text(encoding="utf-8")
 
         for expected in (
             "boss.glitch.prebattle_01",
@@ -112,25 +114,25 @@ class DialogueIntegrationTest(unittest.TestCase):
             self.assertIn(expected, preview_text)
 
     def test_main_preview_inlines_preview_only_glitch_intro_scene(self):
-        preview_text = (PYXEL_ROOT / "main_development.py").read_text(encoding="utf-8")
+        preview_text = PREVIEW_RUNTIME.read_text(encoding="utf-8")
 
         self.assertIn("'boss.glitch.prebattle_01': {", preview_text)
 
     def test_main_inlined_dialogue_covers_runtime_scene_ids(self):
         self.assert_bundled_dialogue_covers_runtime_scene_ids(
-            "main.py",
+            "src/runtime/main_runtime.py",
             "main_dialogue_scene_coverage_test",
         )
 
     def test_main_preview_inlined_dialogue_covers_runtime_scene_ids(self):
         self.assert_bundled_dialogue_covers_runtime_scene_ids(
-            "main_development.py",
+            "src/runtime/main_development_runtime.py",
             "main_preview_dialogue_scene_coverage_test",
         )
 
     def test_main_uses_shared_input_bindings(self):
         """main.py が入力バインディングのシンボルを使っていること。"""
-        main_text = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8")
+        main_text = MAIN_RUNTIME.read_text(encoding="utf-8")
 
         for expected in (
             "UP_BUTTONS",
@@ -146,7 +148,7 @@ class DialogueIntegrationTest(unittest.TestCase):
             self.assertIn(expected, main_text)
 
     def test_main_uses_audio_manager_for_bgm(self):
-        main_text = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8")
+        main_text = MAIN_RUNTIME.read_text(encoding="utf-8")
 
         for expected in (
             "AudioManager",
@@ -162,7 +164,7 @@ class DialogueIntegrationTest(unittest.TestCase):
         main.py には DIALOGUE_JA / DIALOGUE_EN がインラインで含まれるため、
         辞書定義部分（'text': '...' 形式）は除外して検査する。
         """
-        lines = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8").splitlines()
+        lines = MAIN_RUNTIME.read_text(encoding="utf-8").splitlines()
         # ダイアログ辞書の 'text': '...' 行を除外
         non_dialogue_text = "\n".join(
             line for line in lines if "'text':" not in line

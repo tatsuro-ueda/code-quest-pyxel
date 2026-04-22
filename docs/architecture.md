@@ -10,7 +10,7 @@
 - `src/` と `assets/` を source of truth にする
 - `production/` と `development/` は source ではなく **配布物の置き場** にする
 - root `index.html` は親子が本番と開発版を比べる入口として残す
-- `main.py` / `main_development.py` の monolith は当面残すが、新構成へ責務を逃がしていく
+- root `main.py` / `main_development.py` は薄い wrapper に保ち、runtime 本体は `src/` 側へ寄せる
 - `Pyxel Code Maker` は子どもの正式な編集面として守る
 - image bank 系は `.pyxres` の往復を保ち、`Sound / Music` は Code Maker から戻した内容を code 側 audio asset として取り込んでから runtime で使う
 
@@ -24,6 +24,9 @@
 ├─ src/（ゲーム本体の source of truth）
 │  ├─ app.py（アプリ全体の窓口）
 │  ├─ game_data.py（生成済みデータと派生データの読み出し口）
+│  ├─ runtime/
+│  │  ├─ main_runtime.py（本番 runtime 本体。Code Maker 互換の single-file source）
+│  │  └─ main_development_runtime.py（開発版 runtime 本体。Code Maker 互換の single-file source）
 │  ├─ core/
 │  │  └─ scene_manager.py（現在 Scene の切り替え管理）
 │  ├─ scenes/
@@ -97,7 +100,8 @@
 - `presenter.py` は入力と進行を持ち、scene 外の永続化責務を持たない
 - `shared/services` は複数 Scene で共有される技術的関心を持つ
 - `shared/ui` は共通 UI 部品の位置や矩形を持つ
-- `main.py` / `main_development.py` には Code Maker 単一ファイル制約のため一部 service が inline で残る
+- `main.py` / `main_development.py` は thin wrapper として `src/runtime/*.py` を読む
+- `src/runtime/*.py` は Code Maker 単一ファイル制約に合わせた runtime 本体を持つ
 - `assets/` は人が直す正本であり、build 出力先ではない
 - `audio_system.py` は scene / event と音の対応づけを持つが、メロディや SE 定義そのものを正本として抱えない
 - `codemaker_resource_store.py` は zip の採否と import 対象の抽出を持つが、どの場面でどの音を鳴らすかは決めない
@@ -119,7 +123,7 @@
 
 | ライブラリ / API | 主な場所 | 責務 |
 |---|---|---|
-| `Pyxel` | `main.py`, `main_development.py`, build 系 | ゲーム実行、描画、音、`package` / `app2html` |
+| `Pyxel` | `src/runtime/*.py`, `main.py`, `main_development.py`, build 系 | ゲーム実行、描画、音、`package` / `app2html` |
 | `pytest` | `test/` | 自動検証 |
 | `sqlite3` | `src/shared/services/play_session_logging.py` | プレイ記録の保存と集計 |
 | `Playwright` | `tools/test_web_compat.py` | browser 上の配布確認 |
@@ -128,9 +132,9 @@
 
 ## 7. 現在地
 
-- 実際の runtime entrypoint はまだ `main.py` / `main_development.py`
-- ここには大きい `Game` クラスが残っている
-- つまり **repo 構成は新設計へ寄っているが、runtime 本体はまだ monolith**
+- 実際に `python main.py` / `python main_development.py` で起動する入口は root に残す
+- ただし root は薄い wrapper で、`Game` クラスを含む runtime 本体は `src/runtime/main_runtime.py` / `src/runtime/main_development_runtime.py` に移した
+- つまり **root entrypoint は薄くなったが、runtime 本体はまだ `src/runtime/*.py` の monolith**
 - image bank / tilemap 側は `.pyxres` の往復で前進している一方、`Sound / Music` はまだ `AudioManager` / `SfxSystem` の固定データが強く、architecture と code がずれている
 - 今回の構造は、`shared/services`、`scenes/dialog`、`app/core`、`production/` / `development/` を先に整え、完全分割へ進むための土台
 

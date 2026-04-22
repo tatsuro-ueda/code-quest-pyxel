@@ -58,6 +58,24 @@ FORBIDDEN_IMPORTS = [
 
 
 class TestArchitectureLayout(unittest.TestCase):
+    def test_runtime_modules_exist_and_export_run(self):
+        runtime = importlib.import_module('src.runtime.main_runtime')
+        preview_runtime = importlib.import_module('src.runtime.main_development_runtime')
+
+        self.assertTrue(hasattr(runtime, 'run'))
+        self.assertTrue(hasattr(preview_runtime, 'run'))
+
+    def test_root_entrypoints_are_thin_wrappers(self):
+        main_text = (ROOT / 'main.py').read_text(encoding='utf-8')
+        preview_text = (ROOT / 'main_development.py').read_text(encoding='utf-8')
+
+        self.assertLessEqual(len(main_text.splitlines()), 20)
+        self.assertLessEqual(len(preview_text.splitlines()), 20)
+        self.assertIn('src" / "runtime" / "main_runtime.py', main_text)
+        self.assertIn('src" / "runtime" / "main_development_runtime.py', preview_text)
+        self.assertTrue(main_text.rstrip().endswith('run()'))
+        self.assertTrue(preview_text.rstrip().endswith('run()'))
+
     def test_shared_service_modules_exist(self):
         audio = importlib.import_module('src.shared.services.audio_system')
         landmark_events = importlib.import_module('src.shared.services.landmark_events')

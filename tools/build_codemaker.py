@@ -44,8 +44,16 @@ def _split_core_and_entrypoint(source_text: str) -> tuple[str, str]:
     return core_source, entrypoint_source
 
 
+def _normalize_entrypoint_source(entrypoint_source: str) -> str:
+    normalized = entrypoint_source.rstrip() + "\n"
+    if "def run(" in normalized and not normalized.rstrip().endswith("run()"):
+        normalized += "\ngame = run()\n"
+    return normalized
+
+
 def build_codemaker_main_text(source_text: str) -> str:
     core_source, entrypoint_source = _split_core_and_entrypoint(source_text)
+    entrypoint_source = _normalize_entrypoint_source(entrypoint_source)
     core_hash = _sha256_text(core_source)
     return (
         "# Auto-generated Code Maker classroom bundle.\n"
@@ -99,7 +107,7 @@ def build_codemaker_zip(main_py: Path, *, pyxres: Path, output: Path) -> Path:
 
 
 def main():
-    main_py = ROOT / "main.py"
+    main_py = ROOT / "src" / "runtime" / "main_runtime.py"
     pyxres = ROOT / "assets" / "blockquest.pyxres"
 
     try:

@@ -131,5 +131,40 @@ class BuildCodeMakerZipTest(unittest.TestCase):
         self.assertTrue(namespace["game"].started)
         self.assertEqual(fake_pyxel.run_calls, 0)
 
+    def test_generated_main_supports_run_function_entrypoint(self):
+        runtime_main = f"""import pyxel
+
+
+def say(message):
+    return message
+
+
+class Game:
+    def __init__(self):
+        self.started = False
+
+    def start(self):
+        self.started = True
+
+
+# =====================================================================
+# ENTRY POINT
+# =====================================================================
+def run():
+    game = Game()
+    game.start()
+    return game
+"""
+        self.main_path.write_text(runtime_main, encoding="utf-8")
+
+        generated = self._read_generated_main()
+        self.assertIn("def run():", generated)
+        self.assertTrue(generated.rstrip().endswith("run()"))
+
+        namespace = {"__name__": "__main__"}
+        exec(generated, namespace)
+
+        self.assertTrue(namespace["game"].started)
+
 if __name__ == "__main__":
     unittest.main()
