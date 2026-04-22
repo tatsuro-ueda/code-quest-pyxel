@@ -65,12 +65,70 @@ h1 {
 .play-btn:active {
   background: #c5c6d9;
 }
+.sub-link {
+  display: inline-block;
+  font-size: 13px;
+  color: #b9c0ff;
+  text-decoration: none;
+}
+.sub-link:hover,
+.sub-link:focus {
+  text-decoration: underline;
+}
+.sub-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 10px;
+}
+.secondary-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: sans-serif;
+  background: #2f365f;
+  color: #f4f6ff;
+  border: 1px solid #6d79c7;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.import-input {
+  width: 100%;
+  margin: 0 0 10px 0;
+  color: #ddd;
+}
+.import-status {
+  font-size: 13px;
+  color: #cfd6ff;
+  margin: 10px 0 0 0;
+  min-height: 1.2em;
+}
 .hint {
   text-align: center;
   font-size: 14px;
   color: #aaa;
   margin-top: 24px;
   line-height: 1.8;
+}
+.owner-link {
+  text-align: center;
+  font-size: 11px;
+  color: #777;
+  margin-top: 16px;
+}
+.owner-link a {
+  color: #8f95d8;
+  text-decoration: none;
+}
+.owner-link a:hover,
+.owner-link a:focus {
+  text-decoration: underline;
 }
 </style>
 </head>
@@ -80,6 +138,14 @@ h1 {
 
 {{PREVIEW_CARD}}
 
+  <div class="version-card" id="codemaker-import-panel">
+    <h2>Code Maker から もどす</h2>
+    <p class="desc">code-maker.zip を このブラウザに ほぞんします<br>がぞう、マップ、こうかおん、おんがくだけを とりこみます<br>プログラムは とりこみません</p>
+    <input class="import-input" id="codemaker-import-input" type="file" accept=".zip,application/zip">
+    <button class="secondary-btn" id="codemaker-import-button" type="button">zip を とりこむ</button>
+    <p class="import-status" id="codemaker-import-status">zip を えらんでください</p>
+  </div>
+
   <div class="version-card">
     <h2>本番</h2>
 {{CURRENT_CARD_BODY}}
@@ -87,6 +153,24 @@ h1 {
   </div>
 
 {{HINT_BLOCK}}
+  <p class="owner-link">
+    コード編集:
+    <a id="code-server-link" href="http://127.0.0.1:8081/" target="_blank" rel="noopener noreferrer">code-server :8081</a>
+  </p>
 </div>
+<script>
+(async function () {
+  var link = document.getElementById("code-server-link");
+  if (!link || !window.location || !window.location.hostname) {
+    return;
+  }
+  var protocol = window.location.protocol;
+  if (protocol !== "http:" && protocol !== "https:") {
+    protocol = "http:";
+  }
+  link.href = protocol + "//" + window.location.hostname + ":8081/";
+{{CODEMAKER_IMPORT_SCRIPT}}
+})();
+</script>
 </body>
 </html>
