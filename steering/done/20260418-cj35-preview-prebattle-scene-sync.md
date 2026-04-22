@@ -91,10 +91,10 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/product-requirements/cj-gherkin-guardrails.md`
+- `docs/cj-gherkin-guardrails.md`
   `CJG35`
   `Scenario: importエラーを起こす版は選択ページに出ない`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
   `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
 

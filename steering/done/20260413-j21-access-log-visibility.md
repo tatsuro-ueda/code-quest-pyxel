@@ -56,7 +56,7 @@ flowchart TB
 
 ### 現状
 
-- `docs/product-requirements/cj-gherkin-platform.md` の CJG21-4 は「日別・ページ別のアクセス数」が中心だが、今回ほしいのは件数だけでなく「どれくらい遊んでいたか」の手がかり
+- `docs/cj-gherkin-platform.md` の CJG21-4 は「日別・ページ別のアクセス数」が中心だが、今回ほしいのは件数だけでなく「どれくらい遊んでいたか」の手がかり
 - 現在のリポジトリには `index.html` / `play.html` / `pyxel.html` などの Web 配信物はあるが、プレイ時間の長短を内部で残す仕組みは見当たらない
 - そのため今は URL を送った後に、「開かれた」こと以上の情報がなく、すぐ離脱したのか、夢中で遊んだのかを区別できない
 
@@ -287,9 +287,9 @@ flowchart TD
 
 ### 2026年4月13日 23:08（完了処理）
 
-**Observe**：ノート本文は `Tasklist` 完了と実装・検証完了まで記録済みだったが、`status: open` のまま `docs/steering/` に残っていた。実装ファイルとテストは現行ツリー上にも残っている。  
+**Observe**：ノート本文は `Tasklist` 完了と実装・検証完了まで記録済みだったが、`status: open` のまま `steering/` に残っていた。実装ファイルとテストは現行ツリー上にも残っている。  
 **Think**：未完了だったのは実装ではなく、タスクノートの完了処理だけだった。close 前に fresh な検証を取り直してから `done` へ移すのが安全。  
-**Act**：`python tools/test_web_compat.py` を権限付きで再実行して `OK: Web版テスト通過（10秒間クラッシュ・致命的エラーなし）`、`python -m pytest test/ -q` で `153 passed, 2 skipped` を確認し、J21 を `docs/steering/done/` へ移した。
+**Act**：`python tools/test_web_compat.py` を権限付きで再実行して `OK: Web版テスト通過（10秒間クラッシュ・致命的エラーなし）`、`python -m pytest test/ -q` で `153 passed, 2 skipped` を確認し、J21 を `steering/done/` へ移した。
 
 ---
 

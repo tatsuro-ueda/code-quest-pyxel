@@ -14,6 +14,7 @@ tags:
 # 2026年4月12日 G12 code-maker.zip 再ビルド
 
 > 状態：完了
+> 2026-04-19 注記: この note は Code Maker 用 zip の packaging 履歴です。現在も `.pyxres` の実体は人が Pyxel Code Maker で編集し、AI / Codex はその中身を直接書き換えません。
 
 ---
 

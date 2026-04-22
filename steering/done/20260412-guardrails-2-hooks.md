@@ -62,7 +62,7 @@ flowchart LR
 
 ## 2. カスタマージャーニーgherkin
 
-根拠: [`cj-gherkin-guardrails.md`](../product-requirements/cj-gherkin-guardrails.md) の各シナリオ
+根拠: [`cj-gherkin-guardrails.md`](../../docs/cj-gherkin-guardrails.md) の各シナリオ
 
 ```gherkin
 Feature: Claude Code Hooks でAIの誤操作を即座にブロック・誘導する

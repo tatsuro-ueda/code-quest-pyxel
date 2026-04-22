@@ -23,8 +23,8 @@ tags:
 
 ## 1) 改善対象ジャーニー
 
-- **根拠となるカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
-- **関連するカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
+- **根拠となるカスタマージャーニー**：`docs/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
+- **関連するカスタマージャーニー**：`docs/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
 - **深層的目的**：新しい依頼が来たとき、前のおためしばんを自動で current に回しつつ、トップページの `おためしばん` には今の依頼の差分だけが出るようにする
 - **やらないこと**：この note で個別のゲームロジック差分を足すこと、selector の見た目だけを変えること
 
@@ -32,7 +32,7 @@ tags:
 
 - **この note が `done` なら、人間は何が成立していると思うか**：新しい preview 依頼ノートで build すると、前のおためしばんは current に繰り上がり、新しい差分だけが `おためしばん` に残る。今の依頼に対応する preview をまだ作っていないなら card は出ない
 - **その期待を裏切りやすいズレ**：前のおためしばんがずっと preview のまま残る、新しい preview の説明に前回ぶんまで混ざる、`main.py` が古いままで current / preview の役割が逆転する
-- **ズレを潰すために見るべき現物**：`docs/steering/20260416-j48-preview-must-reflect-current-request.md`、`tools/build_web_release.py`、`test/test_build_web_release.py`、`preview_meta.json`、`main.py`、`main_preview.py`、`index.html`
+- **ズレを潰すために見るべき現物**：`steering/20260416-j48-preview-must-reflect-current-request.md`、`tools/build_web_release.py`、`test/test_build_web_release.py`、`preview_meta.json`、`main.py`、`main_preview.py`、`index.html`
 
 ### 現状
 
@@ -64,11 +64,11 @@ tags:
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG31`
+- `docs/cj-gherkin-platform.md` `CJG31`
 - `Scenario: 次の依頼が来ると前のおためし版がもとのまま版へ繰り上がる`
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG33`
+- `docs/cj-gherkin-platform.md` `CJG33`
 - `Scenario: 変更一覧は今の依頼に対応するおためし版だけを説明する`
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG33`
+- `docs/cj-gherkin-platform.md` `CJG33`
 - `Scenario: 前のおためし版を繰り上げたあとは新しい差分だけを説明する`
 
 ---
@@ -84,12 +84,12 @@ tags:
   preview metadata の生成、繰り上げ snapshot の保存、通常 build 側の preview 表示条件
 - `test/test_build_web_release.py`
   preview の繰り上げと差分説明を固定しやすい既存 fixture とテスト群
-- `docs/steering/*.md`
+- `steering/*.md`
   現在の preview 依頼ノートをどう特定するか
 
 ### 実装案
 
-- `docs/steering/` から `status: open` かつ `tags` に `preview` を持つ task note を探す
+- `steering/` から `status: open` かつ `tags` に `preview` を持つ task note を探す
 - preview build 時は、その note の path と trace 用 hash を `preview_meta.json` に記録し、同時に現在の `main_preview.py` を `.preview_snapshot.py` として保存する
 - 次の preview build で open preview note の path が変わっていたら、保存済み snapshot を `main.py` へ反映してから、新しい `main_preview.py` との差分を取り直す
 - 通常 build 時は、`preview_meta.json` の note path が現行の open preview note と一致する場合だけ preview card を出す

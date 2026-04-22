@@ -23,8 +23,8 @@ tags:
 
 ## 1) 改善対象ジャーニー
 
-- **根拠となるカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ43: 実公開で遊ばれた記録が見える`
-- **関連するカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ21: 友達に見せる`
+- **根拠となるカスタマージャーニー**：`docs/customer-journeys.md` の `CJ43: 実公開で遊ばれた記録が見える`
+- **関連するカスタマージャーニー**：`docs/customer-journeys.md` の `CJ21: 友達に見せる`
 - **深層的目的**：このVMで実際に公開している URL で遊ばれた事実が `.runtime/play_sessions.sqlite3` に残り、親が「届いているか」を勘ではなく記録で確認できる状態へ戻す
 - **やらないこと**：このタスクで分析ダッシュボードを作ること、行動分析を細かく増やすこと、共有導線そのものを全面刷新すること
 
@@ -85,7 +85,7 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG43`
+- `docs/cj-gherkin-platform.md` `CJG43`
 - `Scenario: 親が実公開のアクセスログで遊ばれているか確認できる`
 - `Scenario: 公開サーバがログAPIを持たないなら見逃さない`
 

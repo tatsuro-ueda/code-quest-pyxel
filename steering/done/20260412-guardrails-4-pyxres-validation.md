@@ -12,6 +12,11 @@ tags:
 
 # ガードレール(4) pyxres整合チェック
 
+> 2026-04-19 注記:
+> この note の「runtime が `.pyxres` を自動再生成する」前提は、現在の正本ではありません。
+> 現在の方針は、見た目や音の実体は人が Pyxel Code Maker で修正し、AI / Codex は `.pyxres` を直接編集せず、build / packaging / verify で支えることです。
+> 現行の要求は [`cj-gherkin-guardrails.md`](../../../docs/cj-gherkin-guardrails.md) の `CJG37` を参照してください。
+
 ## 深層的目的
 
 pyxresとコード定数の乖離を自動検出する。
@@ -48,7 +53,7 @@ flowchart TB
 
 ## 2. カスタマージャーニーgherkin
 
-根拠: [`cj-gherkin-guardrails.md`](../product-requirements/cj-gherkin-guardrails.md) CJG37
+根拠: [`cj-gherkin-guardrails.md`](../../docs/cj-gherkin-guardrails.md) CJG37
 
 ```gherkin
 Feature: pyxresとコード定数の整合性をビルド時に検証する

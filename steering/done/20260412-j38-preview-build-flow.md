@@ -55,7 +55,7 @@ flowchart TB
 
 ### 現状
 
-- `docs/product-requirements/cj-gherkin-platform.md` の CJG31/CJG32 では、変更確認は `pyxel-preview.html` 側で行う前提になっている
+- `docs/cj-gherkin-platform.md` の CJG31/CJG32 では、変更確認は `pyxel-preview.html` 側で行う前提になっている
 - しかし現在の通常 build は `pyxel.html` / `pyxel.pyxapp` を直接更新するので、変更が current 側へ混ざる
 - 今回は応急処置として preview 側へファイルを退避したが、次に `make build` を実行するとまた current 側へ出る
 
@@ -176,7 +176,7 @@ flowchart TD
 
 **Observe**：`tools/build_web_release.py` には、すでに `validate_preview_files()`、`build_preview_release()`、`promote()`、CLI の `--preview` / `--promote` が実装されていた。`test/test_build_web_release.py` でも preview 前提条件、昇格、selector から preview/current を辿る導線が固定されている。
 **Think**：J38 で保留だった「通常 build を current 用に残すか」「preview build を別入口にするか」は、実装上は「通常 build は current のまま、preview は `--preview` の別入口」で解決済みだった。未完了だったのはタスクノートの更新だけだった。
-**Act**：J38 を `docs/steering/done/` へ移し、`python -m pytest test/test_build_web_release.py -q` の `16 passed` と `python -m pytest test/ -q` の `153 passed, 2 skipped` を根拠に完了扱いへ更新した。
+**Act**：J38 を `steering/done/` へ移し、`python -m pytest test/test_build_web_release.py -q` の `16 passed` と `python -m pytest test/ -q` の `153 passed, 2 skipped` を根拠に完了扱いへ更新した。
 
 ---
 

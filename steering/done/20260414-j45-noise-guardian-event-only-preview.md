@@ -21,8 +21,8 @@ tags:
 
 ## 1) 改善対象ジャーニー
 
-- **根拠となるカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ42: 子どもが冒険を最後までやり切れる`
-- **関連するカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ31: 子どもが変更を承認する`、`CJ33: 子どもが変更を選んで適用する`
+- **根拠となるカスタマージャーニー**：`docs/customer-journeys.md` の `CJ42: 子どもが冒険を最後までやり切れる`
+- **関連するカスタマージャーニー**：`docs/customer-journeys.md` の `CJ31: 子どもが変更を承認する`、`CJ33: 子どもが変更を選んで適用する`
 - **深層的目的**：通信塔イベント用の敵がフィールド通常遭遇へ混ざらず、子どもが RPG の進行を違和感なく遊び切れる状態へ戻す
 - **やらないこと**：通信塔イベント戦そのものを削除すること、イベント敵全般のデータ設計を今回まとめて一般化すること
 
@@ -93,15 +93,15 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
   `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
   `Scenario: 選択ページの変更説明が実際の配信内容と一致する`
-- `docs/product-requirements/customer-journeys.md`
+- `docs/customer-journeys.md`
   `CJ42: 子どもが冒険を最後までやり切れる`
-- `docs/product-requirements/cj-gherkin-guardrails.md`
+- `docs/cj-gherkin-guardrails.md`
   `CJG39`
   `Scenario: イベント専用の敵は通常エンカウントに混ざらない`
 
@@ -162,7 +162,7 @@ flowchart TB
 
 **Observe**：current に直接修正を入れると preview 比較の意味が消えるため、今回の変更は `main.py` ではなく preview 専用入力へ閉じ込める必要があった。
 **Think**：`main_preview.py` を current から作り、`_build_zone_enemies()` の 2 箇所で `is_noise_guardian` を除外すれば、通常遭遇だけ止めて通信塔イベント戦はそのまま残せる。加えて preview の説明文は `preview_meta.json` で source of truth にするのが CJ31/CJ33 に沿う。
-**Act**：`main_preview.py` にだけ除外ロジックを入れ、`test/test_preview_noise_guardian.py` を追加して「zone 2 の通常遭遇に含まれない」「`_start_noise_guardian_battle()` は従来どおり起動する」を固定した。合わせて `preview_meta.json` に `つうしんとうの ノイズガーディアンが フィールドに でない` を記録し、`docs/product-requirements/cj-gherkin-guardrails.md` に専用 guardrail を追加した。
+**Act**：`main_preview.py` にだけ除外ロジックを入れ、`test/test_preview_noise_guardian.py` を追加して「zone 2 の通常遭遇に含まれない」「`_start_noise_guardian_battle()` は従来どおり起動する」を固定した。合わせて `preview_meta.json` に `つうしんとうの ノイズガーディアンが フィールドに でない` を記録し、`docs/cj-gherkin-guardrails.md` に専用 guardrail を追加した。
 
 ### 2026年4月14日 13:40（検証・build 完了）
 

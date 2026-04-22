@@ -48,7 +48,7 @@ flowchart TB
 
 ## 2. カスタマージャーニーgherkin
 
-根拠: [`cj-gherkin-guardrails.md`](../product-requirements/cj-gherkin-guardrails.md) CJG40
+根拠: [`cj-gherkin-guardrails.md`](../../docs/cj-gherkin-guardrails.md) CJG40
 
 ```gherkin
 Feature: 既存セーブデータとの互換性を検証する

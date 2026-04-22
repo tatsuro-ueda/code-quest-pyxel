@@ -48,7 +48,7 @@ flowchart TB
 
 ## 2. カスタマージャーニーgherkin
 
-根拠: [`cj-gherkin-guardrails.md`](../product-requirements/cj-gherkin-guardrails.md) CJG41
+根拠: [`cj-gherkin-guardrails.md`](../../docs/cj-gherkin-guardrails.md) CJG41
 
 ```gherkin
 Feature: 技術基盤の変更がWeb配信を壊さない

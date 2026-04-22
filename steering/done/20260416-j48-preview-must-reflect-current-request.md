@@ -24,8 +24,8 @@ tags:
 
 ## 1) 改善対象ジャーニー
 
-- **根拠となるカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
-- **関連するカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
+- **根拠となるカスタマージャーニー**：`docs/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
+- **関連するカスタマージャーニー**：`docs/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
 - **深層的目的**：子どもがトップページを開いたとき、`おためしばん` が「今ためしてほしい新しい変更」を指していると信じられるようにする
 - **やらないこと**：この note で個別のゲームロジック修正や build ロジック変更まで先に進めること、トップページの見た目だけを直すこと、文言だけを手で差し替えて済ませること
 
@@ -33,7 +33,7 @@ tags:
 
 - **この note が `done` なら、人間は何が成立していると思うか**：`CJ31/CJG31` を読めば、`おためしばん` は「今の依頼」に対応する版だけを指すと分かる。前の依頼の preview が残っているだけなら、それを新しい依頼みたいに見せてはいけないと仕様上はっきり読める
 - **その期待を裏切りやすいズレ**：`おためしばん` の説明は正しくても中身が前の依頼のまま残る、`main.py` と `main_preview.py` の役割が混ざる、preview がないのに古い card や artifact だけ残る
-- **ズレを潰すために見るべき現物**：`docs/product-requirements/customer-journeys.md`、`docs/product-requirements/cj-gherkin-platform.md`、`docs/steering/20260416-j47-preview-first-selector-autogen.md`、`main.py`、`main_preview.py`、`preview_meta.json`、`index.html`、`tools/build_web_release.py`
+- **ズレを潰すために見るべき現物**：`docs/customer-journeys.md`、`docs/cj-gherkin-platform.md`、`steering/20260416-j47-preview-first-selector-autogen.md`、`main.py`、`main_preview.py`、`preview_meta.json`、`index.html`、`tools/build_web_release.py`
 
 ```mermaid
 flowchart TB
@@ -95,15 +95,15 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG31`
+- `docs/cj-gherkin-platform.md` `CJG31`
 - `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG31`
+- `docs/cj-gherkin-platform.md` `CJG31`
 - `Scenario: 前の依頼の preview を今の依頼のおためし版として見せない`
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG31`
+- `docs/cj-gherkin-platform.md` `CJG31`
 - `Scenario: 選択ページの変更説明が実際の配信内容と一致する`
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG33`
+- `docs/cj-gherkin-platform.md` `CJG33`
 - `Scenario: 変更一覧はおためし版から自動生成される`
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG33`
+- `docs/cj-gherkin-platform.md` `CJG33`
 - `Scenario: 変更一覧は今の依頼に対応するおためし版だけを説明する`
 
 ---

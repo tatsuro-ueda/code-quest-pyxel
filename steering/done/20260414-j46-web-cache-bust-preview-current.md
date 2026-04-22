@@ -21,8 +21,8 @@ tags:
 
 ## 1) 改善対象ジャーニー
 
-- **根拠となるカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
-- **関連するカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
+- **根拠となるカスタマージャーニー**：`docs/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
+- **関連するカスタマージャーニー**：`docs/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
 - **深層的目的**：preview を更新したら、子どもがブラウザで開く `おためしばん` が本当にその更新内容になる
 - **やらないこと**：今回の note でゲームロジックそのものを再設計すること
 
@@ -44,10 +44,10 @@ tags:
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
   `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
   `Scenario: 選択ページの変更説明が実際の配信内容と一致する`
 

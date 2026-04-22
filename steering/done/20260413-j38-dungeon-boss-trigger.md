@@ -323,4 +323,4 @@ flowchart TD
 
 **Observe**：J38 は `Tasklist` も `結果` も埋まっており、実装ファイルと focused test も現行ツリーに残っていたが、ノートだけが `status: open` のままだった。  
 **Think**：必要なのは仕様追加ではなく、fresh な回帰確認を付けて完了扱いへ整理することだけだった。  
-**Act**：`python -m pytest test/test_dungeon_boss_trigger.py -q` で `5 passed`、`python -m pytest test/ -q` で `153 passed, 2 skipped` を再確認し、J38 を `docs/steering/done/` へ移した。
+**Act**：`python -m pytest test/test_dungeon_boss_trigger.py -q` で `5 passed`、`python -m pytest test/ -q` で `153 passed, 2 skipped` を再確認し、J38 を `steering/done/` へ移した。

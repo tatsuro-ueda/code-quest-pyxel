@@ -32,7 +32,7 @@ tags:
 
 - **この note が `done` なら、人間は何が成立していると思うか**：`おためしばん` は親が `昇格` コマンドを打つまで preview のまま待機し、自動で current に上がらない。採用時だけ current が更新され、却下時は current が維持される
 - **その期待を裏切りやすいズレ**：次の依頼で勝手に繰り上がる、preview 表示に task note の状態が混ざる、昇格コマンドを打っても配信物が current に反映されない
-- **ズレを潰すために見るべき現物**：`docs/product-requirements/customer-journeys.md`、`docs/product-requirements/cj-gherkin-platform.md`、`tools/build_web_release.py`、`test/test_build_web_release.py`、`main.py`、`main_preview.py`、`preview_meta.json`、`index.html`
+- **ズレを潰すために見るべき現物**：`docs/customer-journeys.md`、`docs/cj-gherkin-platform.md`、`tools/build_web_release.py`、`test/test_build_web_release.py`、`main.py`、`main_preview.py`、`preview_meta.json`、`index.html`
 
 ```mermaid
 flowchart TB
@@ -102,8 +102,8 @@ flowchart TB
 
 ### 調査起点
 
-- `docs/product-requirements/customer-journeys.md`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/customer-journeys.md`
+- `docs/cj-gherkin-platform.md`
 - `tools/build_web_release.py`
 - `test/test_build_web_release.py`
 
@@ -149,4 +149,4 @@ flowchart TB
 
 **Observe**：完了条件と検証結果は揃っており、active note に残し続ける理由はなくなった。  
 **Think**：この task は preview/current の昇格仕様を明示コマンドへ寄せる作業として閉じてよい。以後の変更は別 note で扱うのが筋。  
-**Act**：この note を `docs/steering/done/` へ移してセッションを閉じる。
+**Act**：この note を `steering/done/` へ移してセッションを閉じる。

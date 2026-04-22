@@ -31,7 +31,7 @@ tags:
 
 - **この note が `done` なら、人間は何が成立していると思うか**：魔王撃破後にダンジョン出口へ出ると脱出メッセージが流れ、読み終えるとそのままエンディングへ進む。撃破前の通常脱出まで巻き込んで ending しない
 - **その期待を裏切りやすいズレ**：`dungeon.glitch.exit` の文言は既にあるので「もうできている」と見誤る、実際は `callback=None` で map に戻るだけ、focused test も「without ending」を固定している、preview/change description が逆向きの説明を持ったまま残る
-- **ズレを潰すために見るべき現物**：`main.py`、`test/test_dungeon_boss_trigger.py`、`tools/build_web_release.py`、`test/test_build_web_release.py`、ユーザーが参照元として示した `/home/exedev/game/index.html`
+- **ズレを潰すために見るべき現物**：`main.py`、`test/test_dungeon_boss_trigger.py`、`tools/build_web_release.py`、`test/test_build_web_release.py`、ユーザーが参照元として示した旧JS版 `index.html`
 
 ```mermaid
 flowchart TB
@@ -60,7 +60,7 @@ flowchart TB
 - `main.py:5240-5248` と `main.py:5254-5263` は、ダンジョン外周脱出と階段脱出の両方で `self._enter_message(self._dialog_lines("dungeon.glitch.exit"), callback=None)` を呼んでいる
 - `main.py:5608-5615` では魔王撃破時に `glitch_lord_defeated=True` を立てるが、その後は `state = "map"` に戻るため、撃破後の出口処理が ending へ接続されていない
 - `test/test_dungeon_boss_trigger.py:150-168` も「glitch_lord_defeated 後に脱出しても ending しない」を今の期待値として固定している
-- ユーザーが参照した `/home/exedev/game/index.html:2002-2009` では `handleDungeonExit()` が `player.bossDefeated` 時に脱出メッセージ後 `enterEnding()` を呼ぶ
+- ユーザーが参照した旧JS版 `index.html` では `handleDungeonExit()` が `player.bossDefeated` 時に脱出メッセージ後 `enterEnding()` を呼ぶ
 - 一方で current repo には `glitch_lord_defeated` 後の隠し導線として `main.py:5280-5282` のプロフェッサー編入口や `main.py:5393-5401` の landmark epilogue があるため、単純差し戻しで後続導線を壊す可能性がある
 - `tools/build_web_release.py:41` は `("dungeon.glitch.exit", "callback=None")` を「まおうを たおしたあとも つづきに すすめる」と説明しており、runtime truth を変えるなら selector/change description も再確認が要る
 
@@ -111,9 +111,9 @@ flowchart TB
 
 ### 調査起点
 
-- `docs/product-requirements/customer-journeys.md`
+- `docs/customer-journeys.md`
   `CJ42` の「ボスを倒す → エンディングに到達する」を今回の主根拠として固定する
-- `docs/product-requirements/cj-gherkin-guardrails.md`
+- `docs/cj-gherkin-guardrails.md`
   `CJG38` の主要パス完走と矛盾しないか確認する
 - `main.py`
   ダンジョン脱出、message callback、ending 遷移、クリア後導線の現在地を確認する
@@ -121,12 +121,12 @@ flowchart TB
   今の期待値が `callback=None` で固定されている箇所を更新対象として見る
 - `tools/build_web_release.py` と `test/test_build_web_release.py`
   top page の変更説明が runtime truth と逆向きにならないか確認する
-- `/home/exedev/game/index.html`
+- 旧JS版 `index.html`
   ユーザーが指した参照実装として `handleDungeonExit()` の流れだけ比較する
 
 ### 実世界の確認点
 
-- **実際に見るURL / path**：`main.py`、`test/test_dungeon_boss_trigger.py`、`tools/build_web_release.py`、`test/test_build_web_release.py`、`/home/exedev/game/index.html`
+- **実際に見るURL / path**：`main.py`、`test/test_dungeon_boss_trigger.py`、`tools/build_web_release.py`、`test/test_build_web_release.py`、旧JS版 `index.html`
 - **実際に動いている process / service**：ローカル Pyxel runtime (`python main.py`)
 - **実際に増えるべき file / DB / endpoint**：新規 endpoint なし。必要なら test 更新のみ。clear-state の扱いを変える場合だけ save 周辺 test も見る
 
@@ -144,7 +144,7 @@ flowchart TB
 ## 4) Tasklist
 
 - [x] `CJ42` を主、`CJ30` を関連とする理由と human expectation を note に固定する
-- [x] `/home/exedev/game` の exit 後 ending フローと current `main.py` の差分を実装対象として固定する
+- [x] 旧JS版の exit 後 ending フローと current `main.py` の差分を実装対象として固定する
 - [x] `test/test_dungeon_boss_trigger.py` の「without ending」期待値を post-boss exit 用に見直す
 - [x] `main.py` / `main_preview.py` のダンジョン出口処理を `glitch_lord_defeated` 条件つきで ending callback へ接続する
 - [x] 未撃破脱出が今までどおり map 復帰のまま残ることを確認する
@@ -161,7 +161,7 @@ flowchart TB
 
 ### 2026年4月18日 13:27（起票）
 
-**Observe**：ユーザーは `~/game/` 側の「魔王撃破後にダンジョンを出るとメッセージが流れ、その先へ進む」挙動をこちらにも求めている。現行 `code-quest-pyxel` は `dungeon.glitch.exit` の文言自体は持つが、出口処理は `callback=None` のため map に戻るだけで、`CJ42` の「ボスを倒す → エンディングに到達する」が最後の一歩で切れている。  
+**Observe**：ユーザーは旧JS版の「魔王撃破後にダンジョンを出るとメッセージが流れ、その先へ進む」挙動をこちらにも求めている。現行 `code-quest-pyxel` は `dungeon.glitch.exit` の文言自体は持つが、出口処理は `callback=None` のため map に戻るだけで、`CJ42` の「ボスを倒す → エンディングに到達する」が最後の一歩で切れている。  
 **Think**：これはセリフ追加の話よりも、進行を最後までつなぐ `CJ42` の問題として扱うのが自然。ただし current repo にはクリア後の隠し導線と build/change description の前提があるため、`callback=_enter_ending` へ戻すだけで済むとは限らない。  
 **Act**：主ジャーニーを `CJ42`、関連を `CJ30` として、post-boss exit を message 後 ending へつなぐ task note を起票した。実装では出口2経路、message callback、クリア後導線、selector/change description の整合まで見る前提にした。
 

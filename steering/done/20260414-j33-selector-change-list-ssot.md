@@ -25,8 +25,8 @@ tags:
 
 ## 1) 改善対象ジャーニー
 
-- **根拠となるカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
-- **直接対応するカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
+- **根拠となるカスタマージャーニー**：`docs/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
+- **直接対応するカスタマージャーニー**：`docs/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
 - **深層的目的**：選択ページの「何が変わったか」が実際に配信される変更内容と一致し、子どもが説明を信じて承認・比較できる状態に戻す
 - **やらないこと**：このタスクで戦闘ロジックそのものを再修正すること、トップページの全面デザイン刷新をすること、変更文言のコピーライティングだけを単独で磨くこと
 
@@ -89,9 +89,9 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG31`
+- `docs/cj-gherkin-platform.md` `CJG31`
 - `Scenario: 変更内容が子どもに理解できる`
-- `docs/product-requirements/cj-gherkin-platform.md` `CJG33`
+- `docs/cj-gherkin-platform.md` `CJG33`
 - `Scenario: おためし版に含まれる変更一覧が表示される`
 
 ---

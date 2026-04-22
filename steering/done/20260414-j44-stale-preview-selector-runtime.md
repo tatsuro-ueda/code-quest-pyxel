@@ -92,13 +92,13 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
   `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
 - `Scenario: 選択ページの変更説明が実際の配信内容と一致する`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG33`
   `Scenario: 変更一覧が実際のおためし版とずれるなら build で検知できる`
 

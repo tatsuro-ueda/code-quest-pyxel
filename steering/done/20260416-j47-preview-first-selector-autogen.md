@@ -22,8 +22,8 @@ tags:
 
 ## 1) 改善対象ジャーニー
 
-- **根拠となるカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
-- **関連するカスタマージャーニー**：`docs/product-requirements/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
+- **根拠となるカスタマージャーニー**：`docs/customer-journeys.md` の `CJ31: 子どもが変更を承認する`
+- **関連するカスタマージャーニー**：`docs/customer-journeys.md` の `CJ33: 子どもが変更を選んで適用する`
 - **深層的目的**：親がAIに頼んだ変更を、必ず `おためしばん` で遊び比べてから子どもが選べるようにする
 - **やらないこと**：この note で個別のゲームロジック修正を先に進めること、選択ページの見た目だけを単独で磨くこと
 
@@ -31,7 +31,7 @@ tags:
 
 - **この note が `done` なら、人間は何が成立していると思うか**：親がAIに変更を頼んだら、その新しい内容は常に `preview` / `おためしばん` に入り、選択ページには「ここを変えたから、遊んでみて！」という説明が preview の実内容から自動で出る
 - **その期待を裏切りやすいズレ**：新しい変更が先に `current` に入ってしまう、`main.py` と `main_preview.py` の役割が混ざる、選択ページの説明が `preview_meta.json` などの手更新に依存して実物とずれる
-- **ズレを潰すために見るべき現物**：`docs/product-requirements/customer-journeys.md`、`docs/product-requirements/cj-gherkin-platform.md`、`tools/build_web_release.py`、`main.py`、`main_preview.py`、選択ページ用 metadata
+- **ズレを潰すために見るべき現物**：`docs/customer-journeys.md`、`docs/cj-gherkin-platform.md`、`tools/build_web_release.py`、`main.py`、`main_preview.py`、選択ページ用 metadata
 
 ```mermaid
 flowchart TB
@@ -130,19 +130,19 @@ flowchart TD
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
   `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
   `Scenario: 変更内容が子どもに理解できる`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG31`
   `Scenario: 選択ページの変更説明が実際の配信内容と一致する`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG33`
   `Scenario: 変更一覧はおためし版から自動生成される`
-- `docs/product-requirements/cj-gherkin-platform.md`
+- `docs/cj-gherkin-platform.md`
   `CJG33`
   `Scenario: 変更一覧が実際のおためし版とずれるなら build で検知できる`
 

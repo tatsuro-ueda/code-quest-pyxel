@@ -106,15 +106,15 @@ flowchart TB
 
 ### 調査起点
 
-- `docs/product-requirements/customer-journeys.md`
+- `docs/customer-journeys.md`
   `CJ09` と `CJ42` のどちらを主に置くべきかの根拠
-- `docs/product-requirements/cj-gherkin-narrative.md`
+- `docs/cj-gherkin-narrative.md`
   `CJG09` に沿う narrative 変更かどうかの確認
-- `docs/steering/done/20260413-j37-dialogue-page-advance.md`
+- `steering/done/20260413-j37-dialogue-page-advance.md`
   会話送りの共通化で過去にどこまで整理したかの確認
-- `docs/steering/done/20260413-j38-dungeon-boss-trigger.md`
+- `steering/done/20260413-j38-dungeon-boss-trigger.md`
   魔王トリガー導線の既存前提
-- `docs/steering/done/20260413-j42-rpg-loop-journey.md`
+- `steering/done/20260413-j42-rpg-loop-journey.md`
   最後まで遊び切れる導線との接続
 
 ### 実世界の確認点
