@@ -862,7 +862,10 @@ class TestPreviewBuildUsesVersionedLinks(unittest.TestCase):
         self.assertTrue((production_dir(self.output_dir) / "index.html").exists())
         self.assertTrue((development_dir(self.output_dir) / "index.html").exists())
         meta = json.loads((self.project_root / "development_meta.json").read_text(encoding="utf-8"))
-        self.assertEqual(meta["changes"], ["まおうまえに おはなしが はじまる"])
+        # J53 Q3B: Phase 1 中は main_development_runtime.py が main_runtime.py と
+        # 乖離するので、自動検出される changes が増えることを許容する。
+        # 期待する一つのメッセージが含まれていることだけ確認する。
+        self.assertIn("まおうまえに おはなしが はじまる", meta["changes"])
 
         with zipfile.ZipFile(production_dir(self.output_dir) / "code-maker.zip") as zf:
             current_main = zf.read("block-quest/main.py").decode("utf-8")
