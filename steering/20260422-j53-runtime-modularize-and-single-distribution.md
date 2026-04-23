@@ -347,9 +347,67 @@ Q4B 決定に基づき、**concat 生成型の bundler** を新設：`codemaker_
 
 ### P2-E. 検証と締め（3 タスク）
 
-- [ ] **P2-E1**：`python tools/build_codemaker.py` exit 0、生成 zip の `main.py` が Code Maker 上で splash → title → ゲームループを回せること（実機確認、headless も `python main.py` で smoke test）
-- [ ] **P2-E2**：既存テスト 277 件 all green（新 bundler の unit test も任意で追加）
-- [ ] **P2-E3**：Phase 2 完了コミット + git tag `j53-phase2-complete`
+- [x] **P2-E1**：`python tools/build_codemaker.py` exit 0、生成 zip の `main.py` が Code Maker 上で splash → title → ゲームループを回せること（実機確認、headless も `python main.py` で smoke test）
+- [x] **P2-E2**：既存テスト 275 件 all green + 2 skip（SAMPLE_MAIN 前提の test_build_codemaker 2 件は skip、wrapper 不変性は別 case でカバー）
+- [x] **P2-E3**：Phase 2 完了コミット + git tag `j53-phase2-complete`
+
+---
+
+## 4.7) Tasklist（Phase 3: dev/prod 単一化）
+
+### 背景
+
+タスクノートのタイトルは「runtime monolith **分解** と **dev/prod 単一化**」。Phase 1〜2 で前半（分解 + bundler）が完遂。Phase 3 では **dev 版を完全に削除**し、prod 版 1 本に統合する。
+
+現状（Phase 2 完了時点）:
+- `main.py` / `main_development.py` の 2 entry
+- `src/runtime/main_runtime.py` / `main_development_runtime.py` の 2 runtime
+- `production/` / `development/` の 2 artifacts
+- selector は 2 カード（本番 / 開発版）、取り込み UI 付き
+- `browser_resource_override.py` + `codemaker_resource_store.promote_imported_resource` で import zip を development へ昇格
+
+Phase 3 ではこれらを全て prod 1 本に統合する。import された resource は直接 `assets/blockquest.pyxres` に書き戻す（Phase 4 で systemd autostart 対応）。
+
+### 運用ルール（Phase 1/1.5/2 と同じ）
+
+- 1 タスク = 1 commit、commit 後に `pytest -q` + `python tools/build_codemaker.py` exit 0 確認
+- commit message 規約：`j53(P3-X): <内容>`
+
+### P3-A. dev runtime 削除（2 タスク）
+
+- [ ] **P3-A1**：root `main_development.py` を削除。`src/runtime/main_development_runtime.py` も削除（codemaker_manifest にも無いので bundle には影響しない）
+- [ ] **P3-A2**：`test_preview_*.py` シリーズ（preview 専用テスト群）を削除または skip 化。`test_dialogue_integration.py` の `test_main_preview_*` 3 件を skip
+
+### P3-B. development artifacts 削除（1 タスク）
+
+- [ ] **P3-B1**：`development/` ディレクトリを削除（既に Phase 1 で deletion が staged されていた）。`.gitignore` 要調整なら追記
+
+### P3-C. selector 1 カード化（2 タスク）
+
+- [ ] **P3-C1**：`templates/selector.html` を本番 1 カードに簡素化。「開発版」カードと関連 JS（`codemaker_import_ui.js` の fallback 分岐）を削除
+- [ ] **P3-C2**：`tools/render_release_selector.py` の DevelopmentCandidate 表示ロジックを削除
+
+### P3-D. build tools 簡素化（3 タスク）
+
+- [ ] **P3-D1**：`tools/resolve_release_source_of_truth.py` の `DevelopmentCandidate` 系関数・データクラス・定数を削除。`file_sha256` / `is_git_dirty` / `revision_timestamp` / `build_cache_token` / `validate_change_list_freshness` は維持
+- [ ] **P3-D2**：`tools/build_web_release.py` の dev 関連関数を削除。`development_dir()` / preview hash 管理系を全削除。production 1 本のビルドに特化
+- [ ] **P3-D3**：`tools/build_release_artifacts.py` を簡素化。`build_codemaker_release()` から dev 分岐を削除
+
+### P3-E. resource import 経路の整理（2 タスク）
+
+- [ ] **P3-E1**：`src/shared/services/browser_resource_override.py` を削除（Phase 3 削除予定として markup 済み）。関連 import を main_runtime / image_banks から削除
+- [ ] **P3-E2**：`src/shared/services/codemaker_resource_store.py` から `promote_imported_resource` / `IMPORT_MANIFEST` / `IMPORT_RESOURCE` 等の development 向け関数を削除
+
+### P3-F. test suite の整理（2 タスク）
+
+- [ ] **P3-F1**：`test/test_build_web_release.py` の `TestPreview*` / `TestExplicitPreviewCommands` / `TestResourceOnlyDevelopmentBuild` 等のクラスを削除（すでに production 単独ビルドになるため意味を失う）
+- [ ] **P3-F2**：残った test が全 green を確認。削減された test 数と理由を Discussion に記録
+
+### P3-G. 検証と締め（3 タスク）
+
+- [ ] **P3-G1**：`python -m pytest test/ -q` 全 green
+- [ ] **P3-G2**：`python tools/build_web_release.py` と `python tools/build_codemaker.py` が exit 0。生成物の `production/` だけが存在し `development/` は無い
+- [ ] **P3-G3**：Phase 3 完了コミット + git tag `j53-phase3-complete`
 
 ---
 
@@ -409,7 +467,7 @@ Q4B 決定に基づき、**concat 生成型の bundler** を新設：`codemaker_
 
 ### Phase 1 責務移動計画マトリクス（v2）
 
-**目的**：[architecture.md](../docs/architecture.md) に列挙された全関数／クラス／メソッドを、**Phase 1 完了後にあるべき位置**で 6 カテゴリに振り分ける。`src/runtime/main_runtime.py` は Phase 1 後には 50 行未満の薄い entry になり、中身は全部この分類先へ分配される。
+**目的**：[repository-structure.md](../docs/repository-structure.md) に列挙された全関数／クラス／メソッドを、**Phase 1 完了後にあるべき位置**で 6 カテゴリに振り分ける。`src/runtime/main_runtime.py` は Phase 1 後には 50 行未満の薄い entry になり、中身は全部この分類先へ分配される。
 
 **更新履歴**:
 - **v1**（2026-04-22 夜）初版
