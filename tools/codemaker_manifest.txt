@@ -1,0 +1,125 @@
+# Code Maker bundle manifest (Q4B: concat 生成型)
+#
+# bundler は本ファイルを上から順に読み、各 .py の内容を連結して
+# Code Maker 用 single-file main.py の CORE_BLOCK を構築する。
+#
+# ルール:
+# - 依存関係の葉（定数）から順に並べる。先に定義された symbol は
+#   後から出現しても参照できる
+# - `from src.X import *` / `from src.X.Y import ...` 行は bundler が除去する
+#   （連結後は同一スコープに全部入るため import 不要）
+# - `from __future__ import annotations` / `import pyxel` / `import random`
+#   などの標準系 import は bundler が dedup する
+# - src/runtime/main_runtime.py は含めない（shim そのもの）
+# - src/runtime/main_development_runtime.py は Phase 3 で削除予定・含めない
+# - '#' 始まりと空行はコメント/区切りとして無視
+
+# --- 1. shared/assets: JP フォントビットマップ（定数のみ、依存なし）
+src/shared/assets/jp_font_data.py
+
+# --- 2. shared/constants: タイル・スプライト・ゲーム設定の定数
+src/shared/constants/tile_data.py
+src/shared/constants/sprite_data.py
+src/shared/constants/game_config.py
+
+# --- 3. src/generated: YAML から自動生成されたデータ辞書（純粋データ）
+src/generated/armors.py
+src/generated/weapons.py
+src/generated/items.py
+src/generated/spells.py
+src/generated/enemies.py
+src/generated/shops.py
+src/generated/dialogue.py
+
+# --- 4. src/game_data.py: generated/ を束ねる facade
+src/game_data.py
+
+# --- 5. shared/services: 純粋 services（他 service 依存が少ないものを先に）
+src/shared/services/input_bindings.py
+src/shared/services/landmark_events.py
+src/shared/services/player_state.py
+src/shared/services/save_store.py
+src/shared/services/browser_resource_override.py
+src/shared/services/codemaker_resource_store.py
+src/shared/services/play_session_logging.py
+src/shared/services/text_format.py
+src/shared/services/audio_system.py
+src/shared/services/dialog_runner.py
+src/shared/services/game_state.py
+src/shared/services/vfx.py
+src/shared/services/item_use.py
+src/shared/services/message_display.py
+src/shared/services/world_generation.py
+src/shared/services/image_banks.py
+
+# --- 6. shared/ui: 座標・ウィンドウ寸法
+src/shared/ui/dialog_window.py
+src/shared/ui/hud.py
+src/shared/ui/menu_window.py
+src/shared/ui/message_window.py
+src/shared/ui/status_bar.py
+
+# --- 7. src/core: SceneManager
+src/core/scene_manager.py
+
+# --- 8. src/app.py: BlockQuestApp
+src/app.py
+
+# --- 9. scenes: M/V/P を先に、Scene を最後に
+src/scenes/ai_help/model.py
+src/scenes/ai_help/view.py
+src/scenes/ai_help/presenter.py
+src/scenes/ai_help/scene.py
+
+src/scenes/battle/model.py
+src/scenes/battle/view.py
+src/scenes/battle/presenter.py
+src/scenes/battle/scene.py
+
+src/scenes/ending/model.py
+src/scenes/ending/view.py
+src/scenes/ending/presenter.py
+src/scenes/ending/scene.py
+
+src/scenes/explore/model.py
+src/scenes/explore/view.py
+src/scenes/explore/presenter.py
+src/scenes/explore/scene.py
+
+src/scenes/menu/model.py
+src/scenes/menu/view.py
+src/scenes/menu/presenter.py
+src/scenes/menu/scene.py
+
+src/scenes/professor/model.py
+src/scenes/professor/view.py
+src/scenes/professor/presenter.py
+src/scenes/professor/scene.py
+
+src/scenes/settings/model.py
+src/scenes/settings/view.py
+src/scenes/settings/presenter.py
+src/scenes/settings/scene.py
+
+src/scenes/shop/model.py
+src/scenes/shop/view.py
+src/scenes/shop/presenter.py
+src/scenes/shop/scene.py
+
+src/scenes/splash/model.py
+src/scenes/splash/view.py
+src/scenes/splash/presenter.py
+src/scenes/splash/scene.py
+
+src/scenes/title/model.py
+src/scenes/title/view.py
+src/scenes/title/presenter.py
+src/scenes/title/scene.py
+
+src/scenes/town/model.py
+src/scenes/town/view.py
+src/scenes/town/presenter.py
+src/scenes/town/scene.py
+
+# --- 10. src/runtime/app.py: Game クラス本体（全 scenes/services を使う）
+src/runtime/app.py
