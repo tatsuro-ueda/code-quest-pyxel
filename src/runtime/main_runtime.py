@@ -1773,8 +1773,6 @@ class Game:
         `__init__` から `pyxel.run` を分離してある。"""
         pyxel.run(self.update, self.draw)
 
-    # ----- Image bank setup (.pyxres support) -----
-
 
 
     # ----- World tilemap setup (.pyxres tilemap[0] support) -----
@@ -1784,22 +1782,9 @@ class Game:
     # 配置して、画像バンク 0 だけを参照させる。
 
 
-
-
-
-
-
-
     # ----- Image bank: layout (positions) と paint (pset) を分離 -----
     # 通常起動時は .pyxres から load してレイアウト辞書だけ計算する。
     # .pyxres が無ければ paint してから save する（初回のみ）。
-
-
-
-
-
-
-
 
 
     # -----------------------------------------------------------------
@@ -1880,37 +1865,6 @@ class Game:
     # update_title / _do_load は TitleScene に移動（P1-G1）
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # ----- town_menu (Save Player Journey steering) -----
-    # ----- Shop (Task #7) -----
-    # ----- Professor encounter (隠し章) -----
     # ----- AI でしゅうせい (Code Maker と外部 AI の橋渡し) -----
 
     # -----------------------------------------------------------------
@@ -1963,10 +1917,6 @@ class Game:
 
         # デバッグオーバーレイ（最後に重ねる）
         self.messages.draw_say_overlay()
-
-
-
-
 
 
 # =====================================================================
