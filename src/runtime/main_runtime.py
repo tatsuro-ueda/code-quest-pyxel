@@ -149,152 +149,16 @@ from src.shared.services.landmark_events import (
     resolve_scene,
 )
 
-# === inlined: src/player_factory.py ===
-"""Player factory and level/stat formulas.
-
-旧JS版の `expForLevel` / `statsForLevel` / `MAX_LEVEL`
-を Python に移植した純粋関数群と、初期プレイヤー生成を担う。
-"""
-
-
-from typing import Any
-
-MAX_LEVEL = 100
-
-
-def exp_for_level(lv: int) -> int:
-    """Return the experience needed to reach the given level.
-
-    Mirrors the JS implementation:
-        if(lv===2)return 26;
-        return Math.floor(10*Math.pow(lv,2)+6*lv);
-    """
-    if lv == 2:
-        return 26
-    return int(10 * lv * lv + 6 * lv)
-
-
-def stats_for_level(lv: int) -> dict[str, int]:
-    """Return baseline player stats for the given level.
-
-    Mirrors the JS implementation:
-        {maxHp:30+lv*15, maxMp:10+lv*6, atk:5+lv*2, def:3+lv*3, agi:5+lv*2}
-    """
-    return {
-        "max_hp": 30 + lv * 15,
-        "max_mp": 10 + lv * 6,
-        "atk": 5 + lv * 2,
-        "def": 3 + lv * 3,
-        "agi": 5 + lv * 2,
-    }
-
-
-def create_initial_player(start_x: int = 25, start_y: int = 6) -> dict[str, Any]:
-    """Create a fresh player dict at level 1 using stats_for_level(1).
-
-    The base stats keys (max_hp, max_mp, atk, def, agi) are set from
-    stats_for_level(1), and current hp/mp default to their max values.
-    """
-    base = stats_for_level(1)
-    return {
-        "x": start_x,
-        "y": start_y,
-        "hp": base["max_hp"],
-        "max_hp": base["max_hp"],
-        "mp": base["max_mp"],
-        "max_mp": base["max_mp"],
-        "atk": base["atk"],
-        "def": base["def"],
-        "agi": base["agi"],
-        "lv": 1,
-        "exp": 0,
-        "gold": 50,
-        "weapon": 0,
-        "armor": 0,
-        "items": [{"id": 0, "qty": 3}],
-        "spells": [],
-        "poisoned": False,
-        "in_dungeon": False,
-        "glitch_lord_defeated": False,
-        "max_zone_reached": 0,
-        "landmarkTreeSeen": False,
-        "landmarkTowerSeen": False,
-        "towerEpilogueSeen": False,
-        "treeAsked": False,
-        "towerNoiseCleared": False,
-        "professor_intro_seen": False,
-        "professor_defeated": False,
-        "professor_ending_seen": False,
-        "bgm_enabled": True,
-        "sfx_enabled": True,
-        "vfx_enabled": True,
-        "dialog_flags": {},
-        "town_talk_idx": [0, 0, 0],
-    }
-
-# === inlined: src/player_snapshot.py ===
-"""Pure functions for serializing Game.player state to a savable dict.
-
-Only keys in SAVED_PLAYER_KEYS are persisted, preventing accidental leakage
-of debug-only or transient battle state into save files.
-"""
-
-from typing import Any
-
-SAVE_VERSION = 1
-
-# 明示リスト。新しいフィールドを保存対象にしたいときはここに追加する。
-SAVED_PLAYER_KEYS: tuple[str, ...] = (
-    "x", "y",
-    "hp", "max_hp", "mp", "max_mp",
-    "atk", "def", "agi",
-    "lv", "exp", "gold",
-    "weapon", "armor",
-    "items", "spells",
-    "poisoned",
-    "in_dungeon",
-    "glitch_lord_defeated",
-    "max_zone_reached",
-    "landmarkTreeSeen", "landmarkTowerSeen",
-    "treeAsked", "towerNoiseCleared",
-    "professor_intro_seen", "professor_defeated", "professor_ending_seen",
-    "bgm_enabled", "sfx_enabled", "vfx_enabled",
-    "dialog_flags",
-    "town_talk_idx",
+from src.shared.services.player_state import (
+    MAX_LEVEL,
+    SAVE_VERSION,
+    SAVED_PLAYER_KEYS,
+    exp_for_level,
+    stats_for_level,
+    create_initial_player,
+    dump_snapshot,
+    restore_snapshot,
 )
-
-
-def dump_snapshot(player: dict[str, Any], town_pos: tuple[int, int]) -> dict[str, Any]:
-    """Game.player から保存用 dict を組み立てる。
-
-    town_pos はセーブを実行した町タイルの座標。ロード時にプレイヤーを
-    同じタイル上に出現させるために使う。
-    """
-    saved_player = {key: player[key] for key in SAVED_PLAYER_KEYS if key in player}
-    return {
-        "save_version": SAVE_VERSION,
-        "town_pos": [int(town_pos[0]), int(town_pos[1])],
-        "player": saved_player,
-    }
-
-
-def restore_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
-    """SaveStore.load() の結果を Game に流し込みやすい形に整える。
-
-    Returns:
-        {"player": dict, "town_pos": tuple[int, int]}
-    """
-    raw_pos = snapshot["town_pos"]
-    player = dict(snapshot["player"])
-    if "glitch_lord_defeated" not in player and "boss_defeated" in player:
-        player["glitch_lord_defeated"] = bool(player.pop("boss_defeated"))
-    player.setdefault("bgm_enabled", True)
-    player.setdefault("sfx_enabled", True)
-    player.setdefault("vfx_enabled", True)
-    return {
-        "player": player,
-        "town_pos": (int(raw_pos[0]), int(raw_pos[1])),
-    }
 
 # === inlined: src/shared/services/save_store.py ===
 """Persistence layer for Block Quest save data.
