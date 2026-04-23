@@ -39,7 +39,6 @@ src/shared/services/input_bindings.py
 src/shared/services/landmark_events.py
 src/shared/services/player_state.py
 src/shared/services/save_store.py
-src/shared/services/browser_resource_override.py
 src/shared/services/codemaker_resource_store.py
 src/shared/services/play_session_logging.py
 src/shared/services/text_format.py

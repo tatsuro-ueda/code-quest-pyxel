@@ -1,17 +1,18 @@
 from __future__ import annotations
 
+"""Code Maker zip → pyxres 取り込みヘルパ（P3-E で dev staging を削除し 1 本化）。
+
+Phase 3 以降、取り込んだ pyxres は直接 `assets/blockquest.pyxres` に
+書き戻す。間 staging（`.runtime/codemaker_resource_imports/...`）は廃止。
+"""
+
 import hashlib
 import io
-import json
-import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from zipfile import BadZipFile, ZipFile
 
 
-IMPORT_ROOT = Path(".runtime") / "codemaker_resource_imports"
-IMPORT_MANIFEST = IMPORT_ROOT / "development.json"
-IMPORT_RESOURCE = IMPORT_ROOT / "development" / "my_resource.pyxres"
 CANONICAL_RESOURCE = Path("assets") / "blockquest.pyxres"
 CODE_ENTRY_NAME = "main.py"
 RESOURCE_ENTRY_NAME = "my_resource.pyxres"
@@ -20,16 +21,6 @@ RESOURCE_ENTRY_NAME = "my_resource.pyxres"
 def _sha256_bytes(data: bytes) -> str:
     """バイト列の SHA-256 を16進文字列で返す。"""
     return hashlib.sha256(data).hexdigest()
-
-
-def _manifest_path(project_root: Path) -> Path:
-    """インポート manifest JSON の絶対パスを返す。"""
-    return project_root.resolve() / IMPORT_MANIFEST
-
-
-def _imported_resource_path(project_root: Path) -> Path:
-    """インポート先の pyxres ファイル絶対パスを返す。"""
-    return project_root.resolve() / IMPORT_RESOURCE
 
 
 def _canonical_resource_path(project_root: Path) -> Path:
@@ -75,97 +66,31 @@ def extract_codemaker_resource_archive(archive_bytes: bytes) -> tuple[bytes, lis
     return resource_bytes, ignored_code_entries
 
 
-def import_codemaker_resource_zip(
+def apply_imported_resource(
     project_root: Path,
     archive_bytes: bytes,
     *,
     source_name: str = "code-maker.zip",
 ) -> dict[str, object]:
-    """Code Maker zip を取り込み、インポート先に pyxres を書き出して manifest を残す。"""
+    """Code Maker zip から pyxres を抽出し、正準パス（assets/blockquest.pyxres）へ書き戻す。
+
+    Phase 3 以降の単一 artifact 方式：
+    - dev staging を経由せず、本番 pyxres を直接更新する
+    - 呼び出し側（web_runtime_server）はその後に production を再ビルドする
+    """
     project_root = project_root.resolve()
     resource_bytes, ignored_code_entries = extract_codemaker_resource_archive(archive_bytes)
 
-    imported_path = _imported_resource_path(project_root)
-    imported_path.parent.mkdir(parents=True, exist_ok=True)
-    imported_path.write_bytes(resource_bytes)
-
-    base_resource_bytes = _canonical_resource_path(project_root).read_bytes()
-    changed_from_base = resource_bytes != base_resource_bytes
-    imported_at = datetime.now(timezone.utc).isoformat()
-    manifest = {
-        "source_name": source_name,
-        "resource_path": str(imported_path),
-        "resource_sha256": _sha256_bytes(resource_bytes),
-        "base_resource_sha256": _sha256_bytes(base_resource_bytes),
-        "source_zip_sha256": _sha256_bytes(archive_bytes),
-        "ignored_code_entries": ignored_code_entries,
-        "changed_from_base": changed_from_base,
-        "imported_at": imported_at,
-    }
-    manifest_path = _manifest_path(project_root)
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
-    manifest_path.write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    return manifest
-
-
-def load_imported_resource_manifest(project_root: Path) -> dict[str, object] | None:
-    """インポート manifest を読み込んで dict で返す（未インポートなら None）。"""
-    project_root = project_root.resolve()
-    manifest_path = _manifest_path(project_root)
-    if not manifest_path.is_file():
-        return None
-    data = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise ValueError(f"{manifest_path} must contain a JSON object")
-    return data
-
-
-def get_imported_resource_path(project_root: Path) -> Path | None:
-    """インポート済み pyxres のパスを返す（未インポートなら None）。"""
-    project_root = project_root.resolve()
-    resource_path = _imported_resource_path(project_root)
-    manifest = load_imported_resource_manifest(project_root)
-    if manifest is None or not resource_path.is_file():
-        return None
-    return resource_path
-
-
-def clear_imported_resource(project_root: Path) -> None:
-    """インポート済み pyxres と manifest を削除し、空ディレクトリも片付ける。"""
-    project_root = project_root.resolve()
-    resource_path = _imported_resource_path(project_root)
-    manifest_path = _manifest_path(project_root)
-
-    if resource_path.exists():
-        resource_path.unlink()
-    if manifest_path.exists():
-        manifest_path.unlink()
-
-    resource_dir = resource_path.parent
-    if resource_dir.exists():
-        try:
-            resource_dir.rmdir()
-        except OSError:
-            pass
-    if manifest_path.parent.exists():
-        try:
-            manifest_path.parent.rmdir()
-        except OSError:
-            pass
-
-
-def promote_imported_resource(project_root: Path) -> bool:
-    """インポート済み pyxres を正準資産（assets/）に昇格し、インポートを後片付けする。"""
-    project_root = project_root.resolve()
-    imported_path = get_imported_resource_path(project_root)
-    if imported_path is None:
-        return False
-
     canonical_path = _canonical_resource_path(project_root)
     canonical_path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(imported_path, canonical_path)
-    clear_imported_resource(project_root)
-    return True
+    canonical_path.write_bytes(resource_bytes)
+
+    imported_at = datetime.now(timezone.utc).isoformat()
+    return {
+        "source_name": source_name,
+        "resource_path": str(canonical_path),
+        "resource_sha256": _sha256_bytes(resource_bytes),
+        "source_zip_sha256": _sha256_bytes(archive_bytes),
+        "ignored_code_entries": ignored_code_entries,
+        "imported_at": imported_at,
+    }

@@ -10,7 +10,6 @@ from src.shared.services.input_bindings import *
 from src.shared.services.landmark_events import *
 from src.shared.services.player_state import *
 from src.shared.services.save_store import *
-from src.shared.services.browser_resource_override import *
 from src.shared.services.audio_system import *
 from src.shared.services.dialog_runner import *
 from src.game_data import *

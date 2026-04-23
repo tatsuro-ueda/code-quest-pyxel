@@ -64,8 +64,7 @@ class WebRuntimeServerTest(unittest.TestCase):
     def on_codemaker_resource_import(self, project_root: Path) -> dict[str, object]:
         self.import_calls.append(project_root)
         return {
-            "development_available": True,
-            "development_play_url": "/development/play.html",
+            "production_play_url": "/production/play.html",
         }
 
     def post_json(self, path: str, payload: dict[str, object]):
@@ -194,6 +193,11 @@ class WebRuntimeServerTest(unittest.TestCase):
         self.assertIsNotNone(user_agent)
 
     def test_accepts_codemaker_zip_and_imports_only_resource(self):
+        # P3-E: staging 廃止。取り込んだ pyxres は直接 assets/blockquest.pyxres に書き戻される
+        (self.project_root / "assets").mkdir(parents=True, exist_ok=True)
+        canonical = self.project_root / "assets" / "blockquest.pyxres"
+        canonical.write_bytes(b"base-resource")
+
         payload = io.BytesIO()
         with ZipFile(payload, "w") as zf:
             zf.writestr("block-quest/main.py", "print('ignored code')\n")
@@ -202,40 +206,21 @@ class WebRuntimeServerTest(unittest.TestCase):
         with self.post_zip("/internal/codemaker-resource-import", payload.getvalue()) as response:
             body = json.loads(response.read().decode("utf-8"))
 
-        imported_path = self.project_root / ".runtime" / "codemaker_resource_imports" / "development" / "my_resource.pyxres"
-        manifest_path = self.project_root / ".runtime" / "codemaker_resource_imports" / "development.json"
-
         self.assertEqual(response.status, 200)
-        self.assertEqual(imported_path.read_bytes(), b"edited-resource")
-        self.assertTrue(manifest_path.exists())
+        self.assertEqual(canonical.read_bytes(), b"edited-resource")
         self.assertEqual(body["ignored_code_entries"], ["block-quest/main.py"])
-        self.assertTrue(body["changed_from_base"])
-        self.assertEqual(body["development_play_url"], "/development/play.html")
+        self.assertEqual(body["production_play_url"], "/production/play.html")
         self.assertEqual(self.import_calls, [self.project_root])
 
     def test_reports_codemaker_import_status(self):
+        # P3-E: status は available フラグのみ（manifest 経路廃止）
         status_url = self.base_url + "/internal/codemaker-resource-import/status"
 
         with urllib.request.urlopen(status_url, timeout=5) as response:
-            before = json.loads(response.read().decode("utf-8"))
+            payload = json.loads(response.read().decode("utf-8"))
 
         self.assertEqual(response.status, 200)
-        self.assertFalse(before["has_imported_resource"])
-
-        payload = io.BytesIO()
-        with ZipFile(payload, "w") as zf:
-            zf.writestr("block-quest/main.py", "print('ignored code')\n")
-            zf.writestr("block-quest/my_resource.pyxres", b"edited-resource")
-        with self.post_zip("/internal/codemaker-resource-import", payload.getvalue()):
-            pass
-
-        with urllib.request.urlopen(status_url, timeout=5) as response:
-            after = json.loads(response.read().decode("utf-8"))
-
-        self.assertEqual(response.status, 200)
-        self.assertTrue(after["has_imported_resource"])
-        self.assertEqual(after["ignored_code_entries"], ["block-quest/main.py"])
-        self.assertEqual(after["source_name"], "code-maker.zip")
+        self.assertTrue(payload["available"])
 
 
 if __name__ == "__main__":

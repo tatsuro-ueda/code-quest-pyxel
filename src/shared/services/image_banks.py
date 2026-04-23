@@ -19,11 +19,6 @@ from src.shared.assets.jp_font_data import (
     JP_FONT_IMAGE_BANK,
     JP_FONT_LAYOUT,
 )
-from src.shared.services.browser_resource_override import (
-    stage_browser_imported_resource,
-)
-
-
 DUNGEON_TM_OFFSET_Y = 110
 
 
@@ -56,7 +51,9 @@ class ImageBanks:
 
         import src.runtime.main_runtime as M
         root = Path(M.__file__).resolve().parent
-        stage_browser_imported_resource(root)
+        # P3-E: browser_resource_override 削除済み。import された resource は
+        # web_runtime_server が assets/blockquest.pyxres に直接書き戻すため、
+        # ここでは my_resource.pyxres / assets/blockquest.pyxres のどちらかを選ぶだけ
         candidates = [
             root / "my_resource.pyxres",
             root / "assets" / "blockquest.pyxres",
