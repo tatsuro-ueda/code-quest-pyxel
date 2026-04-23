@@ -109,6 +109,26 @@ class TestArchitectureLayout(unittest.TestCase):
         self.assertTrue(hasattr(app, 'BlockQuestApp'))
         self.assertTrue(hasattr(scene_manager, 'SceneManager'))
 
+    def test_phase_1_5_constants_and_app_modules_exist(self):
+        """P1.5-A/B/C/D で作られた shared/constants と runtime/app を確認する。"""
+        tile_data = importlib.import_module('src.shared.constants.tile_data')
+        sprite_data = importlib.import_module('src.shared.constants.sprite_data')
+        game_config = importlib.import_module('src.shared.constants.game_config')
+        world_generation = importlib.import_module('src.shared.services.world_generation')
+        runtime_app = importlib.import_module('src.runtime.app')
+
+        self.assertTrue(hasattr(tile_data, 'TILE_DATA'))
+        self.assertTrue(hasattr(tile_data, 'T_GRASS'))
+        self.assertTrue(hasattr(tile_data, 'MAP_W'))
+        self.assertTrue(hasattr(sprite_data, 'HERO_DOWN'))
+        self.assertTrue(hasattr(sprite_data, 'ENEMY_SPRITES'))
+        self.assertTrue(hasattr(game_config, 'VFX_FLASH'))
+        self.assertTrue(hasattr(game_config, 'TOWN_NPC_LINES'))
+        self.assertTrue(hasattr(world_generation, 'generate_world_map'))
+        self.assertTrue(hasattr(world_generation, 'get_zone'))
+        self.assertTrue(hasattr(runtime_app, 'Game'))
+        self.assertTrue(hasattr(runtime_app, 'run'))
+
     def test_legacy_wrapper_modules_are_gone(self):
         missing = [path for path in DEPRECATED_WRAPPERS if path.exists()]
         self.assertEqual(missing, [], f'legacy wrappers still present: {missing}')

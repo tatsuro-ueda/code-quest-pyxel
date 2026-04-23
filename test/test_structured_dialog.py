@@ -159,7 +159,9 @@ class DialogueDataSmokeTest(unittest.TestCase):
         self.en_runner = StructuredDialogRunner(DIALOGUE_EN)
 
     def test_main_uses_dialogue_data(self):
+        # P1.5-D 後: DIALOGUE_JA/EN は app.py と main_runtime.py（import *）経由
         text = (PYXEL_ROOT / "src" / "runtime" / "main_runtime.py").read_text(encoding="utf-8")
+        text += "\n" + (PYXEL_ROOT / "src" / "runtime" / "app.py").read_text(encoding="utf-8")
         self.assertIn("DIALOGUE_JA", text)
         self.assertIn("DIALOGUE_EN", text)
 

@@ -70,6 +70,7 @@ class DialogueIntegrationTest(unittest.TestCase):
             encoding="utf-8"
         )
         # J53 P1-G: scenes/ と shared/services/ に移動したシンボルも集める
+        # J53 P1.5: shared/constants/ と runtime/app.py にも一部シンボルが移動
         extra_texts: list[str] = []
         for scene_dir in (PYXEL_ROOT / "src" / "scenes").iterdir():
             if scene_dir.is_dir():
@@ -77,6 +78,9 @@ class DialogueIntegrationTest(unittest.TestCase):
                     extra_texts.append(py.read_text(encoding="utf-8"))
         for svc in (PYXEL_ROOT / "src" / "shared" / "services").glob("*.py"):
             extra_texts.append(svc.read_text(encoding="utf-8"))
+        for const in (PYXEL_ROOT / "src" / "shared" / "constants").glob("*.py"):
+            extra_texts.append(const.read_text(encoding="utf-8"))
+        extra_texts.append((PYXEL_ROOT / "src" / "runtime" / "app.py").read_text(encoding="utf-8"))
         combined_text = main_text + "\n".join(extra_texts)
 
         for expected in (
@@ -140,8 +144,18 @@ class DialogueIntegrationTest(unittest.TestCase):
         )
 
     def test_main_uses_shared_input_bindings(self):
-        """main.py が入力バインディングのシンボルを使っていること。"""
+        """main.py が入力バインディングのシンボルを使っていること。
+
+        P1.5 後は main_runtime.py は re-export shim なので、app.py や scene も
+        含めてシンボルを探索する。
+        """
         main_text = MAIN_RUNTIME.read_text(encoding="utf-8")
+        main_text += "\n" + (PYXEL_ROOT / "src" / "runtime" / "app.py").read_text(encoding="utf-8")
+        for scene_dir in (PYXEL_ROOT / "src" / "scenes").iterdir():
+            if scene_dir.is_dir():
+                for py in scene_dir.glob("*.py"):
+                    main_text += "\n" + py.read_text(encoding="utf-8")
+        main_text += "\n" + (PYXEL_ROOT / "src" / "shared" / "services" / "input_bindings.py").read_text(encoding="utf-8")
 
         for expected in (
             "UP_BUTTONS",
