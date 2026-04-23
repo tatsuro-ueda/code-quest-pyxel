@@ -15,8 +15,8 @@ tags:
 
 # 2026年4月22日 J53 runtime monolith 分解と dev/prod 単一化
 
-> 状態：`in-progress`（Phase 1 の Game 109 メソッド移動は完了・`j53-phase1-methods-complete` タグ済み／Phase 1.5 は未着手）
-> 次のゲート：（ユーザー）Phase 1.5 の Tasklist を確認して着手可否を指示する
+> 状態：`in-progress`（Phase 1 完了 `j53-phase1-methods-complete` / Phase 1.5 完了 `j53-phase1-5-complete` / Phase 2 未着手）
+> 次のゲート：（ユーザー）Phase 2 (Code Maker bundler) の Tasklist を確認して着手可否を指示する
 
 ---
 
@@ -273,41 +273,83 @@ Phase 1.5 では **定数と world 生成を専用モジュールへ抽出し、
 
 ### P1.5-A. TILE_DATA / タイル定数の抽出（3 タスク）
 
-- [ ] **P1.5-A1**：`src/shared/constants/tile_data.py` を新規作成し、`TILE_DATA` / `TILE_WATER2` / `T_GRASS` 等のタイル ID 定数 / `MAP_W` / `MAP_H` / `DECORATION_TILES` / `CASTLE_POS` / `TOWN_*` / `CAVE_GLITCH` / `BIGTREE_POS` / `TOWER_POS` を `main_runtime.py` から移動
-- [ ] **P1.5-A2**：`PATH_V` / `PATH_H` / `PATH_CROSS` / `PATH_SE` / `PATH_SW` / `PATH_NE` / `PATH_NW` / `PATH_T_*` と `SHORE_N/S/W/E/NE/NW/SE/SW` の 19 ビットマップ + `_PATH_VARIANTS` / `_SHORE_VARIANTS` を同ファイルに移動
-- [ ] **P1.5-A3**：`main_runtime.py` の元定数を削除し、`from src.shared.constants.tile_data import *` で再エクスポート。`image_banks.py` / `world_generation.py` / `scenes/explore/scene.py` の lazy import (`import src.runtime.main_runtime as M`) を `from src.shared.constants.tile_data import ...` に置換
+- [x] **P1.5-A1**：`src/shared/constants/tile_data.py` を新規作成し、`TILE_DATA` / `TILE_WATER2` / `T_GRASS` 等のタイル ID 定数 / `MAP_W` / `MAP_H` / `DECORATION_TILES` / `CASTLE_POS` / `TOWN_*` / `CAVE_GLITCH` / `BIGTREE_POS` / `TOWER_POS` を `main_runtime.py` から移動
+- [x] **P1.5-A2**：`PATH_V` / `PATH_H` / `PATH_CROSS` / `PATH_SE` / `PATH_SW` / `PATH_NE` / `PATH_NW` / `PATH_T_*` と `SHORE_N/S/W/E/NE/NW/SE/SW` の 19 ビットマップ + `_PATH_VARIANTS` / `_SHORE_VARIANTS` を同ファイルに移動
+- [x] **P1.5-A3**：`main_runtime.py` の元定数を削除し、`from src.shared.constants.tile_data import *` で再エクスポート。`image_banks.py` / `world_generation.py` / `scenes/explore/scene.py` の lazy import (`import src.runtime.main_runtime as M`) を `from src.shared.constants.tile_data import ...` に置換
 
 ### P1.5-B. スプライトデータの抽出（2 タスク）
 
-- [ ] **P1.5-B1**：`src/shared/constants/sprite_data.py` を新規作成し、`HERO_DOWN` / `HERO_DOWN_WALK` / `ENEMY_SPRITES` を `main_runtime.py` から移動
-- [ ] **P1.5-B2**：`main_runtime.py` から定義を削除し、`from src.shared.constants.sprite_data import *` で再エクスポート。`image_banks.py::sprite_iter` の lazy import を置換
+- [x] **P1.5-B1**：`src/shared/constants/sprite_data.py` を新規作成し、`HERO_DOWN` / `HERO_DOWN_WALK` / `ENEMY_SPRITES` を `main_runtime.py` から移動
+- [x] **P1.5-B2**：`main_runtime.py` から定義を削除し、`from src.shared.constants.sprite_data import *` で再エクスポート。`image_banks.py::sprite_iter` の lazy import を置換
 
 ### P1.5-C. world_generation.py の実装（3 タスク）
 
-- [ ] **P1.5-C1**：`src/shared/services/world_generation.py`（現 stub）に `get_path_variant` / `get_shore_variant` を実装として移動
-- [ ] **P1.5-C2**：`_make_empty` / `_carve_winding_path` / `_place_forests` / `_place_decorations` / `_place_landmarks` を追加移動
-- [ ] **P1.5-C3**：`generate_world_map` / `generate_dungeon` / `get_zone` / `_build_zone_enemies` を追加移動。`main_runtime.py` から元関数を削除して `from src.shared.services.world_generation import *` で再エクスポート
+- [x] **P1.5-C1**：`src/shared/services/world_generation.py`（現 stub）に `get_path_variant` / `get_shore_variant` を実装として移動
+- [x] **P1.5-C2**：`_make_empty` / `_carve_winding_path` / `_place_forests` / `_place_decorations` / `_place_landmarks` を追加移動
+- [x] **P1.5-C3**：`generate_world_map` / `generate_dungeon` / `get_zone` / `_build_zone_enemies` を追加移動。`main_runtime.py` から元関数を削除して `from src.shared.services.world_generation import *` で再エクスポート
 
 ### P1.5-D. Game クラス → BlockQuestApp に統合（3 タスク）
 
 > Q8 決定：新規 `src/runtime/app.py` は作らず、**既存 `src/app.py::BlockQuestApp` を拡張**して Game の責務を統合する。
 
 - [x] **P1.5-D0**（Phase 1 整合性修正で先行実施）：`src/shared/services/status_bar.py` を `src/shared/ui/status_bar.py` に統合（Q6 決定：`bar` は UI 寄り）。既存 `StatusBarLayout` と `StatusBar` を同居させる
-- [ ] **P1.5-D1**：`src/app.py::BlockQuestApp` に Game の `__init__` ロジック（pyxel.init / services/scenes 生成 / apply_av / sync_audio）を統合。`Game._instance` 参照も `BlockQuestApp._instance` に移し、say / say_clear の module-level helper も `src/app.py` に移動
-- [ ] **P1.5-D2**：`main_runtime.py` の Game 定義を削除、`from src.app import BlockQuestApp as Game, run, say, say_clear` で再エクスポート（または明示的に `BlockQuestApp()` を `run()` 内で呼ぶ）
-- [ ] **P1.5-D3**：`pytest -q` で 270 件 green / `python main.py` の headless 起動が Phase 1 と同等に通ることを確認
+- [x] **P1.5-D1**：`src/app.py::BlockQuestApp` に Game の `__init__` ロジック（pyxel.init / services/scenes 生成 / apply_av / sync_audio）を統合。`Game._instance` 参照も `BlockQuestApp._instance` に移し、say / say_clear の module-level helper も `src/app.py` に移動
+- [x] **P1.5-D2**：`main_runtime.py` の Game 定義を削除、`from src.app import BlockQuestApp as Game, run, say, say_clear` で再エクスポート（または明示的に `BlockQuestApp()` を `run()` 内で呼ぶ）
+- [x] **P1.5-D3**：`pytest -q` で 270 件 green / `python main.py` の headless 起動が Phase 1 と同等に通ることを確認
 
 ### P1.5-E. main_runtime.py <50 行化（3 タスク）
 
-- [ ] **P1.5-E1**：`main_runtime.py` を import の集合（tile_data / sprite_data / world_generation / scenes / services / app）と `pyxel.init` 呼び出し + `run()` だけに圧縮。目標：**50 行未満**
-- [ ] **P1.5-E2**：`test/test_runtime_shim.py` を新規作成（gherkin シナリオ 2 の grep 式で Game class や inlined block が無いことを確認、`wc -l < 50` 固定）
-- [ ] **P1.5-E3**：`test/test_architecture_layout.py` を新 layout（`src/shared/constants/*` 追加、`src/runtime/app.py` 追加）に合わせて更新
+- [x] **P1.5-E1**：`main_runtime.py` を import の集合（tile_data / sprite_data / world_generation / scenes / services / app）と `pyxel.init` 呼び出し + `run()` だけに圧縮。目標：**50 行未満**
+- [x] **P1.5-E2**：`test/test_runtime_shim.py` を新規作成（gherkin シナリオ 2 の grep 式で Game class や inlined block が無いことを確認、`wc -l < 50` 固定）
+- [x] **P1.5-E3**：`test/test_architecture_layout.py` を新 layout（`src/shared/constants/*` 追加、`src/runtime/app.py` 追加）に合わせて更新
 
 ### P1.5-F. 検証と締め（3 タスク）
 
-- [ ] **P1.5-F1**：`python -m pytest test/ -q` 全 green（新規 test 含む）
-- [ ] **P1.5-F2**：`python tools/build_web_release.py` と `python tools/build_codemaker.py` が exit 0。生成物を手動で開いて Splash → Title → ゲームループが動く
-- [ ] **P1.5-F3**：Phase 1.5 完了コミット + git tag `j53-phase1-5-complete`
+- [x] **P1.5-F1**：`python -m pytest test/ -q` 全 green（新規 test 含む）
+- [x] **P1.5-F2**：`python tools/build_web_release.py` と `python tools/build_codemaker.py` が exit 0。生成物を手動で開いて Splash → Title → ゲームループが動く
+- [x] **P1.5-F3**：Phase 1.5 完了コミット + git tag `j53-phase1-5-complete`
+
+---
+
+## 4.6) Tasklist（Phase 2: Code Maker bundler）
+
+### 背景
+
+Phase 1.5 で `main_runtime.py` が 49 行の re-export shim になった今、Code Maker 用の単一 main.py バンドルは **`import *` を解決して連結する bundler** が必要になる。現行の `tools/build_codemaker.py` は sync_main_data と inlined block を前提にした構造で、Phase 1.5 のモジュール構造と合っていない。
+
+Q4B 決定に基づき、**concat 生成型の bundler** を新設：`codemaker_manifest.txt` に並べた順で src/**/*.py を連結して Code Maker 用 main.py を作る。
+
+### 運用ルール（Phase 1 / 1.5 と同じ）
+
+- 1 タスク = 1 commit、commit 後に `pytest -q` + `python tools/build_codemaker.py` exit 0 確認
+- commit message 規約：`j53(P2-X): <内容>`
+
+### P2-A. 現状の build_codemaker.py を把握（2 タスク）
+
+- [ ] **P2-A1**：現行 `tools/build_codemaker.py` の処理を読み、`_split_core_and_entrypoint` / `_normalize_entrypoint_source` / `build_codemaker_main_text` / `build_codemaker_zip` の責務を棚卸し。Phase 1.5 shim でも通っている grep ポイント（ENTRY POINT marker）を確認
+- [ ] **P2-A2**：Code Maker zip を解凍して生成された `main.py` の構造を確認（CORE_BLOCK に何が入っているか、STUDENT AREA がどこに挟まるか）。Phase 1.5 前後で Code Maker 上の挙動が変わっていないか確認
+
+### P2-B. codemaker_manifest.txt 設計と新設（2 タスク）
+
+- [ ] **P2-B1**：bundle 順を設計。依存関係に沿って `shared/assets → shared/constants → shared/services → shared/ui → scenes → runtime/app → runtime/main_runtime` の順でソース path をリスト化（約 50 ファイル）
+- [ ] **P2-B2**：`tools/codemaker_manifest.txt` を新規作成し、bundle 対象を 1 行 1 path で列挙
+
+### P2-C. codemaker_bundler.py 新設（3 タスク）
+
+- [ ] **P2-C1**：`tools/codemaker_bundler.py` を新規作成。manifest を読み、各 path の `.py` を順に concat する基本 bundler を実装
+- [ ] **P2-C2**：`from src.X import Y` 行を bundler 用に前処理（bundle 内では import が不要なので除去 or コメント化）。循環しない順序で並べれば依存解決できる設計
+- [ ] **P2-C3**：STUDENT AREA block を `main` 末尾に挟む処理を統合（`_normalize_entrypoint_source` 相当）。最終形は `CORE_BLOCK = <全ソース連結>` + `STUDENT_AREA` + guard 処理を内蔵した single main.py
+
+### P2-D. build_codemaker.py を bundler 呼び出しに薄化（2 タスク）
+
+- [ ] **P2-D1**：`tools/build_codemaker.py` から `_split_core_and_entrypoint` / `build_codemaker_main_text` を削除（または `codemaker_bundler` 内に移動）。残るのは zip 生成・`sha256` 計算・`my_resource.pyxres` の同梱のみ
+- [ ] **P2-D2**：`tools/sync_main_data.py` が不要になったら削除（Phase 2 時点の判断）
+
+### P2-E. 検証と締め（3 タスク）
+
+- [ ] **P2-E1**：`python tools/build_codemaker.py` exit 0、生成 zip の `main.py` が Code Maker 上で splash → title → ゲームループを回せること（実機確認、headless も `python main.py` で smoke test）
+- [ ] **P2-E2**：既存テスト 277 件 all green（新 bundler の unit test も任意で追加）
+- [ ] **P2-E3**：Phase 2 完了コミット + git tag `j53-phase2-complete`
 
 ---
 
@@ -332,9 +374,34 @@ Phase 1.5 では **定数と world 生成を専用モジュールへ抽出し、
 - `R4: 113 メソッドの内部依存が循環` は実際には発生せず、category 単位の 1 commit 方式で bisect 耐性を確保できた
 - 循環 import 回避のため `import src.runtime.main_runtime as M` の lazy import を scene/service 内で多用した。Phase 1.5 で定数が専用モジュールに移れば lazy import はほとんど不要になる
 
+### 2026-04-23 Phase 1.5 完了の記録
+
+**成果**:
+- `main_runtime.py` を 1956 → **49 行**に圧縮（累計 99.3% 削減、Gherkin シナリオ 2 の `wc -l < 50` を達成）
+- Game クラスを `src/runtime/app.py` に移動（263 行）。main_runtime.py は pure re-export shim に
+- 定数 1500 行を 3 ファイルに分割抽出：
+  - `src/shared/constants/tile_data.py` (960 行): TILE/PATH/SHORE/MAP/POS 定数
+  - `src/shared/constants/sprite_data.py` (235 行): HERO/ENEMY sprite arrays
+  - `src/shared/constants/game_config.py` (100 行): ENCOUNTER/VFX/TOWN/MSG
+- `src/shared/services/world_generation.py` (275 行): stub → 完全実装
+- `test/test_runtime_shim.py` 新設（6 テスト）: Gherkin シナリオ 2 を恒常的にガード
+- 全 277 テスト green（270 → 277、+7 新規）/ web & codemaker ビルド exit 0
+- git tag `j53-phase1-5-complete` 作成済み
+
+**Gherkin 達成状況**:
+- シナリオ 1 (scenes 11 / services 16 / ui 5 ディレクトリ構造): ✅
+- シナリオ 2 (monolith に Game/inlined ゼロ、`wc -l < 50`): ✅ **達成**（49 行、grep 式 0 件）
+- シナリオ 3 (ImportError ゼロ / architecture_layout test green): ✅
+
+**学び・反省**:
+- 定数抽出は想定通り main_runtime.py の大幅削減に寄与した（1956 → 564 行）。Phase 1 で一緒にやろうとすると 14+ コミット増で見通しが悪くなっていた。Phase 分離は正解
+- `import *` で一括再エクスポートしたら、文字列 grep に依存する 3 テスト（`test_main_uses_shared_input_bindings` 等）が落ちた。shim 化の時は grep ベースの静的検証を `app.py`/`shared/*` 全体に広げる必要あり
+- Game → `src/runtime/app.py` 移動で test_cj24 が落ちた原因は「pyxel stub の reach が src.runtime.app に届かない」問題。テスト側で sys.modules から `src.runtime.app` を一時的に除去して再ロードさせる fix で解決。これは P1-G で Game が main_runtime 内にあった時には発生しなかった問題
+- 当初 Q8 で「既存 `src/app.py::BlockQuestApp` 拡張」を想定したが、実装してみると BlockQuestApp は scene_manager + GameState の薄い shell で構造が違いすぎた。実装は `src/runtime/app.py` 新規で正解（BlockQuestApp は Phase 2 以降で統合余地あり）
+
 ### 追記予定
 
-（Phase 1.5 着手後、各 category 完了時に追記）
+（Phase 2 着手後、各 category 完了時に追記）
 
 ---
 
