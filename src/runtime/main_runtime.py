@@ -1555,32 +1555,10 @@ def get_zone(tile_y, in_dungeon=False):
     return 3
 
 # =====================================================================
-# ENEMY DATA — assets/enemies.yaml から読み込む
+# ENEMY DATA — ZONE_ENEMIES / GLITCH_LORD_DATA 等は game_data.py から
+# import 済み（P1-C10）。ここで重複定義していた _build_zone_enemies と
+# re-assignment を削除（P1-D1）。
 # =====================================================================
-
-_ALL_ENEMIES = ENEMIES
-
-
-def _build_zone_enemies(enemies):
-    """zone -> list[enemy] にグルーピング。イベント敵やボス等は除外。"""
-    by_zone: dict[int, list] = {}
-    for e in enemies:
-        if (
-            e.get("is_glitch_lord")
-            or e.get("is_professor")
-            or e.get("post_clear_only")
-            or e.get("is_noise_guardian")
-        ):
-            continue
-        by_zone.setdefault(e["zone"], []).append(e)
-    return by_zone
-
-
-ZONE_ENEMIES = _build_zone_enemies(_ALL_ENEMIES)
-GLITCH_LORD_DATA = next(e for e in _ALL_ENEMIES if e.get("is_glitch_lord"))
-PROFESSOR_DATA = next(e for e in _ALL_ENEMIES if e.get("is_professor"))
-GLITCH_CLONE_DATA = next(e for e in _ALL_ENEMIES if e.get("post_clear_only"))
-NOISE_GUARDIAN_DATA = next(e for e in _ALL_ENEMIES if e.get("is_noise_guardian"))
 
 ENCOUNTER_RATES = {
     T_GRASS: 0.06, T_SAND: 0.08, T_FLOOR: 0.12, T_PATH: 0.03,
