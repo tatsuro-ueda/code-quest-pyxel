@@ -319,3 +319,25 @@ class SfxSystem:
         self.enabled = bool(enabled)
         if not self.enabled:
             self.pyxel.stop(SFX_CHANNEL)
+
+
+def sync_audio(game):
+    """game.audio に BGM scene と enabled を反映する（P1-G15 で Game から移動）。"""
+    import src.runtime.main_runtime as M
+    bm = game.battle_scene.model
+    battle_enemy_max_hp = bm.enemy["hp"] if bm.enemy else 0
+    state_for_audio = game.state
+    if game.state == "settings" and game.settings_scene.model.origin == "title":
+        state_for_audio = "title"
+    scene_name = choose_bgm_scene(
+        state=state_for_audio,
+        in_dungeon=game.player["in_dungeon"],
+        zone=M.get_zone(game.player["y"], game.player["in_dungeon"]),
+        battle_is_glitch_lord=bm.is_glitch_lord,
+        battle_enemy_hp=bm.enemy_hp,
+        battle_enemy_max_hp=battle_enemy_max_hp,
+        battle_phase=bm.phase,
+    )
+    game.audio.set_enabled(game.player.get("bgm_enabled", True))
+    game.audio.play_scene(scene_name)
+

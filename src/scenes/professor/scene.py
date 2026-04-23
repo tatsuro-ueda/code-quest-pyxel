@@ -71,17 +71,17 @@ class ProfessorScene:
         import src.runtime.main_runtime as M
         m = self.model
         if not m.choice_active:
-            if game._btnp(CONFIRM_BUTTONS):
+            if game.input_state.btnp(CONFIRM_BUTTONS):
                 m.intro_idx, done = game.messages.advance_page(m.intro_idx, m.intro_lines)
                 if done:
                     m.choice_active = True
             return
         # choice mode
-        if game._btnp(UP_BUTTONS) or game._btnp(DOWN_BUTTONS):
+        if game.input_state.btnp(UP_BUTTONS) or game.input_state.btnp(DOWN_BUTTONS):
             m.choice_cursor = 1 - m.choice_cursor
             game.sfx.play("cursor")
             return
-        if game._btnp(CONFIRM_BUTTONS):
+        if game.input_state.btnp(CONFIRM_BUTTONS):
             game.sfx.play("select")
             if m.choice_cursor == 0:
                 self.enter_ending_accepted()
@@ -134,7 +134,7 @@ class ProfessorScene:
         if game is None:
             return
         m = self.model
-        if game._btnp(CONFIRM_BUTTONS):
+        if game.input_state.btnp(CONFIRM_BUTTONS):
             m.ending_idx, done = game.messages.advance_page(m.ending_idx, m.ending_lines)
             if done:
                 game.explore_scene.model.a_cooldown = True
@@ -170,7 +170,7 @@ class ProfessorScene:
         if game is None:
             return
         m = self.model
-        if game._btnp(CONFIRM_BUTTONS):
+        if game.input_state.btnp(CONFIRM_BUTTONS):
             m.ending_idx, done = game.messages.advance_page(m.ending_idx, m.ending_lines)
             if done:
                 game.state = "title"

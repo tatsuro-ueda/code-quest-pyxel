@@ -54,7 +54,7 @@ class AiHelpScene:
         game = self.game
         if game is None:
             return
-        if game._btnp(CANCEL_BUTTONS) or game._btnp(CONFIRM_BUTTONS):
+        if game.input_state.btnp(CANCEL_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS):
             game.sfx.play("cancel")
             game.state = "menu"
 
@@ -64,7 +64,7 @@ class AiHelpScene:
         if game is None:
             return
         game.explore_scene.draw()
-        game.draw_status_bar()
+        game.status_bar.draw()
         x, y, w, h = 12, 36, 232, 196
         pyxel.rect(x, y, w, h, 1)
         pyxel.rectb(x, y, w, h, 7)

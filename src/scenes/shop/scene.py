@@ -48,23 +48,23 @@ class ShopScene:
         if game is None:
             return
         if not self.model.inventory:
-            if game._btnp(CANCEL_BUTTONS) or game._btnp(CONFIRM_BUTTONS):
+            if game.input_state.btnp(CANCEL_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS):
                 game.sfx.play("cancel")
                 game.state = "town_menu"
             return
-        if game._btnp(UP_BUTTONS):
+        if game.input_state.btnp(UP_BUTTONS):
             self.model.cursor = (self.model.cursor - 1) % len(self.model.inventory)
             game.sfx.play("cursor")
             return
-        if game._btnp(DOWN_BUTTONS):
+        if game.input_state.btnp(DOWN_BUTTONS):
             self.model.cursor = (self.model.cursor + 1) % len(self.model.inventory)
             game.sfx.play("cursor")
             return
-        if game._btnp(CANCEL_BUTTONS):
+        if game.input_state.btnp(CANCEL_BUTTONS):
             game.sfx.play("cancel")
             game.state = "town_menu"
             return
-        if game._btnp(CONFIRM_BUTTONS):
+        if game.input_state.btnp(CONFIRM_BUTTONS):
             game.sfx.play("select")
             self._try_purchase()
 

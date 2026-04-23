@@ -105,7 +105,11 @@ class CJ24SoundEditorTruthTest(unittest.TestCase):
         )
         module.make_save_store = lambda path: types.SimpleNamespace(exists=lambda: False)
         module.InputStateTracker = lambda: types.SimpleNamespace()
-        module.Game._sync_audio = lambda self: None
+        # P1-G15: _sync_audio は module-level _sync_audio_fn に移動
+        if hasattr(module, "_sync_audio_fn"):
+            module._sync_audio_fn = lambda g: None
+        else:
+            module.Game._sync_audio = lambda self: None
 
         if hasattr(module, "ImageBanks"):
             # P1-G13 後: ImageBanks に移動済み

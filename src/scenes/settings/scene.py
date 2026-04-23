@@ -81,18 +81,18 @@ class SettingsScene:
         if game is None:
             return
         rows = self._rows()
-        if game._btnp(UP_BUTTONS):
+        if game.input_state.btnp(UP_BUTTONS):
             self.model.cursor = (self.model.cursor - 1) % len(rows)
             game.sfx.play("cursor")
             return
-        if game._btnp(DOWN_BUTTONS):
+        if game.input_state.btnp(DOWN_BUTTONS):
             self.model.cursor = (self.model.cursor + 1) % len(rows)
             game.sfx.play("cursor")
             return
-        if game._btnp(CANCEL_BUTTONS):
+        if game.input_state.btnp(CANCEL_BUTTONS):
             game.state = self._return_state()
             return
-        if game._btnp(LEFT_BUTTONS) or game._btnp(RIGHT_BUTTONS) or game._btnp(CONFIRM_BUTTONS):
+        if game.input_state.btnp(LEFT_BUTTONS) or game.input_state.btnp(RIGHT_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS):
             key, _label = rows[self.model.cursor]
             if key == "back":
                 game.state = self._return_state()

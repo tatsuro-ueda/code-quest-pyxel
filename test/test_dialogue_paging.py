@@ -30,8 +30,10 @@ class DialoguePagingTest(unittest.TestCase):
         from src.scenes.ending.scene import EndingScene
         from src.scenes.professor.scene import ProfessorScene
         from src.shared.services.message_display import MessageDisplay
+        from src.shared.services.input_bindings import InputStateTracker
         game = self.main.Game.__new__(self.main.Game)
         game.messages = MessageDisplay(game=game)
+        game.input_state = InputStateTracker()
         game.explore_scene = ExploreScene(game=game)
         game.ending_scene = EndingScene(game=game)
         game.professor_scene = ProfessorScene(game=game)
@@ -108,7 +110,7 @@ class DialoguePagingTest(unittest.TestCase):
         game.professor_scene.model.intro_lines = ["page 1", "page 2"]
         game.professor_scene.model.intro_idx = 0
         game.professor_scene.model.choice_active = False
-        game._btnp = lambda *_args, **_kwargs: True
+        game.input_state.btnp = lambda *_args, **_kwargs: True
 
         game.professor_scene.update_intro()
         self.assertEqual(game.professor_scene.model.intro_idx, 1)
@@ -129,7 +131,7 @@ class DialoguePagingTest(unittest.TestCase):
             "y": 32,
         }
         game.explore_scene.model.a_cooldown = False
-        game._btnp = lambda buttons: buttons == self.main.CONFIRM_BUTTONS
+        game.input_state.btnp = lambda buttons: buttons == self.main.CONFIRM_BUTTONS
         game.state = "ending"
 
         game.ending_scene.update()

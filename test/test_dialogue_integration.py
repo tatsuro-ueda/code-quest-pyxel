@@ -157,15 +157,20 @@ class DialogueIntegrationTest(unittest.TestCase):
             self.assertIn(expected, main_text)
 
     def test_main_uses_audio_manager_for_bgm(self):
-        main_text = MAIN_RUNTIME.read_text(encoding="utf-8")
+        # P1-G15 後: sync_audio は shared/services/audio_system.py に移動
+        text = MAIN_RUNTIME.read_text(encoding="utf-8")
+        for extra in (
+            PYXEL_ROOT / "src" / "shared" / "services" / "audio_system.py",
+        ):
+            text += "\n" + extra.read_text(encoding="utf-8")
 
         for expected in (
             "AudioManager",
             "choose_bgm_scene",
             "self.audio = AudioManager(pyxel)",
-            "self.audio.play_scene(",
+            "game.audio.play_scene(",
         ):
-            self.assertIn(expected, main_text)
+            self.assertIn(expected, text)
 
     def test_main_no_longer_hardcodes_dialogue_body_text(self):
         """main.py のダイアログ辞書 *外* にテキスト本文がハードコードされていないこと。

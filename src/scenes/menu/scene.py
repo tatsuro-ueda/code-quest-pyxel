@@ -44,17 +44,17 @@ class MenuScene:
         menu_items = self._labels()
         m = self.model
         if m.sub is None:
-            if game._btnp(UP_BUTTONS):
+            if game.input_state.btnp(UP_BUTTONS):
                 m.cursor = (m.cursor - 1) % len(menu_items)
                 game.sfx.play("cursor")
-            if game._btnp(DOWN_BUTTONS):
+            if game.input_state.btnp(DOWN_BUTTONS):
                 m.cursor = (m.cursor + 1) % len(menu_items)
                 game.sfx.play("cursor")
-            if game._btnp(CANCEL_BUTTONS):
+            if game.input_state.btnp(CANCEL_BUTTONS):
                 game.sfx.play("cancel")
                 game.state = "map"
                 return
-            if game._btnp(CONFIRM_BUTTONS):
+            if game.input_state.btnp(CONFIRM_BUTTONS):
                 game.sfx.play("select")
                 if m.cursor == 0:
                     m.sub = "status"
@@ -71,25 +71,25 @@ class MenuScene:
                 elif m.cursor == 5:
                     game.state = "map"
         elif m.sub == "status":
-            if game._btnp(CANCEL_BUTTONS) or game._btnp(CONFIRM_BUTTONS):
+            if game.input_state.btnp(CANCEL_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS):
                 game.sfx.play("cancel")
                 m.sub = None
         elif m.sub == "items":
             items = game.player["items"]
-            if game._btnp(CANCEL_BUTTONS):
+            if game.input_state.btnp(CANCEL_BUTTONS):
                 game.sfx.play("cancel")
                 m.sub = None
                 return
             if items:
-                if game._btnp(UP_BUTTONS):
+                if game.input_state.btnp(UP_BUTTONS):
                     m.item_cursor = max(0, m.item_cursor - 1)
                     m.message = ""
                     game.sfx.play("cursor")
-                if game._btnp(DOWN_BUTTONS):
+                if game.input_state.btnp(DOWN_BUTTONS):
                     m.item_cursor = min(len(items) - 1, m.item_cursor + 1)
                     m.message = ""
                     game.sfx.play("cursor")
-                if game._btnp(CONFIRM_BUTTONS):
+                if game.input_state.btnp(CONFIRM_BUTTONS):
                     game.sfx.play("select")
                     item = items[m.item_cursor]
                     item_data = M.ITEMS[item["id"]]
@@ -103,14 +103,14 @@ class MenuScene:
                             items.pop(m.item_cursor)
                             m.item_cursor = max(0, min(m.item_cursor, len(items) - 1))
         elif m.sub == "equip":
-            if game._btnp(CANCEL_BUTTONS):
+            if game.input_state.btnp(CANCEL_BUTTONS):
                 game.sfx.play("cancel")
                 m.sub = None
                 return
-            if game._btnp(UP_BUTTONS):
+            if game.input_state.btnp(UP_BUTTONS):
                 m.item_cursor = (m.item_cursor - 1) % 2
                 game.sfx.play("cursor")
-            if game._btnp(DOWN_BUTTONS):
+            if game.input_state.btnp(DOWN_BUTTONS):
                 m.item_cursor = (m.item_cursor + 1) % 2
                 game.sfx.play("cursor")
 

@@ -30,8 +30,10 @@ class BattleRunLogicTest(unittest.TestCase):
         from src.scenes.battle.scene import BattleScene
         from src.shared.services.message_display import MessageDisplay
         from src.shared.services.vfx import VfxSystem
+        from src.shared.services.input_bindings import InputStateTracker
         game = self.main.Game.__new__(self.main.Game)
         game.vfx = VfxSystem(game=game)
+        game.input_state = InputStateTracker()
         game.debug_mode = False
         game.player = {
             "hp": 20,
@@ -43,12 +45,12 @@ class BattleRunLogicTest(unittest.TestCase):
         game._start_vfx = MagicMock()
         game.messages = MessageDisplay(game=game)
         game.messages.dialog_text = MagicMock(side_effect=lambda scene_name, **_: scene_name)
-        game._btn = MagicMock(return_value=False)
+        game.input_state.btn = MagicMock(return_value=False)
 
         def btnp(buttons):
             return buttons == self.main.CONFIRM_BUTTONS
 
-        game._btnp = MagicMock(side_effect=btnp)
+        game.input_state.btnp = MagicMock(side_effect=btnp)
         game.battle_scene = BattleScene(game=game)
         m = game.battle_scene.model
         m.menu = 3
@@ -70,7 +72,7 @@ class BattleRunLogicTest(unittest.TestCase):
             game.battle_scene.update()
             self.assertEqual(m.text, "battle.normal.run.fail")
 
-            game._btnp = MagicMock(return_value=False)
+            game.input_state.btnp = MagicMock(return_value=False)
             m.text_timer = 1
             game.battle_scene.update()
 

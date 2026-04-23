@@ -78,6 +78,8 @@ def _setup_pyxel_mock():
 _setup_pyxel_mock()
 
 import main as M  # noqa: E402
+from src.shared.services.audio_system import sync_audio as _sync_audio_fn
+from src.shared.services.input_bindings import InputStateTracker
 
 
 class GameSettingsTest(unittest.TestCase):
@@ -97,13 +99,14 @@ class GameSettingsTest(unittest.TestCase):
         g.settings_scene.model.origin = "title"
         g.battle_scene = M.BattleScene(game=g)
         g.text_fmt = M.TextFormat(game=g)
+        g.input_state = InputStateTracker()
         return g
 
     def test_title_settings_item_opens_settings(self):
         g = self._make_game()
         g.title_scene.model.cursor = 2
         g._has_save = False
-        g._btnp = MagicMock(
+        g.input_state.btnp = MagicMock(
             side_effect=lambda buttons: buttons in (M.CONFIRM_BUTTONS, M.TITLE_START_BUTTONS)
         )
 
@@ -116,7 +119,7 @@ class GameSettingsTest(unittest.TestCase):
         g = self._make_game()
         g.state = "settings"
         g.settings_scene.model.cursor = 1
-        g._btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
+        g.input_state.btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
 
         g.settings_scene.update()
 
@@ -127,7 +130,7 @@ class GameSettingsTest(unittest.TestCase):
         g = self._make_game()
         g.state = "settings"
         g.settings_scene.model.cursor = 0
-        g._btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
+        g.input_state.btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
 
         g.settings_scene.update()
 
@@ -139,7 +142,7 @@ class GameSettingsTest(unittest.TestCase):
         g = self._make_game()
         g.state = "settings"
         g.settings_scene.model.origin = "menu"
-        g._btnp = MagicMock(side_effect=lambda buttons: buttons == M.CANCEL_BUTTONS)
+        g.input_state.btnp = MagicMock(side_effect=lambda buttons: buttons == M.CANCEL_BUTTONS)
 
         g.settings_scene.update()
 
@@ -150,6 +153,6 @@ class GameSettingsTest(unittest.TestCase):
         g.state = "settings"
         g.settings_scene.model.origin = "title"
 
-        g._sync_audio()
+        _sync_audio_fn(g)
 
         g.audio.play_scene.assert_called_once_with("title")

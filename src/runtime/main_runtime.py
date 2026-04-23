@@ -1615,6 +1615,8 @@ from src.shared.services.image_banks import ImageBanks
 from src.shared.services.vfx import VfxSystem
 from src.shared.services.text_format import TextFormat
 from src.shared.services.item_use import use_item as _item_use_fn
+from src.shared.services.status_bar import StatusBar
+from src.shared.services.audio_system import sync_audio as _sync_audio_fn
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1759,11 +1761,12 @@ class Game:
         self.town_scene = TownScene(game=self)
         self.professor_scene = ProfessorScene(game=self)
         self.battle_scene = BattleScene(game=self)
+        self.status_bar = StatusBar(game=self)
 
         # 起動時の AV 設定適用（settings_scene 生成後に呼ぶ）
         self.settings_scene.apply_av()
 
-        self._sync_audio()
+        _sync_audio_fn(self)
 
     def start(self):
         """ゲームループに入る。`Game()` 後の `disp()` 呼び出しを有効にするため
@@ -1802,11 +1805,7 @@ class Game:
     # -----------------------------------------------------------------
     # UPDATE
     # -----------------------------------------------------------------
-    def _btn(self, button_names):
-        return self.input_state.btn(button_names)
 
-    def _btnp(self, button_names):
-        return self.input_state.btnp(button_names)
 
     def update(self):
         self.input_state.update(pyxel)
@@ -1822,16 +1821,16 @@ class Game:
             self.messages.callback = None
 
         # Debug code: up up down down
-        if self._btnp(UP_BUTTONS):
+        if self.input_state.btnp(UP_BUTTONS):
             self.debug_seq.append("U")
-        elif self._btnp(DOWN_BUTTONS):
+        elif self.input_state.btnp(DOWN_BUTTONS):
             self.debug_seq.append("D")
         else:
             if (
-                self._btnp(LEFT_BUTTONS)
-                or self._btnp(RIGHT_BUTTONS)
-                or self._btnp(CONFIRM_BUTTONS)
-                or self._btnp(CANCEL_BUTTONS)
+                self.input_state.btnp(LEFT_BUTTONS)
+                or self.input_state.btnp(RIGHT_BUTTONS)
+                or self.input_state.btnp(CONFIRM_BUTTONS)
+                or self.input_state.btnp(CANCEL_BUTTONS)
             ):
                 self.debug_seq = []
 
@@ -1875,7 +1874,7 @@ class Game:
         elif self.state == "ai_help":
             self.ai_help_scene.update()
 
-        self._sync_audio()
+        _sync_audio_fn(self)
 
     # update_splash は SplashScene に移動（P1-G2）
     # update_title / _do_load は TitleScene に移動（P1-G1）
@@ -1904,23 +1903,6 @@ class Game:
 
 
 
-    def _sync_audio(self):
-        bm = self.battle_scene.model
-        battle_enemy_max_hp = bm.enemy["hp"] if bm.enemy else 0
-        state_for_audio = self.state
-        if self.state == "settings" and self.settings_scene.model.origin == "title":
-            state_for_audio = "title"
-        scene_name = choose_bgm_scene(
-            state=state_for_audio,
-            in_dungeon=self.player["in_dungeon"],
-            zone=get_zone(self.player["y"], self.player["in_dungeon"]),
-            battle_is_glitch_lord=bm.is_glitch_lord,
-            battle_enemy_hp=bm.enemy_hp,
-            battle_enemy_max_hp=battle_enemy_max_hp,
-            battle_phase=bm.phase,
-        )
-        self.audio.set_enabled(self.player.get("bgm_enabled", True))
-        self.audio.play_scene(scene_name)
 
 
 
@@ -1942,27 +1924,27 @@ class Game:
             self.title_scene.draw()
         elif self.state == "map":
             self.explore_scene.draw()
-            self.draw_status_bar()
+            self.status_bar.draw()
         elif self.state == "battle":
             self.battle_scene.draw()
         elif self.state == "menu":
             self.explore_scene.draw()
-            self.draw_status_bar()
+            self.status_bar.draw()
             self.menu_scene.draw()
         elif self.state == "settings":
             if self.settings_scene.model.origin == "menu":
                 self.explore_scene.draw()
-                self.draw_status_bar()
+                self.status_bar.draw()
             else:
                 self.title_scene.draw()
             self.settings_scene.draw()
         elif self.state == "message":
             self.explore_scene.draw()
-            self.draw_status_bar()
+            self.status_bar.draw()
             self.messages.draw_window()
         elif self.state == "town":
             self.explore_scene.draw()
-            self.draw_status_bar()
+            self.status_bar.draw()
             self.messages.draw_window()
         elif self.state == "town_menu":
             self.town_scene.draw_menu()
@@ -1983,25 +1965,6 @@ class Game:
         self.messages.draw_say_overlay()
 
 
-    def draw_status_bar(self):
-        pyxel.rect(0, 0, 256, 24, 1)
-        p = self.player
-        zone = get_zone(p["y"], p["in_dungeon"])
-        zone_name = ZONE_NAMES.get(zone, "???") if self.has_jp_font else ZONE_NAMES_EN.get(zone, "???")
-        self.messages.text(4, 2, f"レベル{p['lv']} {zone_name}", 7)
-        self.messages.text(4, 13, f"HP{p['hp']}/{p['max_hp']} MP{p['mp']}/{p['max_mp']}", 7)
-        # HP bar
-        bar_x = 170; bar_w = 60
-        pyxel.rect(bar_x, 4, bar_w, 6, 0)
-        hp_ratio = p["hp"] / max(1, p["max_hp"])
-        pyxel.rect(bar_x, 4, int(bar_w * hp_ratio), 6, 11 if hp_ratio > 0.3 else 8)
-        # MP bar
-        pyxel.rect(bar_x, 14, bar_w, 6, 0)
-        mp_ratio = p["mp"] / max(1, p["max_mp"])
-        pyxel.rect(bar_x, 14, int(bar_w * mp_ratio), 6, 12)
-
-        if self.debug_mode:
-            self.messages.text(130, 2, "DEBUG", 8)
 
 
 

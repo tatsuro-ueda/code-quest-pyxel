@@ -10,6 +10,7 @@ from src.scenes.ending.scene import EndingScene
 from src.scenes.battle.scene import BattleScene
 from src.shared.services.message_display import MessageDisplay
 from src.shared.services.image_banks import ImageBanks
+from src.shared.services.input_bindings import InputStateTracker
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -116,8 +117,9 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         game.sfx = MagicMock()
         game.explore_scene._check_landmark_events = MagicMock(return_value=False)
         game.ending_scene.enter = MagicMock()
-        game._btnp = MagicMock(return_value=False)
-        game._btn = MagicMock(
+        game.input_state = InputStateTracker()
+        game.input_state.btnp = MagicMock(return_value=False)
+        game.input_state.btn = MagicMock(
             side_effect=lambda buttons: buttons == self.main.LEFT_BUTTONS
         )
         return game

@@ -109,13 +109,13 @@ class BattleScene:
         if game.vfx.timer > 0:
             game.vfx.timer -= 1
         if m.phase == "menu":
-            if game._btnp(UP_BUTTONS):
+            if game.input_state.btnp(UP_BUTTONS):
                 m.menu = (m.menu - 1) % 4
                 game.sfx.play("cursor")
-            if game._btnp(DOWN_BUTTONS):
+            if game.input_state.btnp(DOWN_BUTTONS):
                 m.menu = (m.menu + 1) % 4
                 game.sfx.play("cursor")
-            if game._btnp(CONFIRM_BUTTONS):
+            if game.input_state.btnp(CONFIRM_BUTTONS):
                 game.sfx.play("select")
                 if m.menu == 0:  # Attack
                     self.do_player_attack()
@@ -148,16 +148,16 @@ class BattleScene:
             if not spells:
                 m.phase = "menu"
                 return
-            if game._btnp(UP_BUTTONS):
+            if game.input_state.btnp(UP_BUTTONS):
                 m.spell_select = max(0, m.spell_select - 1)
                 game.sfx.play("cursor")
-            if game._btnp(DOWN_BUTTONS):
+            if game.input_state.btnp(DOWN_BUTTONS):
                 m.spell_select = min(len(spells) - 1, m.spell_select + 1)
                 game.sfx.play("cursor")
-            if game._btnp(CANCEL_BUTTONS):
+            if game.input_state.btnp(CANCEL_BUTTONS):
                 game.sfx.play("cancel")
                 m.phase = "menu"
-            if game._btnp(CONFIRM_BUTTONS):
+            if game.input_state.btnp(CONFIRM_BUTTONS):
                 game.sfx.play("select")
                 spell_name = spells[m.spell_select]
                 spell = SPELL_BY_NAME.get(spell_name)
@@ -179,16 +179,16 @@ class BattleScene:
             if not items:
                 m.phase = "menu"
                 return
-            if game._btnp(UP_BUTTONS):
+            if game.input_state.btnp(UP_BUTTONS):
                 m.item_select = max(0, m.item_select - 1)
                 game.sfx.play("cursor")
-            if game._btnp(DOWN_BUTTONS):
+            if game.input_state.btnp(DOWN_BUTTONS):
                 m.item_select = min(len(items) - 1, m.item_select + 1)
                 game.sfx.play("cursor")
-            if game._btnp(CANCEL_BUTTONS):
+            if game.input_state.btnp(CANCEL_BUTTONS):
                 game.sfx.play("cancel")
                 m.phase = "menu"
-            if game._btnp(CONFIRM_BUTTONS):
+            if game.input_state.btnp(CONFIRM_BUTTONS):
                 game.sfx.play("select")
                 item = items[m.item_select]
                 item_data = ITEMS[item["id"]]
@@ -211,7 +211,7 @@ class BattleScene:
                         m.text_timer = 30
 
         elif m.phase == "player_attack":
-            if game._btn(CONFIRM_BUTTONS) and m.text_timer > 12:
+            if game.input_state.btn(CONFIRM_BUTTONS) and m.text_timer > 12:
                 m.text_timer = 12
             m.text_timer -= 1
             if m.text_timer <= 0:
@@ -221,7 +221,7 @@ class BattleScene:
                     self.do_enemy_attack()
 
         elif m.phase == "enemy_attack":
-            if game._btn(CONFIRM_BUTTONS) and m.text_timer > 12:
+            if game.input_state.btn(CONFIRM_BUTTONS) and m.text_timer > 12:
                 m.text_timer = 12
             m.text_timer -= 1
             if m.text_timer <= 0:
@@ -231,11 +231,11 @@ class BattleScene:
                     m.phase = "menu"
 
         elif m.phase == "result":
-            if game._btn(CONFIRM_BUTTONS) and m.text_timer > 12:
+            if game.input_state.btn(CONFIRM_BUTTONS) and m.text_timer > 12:
                 m.text_timer = 12
             m.text_timer -= 1
             if m.text_timer <= 0:
-                if game._btn(CONFIRM_BUTTONS) or game._btnp(CONFIRM_BUTTONS) or m.text_timer < -30:
+                if game.input_state.btn(CONFIRM_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS) or m.text_timer < -30:
                     if game.player["hp"] <= 0:
                         game.player["gold"] = game.player["gold"] // 2
                         game.player["hp"] = game.player["max_hp"]

@@ -48,13 +48,13 @@ class ExploreScene:
         # A-button cooldown: 「でる」直後やロード直後の1フレーム目に
         # 残っている A 押下を1回だけ捨てて、町メニューが暴発しないようにする。
         if self.model.a_cooldown:
-            if game._btnp(CONFIRM_BUTTONS):
+            if game.input_state.btnp(CONFIRM_BUTTONS):
                 self.model.a_cooldown = False
                 return
             self.model.a_cooldown = False
 
         # Open menu
-        if game._btnp(CANCEL_BUTTONS):
+        if game.input_state.btnp(CANCEL_BUTTONS):
             game.state = "menu"
             game.menu_cursor = 0
             game.menu_sub = None
@@ -62,10 +62,10 @@ class ExploreScene:
 
         p = game.player
         dx, dy = 0, 0
-        if game._btn(UP_BUTTONS): dy = -1
-        elif game._btn(DOWN_BUTTONS): dy = 1
-        elif game._btn(LEFT_BUTTONS): dx = -1
-        elif game._btn(RIGHT_BUTTONS): dx = 1
+        if game.input_state.btn(UP_BUTTONS): dy = -1
+        elif game.input_state.btn(DOWN_BUTTONS): dy = 1
+        elif game.input_state.btn(LEFT_BUTTONS): dx = -1
+        elif game.input_state.btn(RIGHT_BUTTONS): dx = 1
 
         if dx != 0 or dy != 0:
             nx, ny = p["x"] + dx, p["y"] + dy

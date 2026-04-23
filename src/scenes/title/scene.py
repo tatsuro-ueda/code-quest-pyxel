@@ -44,15 +44,15 @@ class TitleScene:
         game = self.game
         if game is None:
             return
-        if game._btnp(UP_BUTTONS):
+        if game.input_state.btnp(UP_BUTTONS):
             self.model.cursor = (self.model.cursor - 1) % 3
             game.sfx.play("cursor")
             return
-        if game._btnp(DOWN_BUTTONS):
+        if game.input_state.btnp(DOWN_BUTTONS):
             self.model.cursor = (self.model.cursor + 1) % 3
             game.sfx.play("cursor")
             return
-        if game._btnp(CONFIRM_BUTTONS) or game._btnp(TITLE_START_BUTTONS):
+        if game.input_state.btnp(CONFIRM_BUTTONS) or game.input_state.btnp(TITLE_START_BUTTONS):
             game.sfx.play("select")
             if self.model.cursor == 0:
                 # はじめから: プレイヤー状態をクリーンに作り直す

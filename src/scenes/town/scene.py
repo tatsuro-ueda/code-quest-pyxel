@@ -59,19 +59,19 @@ class TownScene:
         if game is None:
             return
         import src.runtime.main_runtime as M
-        if game._btnp(UP_BUTTONS):
+        if game.input_state.btnp(UP_BUTTONS):
             game.sfx.play("cursor")
             self.model.menu_cursor = (self.model.menu_cursor - 1) % len(M.TOWN_MENU_LABELS)
             return
-        if game._btnp(DOWN_BUTTONS):
+        if game.input_state.btnp(DOWN_BUTTONS):
             game.sfx.play("cursor")
             self.model.menu_cursor = (self.model.menu_cursor + 1) % len(M.TOWN_MENU_LABELS)
             return
-        if game._btnp(CANCEL_BUTTONS):
+        if game.input_state.btnp(CANCEL_BUTTONS):
             game.sfx.play("cancel")
             self._exit()
             return
-        if game._btnp(CONFIRM_BUTTONS):
+        if game.input_state.btnp(CONFIRM_BUTTONS):
             game.sfx.play("select")
             label = M.TOWN_MENU_LABELS[self.model.menu_cursor]
             if label == "はなす":
@@ -164,7 +164,7 @@ class TownScene:
             return
         import src.runtime.main_runtime as M
         game.explore_scene.draw()
-        game.draw_status_bar()
+        game.status_bar.draw()
         x, y, w, h = 20, 40, 216, 170
         pyxel.rect(x, y, w, h, 1)
         pyxel.rectb(x, y, w, h, 7)

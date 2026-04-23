@@ -30,7 +30,7 @@ class SplashScene:
         if game is None:
             return
         self.model.frame += 1
-        if self.model.frame >= 90 or game._btnp(CONFIRM_BUTTONS) or game._btnp(CANCEL_BUTTONS):
+        if self.model.frame >= 90 or game.input_state.btnp(CONFIRM_BUTTONS) or game.input_state.btnp(CANCEL_BUTTONS):
             game.state = "title"
 
     def draw(self) -> None:
