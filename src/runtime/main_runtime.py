@@ -1599,6 +1599,7 @@ ZONE_NAMES = {0: "はじまりのそうげん", 1: "ロジックのもり", 2: "
 ZONE_NAMES_EN = {0: "Grasslands", 1: "Logic Forest", 2: "Algo Mountains", 3: "Desert", 4: "Glitch Cave"}
 
 from src.shared.services.text_format import NAME_EN_MAP, name_en
+from src.scenes.title.scene import TitleScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1745,8 +1746,7 @@ class Game:
         # 「でる」直後 / ロード直後の暴発を1回だけ防ぐ
         self._a_cooldown = False
 
-        # Title cursor (D8)
-        self.title_cursor = 0  # 0=はじめから, 1=つづきから, 2=せってい
+        # Title cursor は TitleModel.cursor に移動（P1-G1）
         self.settings_cursor = 0
         self.settings_origin = "title"
 
@@ -1773,6 +1773,9 @@ class Game:
         # Dungeon return position
         self.world_return_x = 0
         self.world_return_y = 0
+
+        # Scene instances（P1-G で Game メソッドを取り込んだ scene を保有する）
+        self.title_scene = TitleScene(game=self)
 
         self._sync_audio()
 
@@ -2196,7 +2199,7 @@ class Game:
         if self.state == "splash":
             self.update_splash()
         elif self.state == "title":
-            self.update_title()
+            self.title_scene.update()
         elif self.state == "map":
             self.update_map()
         elif self.state == "battle":
@@ -2232,60 +2235,7 @@ class Game:
         if self.splash_frame >= 90 or self._btnp(CONFIRM_BUTTONS) or self._btnp(CANCEL_BUTTONS):
             self.state = "title"
 
-    def update_title(self):
-        if self._btnp(UP_BUTTONS):
-            self.title_cursor = (self.title_cursor - 1) % 3
-            self.sfx.play("cursor")
-            return
-        if self._btnp(DOWN_BUTTONS):
-            self.title_cursor = (self.title_cursor + 1) % 3
-            self.sfx.play("cursor")
-            return
-        if self._btnp(CONFIRM_BUTTONS) or self._btnp(TITLE_START_BUTTONS):
-            self.sfx.play("select")
-            if self.title_cursor == 0:
-                # はじめから: プレイヤー状態をクリーンに作り直す
-                settings = {
-                    "bgm_enabled": self.player.get("bgm_enabled", True),
-                    "sfx_enabled": self.player.get("sfx_enabled", True),
-                    "vfx_enabled": self.player.get("vfx_enabled", True),
-                }
-                self.player = create_initial_player()
-                self.player.update(settings)
-                self._apply_av_settings()
-                self.state = "map"
-                return
-            if self.title_cursor == 2:
-                self._open_settings("title")
-                return
-            # つづきから — has_save が False ならグレーアウト（D8 / P9）
-            if not self._has_save:
-                return
-            self._do_load()
-
-    def _do_load(self):
-        snap = self.save_store.load()
-        if snap is None:
-            # 破損やバージョン未来のセーフティネット（シナリオ6 例外系）
-            self._has_save = False
-            self.show_message([NO_RECORD_MSG])
-            self.prev_state = "title"
-            self.state = "message"
-            return
-        restored = restore_snapshot(snap)
-        for key, value in restored["player"].items():
-            self.player[key] = value
-        self._apply_av_settings()
-        tx, ty = restored["town_pos"]
-        self.player["x"] = tx
-        self.player["y"] = ty
-        self.player["in_dungeon"] = False
-        self.dungeon_map = None
-        # D13/D15: ロード直後の暴発を防ぐため A クールダウンを立てる
-        self._a_cooldown = True
-        self.show_message([LOAD_OK_MSG])
-        self.prev_state = "map"
-        self.state = "message"
+    # update_title / _do_load は TitleScene に移動（P1-G1）
 
     def update_map(self):
         if self.move_cooldown > 0:
@@ -3638,7 +3588,7 @@ class Game:
         if self.state == "splash":
             self.draw_splash()
         elif self.state == "title":
-            self.draw_title()
+            self.title_scene.draw()
         elif self.state == "map":
             self.draw_map()
             self.draw_status_bar()
@@ -3653,7 +3603,7 @@ class Game:
                 self.draw_map()
                 self.draw_status_bar()
             else:
-                self.draw_title()
+                self.title_scene.draw()
             self.draw_settings()
         elif self.state == "message":
             self.draw_map()
@@ -3710,24 +3660,7 @@ class Game:
         if f >= 75 and (pyxel.frame_count // 8) % 2:
             self.text(60, 220, "PRESS ANY KEY", 7)
 
-    def draw_title(self):
-        pyxel.cls(1)
-        self.text(70, 80, "BLOCK QUEST", 7)
-        self.text(50, 110, self._t("- コードのぼうけん -", "- A Coding Quest -"), 10)
-        labels = [
-            self._t("はじめから", "NEW GAME"),
-            self._t("つづきから", "CONTINUE"),
-            self._t("せってい", "SETTINGS"),
-        ]
-        for i, label in enumerate(labels):
-            ly = 150 + i * 16
-            enabled = (i != 1) or self._has_save
-            base_color = 7 if enabled else 5
-            color = 10 if (i == self.title_cursor and enabled) else base_color
-            marker = ">" if i == self.title_cursor else " "
-            self.text(80, ly, f"{marker} {label}", color)
-        if self.title_cursor == 1 and not self._has_save:
-            self.text(40, 200, self._t("(まだなにもかきとめていない)", "(no save yet)"), 5)
+    # draw_title は TitleScene に移動（P1-G1）
 
     def draw_map(self):
         p = self.player

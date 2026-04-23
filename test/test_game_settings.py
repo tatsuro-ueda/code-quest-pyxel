@@ -88,20 +88,21 @@ class GameSettingsTest(unittest.TestCase):
         g.sfx = MagicMock()
         g.audio = MagicMock()
         g.state = "title"
-        g.title_cursor = 0
+        # P1-G1: title_cursor は TitleScene.model.cursor に移動
+        g.title_scene = M.TitleScene(game=g)
         g.settings_cursor = 0
         g.settings_origin = "title"
         return g
 
     def test_title_settings_item_opens_settings(self):
         g = self._make_game()
-        g.title_cursor = 2
+        g.title_scene.model.cursor = 2
         g._has_save = False
         g._btnp = MagicMock(
             side_effect=lambda buttons: buttons in (M.CONFIRM_BUTTONS, M.TITLE_START_BUTTONS)
         )
 
-        g.update_title()
+        g.title_scene.update()
 
         self.assertEqual(g.state, "settings")
         self.assertEqual(g.settings_origin, "title")
