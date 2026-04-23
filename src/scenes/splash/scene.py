@@ -45,10 +45,10 @@ class SplashScene:
             x = 16 + i * 28
             pyxel.rect(x, 100, 12, 12, col)
         title_color = 7 if f >= 20 else 5
-        game.text(80, 80, "BLOCK QUEST", title_color)
+        game.messages.text(80, 80, "BLOCK QUEST", title_color)
         if f >= 40:
-            game.text(50, 130, game._t("コードのたびは、ここから", "Coding journey starts here"), 10)
+            game.messages.text(50, 130, game._t("コードのたびは、ここから", "Coding journey starts here"), 10)
         if f >= 60:
-            game.text(70, 160, game._t("presented by うえだたつろう", "by Tatsuro Ueda"), 6)
+            game.messages.text(70, 160, game._t("presented by うえだたつろう", "by Tatsuro Ueda"), 6)
         if f >= 75 and (pyxel.frame_count // 8) % 2:
-            game.text(60, 220, "PRESS ANY KEY", 7)
+            game.messages.text(60, 220, "PRESS ANY KEY", 7)

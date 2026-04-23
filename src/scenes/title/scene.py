@@ -87,8 +87,8 @@ class TitleScene:
                 settings_open=self.model.settings_open,
             )
         pyxel.cls(1)
-        game.text(70, 80, "BLOCK QUEST", 7)
-        game.text(50, 110, game._t("- コードのぼうけん -", "- A Coding Quest -"), 10)
+        game.messages.text(70, 80, "BLOCK QUEST", 7)
+        game.messages.text(50, 110, game._t("- コードのぼうけん -", "- A Coding Quest -"), 10)
         labels = [
             game._t("はじめから", "NEW GAME"),
             game._t("つづきから", "CONTINUE"),
@@ -100,9 +100,9 @@ class TitleScene:
             base_color = 7 if enabled else 5
             color = 10 if (i == self.model.cursor and enabled) else base_color
             marker = ">" if i == self.model.cursor else " "
-            game.text(80, ly, f"{marker} {label}", color)
+            game.messages.text(80, ly, f"{marker} {label}", color)
         if self.model.cursor == 1 and not game._has_save:
-            game.text(
+            game.messages.text(
                 40, 200, game._t("(まだなにもかきとめていない)", "(no save yet)"), 5
             )
 
@@ -115,7 +115,7 @@ class TitleScene:
         if snap is None:
             # 破損やバージョン未来のセーフティネット
             game._has_save = False
-            game.show_message([NO_RECORD_MSG])
+            game.messages.show([NO_RECORD_MSG])
             game.prev_state = "title"
             game.state = "message"
             return
@@ -130,6 +130,6 @@ class TitleScene:
         game.dungeon_map = None
         # ロード直後の暴発を防ぐため A クールダウンを立てる
         game.explore_scene.model.a_cooldown = True
-        game.show_message([LOAD_OK_MSG])
+        game.messages.show([LOAD_OK_MSG])
         game.prev_state = "map"
         game.state = "message"

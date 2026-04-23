@@ -68,7 +68,7 @@ class AiHelpScene:
         x, y, w, h = 12, 36, 232, 196
         pyxel.rect(x, y, w, h, 1)
         pyxel.rectb(x, y, w, h, 7)
-        game.text(x + 8, y + 8, "AIで このゲームを しゅうせい", 10)
+        game.messages.text(x + 8, y + 8, "AIで このゲームを しゅうせい", 10)
         lines = [
             "",
             "１ Code Maker の Save をおして",
@@ -86,4 +86,4 @@ class AiHelpScene:
             f"  -> {self.model.status}",
         ]
         for i, line in enumerate(lines):
-            game.text(x + 8, y + 24 + i * 9, line, 7)
+            game.messages.text(x + 8, y + 24 + i * 9, line, 7)

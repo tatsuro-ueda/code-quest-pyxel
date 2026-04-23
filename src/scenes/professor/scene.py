@@ -57,7 +57,7 @@ class ProfessorScene:
         else:
             scene = "castle.professor.intro_01"
         p["professor_intro_seen"] = True
-        self.model.intro_lines = game._dialog_lines(scene)
+        self.model.intro_lines = game.messages.dialog_lines(scene)
         self.model.intro_idx = 0
         self.model.choice_active = False
         self.model.choice_cursor = 1
@@ -72,7 +72,7 @@ class ProfessorScene:
         m = self.model
         if not m.choice_active:
             if game._btnp(CONFIRM_BUTTONS):
-                m.intro_idx, done = game._advance_dialog_page(m.intro_idx, m.intro_lines)
+                m.intro_idx, done = game.messages.advance_page(m.intro_idx, m.intro_lines)
                 if done:
                     m.choice_active = True
             return
@@ -97,13 +97,13 @@ class ProfessorScene:
         pyxel.cls(0)
         if m.intro_lines and m.intro_idx < len(m.intro_lines):
             for i, sub in enumerate(
-                game._current_dialog_page_lines(
+                game.messages.current_page_lines(
                     m.intro_lines, m.intro_idx, max_chars=28, max_rows=6,
                 )
             ):
-                game.text(16, 60 + i * 14, sub, 7)
+                game.messages.text(16, 60 + i * 14, sub, 7)
             if not m.choice_active and (pyxel.frame_count // 15) % 2:
-                game.text(228, 200, "v", 7)
+                game.messages.text(228, 200, "v", 7)
         if m.choice_active:
             labels = (
                 ["うけいれる", "ことわる"]
@@ -113,7 +113,7 @@ class ProfessorScene:
             for i, label in enumerate(labels):
                 color = 10 if i == m.choice_cursor else 7
                 marker = ">" if i == m.choice_cursor else " "
-                game.text(96, 180 + i * 16, f"{marker} {label}", color)
+                game.messages.text(96, 180 + i * 16, f"{marker} {label}", color)
 
     def enter_ending_main(self) -> None:
         """Professor ending（撃破後）に入る。"""
@@ -124,7 +124,7 @@ class ProfessorScene:
         else:
             scene = "castle.professor.epilogue_01"
         p["professor_ending_seen"] = True
-        self.model.ending_lines = game._dialog_lines(scene)
+        self.model.ending_lines = game.messages.dialog_lines(scene)
         self.model.ending_idx = 0
         game.state = "professor_ending_main"
 
@@ -135,7 +135,7 @@ class ProfessorScene:
             return
         m = self.model
         if game._btnp(CONFIRM_BUTTONS):
-            m.ending_idx, done = game._advance_dialog_page(m.ending_idx, m.ending_lines)
+            m.ending_idx, done = game.messages.advance_page(m.ending_idx, m.ending_lines)
             if done:
                 game.explore_scene.model.a_cooldown = True
                 game.state = "map"
@@ -149,18 +149,18 @@ class ProfessorScene:
         pyxel.cls(0)
         if m.ending_lines and m.ending_idx < len(m.ending_lines):
             for i, sub in enumerate(
-                game._current_dialog_page_lines(
+                game.messages.current_page_lines(
                     m.ending_lines, m.ending_idx, max_chars=28, max_rows=6,
                 )
             ):
-                game.text(16, 80 + i * 14, sub, 10)
+                game.messages.text(16, 80 + i * 14, sub, 10)
             if (pyxel.frame_count // 15) % 2:
-                game.text(228, 200, "v", 7)
+                game.messages.text(228, 200, "v", 7)
 
     def enter_ending_accepted(self) -> None:
         """Professor 受諾エンドに入る。"""
         game = self.game
-        self.model.ending_lines = game._dialog_lines("castle.professor.accepted_01")
+        self.model.ending_lines = game.messages.dialog_lines("castle.professor.accepted_01")
         self.model.ending_idx = 0
         game.state = "professor_ending_accepted"
 
@@ -171,7 +171,7 @@ class ProfessorScene:
             return
         m = self.model
         if game._btnp(CONFIRM_BUTTONS):
-            m.ending_idx, done = game._advance_dialog_page(m.ending_idx, m.ending_lines)
+            m.ending_idx, done = game.messages.advance_page(m.ending_idx, m.ending_lines)
             if done:
                 game.state = "title"
                 game.explore_scene.model.a_cooldown = True
@@ -185,13 +185,13 @@ class ProfessorScene:
         pyxel.cls(0)
         if m.ending_lines and m.ending_idx < len(m.ending_lines):
             for i, sub in enumerate(
-                game._current_dialog_page_lines(
+                game.messages.current_page_lines(
                     m.ending_lines, m.ending_idx, max_chars=28, max_rows=6,
                 )
             ):
-                game.text(16, 90 + i * 14, sub, 6)
+                game.messages.text(16, 90 + i * 14, sub, 6)
             if (pyxel.frame_count // 15) % 2:
-                game.text(228, 210, "v", 7)
+                game.messages.text(228, 210, "v", 7)
 
     def update(self) -> None:
         """Scene Protocol 互換。P1-G10 では個別 update_* を Game dispatcher が呼ぶ。"""

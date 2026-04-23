@@ -118,10 +118,10 @@ class ShopScene:
         else:
             title_map = {"weapons": "WEAPONS", "armors": "ARMOR", "items": "ITEMS"}
             title = title_map.get(self.model.kind, "SHOP")
-        game.text(8, 6, title, 7)
-        game.text(160, 6, f"G:{game.player['gold']}", 10)
+        game.messages.text(8, 6, title, 7)
+        game.messages.text(160, 6, f"G:{game.player['gold']}", 10)
         if not self.model.inventory:
-            game.text(8, 40, game._t("(ざいこなし)", "(no stock)"), 6)
+            game.messages.text(8, 40, game._t("(ざいこなし)", "(no stock)"), 6)
             return
         for i, idx in enumerate(self.model.inventory):
             owned = False
@@ -140,6 +140,6 @@ class ShopScene:
                 line = f"{line}  [もっています]"
             color = 10 if i == self.model.cursor else 7
             marker = ">" if i == self.model.cursor else " "
-            game.text(8, 30 + i * 14, f"{marker} {line}", color)
+            game.messages.text(8, 30 + i * 14, f"{marker} {line}", color)
         if self.model.message:
-            game.text(8, 200, self.model.message, 11)
+            game.messages.text(8, 200, self.model.message, 11)

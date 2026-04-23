@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 from src.scenes.explore.scene import ExploreScene
 from src.scenes.ending.scene import EndingScene
 from src.scenes.battle.scene import BattleScene
+from src.shared.services.message_display import MessageDisplay
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -74,6 +75,9 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
     def make_stair_exit_game(self, *, glitch_lord_defeated=True):
         game = self.main.Game.__new__(self.main.Game)
+        game.messages = MessageDisplay(game=game)
+        game.messages.dialog_lines = MagicMock(return_value=["dungeon.glitch.exit"])
+        game.messages.enter = MagicMock()
         game.explore_scene = ExploreScene(game=game)
         game.ending_scene = EndingScene(game=game)
         game.player = {
@@ -85,13 +89,14 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         game.world_return_x = 40
         game.world_return_y = 32
         game.dungeon_map = [[self.main.T_FLOOR]]
-        game._dialog_lines = MagicMock(return_value=["dungeon.glitch.exit"])
-        game._enter_message = MagicMock()
         game.ending_scene.enter = MagicMock()
         return game
 
     def make_edge_exit_game(self, *, glitch_lord_defeated=True):
         game = self.main.Game.__new__(self.main.Game)
+        game.messages = MessageDisplay(game=game)
+        game.messages.dialog_lines = MagicMock(return_value=["dungeon.glitch.exit"])
+        game.messages.enter = MagicMock()
         game.explore_scene = ExploreScene(game=game)
         game.ending_scene = EndingScene(game=game)
         game.player = {
@@ -111,8 +116,6 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         game.explore_scene.model.walk_frame = 0
         game.sfx = MagicMock()
         game.explore_scene._check_landmark_events = MagicMock(return_value=False)
-        game._dialog_lines = MagicMock(return_value=["dungeon.glitch.exit"])
-        game._enter_message = MagicMock()
         game.ending_scene.enter = MagicMock()
         game._btnp = MagicMock(return_value=False)
         game._btn = MagicMock(
@@ -163,7 +166,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
         game.explore_scene._check_tile_events(self.main.T_STAIR_UP, 7, 8)
 
-        game._enter_message.assert_called_once_with(
+        game.messages.enter.assert_called_once_with(
             ["dungeon.glitch.exit"],
             callback=game.ending_scene.enter,
         )
@@ -175,7 +178,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
         game.explore_scene.update()
 
-        game._enter_message.assert_called_once_with(
+        game.messages.enter.assert_called_once_with(
             ["dungeon.glitch.exit"],
             callback=game.ending_scene.enter,
         )
@@ -187,7 +190,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
         game.explore_scene._check_tile_events(self.main.T_STAIR_UP, 7, 8)
 
-        game._enter_message.assert_called_once_with(
+        game.messages.enter.assert_called_once_with(
             ["dungeon.glitch.exit"],
             callback=None,
         )
@@ -197,7 +200,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
         game.explore_scene.update()
 
-        game._enter_message.assert_called_once_with(
+        game.messages.enter.assert_called_once_with(
             ["dungeon.glitch.exit"],
             callback=None,
         )

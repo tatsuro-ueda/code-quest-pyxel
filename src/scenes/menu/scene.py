@@ -128,9 +128,9 @@ class MenuScene:
         for i, label in enumerate(menu_labels):
             cy = 40 + i * 16
             col = 10 if i == m.cursor and m.sub is None else 6
-            game.text(36, cy, label, col)
+            game.messages.text(36, cy, label, col)
             if i == m.cursor and m.sub is None:
-                game.text(26, cy, ">", 10)
+                game.messages.text(26, cy, ">", 10)
 
         p = game.player
         if m.sub == "status":
@@ -145,23 +145,23 @@ class MenuScene:
                 f"コイン {p['gold']}",
             ]
             for i, line in enumerate(lines):
-                game.text(50, 108 + i * 13, line, 7)
+                game.messages.text(50, 108 + i * 13, line, 7)
         elif m.sub == "items":
             pyxel.rect(40, 100, 180, 120, 0)
             pyxel.rectb(40, 100, 180, 120, 7)
             items = p["items"]
             if not items:
-                game.text(50, 110, game._t("アイテムがない", "No items"), 6)
+                game.messages.text(50, 110, game._t("アイテムがない", "No items"), 6)
             else:
                 for i, item in enumerate(items[:8]):
                     idata = M.ITEMS[item["id"]]
                     cy = 108 + i * 13
                     col = 10 if i == m.item_cursor else 6
-                    game.text(56, cy, f"{game._name(idata['name'])} x{item['qty']}", col)
+                    game.messages.text(56, cy, f"{game._name(idata['name'])} x{item['qty']}", col)
                     if i == m.item_cursor:
-                        game.text(46, cy, ">", 10)
+                        game.messages.text(46, cy, ">", 10)
             if m.message:
-                game.text(50, 210, m.message, 8)
+                game.messages.text(50, 210, m.message, 8)
         elif m.sub == "equip":
             pyxel.rect(40, 100, 180, 80, 0)
             pyxel.rectb(40, 100, 180, 80, 7)
@@ -174,6 +174,6 @@ class MenuScene:
             for i, label in enumerate(labels):
                 cy = 110 + i * 20
                 col = 10 if i == m.item_cursor else 6
-                game.text(56, cy, label, col)
+                game.messages.text(56, cy, label, col)
                 if i == m.item_cursor:
-                    game.text(46, cy, ">", 10)
+                    game.messages.text(46, cy, ">", 10)

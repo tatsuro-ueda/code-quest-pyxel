@@ -32,8 +32,10 @@ class CurrentNoiseGuardianTest(unittest.TestCase):
 
     def test_noise_guardian_event_battle_still_starts(self):
         from src.scenes.battle.scene import BattleScene
+        from src.shared.services.message_display import MessageDisplay
         game = self.main.Game.__new__(self.main.Game)
-        game._dialog_text = MagicMock(return_value="boss.noise_guardian.intro")
+        game.messages = MessageDisplay(game=game)
+        game.messages.dialog_text = MagicMock(return_value="boss.noise_guardian.intro")
         game.battle_scene = BattleScene(game=game)
         game.battle_scene.start = MagicMock()
 

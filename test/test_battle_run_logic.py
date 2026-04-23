@@ -28,6 +28,7 @@ class BattleRunLogicTest(unittest.TestCase):
 
     def make_game(self):
         from src.scenes.battle.scene import BattleScene
+        from src.shared.services.message_display import MessageDisplay
         game = self.main.Game.__new__(self.main.Game)
         game.vfx_timer = 0
         game.debug_mode = False
@@ -39,7 +40,8 @@ class BattleRunLogicTest(unittest.TestCase):
         }
         game.sfx = MagicMock()
         game._start_vfx = MagicMock()
-        game._dialog_text = MagicMock(side_effect=lambda scene_name, **_: scene_name)
+        game.messages = MessageDisplay(game=game)
+        game.messages.dialog_text = MagicMock(side_effect=lambda scene_name, **_: scene_name)
         game._btn = MagicMock(return_value=False)
 
         def btnp(buttons):

@@ -29,7 +29,9 @@ class DialoguePagingTest(unittest.TestCase):
     def make_game(self):
         from src.scenes.ending.scene import EndingScene
         from src.scenes.professor.scene import ProfessorScene
+        from src.shared.services.message_display import MessageDisplay
         game = self.main.Game.__new__(self.main.Game)
+        game.messages = MessageDisplay(game=game)
         game.explore_scene = ExploreScene(game=game)
         game.ending_scene = EndingScene(game=game)
         game.professor_scene = ProfessorScene(game=game)
@@ -42,7 +44,7 @@ class DialoguePagingTest(unittest.TestCase):
     def test_current_dialog_page_lines_returns_only_current_phrase(self):
         game = self.make_game()
 
-        lines = game._current_dialog_page_lines(
+        lines = game.messages.current_page_lines(
             ["first page", "second page", "third page"],
             0,
             max_chars=28,
@@ -54,7 +56,7 @@ class DialoguePagingTest(unittest.TestCase):
     def test_current_dialog_page_lines_splits_newlines(self):
         game = self.make_game()
 
-        lines = game._current_dialog_page_lines(
+        lines = game.messages.current_page_lines(
             ["top line\nbottom line", "next page"],
             0,
             max_chars=28,
@@ -66,20 +68,20 @@ class DialoguePagingTest(unittest.TestCase):
     def test_advance_dialog_page_reports_when_sequence_finishes(self):
         game = self.make_game()
 
-        next_index, done = game._advance_dialog_page(0, ["a", "b"])
+        next_index, done = game.messages.advance_page(0, ["a", "b"])
         self.assertEqual((next_index, done), (1, False))
 
-        next_index, done = game._advance_dialog_page(1, ["a", "b"])
+        next_index, done = game.messages.advance_page(1, ["a", "b"])
         self.assertEqual((next_index, done), (2, True))
 
     def test_draw_message_window_uses_only_current_page(self):
         game = self.make_game()
-        game.msg_lines = ["first page", "second page", "third page"]
-        game.msg_index = 0
+        game.messages.lines = ["first page", "second page", "third page"]
+        game.messages.index = 0
         captured: list[tuple[int, int, str, int]] = []
-        game.text = lambda x, y, s, col: captured.append((x, y, s, col))
+        game.messages.text = lambda x, y, s, col: captured.append((x, y, s, col))
 
-        self.main.Game.draw_message_window(game)
+        game.messages.draw_window()
 
         rendered = [text for _, _, text, _ in captured]
         self.assertIn("first page", rendered)
@@ -92,7 +94,7 @@ class DialoguePagingTest(unittest.TestCase):
         game.professor_scene.model.intro_idx = 0
         game.professor_scene.model.choice_active = False
         captured: list[tuple[int, int, str, int]] = []
-        game.text = lambda x, y, s, col: captured.append((x, y, s, col))
+        game.messages.text = lambda x, y, s, col: captured.append((x, y, s, col))
 
         game.professor_scene.draw_intro()
 

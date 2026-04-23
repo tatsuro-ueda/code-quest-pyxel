@@ -106,8 +106,8 @@ class ExploreScene:
                 p["x"] = game.world_return_x
                 p["y"] = game.world_return_y
                 game.dungeon_map = None
-                game._enter_message(
-                    game._dialog_lines("dungeon.glitch.exit"),
+                game.messages.enter(
+                    game.messages.dialog_lines("dungeon.glitch.exit"),
                     callback=self._dungeon_exit_callback(),
                 )
                 return
@@ -123,8 +123,8 @@ class ExploreScene:
             p["x"] = game.world_return_x
             p["y"] = game.world_return_y
             game.dungeon_map = None
-            game._enter_message(
-                game._dialog_lines("dungeon.glitch.exit"),
+            game.messages.enter(
+                game.messages.dialog_lines("dungeon.glitch.exit"),
                 callback=self._dungeon_exit_callback(),
             )
             return
@@ -148,18 +148,18 @@ class ExploreScene:
             if scene_name is None:
                 lines = ["..."]
             else:
-                lines = game._dialog_lines(scene_name, ProfessorPhase=game.professor_scene.phase())
-            game.show_message(lines)
+                lines = game.messages.dialog_lines(scene_name, ProfessorPhase=game.professor_scene.phase())
+            game.messages.show(lines)
             game.state = "town"
             return
 
         if tile == M.T_CAVE and not p["in_dungeon"]:
             if not p.get("towerNoiseCleared"):
-                game._enter_message(game._dialog_lines("cave.blocked"))
+                game.messages.enter(game.messages.dialog_lines("cave.blocked"))
                 return
             if not getattr(game, "_cave_unblock_shown", False):
                 game._cave_unblock_shown = True
-                game._enter_message(game._dialog_lines("cave.unblocked"))
+                game.messages.enter(game.messages.dialog_lines("cave.unblocked"))
                 return
             game.sfx.play("dungeon_in")
             game.world_return_x = nx
@@ -170,7 +170,7 @@ class ExploreScene:
             sx, sy = game.dungeon_spawn
             p["x"] = sx
             p["y"] = sy
-            game._enter_message(game._dialog_lines("dungeon.glitch.enter"))
+            game.messages.enter(game.messages.dialog_lines("dungeon.glitch.enter"))
             return
 
         # Random encounter
@@ -208,8 +208,8 @@ class ExploreScene:
                 p["landmarkTowerSeen"] = True
 
         if scene_name == "landmark.tower.quest":
-            game._enter_message(
-                game._dialog_lines(scene_name),
+            game.messages.enter(
+                game.messages.dialog_lines(scene_name),
                 callback=game.battle_scene.start_noise_guardian,
             )
             return True
@@ -217,7 +217,7 @@ class ExploreScene:
         if landmark.epilogue_flag and scene_name == landmark.epilogue_scene:
             p[landmark.epilogue_flag] = True
 
-        game._enter_message(game._dialog_lines(scene_name))
+        game.messages.enter(game.messages.dialog_lines(scene_name))
         return True
 
     def _resolve_landmark_scene(self, landmark):

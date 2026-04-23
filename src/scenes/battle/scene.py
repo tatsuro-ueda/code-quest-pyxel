@@ -61,7 +61,7 @@ class BattleScene:
         m.is_professor = is_professor
         m.boss_phase = "phase1" if not is_professor else "100"
         if is_glitch_lord:
-            m.text = game._dialog_text("boss.glitch.intro")
+            m.text = game.messages.dialog_text("boss.glitch.intro")
         game.state = "battle"
 
     def start_noise_guardian(self):
@@ -70,14 +70,14 @@ class BattleScene:
         m = self.model
         m.noise_guardian = True
         self.start(NOISE_GUARDIAN_DATA, is_glitch_lord=False)
-        m.text = game._dialog_text("boss.noise_guardian.intro")
+        m.text = game.messages.dialog_text("boss.noise_guardian.intro")
 
     def on_noise_guardian_defeated(self):
         """ノイズガーディアン撃破後の処理。"""
         game = self.game
         game.player["towerNoiseCleared"] = True
         self.model.noise_guardian = False
-        game._enter_message(game._dialog_lines("landmark.tower.epilogue"))
+        game.messages.enter(game.messages.dialog_lines("landmark.tower.epilogue"))
 
     def check_noise_guardian_phase(self):
         """ノイズガーディアン戦のフェーズメッセージを差し込む。"""
@@ -95,7 +95,7 @@ class BattleScene:
             new_phase = "100"
         if new_phase != m.boss_phase and new_phase != "100":
             m.boss_phase = new_phase
-            msg = self.game._dialog_text(f"boss.noise_guardian.phase_{new_phase}")
+            msg = self.game.messages.dialog_text(f"boss.noise_guardian.phase_{new_phase}")
             if msg:
                 m.text = (m.text + " " + msg).strip()
 
@@ -130,7 +130,7 @@ class BattleScene:
                     m.item_select = 0
                 elif m.menu == 3:  # Run
                     if not m.is_glitch_lord and random.random() < 0.5:
-                        m.text = game._dialog_text("battle.normal.run.success")
+                        m.text = game.messages.dialog_text("battle.normal.run.success")
                         m.phase = "result"
                         m.text_timer = 60
                     else:
@@ -139,7 +139,7 @@ class BattleScene:
                             if m.is_glitch_lord
                             else "battle.normal.run.fail"
                         )
-                        m.text = game._dialog_text(scene_name)
+                        m.text = game.messages.dialog_text(scene_name)
                         m.phase = "player_attack"
                         m.text_timer = 30
 
@@ -268,7 +268,7 @@ class BattleScene:
         game.sfx.play("attack")
         game._start_vfx("flash_white")
         m.enemy_hp = max(0, m.enemy_hp - dmg)
-        m.text = game._dialog_text(
+        m.text = game.messages.dialog_text(
             random.choice(M.BATTLE_ATTACK_SCENES),
             enemy=e["name"],
             dmg=dmg,
@@ -297,7 +297,7 @@ class BattleScene:
             if new_phase != m.boss_phase:
                 m.boss_phase = new_phase
                 try:
-                    transition_msg = game._dialog_text(f"castle.professor.phase_{new_phase}")
+                    transition_msg = game.messages.dialog_text(f"castle.professor.phase_{new_phase}")
                 except KeyError:
                     transition_msg = ""
                 if transition_msg:
@@ -324,7 +324,7 @@ class BattleScene:
         game.sfx.play("hit")
         game._start_vfx("flash_red")
         p["hp"] = max(0, p["hp"] - dmg)
-        m.text = game._dialog_text(
+        m.text = game.messages.dialog_text(
             self.enemy_hit_scene_name(),
             enemy=e["name"],
             dmg=dmg,
@@ -342,7 +342,7 @@ class BattleScene:
         m = self.model
         e = m.enemy
         if m.is_professor:
-            m.text = game._dialog_text("castle.professor.silent_victory")
+            m.text = game.messages.dialog_text("castle.professor.silent_victory")
             m.phase = "result"
             m.text_timer = 60
             return
@@ -350,7 +350,7 @@ class BattleScene:
         exp = e["exp"]; gold = e["gold"]
         game.player["exp"] += exp
         game.player["gold"] += gold
-        m.text = game._dialog_text(
+        m.text = game.messages.dialog_text(
             self.victory_scene_name(),
             enemy=e["name"],
             exp=exp,
@@ -365,7 +365,7 @@ class BattleScene:
         game = self.game
         m = self.model
         game.sfx.play("dead")
-        m.text = game._dialog_text("battle.normal.defeat")
+        m.text = game.messages.dialog_text("battle.normal.defeat")
         m.phase = "result"
         m.text_timer = 60
 
@@ -442,18 +442,18 @@ class BattleScene:
                             for dx2 in range(3):
                                 pyxel.pset(104 + px * 3 + dx2, 30 + py * 3 + dy, c)
 
-        game.text(80, 10, game._name(e["name"]), 7)
+        game.messages.text(80, 10, game._name(e["name"]), 7)
         bar_x = 80; bar_w = 96
         pyxel.rect(bar_x, 85, bar_w, 8, 0)
         hp_ratio = m.enemy_hp / max(1, e["hp"])
         pyxel.rect(bar_x, 85, int(bar_w * hp_ratio), 8, 8)
-        game.text(bar_x + 2, 86, f"HP {m.enemy_hp}/{e['hp']}", 7)
+        game.messages.text(bar_x + 2, 86, f"HP {m.enemy_hp}/{e['hp']}", 7)
 
         p = game.player
         pyxel.rect(10, 100, 236, 40, 0)
         pyxel.rectb(10, 100, 236, 40, 7)
-        game.text(16, 104, f"{game._t('プログラマー', 'PROGRAMMER')}  レベル{p['lv']}", 7)
-        game.text(16, 116, f"HP {p['hp']}/{p['max_hp']}  MP {p['mp']}/{p['max_mp']}", 7)
+        game.messages.text(16, 104, f"{game._t('プログラマー', 'PROGRAMMER')}  レベル{p['lv']}", 7)
+        game.messages.text(16, 116, f"HP {p['hp']}/{p['max_hp']}  MP {p['mp']}/{p['max_mp']}", 7)
         pyxel.rect(170, 116, 60, 6, 0)
         hp_r = p["hp"] / max(1, p["max_hp"])
         pyxel.rect(170, 116, int(60 * hp_r), 6, 11 if hp_r > 0.3 else 8)
@@ -461,7 +461,7 @@ class BattleScene:
         if m.text:
             pyxel.rect(10, 148, 236, 30, 0)
             pyxel.rectb(10, 148, 236, 30, 7)
-            game.text(16, 154, m.text, 7)
+            game.messages.text(16, 154, m.text, 7)
 
         if m.phase == "menu":
             menu_labels = (
@@ -475,16 +475,16 @@ class BattleScene:
                 cx = 30 + (i % 2) * 110
                 cy = 198 + (i // 2) * 18
                 col = 10 if i == m.menu else 6
-                game.text(cx, cy, label, col)
+                game.messages.text(cx, cy, label, col)
                 if i == m.menu:
-                    game.text(cx - 12, cy, ">", 10)
+                    game.messages.text(cx - 12, cy, ">", 10)
 
         elif m.phase == "spell_select":
             spells = game.player["spells"]
             pyxel.rect(10, 190, 236, 56, 0)
             pyxel.rectb(10, 190, 236, 56, 7)
             if not spells:
-                game.text(16, 200, game._t("じゅもんをおぼえていない", "No spells learned"), 6)
+                game.messages.text(16, 200, game._t("じゅもんをおぼえていない", "No spells learned"), 6)
             else:
                 for i, name in enumerate(spells[:4]):
                     spell = SPELL_BY_NAME.get(name)
@@ -492,26 +492,26 @@ class BattleScene:
                         continue
                     cy = 196 + i * 12
                     col = 10 if i == m.spell_select else 6
-                    game.text(30, cy, f"{game._name(name)}  MP{spell['mp']}", col)
+                    game.messages.text(30, cy, f"{game._name(name)}  MP{spell['mp']}", col)
                     if i == m.spell_select:
-                        game.text(18, cy, ">", 10)
+                        game.messages.text(18, cy, ">", 10)
 
         elif m.phase == "item_select":
             items = game.player["items"]
             pyxel.rect(10, 190, 236, 56, 0)
             pyxel.rectb(10, 190, 236, 56, 7)
             if m.text:
-                game.text(16, 192, m.text, 8)
+                game.messages.text(16, 192, m.text, 8)
             if not items:
-                game.text(16, 200, game._t("アイテムがない", "No items"), 6)
+                game.messages.text(16, 200, game._t("アイテムがない", "No items"), 6)
             else:
                 for i, item in enumerate(items[:4]):
                     idata = ITEMS[item["id"]]
                     cy = 196 + i * 12
                     col = 10 if i == m.item_select else 6
-                    game.text(30, cy, f"{game._name(idata['name'])} x{item['qty']}", col)
+                    game.messages.text(30, cy, f"{game._name(idata['name'])} x{item['qty']}", col)
                     if i == m.item_select:
-                        game.text(18, cy, ">", 10)
+                        game.messages.text(18, cy, ">", 10)
 
         game._draw_vfx_overlay()
         return None

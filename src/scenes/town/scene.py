@@ -48,8 +48,8 @@ class TownScene:
         game = self.game
         if game is None:
             return
-        if game._any_advance_btnp():
-            game.msg_index, done = game._advance_dialog_page(game.msg_index, game.msg_lines)
+        if game.messages.any_advance_btnp():
+            game.messages.index, done = game.messages.advance_page(game.messages.index, game.messages.lines)
             if done:
                 game.state = "map"
 
@@ -88,9 +88,9 @@ class TownScene:
     def _enter_message(self, lines, callback=None) -> None:
         """町メニュー内の通知。閉じたら town_menu に戻る。"""
         game = self.game
-        game.msg_lines = lines
-        game.msg_index = 0
-        game.msg_callback = callback
+        game.messages.lines = lines
+        game.messages.index = 0
+        game.messages.callback = callback
         game.prev_state = "town_menu"
         game.state = "message"
 
@@ -100,7 +100,7 @@ class TownScene:
         import src.runtime.main_runtime as M
         scene_name = M.TOWN_DIALOG_SCENES.get(self.model.menu_pos)
         if scene_name is not None:
-            lines = game._dialog_lines(scene_name, ProfessorPhase=game.professor_scene.phase())
+            lines = game.messages.dialog_lines(scene_name, ProfessorPhase=game.professor_scene.phase())
             self._enter_message(lines)
             return
         idx = self.current_town_index()
@@ -168,12 +168,12 @@ class TownScene:
         x, y, w, h = 20, 40, 216, 170
         pyxel.rect(x, y, w, h, 1)
         pyxel.rectb(x, y, w, h, 7)
-        game.text(x + 8, y + 8, game._t("まちメニュー", "TOWN MENU"), 7)
+        game.messages.text(x + 8, y + 8, game._t("まちメニュー", "TOWN MENU"), 7)
         labels = M.TOWN_MENU_LABELS if game.has_jp_font else M.TOWN_MENU_LABELS_EN
         for i, label in enumerate(labels):
             ly = y + 28 + i * 16
             color = 10 if i == self.model.menu_cursor else 7
             marker = ">" if i == self.model.menu_cursor else " "
-            game.text(x + 16, ly, f"{marker} {label}", color)
+            game.messages.text(x + 16, ly, f"{marker} {label}", color)
         gold = game.player["gold"]
-        game.text(x + 8, y + h - 16, f"GOLD: {gold}", 6)
+        game.messages.text(x + 8, y + h - 16, f"GOLD: {gold}", 6)

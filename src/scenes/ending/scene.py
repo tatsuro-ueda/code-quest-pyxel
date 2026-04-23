@@ -27,7 +27,7 @@ class EndingScene:
     def enter(self) -> None:
         """エンディングに入る。"""
         game = self.game
-        self.model.lines = game._dialog_lines("ending.main.line01")
+        self.model.lines = game.messages.dialog_lines("ending.main.line01")
         game.state = "ending"
 
     def update(self) -> None:
@@ -48,11 +48,11 @@ class EndingScene:
             return
         pyxel.cls(1)
         if not self.model.lines:
-            self.model.lines = game._dialog_lines("ending.main.line01")
+            self.model.lines = game.messages.dialog_lines("ending.main.line01")
         if self.model.lines:
-            game.text(60, 60, self.model.lines[0], 10)
+            game.messages.text(60, 60, self.model.lines[0], 10)
         for index, line in enumerate(self.model.lines[1:]):
-            game.text(20, 90 + index * 15, line, 7)
-        game.text(40, 180, "PRESS Z TO TITLE", 6)
+            game.messages.text(20, 90 + index * 15, line, 7)
+        game.messages.text(40, 180, "PRESS Z TO TITLE", 6)
         p = game.player
-        game.text(30, 200, f"レベル{p['lv']} Time:{pyxel.frame_count//30//60}m", 6)
+        game.messages.text(30, 200, f"レベル{p['lv']} Time:{pyxel.frame_count//30//60}m", 6)

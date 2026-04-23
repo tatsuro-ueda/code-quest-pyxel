@@ -106,7 +106,7 @@ class SettingsScene:
             return
         pyxel.rect(28, 54, 200, 148, 1)
         pyxel.rectb(28, 54, 200, 148, 7)
-        game.text(92, 66, game._t("せってい", "SETTINGS"), 10)
+        game.messages.text(92, 66, game._t("せってい", "SETTINGS"), 10)
         for i, (key, label) in enumerate(self._rows()):
             cy = 94 + i * 22
             col = 10 if i == self.model.cursor else 6
@@ -124,5 +124,5 @@ class SettingsScene:
             row = f"{marker} {label}"
             if value:
                 row = f"{row}: {value}"
-            game.text(44, cy, row, col)
-        game.text(44, 176, game._t("けっていで きりかえ", "Press confirm to toggle"), 7)
+            game.messages.text(44, cy, row, col)
+        game.messages.text(44, 176, game._t("けっていで きりかえ", "Press confirm to toggle"), 7)

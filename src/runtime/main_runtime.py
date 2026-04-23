@@ -1610,6 +1610,7 @@ from src.scenes.settings.scene import SettingsScene
 from src.scenes.town.scene import TownScene
 from src.scenes.professor.scene import ProfessorScene
 from src.scenes.battle.scene import BattleScene
+from src.shared.services.message_display import MessageDisplay
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1663,8 +1664,9 @@ class Game:
 
     def __init__(self):
         Game._instance = self
+        self.messages = MessageDisplay(game=self)
         # デバッグオーバーレイ用のリングバッファ
-        self._say_buffer: list[str] = []
+        # _say_buffer は MessageDisplay.say_buffer に移動（P1-G12）
         pyxel.init(256, 256, title="Block Quest", fps=30)
         # 日本語フォントの読み込み。Code Maker 等で BDF が読めない環境では
         # None になり、各 UI ラベルとダイアログは英語フォールバックに切り替わる。
@@ -1729,10 +1731,7 @@ class Game:
         self.save_store = make_save_store(save_path)
         self._has_save = self.save_store.exists()
 
-        # Message state
-        self.msg_lines = []
-        self.msg_index = 0
-        self.msg_callback = None
+        # Message state は MessageDisplay に移動（P1-G12）
 
         # Debug mode
         self.debug_mode = False
@@ -2155,9 +2154,9 @@ class Game:
             self.state = "map"
             self.explore_scene.model.move_cooldown = 0
             self.explore_scene.model.a_cooldown = False
-            self.msg_lines = []
-            self.msg_index = 0
-            self.msg_callback = None
+            self.messages.lines = []
+            self.messages.index = 0
+            self.messages.callback = None
 
         # Debug code: up up down down
         if self._btnp(UP_BUTTONS):
@@ -2195,7 +2194,7 @@ class Game:
         elif self.state == "settings":
             self.settings_scene.update()
         elif self.state == "message":
-            self.update_message()
+            self.messages.update()
         elif self.state == "town":
             self.town_scene.update()
         elif self.state == "town_menu":
@@ -2284,70 +2283,11 @@ class Game:
         """データ名（敵・アイテム・装備）の翻訳。NAME_EN_MAP を引く。"""
         return jp if self.has_jp_font else name_en(jp)
 
-    def say(self, *args) -> None:
-        """デバッグ用: 任意の値を画面左上にオーバーレイ表示する。
 
-        使い方:
-            self.say("こんにちは")
-            self.say("hp =", self.player["hp"])
 
-        モジュールトップの `say()` 関数からも呼べる（同一インスタンスを参照）。
-        最新 12 行までを保持し、次回以降の描画フレームに重ねる。
-        Scratch の「say」ブロックと同じ感覚で使える。
-        """
-        msg = " ".join(str(a) for a in args)
-        self._say_buffer.append(msg)
-        if len(self._say_buffer) > 12:
-            self._say_buffer = self._say_buffer[-12:]
 
-    def text(self, x: int, y: int, s: str, col: int) -> None:
-        """文字列を misaki_gothic 8x8 で描画する。
 
-        ASCII（英数字・記号）も日本語（仮名・全角記号）も統一フォントで
-        bank 2 から blt する。未収録文字はスペース幅でスキップ。
-        """
-        if not s:
-            return
-        pyxel.pal(7, col)
-        cx = x
-        for ch in s:
-            pos = JP_FONT_LAYOUT.get(ch)
-            if pos is not None:
-                bcol, brow = pos
-                pyxel.blt(
-                    cx, y,
-                    JP_FONT_IMAGE_BANK,
-                    bcol * JP_FONT_GLYPH_W,
-                    brow * JP_FONT_GLYPH_H,
-                    JP_FONT_GLYPH_W, JP_FONT_GLYPH_H,
-                    0,
-                )
-            cx += JP_FONT_GLYPH_W
-        pyxel.pal()
 
-    def show_message(self, lines, callback=None):
-        self.msg_lines = lines
-        self.msg_index = 0
-        self.msg_callback = callback
-
-    def _dialog_text(self, scene_name, **extra_context):
-        return self.dialog.start(
-            scene_name,
-            state=self.player["dialog_flags"],
-            extra_context=extra_context,
-        ).text
-
-    def _dialog_lines(self, scene_name, **extra_context):
-        return self.dialog.load_all_lines(
-            scene_name,
-            state=self.player["dialog_flags"],
-            extra_context=extra_context,
-        )
-
-    def _enter_message(self, lines, callback=None):
-        self.show_message(lines, callback=callback)
-        self.prev_state = "map"
-        self.state = "message"
 
 
 
@@ -2369,54 +2309,14 @@ class Game:
         self.audio.set_enabled(self.player.get("bgm_enabled", True))
         self.audio.play_scene(scene_name)
 
-    def _any_advance_btnp(self) -> bool:
-        """メッセージを進める入力。決定/キャンセル/方向のどれでもOK。
 
-        「Zを押したのに進まない」と誤解されるのを防ぐ防御的UX。
-        """
-        return (
-            self._btnp(CONFIRM_BUTTONS)
-            or self._btnp(CANCEL_BUTTONS)
-            or self._btnp(UP_BUTTONS)
-            or self._btnp(DOWN_BUTTONS)
-            or self._btnp(LEFT_BUTTONS)
-            or self._btnp(RIGHT_BUTTONS)
-        )
 
-    def _advance_dialog_page(self, index, lines):
-        next_index = index + 1
-        return next_index, next_index >= len(lines)
 
-    def _current_dialog_page_lines(self, lines, index, *, max_chars=28, max_rows=3):
-        if not lines or index < 0 or index >= len(lines):
-            return []
-        return self._wrap_text(lines[index], max_chars=max_chars)[:max_rows]
-
-    def update_message(self):
-        if self._any_advance_btnp():
-            self.msg_index, done = self._advance_dialog_page(self.msg_index, self.msg_lines)
-            if done:
-                self.state = self.prev_state
-                if self.msg_callback:
-                    self.msg_callback()
 
     # ----- town_menu (Save Player Journey steering) -----
     # ----- Shop (Task #7) -----
     # ----- Professor encounter (隠し章) -----
     # ----- AI でしゅうせい (Code Maker と外部 AI の橋渡し) -----
-    def _wrap_text(self, text: str, max_chars: int = 28) -> list[str]:
-        """簡易な折返し（CJK文字幅考慮なし、おおよその目安）。"""
-        out: list[str] = []
-        for raw_line in text.split("\n"):
-            cur = ""
-            for ch in raw_line:
-                cur += ch
-                if len(cur) >= max_chars:
-                    out.append(cur)
-                    cur = ""
-            if cur:
-                out.append(cur)
-        return out or [""]
 
     # -----------------------------------------------------------------
     # DRAW
@@ -2446,11 +2346,11 @@ class Game:
         elif self.state == "message":
             self.explore_scene.draw()
             self.draw_status_bar()
-            self.draw_message_window()
+            self.messages.draw_window()
         elif self.state == "town":
             self.explore_scene.draw()
             self.draw_status_bar()
-            self.draw_message_window()
+            self.messages.draw_window()
         elif self.state == "town_menu":
             self.town_scene.draw_menu()
         elif self.state == "shop":
@@ -2467,28 +2367,16 @@ class Game:
             self.ai_help_scene.draw()
 
         # デバッグオーバーレイ（最後に重ねる）
-        self._draw_say_overlay()
+        self.messages.draw_say_overlay()
 
-    def _draw_say_overlay(self):
-        """disp() で蓄えたメッセージを画面左上に重ね描きする。"""
-        if not self._say_buffer:
-            return
-        for i, line in enumerate(self._say_buffer):
-            y = 4 + i * 12
-            # 背景に半透明っぽい黒帯
-            pyxel.rect(2, y - 1, 252, 12, 0)
-            self.text(4, y, line, 10)
-
-    # draw_splash は SplashScene に移動（P1-G2）
-    # draw_title は TitleScene に移動（P1-G1）
 
     def draw_status_bar(self):
         pyxel.rect(0, 0, 256, 24, 1)
         p = self.player
         zone = get_zone(p["y"], p["in_dungeon"])
         zone_name = ZONE_NAMES.get(zone, "???") if self.has_jp_font else ZONE_NAMES_EN.get(zone, "???")
-        self.text(4, 2, f"レベル{p['lv']} {zone_name}", 7)
-        self.text(4, 13, f"HP{p['hp']}/{p['max_hp']} MP{p['mp']}/{p['max_mp']}", 7)
+        self.messages.text(4, 2, f"レベル{p['lv']} {zone_name}", 7)
+        self.messages.text(4, 13, f"HP{p['hp']}/{p['max_hp']} MP{p['mp']}/{p['max_mp']}", 7)
         # HP bar
         bar_x = 170; bar_w = 60
         pyxel.rect(bar_x, 4, bar_w, 6, 0)
@@ -2500,7 +2388,7 @@ class Game:
         pyxel.rect(bar_x, 14, int(bar_w * mp_ratio), 6, 12)
 
         if self.debug_mode:
-            self.text(130, 2, "DEBUG", 8)
+            self.messages.text(130, 2, "DEBUG", 8)
 
     def _draw_vfx_overlay(self):
         if not self.player.get("vfx_enabled", True):
@@ -2514,21 +2402,6 @@ class Game:
             pyxel.rect(0, 0, 256, 256, cfg["color"])
 
 
-    def draw_message_window(self):
-        pyxel.rect(8, 208, 240, 44, 0)
-        pyxel.rectb(8, 208, 240, 44, 7)
-        for i, line in enumerate(
-            self._current_dialog_page_lines(
-                self.msg_lines,
-                self.msg_index,
-                max_chars=28,
-                max_rows=3,
-            )
-        ):
-            self.text(16, 214 + i * 12, line, 7)
-        # Blink indicator
-        if (pyxel.frame_count // 15) % 2:
-            self.text(228, 240, "v", 7)
 
 # =====================================================================
 # DEBUG: グローバル say() 関数 — Scratch の「say」ブロックと同じ感覚
@@ -2546,13 +2419,13 @@ def say(*args):
       - 日本語が表示できる（仮名のみ）
     """
     if Game._instance is not None:
-        Game._instance.say(*args)
+        Game._instance.messages.say(*args)
 
 
 def say_clear():
     """say バッファをクリアする。"""
     if Game._instance is not None:
-        Game._instance._say_buffer.clear()
+        Game._instance.messages.say_buffer.clear()
 
 
 # =====================================================================
