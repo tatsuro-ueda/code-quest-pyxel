@@ -600,12 +600,20 @@ Presenterテストでは
 
 ## 11-1. ファイル命名
 
-* `battle_model.py`
-* `battle_presenter.py`
-* `battle_view.py`
-* `battle_view_model.py`
+Scene は **ディレクトリ階層** で並びを固定する（本プロジェクトの現行構造）。
 
-Sceneごとに並びを固定します。
+```
+src/scenes/<scene>/
+├── __init__.py
+├── model.py        # SceneModel
+├── presenter.py    # ScenePresenter
+├── view.py         # SceneView
+├── view_model.py   # SceneViewModel（導入後）
+└── scene.py        # Scene（束ね）
+```
+
+例：`src/scenes/battle/{model,presenter,view,scene}.py`。
+Scene 名を prefix に付けたフラット配置（`battle_model.py` 等）は採用しない。
 
 ---
 
