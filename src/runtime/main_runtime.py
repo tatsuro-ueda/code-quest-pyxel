@@ -1598,58 +1598,7 @@ VICTORY_SCENES_BY_ZONE = {
 ZONE_NAMES = {0: "はじまりのそうげん", 1: "ロジックのもり", 2: "アルゴのやまみち", 3: "さばくちたい", 4: "グリッチのどうくつ"}
 ZONE_NAMES_EN = {0: "Grasslands", 1: "Logic Forest", 2: "Algo Mountains", 3: "Desert", 4: "Glitch Cave"}
 
-# 日本語名 → 英語名 翻訳マップ（BDFフォントが無いとき用）
-NAME_EN_MAP = {
-    # enemies
-    "10ほスライム": "10-step Slime",
-    "かいてんゴブリン": "Loop Goblin",
-    "ループゴースト": "Loop Ghost",
-    "10かいナイト": "10-times Knight",
-    "もしガード": "If Guard",
-    "でなければスライム": "Else Slime",
-    "HPカウンター": "HP Counter",
-    "クローンにんじゃ": "Clone Ninja",
-    "むげんバグ": "Infinity Bug",
-    "まおうグリッチのクローン": "Glitch Lord Clone",
-    "まおうグリッチ": "Glitch Lord",
-    "プロフェッサー": "The Professor",
-    # items
-    "バグレポート": "Bug Report",
-    "エナジードリンク": "Energy Drink",
-    "アンチウイルス": "Antivirus",
-    "セーブポイント": "Save Point",
-    # weapons
-    "すで": "Bare Hands",
-    "マウス": "Mouse",
-    "キーボード": "Keyboard",
-    "テキストエディタ": "Text Editor",
-    "コードエディタ": "Code Editor",
-    "デバッガー": "Debugger",
-    "コンパイラ": "Compiler",
-    "アーキテクト": "Architect",
-    # armors
-    "ふだんぎ": "Casual Wear",
-    "きほんのちしき": "Basic Knowledge",
-    "じゅんじしょりのりかい": "Sequential Logic",
-    "ループのりかい": "Loop Mastery",
-    "じょうけんのりかい": "Conditional Logic",
-    "へんすうのりかい": "Variable Mastery",
-    "せっけいりょく": "Design Skill",
-    "さいてきかのしこう": "Optimization Mind",
-    # spells
-    "デバッグ": "Debug",
-    "プリント": "Print",
-    "ループブレイク": "Loop Break",
-    "リファクタリング": "Refactor",
-    "コンパイル": "Compile",
-    # misc UI strings used inside game logic
-    "プログラマー": "Programmer",
-}
-
-
-def name_en(name: str) -> str:
-    """日本語名を英語名に変換。マップに無ければそのまま返す。"""
-    return NAME_EN_MAP.get(name, name)
+from src.shared.services.text_format import NAME_EN_MAP, name_en
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
