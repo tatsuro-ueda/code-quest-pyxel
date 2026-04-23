@@ -1604,6 +1604,7 @@ from src.scenes.title.scene import TitleScene
 from src.scenes.explore.scene import ExploreScene
 from src.scenes.shop.scene import ShopScene
 from src.scenes.menu.scene import MenuScene
+from src.scenes.ai_help.scene import AiHelpScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1768,6 +1769,7 @@ class Game:
         self.explore_scene = ExploreScene(game=self)
         self.shop_scene = ShopScene(game=self)
         self.menu_scene = MenuScene(game=self)
+        self.ai_help_scene = AiHelpScene(game=self)
 
         self._sync_audio()
 
@@ -2217,7 +2219,7 @@ class Game:
         elif self.state == "ending":
             self.update_ending()
         elif self.state == "ai_help":
-            self.update_ai_help()
+            self.ai_help_scene.update()
 
         self._sync_audio()
 
@@ -2933,73 +2935,6 @@ class Game:
 
     # ----- Professor encounter (隠し章) -----
     # ----- AI でしゅうせい (Code Maker と外部 AI の橋渡し) -----
-    def _enter_ai_help(self):
-        """AIヘルプ画面に入る。可能なら Claude.ai を新タブで開く。"""
-        self._ai_help_status = self._try_open_ai_chat()
-        self.state = "ai_help"
-
-    def _try_open_ai_chat(self) -> str:
-        """環境に応じて AI を呼ぶ手段を試す。
-
-        1. ブラウザ (Pyodide): `js.window.open` で Claude.ai を新タブで開く
-        2. ローカル VM: `subprocess` で `claude --print` を試す（任意・失敗OK）
-        3. どちらも不可: 説明だけ表示
-
-        戻り値: ステータス文字列（画面に表示する）
-        """
-        # 1. ブラウザ環境
-        try:
-            import js  # type: ignore
-            try:
-                js.window.open("https://claude.ai/new", "_blank")
-                return "あたらしいタブで Claude をひらきました"
-            except Exception:
-                return "Claude.ai を てでひらいてください"
-        except ImportError:
-            pass
-        # 2. ローカル subprocess（VM 開発者向け）
-        try:
-            import subprocess
-            subprocess.run(["claude", "--version"], capture_output=True, timeout=2)
-            return "ローカル Claude が つかえます"
-        except Exception:
-            pass
-        # 3. フォールバック
-        return "Claude.ai を てでひらいてください"
-
-    def update_ai_help(self):
-        if self._btnp(CANCEL_BUTTONS) or self._btnp(CONFIRM_BUTTONS):
-            self.sfx.play("cancel")
-            self.state = "menu"
-
-    def draw_ai_help(self):
-        self.explore_scene.draw()
-        self.draw_status_bar()
-        # ウィンドウ
-        x, y, w, h = 12, 36, 232, 196
-        pyxel.rect(x, y, w, h, 1)
-        pyxel.rectb(x, y, w, h, 7)
-        self.text(x + 8, y + 8, "AIで このゲームを しゅうせい", 10)
-        # 手順
-        lines = [
-            "",
-            "１ Code Maker の Save をおして",
-            "  main.py をダウンロード",
-            "",
-            "２ ブラウザで claude.ai か",
-            "  chatgpt.com をひらく",
-            "",
-            "３ main.py をはりつけて",
-            "  「ここを こう なおして」と たのむ",
-            "",
-            "４ かえってきた コードを",
-            "  Code Maker に はりつける",
-            "",
-            f"  -> {self._ai_help_status}",
-        ]
-        for i, line in enumerate(lines):
-            self.text(x + 8, y + 24 + i * 9, line, 7)
-
     def _enter_professor_intro(self):
         p = self.player
         if p.get("professor_intro_seen"):
@@ -3188,7 +3123,7 @@ class Game:
         elif self.state == "professor_ending_accepted":
             self.draw_professor_ending_accepted()
         elif self.state == "ai_help":
-            self.draw_ai_help()
+            self.ai_help_scene.draw()
 
         # デバッグオーバーレイ（最後に重ねる）
         self._draw_say_overlay()
