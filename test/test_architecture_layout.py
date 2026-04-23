@@ -25,7 +25,6 @@ ALLOWED_ROOT_FILES = {
 }
 TARGETS = [
     ROOT / 'main.py',
-    ROOT / 'main_development.py',
     ROOT / 'tools' / 'report_play_sessions.py',
     ROOT / 'tools' / 'web_runtime_server.py',
     ROOT / 'tools' / 'test_web_compat.py',
@@ -59,22 +58,18 @@ FORBIDDEN_IMPORTS = [
 
 class TestArchitectureLayout(unittest.TestCase):
     def test_runtime_modules_exist_and_export_run(self):
+        # P3-A: dev 版削除済み。main_runtime のみチェック
         runtime = importlib.import_module('src.runtime.main_runtime')
-        preview_runtime = importlib.import_module('src.runtime.main_development_runtime')
 
         self.assertTrue(hasattr(runtime, 'run'))
-        self.assertTrue(hasattr(preview_runtime, 'run'))
 
     def test_root_entrypoints_are_thin_wrappers(self):
+        # P3-A: main_development.py 削除済み
         main_text = (ROOT / 'main.py').read_text(encoding='utf-8')
-        preview_text = (ROOT / 'main_development.py').read_text(encoding='utf-8')
 
         self.assertLessEqual(len(main_text.splitlines()), 20)
-        self.assertLessEqual(len(preview_text.splitlines()), 20)
         self.assertIn('src" / "runtime" / "main_runtime.py', main_text)
-        self.assertIn('src" / "runtime" / "main_development_runtime.py', preview_text)
         self.assertTrue(main_text.rstrip().endswith('run()'))
-        self.assertTrue(preview_text.rstrip().endswith('run()'))
 
     def test_shared_service_modules_exist(self):
         audio = importlib.import_module('src.shared.services.audio_system')

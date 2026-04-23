@@ -92,9 +92,7 @@ class CJ24SoundEditorTruthTest(unittest.TestCase):
     def test_main_runtime_keeps_imported_attack_sfx_after_pyxres_load(self):
         self._assert_runtime_keeps_imported_attack_sfx("main.py")
 
-    def test_main_development_runtime_keeps_imported_attack_sfx_after_pyxres_load(self):
-        self._assert_runtime_keeps_imported_attack_sfx("main_development.py")
-
+    # P3-A: main_development.py 削除済み
     def _assert_runtime_keeps_imported_attack_sfx(self, script_name: str) -> None:
         pyxel_stub = _FakePyxel(f"pyxel_for_{script_name}")
         module = _load_main_module(script_name, pyxel_stub)

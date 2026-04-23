@@ -9,7 +9,6 @@ from pathlib import Path
 
 PYXEL_ROOT = Path(__file__).resolve().parent.parent
 MAIN_RUNTIME = PYXEL_ROOT / "src" / "runtime" / "main_runtime.py"
-PREVIEW_RUNTIME = PYXEL_ROOT / "src" / "runtime" / "main_development_runtime.py"
 SCENE_PREFIXES = {"battle", "boss", "castle", "dungeon", "ending", "landmark", "town"}
 
 
@@ -116,31 +115,13 @@ class DialogueIntegrationTest(unittest.TestCase):
         ):
             self.assertIn(scene_name, landmark_text)
 
-    def test_main_preview_references_preview_only_glitch_intro_scene(self):
-        preview_text = PREVIEW_RUNTIME.read_text(encoding="utf-8")
-
-        for expected in (
-            "boss.glitch.prebattle_01",
-            "_enter_glitch_lord_intro",
-            "fullscreen_dialog",
-        ):
-            self.assertIn(expected, preview_text)
-
-    def test_main_preview_inlines_preview_only_glitch_intro_scene(self):
-        preview_text = PREVIEW_RUNTIME.read_text(encoding="utf-8")
-
-        self.assertIn("'boss.glitch.prebattle_01': {", preview_text)
+    # P3-A: preview/development 関連テストは dev 版削除に伴い削除済み
+    # （test_main_preview_* 3 件、test_main_inlined_dialogue_covers 1 件）
 
     def test_main_inlined_dialogue_covers_runtime_scene_ids(self):
         self.assert_bundled_dialogue_covers_runtime_scene_ids(
             "src/runtime/main_runtime.py",
             "main_dialogue_scene_coverage_test",
-        )
-
-    def test_main_preview_inlined_dialogue_covers_runtime_scene_ids(self):
-        self.assert_bundled_dialogue_covers_runtime_scene_ids(
-            "src/runtime/main_development_runtime.py",
-            "main_preview_dialogue_scene_coverage_test",
         )
 
     def test_main_uses_shared_input_bindings(self):
