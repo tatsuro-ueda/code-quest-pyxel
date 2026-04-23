@@ -9,6 +9,7 @@ from src.scenes.explore.scene import ExploreScene
 from src.scenes.ending.scene import EndingScene
 from src.scenes.battle.scene import BattleScene
 from src.shared.services.message_display import MessageDisplay
+from src.shared.services.image_banks import ImageBanks
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -41,6 +42,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
     def make_draw_game(self):
         game = self.main.Game.__new__(self.main.Game)
+        game.image_banks = ImageBanks(game=game)
         game.explore_scene = ExploreScene(game=game)
         game.ending_scene = EndingScene(game=game)
         game.player = {
@@ -55,17 +57,14 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
             [self.main.T_FLOOR, self.main.T_FLOOR, self.main.T_FLOOR],
         ]
         game.world_map = [[self.main.T_GRASS]]
-        game.path_variant_bank = {}
-        game.shore_variant_bank = {}
-        game.tile_bank_water2 = None
-        game.tile_bank = {
+        game.image_banks.tile_bank = {
             self.main.T_FLOOR: (0, 0),
             self.main.T_GLITCH_LORD_TRIGGER: (16, 0),
             self.main.T_GRASS: (32, 0),
             self.main.T_WATER: (48, 0),
             self.main.T_PATH: (64, 0),
         }
-        game.sprite_bank = {
+        game.image_banks.sprite_bank = {
             "hero_down": (0, 0),
             "hero_walk": (16, 0),
         }

@@ -86,27 +86,30 @@ class TilemapEditorTruthTest(unittest.TestCase):
         cls.main = load_main_module()
 
     def make_game(self):
+        import src.runtime.main_runtime as M
+        from src.shared.services.image_banks import ImageBanks
         game = self.main.Game.__new__(self.main.Game)
+        game.image_banks = ImageBanks(game=game)
         game.world_map = [
-            [self.main.T_GRASS for _ in range(self.main.MAP_W)]
-            for _ in range(self.main.MAP_H)
+            [M.T_GRASS for _ in range(M.MAP_W)]
+            for _ in range(M.MAP_H)
         ]
-        game.tile_bank = {
-            self.main.T_GRASS: (0, 0),
-            self.main.T_PATH: (16, 0),
-            self.main.T_WATER: (32, 0),
+        game.image_banks.tile_bank = {
+            M.T_GRASS: (0, 0),
+            M.T_PATH: (16, 0),
+            M.T_WATER: (32, 0),
         }
-        game.path_variant_bank = {
-            id(self.main.PATH_H): (48, 0),
-            id(self.main.PATH_V): (64, 0),
+        game.image_banks.path_variant_bank = {
+            id(M.PATH_H): (48, 0),
+            id(M.PATH_V): (64, 0),
         }
-        game.shore_variant_bank = {
-            id(self.main.SHORE_N): (80, 0),
-            id(self.main.SHORE_S): (96, 0),
-            id(self.main.SHORE_W): (112, 0),
-            id(self.main.SHORE_E): (128, 0),
+        game.image_banks.shore_variant_bank = {
+            id(M.SHORE_N): (80, 0),
+            id(M.SHORE_S): (96, 0),
+            id(M.SHORE_W): (112, 0),
+            id(M.SHORE_E): (128, 0),
         }
-        game.tile_bank_water2 = None
+        game.image_banks.tile_bank_water2 = None
         return game
 
     def test_bake_world_tilemap_writes_path_variant_tiles_for_editor(self):
@@ -118,7 +121,7 @@ class TilemapEditorTruthTest(unittest.TestCase):
         game.world_map[10][11] = self.main.T_PATH
         game.world_map[10][12] = self.main.T_PATH
 
-        self.main.Game._bake_world_to_tilemap(game)
+        game.image_banks.bake_world_to_tilemap()
 
         self.assertEqual(tilemap.pget(2 * 11, 2 * 10), (6, 0))
 
@@ -129,7 +132,7 @@ class TilemapEditorTruthTest(unittest.TestCase):
 
         game.world_map[20][20] = self.main.T_WATER
 
-        self.main.Game._bake_world_to_tilemap(game)
+        game.image_banks.bake_world_to_tilemap()
 
         self.assertEqual(tilemap.pget(2 * 20, 2 * 20), (10, 0))
 

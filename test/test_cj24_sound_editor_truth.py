@@ -105,15 +105,26 @@ class CJ24SoundEditorTruthTest(unittest.TestCase):
         )
         module.make_save_store = lambda path: types.SimpleNamespace(exists=lambda: False)
         module.InputStateTracker = lambda: types.SimpleNamespace()
-        module.Game._setup_world_tilemap = lambda self: None
         module.Game._sync_audio = lambda self: None
 
-        def fake_setup_image_banks(game_self) -> None:
-            game_self._pyxres_loaded = True
-            game_self._pyxres_path = Path("my_resource.pyxres")
-            pyxel_stub.sounds[attack_slot].set(*imported_attack)
+        if hasattr(module, "ImageBanks"):
+            # P1-G13 後: ImageBanks に移動済み
+            def fake_setup_image_banks(banks_self) -> None:
+                banks_self.pyxres_loaded = True
+                banks_self.pyxres_path = Path("my_resource.pyxres")
+                pyxel_stub.sounds[attack_slot].set(*imported_attack)
 
-        module.Game._setup_image_banks = fake_setup_image_banks
+            module.ImageBanks.setup_image_banks = fake_setup_image_banks
+            module.ImageBanks.setup_world_tilemap = lambda self: None
+        else:
+            # 旧 main_development_runtime: Game に残存
+            def fake_setup_image_banks_legacy(game_self) -> None:
+                game_self._pyxres_loaded = True
+                game_self._pyxres_path = Path("my_resource.pyxres")
+                pyxel_stub.sounds[attack_slot].set(*imported_attack)
+
+            module.Game._setup_image_banks = fake_setup_image_banks_legacy
+            module.Game._setup_world_tilemap = lambda self: None
 
         game = module.Game()
 

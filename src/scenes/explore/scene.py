@@ -304,31 +304,31 @@ class ExploreScene:
 
                 if tile == M.T_PATH and not p["in_dungeon"]:
                     variant = M.get_path_variant(current_map, tx, ty)
-                    bank_pos = game.path_variant_bank.get(id(variant))
+                    bank_pos = game.image_banks.path_variant_bank.get(id(variant))
                     if bank_pos:
                         pyxel.blt(sx, sy, 0, bank_pos[0], bank_pos[1], 16, 16, 0)
                     else:
-                        bp = game.tile_bank[M.T_PATH]
+                        bp = game.image_banks.tile_bank[M.T_PATH]
                         pyxel.blt(sx, sy, 0, bp[0], bp[1], 16, 16)
                 elif tile == M.T_WATER:
                     shore = None
                     if not p["in_dungeon"]:
                         shore = M.get_shore_variant(current_map, tx, ty)
                     if shore:
-                        bank_pos = game.shore_variant_bank.get(id(shore))
+                        bank_pos = game.image_banks.shore_variant_bank.get(id(shore))
                         if bank_pos:
                             pyxel.blt(sx, sy, 0, bank_pos[0], bank_pos[1], 16, 16)
                         else:
-                            bp = game.tile_bank[M.T_WATER]
+                            bp = game.image_banks.tile_bank[M.T_WATER]
                             pyxel.blt(sx, sy, 0, bp[0], bp[1], 16, 16)
                     else:
-                        if water_frame2 and game.tile_bank_water2:
-                            bp = game.tile_bank_water2
+                        if water_frame2 and game.image_banks.tile_bank_water2:
+                            bp = game.image_banks.tile_bank_water2
                         else:
-                            bp = game.tile_bank[M.T_WATER]
+                            bp = game.image_banks.tile_bank[M.T_WATER]
                         pyxel.blt(sx, sy, 0, bp[0], bp[1], 16, 16)
                 else:
-                    bp = game.tile_bank.get(tile)
+                    bp = game.image_banks.tile_bank.get(tile)
                     if bp:
                         pyxel.blt(sx, sy, 0, bp[0], bp[1], 16, 16)
 
@@ -341,7 +341,7 @@ class ExploreScene:
         hero_sx = p["x"] * 16 - game.cam_x
         hero_sy = p["y"] * 16 - game.cam_y + 24
         sprite_key = "hero_walk" if self.model.walk_frame == 1 else "hero_down"
-        bp = game.sprite_bank.get(sprite_key)
+        bp = game.image_banks.sprite_bank.get(sprite_key)
         if bp:
             pyxel.blt(hero_sx, hero_sy, 1, bp[0], bp[1], 16, 16, 0)
         return None
@@ -353,7 +353,7 @@ class ExploreScene:
         p = game.player
         if p.get("glitch_lord_defeated"):
             return
-        bp = game.sprite_bank.get("hero_down")
+        bp = game.image_banks.sprite_bank.get("hero_down")
         if bp is None:
             return
 

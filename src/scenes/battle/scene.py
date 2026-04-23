@@ -431,7 +431,7 @@ class BattleScene:
             return None
 
         sprite_key = e.get("sprite", "slime")
-        bp = game.sprite_bank.get(sprite_key)
+        bp = game.image_banks.sprite_bank.get(sprite_key)
         if bp:
             sx, sy = bp
             for py in range(16):

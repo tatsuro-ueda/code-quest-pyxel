@@ -1611,6 +1611,7 @@ from src.scenes.town.scene import TownScene
 from src.scenes.professor.scene import ProfessorScene
 from src.scenes.battle.scene import BattleScene
 from src.shared.services.message_display import MessageDisplay
+from src.shared.services.image_banks import ImageBanks
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1684,22 +1685,18 @@ class Game:
         dialogue_data = DIALOGUE_JA if self.has_jp_font else DIALOGUE_EN
         self.dialog = StructuredDialogRunner(dialogue_data)
 
-        # Tile/sprite bank position dicts (must init before _render calls)
-        self.tile_bank = {}
-        self.tile_bank_water2 = None
-        self.path_variant_bank = {}
-        self.shore_variant_bank = {}
-        self.sprite_bank = {}
+        # Tile/sprite bank は ImageBanks に移動（P1-G13）
+        self.image_banks = ImageBanks(game=self)
 
         # Image bank: .pyxres があればロード、無ければプログラム描画
-        self._setup_image_banks()
+        self.image_banks.setup_image_banks()
         # slot 番号の対応は維持しつつ、import 済み SFX は上書きしない
         self.sfx = SfxSystem(pyxel)
         self.audio = AudioManager(pyxel)
 
         self.world_map = generate_world_map()
         # Tilemap[0] に world_map をベイク or .pyxres から派生
-        self._setup_world_tilemap()
+        self.image_banks.setup_world_tilemap()
 
         self.dungeon_map = None
         self.dungeon_rooms = None
@@ -1770,371 +1767,33 @@ class Game:
         pyxel.run(self.update, self.draw)
 
     # ----- Image bank setup (.pyxres support) -----
-    def _setup_image_banks(self):
-        """画像・サウンドバンクの初期化。
 
-        重要: .pyxres は **画像バンクと音バンクの両方** を含む。
-        この関数で `pyxel.load()` すると、AudioManager / SfxSystem が
-        既に書き込んだ sounds 0-42 も .pyxres の内容で上書きされる。
 
-        これは仕様。**Code Maker / `pyxel edit` で編集した内容を真とする**。
-        コード側の chiptune_tracks.py / sfx_system.py を変更しても、
-        .pyxres を削除しない限り反映されない。
-
-        - レイアウト辞書はいつも計算する（コードとデータの位置対応）
-        - assets/blockquest.pyxres / my_resource.pyxres があれば load
-        - 無ければプログラム描画して save（初回・破損時のみ）
-        """
-        self._layout_tile_bank()
-        self._layout_sprite_bank()
-        self._build_reverse_tile_map()
-        self._pyxres_loaded = False
-        self._pyxres_path: Path | None = None
-
-        # Code Maker互換: my_resource.pyxres をルート直下から探し、無ければ assets/ から
-        root = Path(__file__).resolve().parent
-        stage_browser_imported_resource(root)
-        candidates = [
-            root / "my_resource.pyxres",
-            root / "assets" / "blockquest.pyxres",
-        ]
-        pyxres_path = next((p for p in candidates if p.exists()), candidates[-1])
-        self._pyxres_path = pyxres_path
-        if pyxres_path.exists():
-            try:
-                pyxel.load(str(pyxres_path))
-                self._pyxres_loaded = True
-                return
-            except Exception as exc:
-                print(f"[image_bank] failed to load {pyxres_path}: {exc}; regenerating")
-
-        # 初回 or 破損時：プログラム描画。.pyxres 保存は tilemap ベイク後に行う
-        self._paint_tile_bank()
-        self._paint_sprite_bank()
-        self._paint_jp_font_bank()
-
-    def _paint_jp_font_bank(self):
-        """`JP_FONT_BITMAPS` を image bank 2 に焼き込む。
-
-        各セルは GLYPH_W × GLYPH_H ピクセル。前景色は 7（白）で固定し、
-        描画時に `pyxel.pal()` で目的の色に変換する。
-        """
-        bank = pyxel.images[JP_FONT_IMAGE_BANK]
-        # クリア（全 0 = 黒 = 背景）
-        for py in range(256):
-            for px in range(256):
-                bank.pset(px, py, 0)
-        for ch, rows in JP_FONT_BITMAPS.items():
-            col, row = JP_FONT_LAYOUT[ch]
-            ox = col * JP_FONT_GLYPH_W
-            oy = row * JP_FONT_GLYPH_H
-            for ry in range(JP_FONT_GLYPH_H):
-                bits = rows[ry] if ry < len(rows) else 0
-                for rx in range(JP_FONT_GLYPH_W):
-                    if bits & (1 << (JP_FONT_GLYPH_W - 1 - rx)):
-                        bank.pset(ox + rx, oy + ry, 7)
-
-    def _build_reverse_tile_map(self):
-        """image bank pixel 座標 → 元の tile_id への逆引き辞書。
-
-        tilemap[0] から world_map を派生するときに使う。
-        path/shore variants は基底タイル (T_PATH / T_WATER) として復元する。
-        """
-        self.tile_id_by_pixel = {}
-        for tid, (u, v) in self.tile_bank.items():
-            self.tile_id_by_pixel[(u, v)] = tid
-        for (u, v) in self.path_variant_bank.values():
-            self.tile_id_by_pixel[(u, v)] = T_PATH
-        for (u, v) in self.shore_variant_bank.values():
-            self.tile_id_by_pixel[(u, v)] = T_WATER
-        if self.tile_bank_water2:
-            self.tile_id_by_pixel[self.tile_bank_water2] = T_WATER
 
     # ----- World tilemap setup (.pyxres tilemap[0] support) -----
     # Code Maker / pyxel edit は tilemap[N] のデフォルト imgsrc を N と仮定して
     # 表示するため、tilemap[1] を使うとイメージバンク 1（敵スプライト）が表示されて
     # しまう。これを避けるため、ワールドマップとダンジョンを **同じ tilemap[0]** に
     # 配置して、画像バンク 0 だけを参照させる。
-    DUNGEON_TM_OFFSET_Y = 110  # ワールド (0..99) の下に余白を入れて配置
-
-    def _tile_bank_layout_valid(self):
-        """イメージバンク 0 のピクセルが現在の TILE_DATA と一致するか検証する。
-
-        TILE_DATA の順序が変わるとレイアウト辞書の座標がずれ、
-        古い .pyxres のイメージバンクと不一致になる。全タイルの
-        先頭行をサンプリングして不一致を検出する。
-        """
-        bank = pyxel.images[0]
-        try:
-            for tid, data in TILE_DATA.items():
-                pos = self.tile_bank.get(tid)
-                if pos is None:
-                    return False
-                u, v = pos
-                for rx, expected in enumerate(data[0]):
-                    if bank.pget(u + rx, v) != expected:
-                        return False
-        except Exception:
-            return False
-        return True
-
-    def _setup_world_tilemap(self):
-        """World map と dungeon を `pyxel.tilemaps[0]` と同期する。
-
-        - tilemap[0] 上部 (0,0)..(99,99): ワールドマップ
-        - tilemap[0] 下部 (0,110)..(39,149): 共有ダンジョン
-        - .pyxres から banks がロード済み → tilemap[0] の両領域から派生
-        - 初回 or .pyxres 不在 → 手続き生成 → ベイク → .pyxres 保存
-        """
-        try:
-            pyxel.tilemaps[0].imgsrc = 0
-        except Exception:
-            pass
-
-        # 共有ダンジョンを生成（固定シード = 99）
-        dgrid, drooms = generate_dungeon(seed=99)
-        self.dungeon_template = dgrid
-        self.dungeon_template_rooms = drooms
-        if drooms:
-            self.dungeon_spawn = (drooms[0][0] + 1, drooms[0][1] + 1)
-        else:
-            self.dungeon_spawn = (1, 1)
-
-        if self._pyxres_loaded:
-            if not self._tile_bank_layout_valid():
-                # TILE_DATA の順序が変わってイメージバンクとずれている。
-                # 古い tilemap を信用できないので再描画＋再ベイクする。
-                print("[tilemap] tile bank layout changed — regenerating image banks")
-                self._paint_tile_bank()
-                self._paint_sprite_bank()
-                self._paint_jp_font_bank()
-                self._bake_world_to_tilemap()
-                self._bake_dungeon_to_tilemap()
-                # Web環境では pyxel.save がダウンロードを誘発するので保存しない
-                if self._pyxres_path is not None and sys.platform != "emscripten":
-                    try:
-                        pyxel.save(str(self._pyxres_path))
-                        print(f"[tilemap] updated {self._pyxres_path}")
-                    except Exception as exc:
-                        print(f"[tilemap] could not save .pyxres: {exc}")
-            else:
-                self._derive_world_from_tilemap()
-                self._derive_dungeon_from_tilemap()
-                # D3: オートタイル変種を再計算して tilemap[0] に書き戻す。
-                # Code Maker で基底タイルを配置した場合、周辺タイルとの
-                # 繋がりをゲーム側で正しく再計算する必要がある。
-                self._bake_world_to_tilemap()
-                self._bake_dungeon_to_tilemap()
-        else:
-            self._bake_world_to_tilemap()
-            self._bake_dungeon_to_tilemap()
-            # ここで初めて .pyxres を保存（banks + tilemap）
-            # Web環境では pyxel.save がダウンロードを誘発するので保存しない
-            if self._pyxres_path is not None and sys.platform != "emscripten":
-                try:
-                    self._pyxres_path.parent.mkdir(parents=True, exist_ok=True)
-                    pyxel.save(str(self._pyxres_path))
-                    print(f"[image_bank] generated {self._pyxres_path}")
-                except Exception as exc:
-                    print(f"[image_bank] could not save .pyxres: {exc}")
-
-    def _bake_dungeon_to_tilemap(self):
-        """共有ダンジョン (self.dungeon_template) を tilemap[0] のオフセット領域に焼き込む。"""
-        tilemap = pyxel.tilemaps[0]
-        dg = self.dungeon_template
-        oy = self.DUNGEON_TM_OFFSET_Y
-        for y in range(len(dg)):
-            for x in range(len(dg[0])):
-                tile = dg[y][x]
-                u, v = self.tile_bank.get(tile, self.tile_bank[T_GRASS])
-                tu, tv = u // 8, v // 8
-                tilemap.pset(2 * x,     oy + 2 * y,     (tu,     tv))
-                tilemap.pset(2 * x + 1, oy + 2 * y,     (tu + 1, tv))
-                tilemap.pset(2 * x,     oy + 2 * y + 1, (tu,     tv + 1))
-                tilemap.pset(2 * x + 1, oy + 2 * y + 1, (tu + 1, tv + 1))
-
-    def _derive_dungeon_from_tilemap(self):
-        """tilemap[0] のオフセット領域から共有ダンジョンを組み立てる（編集を反映）。"""
-        tilemap = pyxel.tilemaps[0]
-        dg = self.dungeon_template
-        oy = self.DUNGEON_TM_OFFSET_Y
-        derived = []
-        _miss = 0
-        for y in range(len(dg)):
-            row = []
-            for x in range(len(dg[0])):
-                tu, tv = tilemap.pget(2 * x, oy + 2 * y)
-                key = (tu * 8, tv * 8)
-                tid = self.tile_id_by_pixel.get(key, T_FLOOR)
-                if key not in self.tile_id_by_pixel:
-                    _miss += 1
-                row.append(tid)
-            derived.append(row)
-        if _miss:
-            print(f"[tilemap] dungeon derive: {_miss} tiles fell back to T_FLOOR")
-        self.dungeon_template = derived
-        # 階段の位置を再検索（編集で動いている可能性）
-        for y in range(len(derived)):
-            for x in range(len(derived[0])):
-                if derived[y][x] == T_STAIR_UP:
-                    self.dungeon_spawn = (x, y)
-                    return
-
-    def _bake_world_to_tilemap(self):
-        """self.world_map を tilemap[0] に焼き込む。
-
-        Code Maker / Resource Editor で見える形を実ゲームと揃えるため、
-        道と水辺はここで見た目用の変種タイルまで解決して書き込む。
-        逆変換時は _build_reverse_tile_map() で基底タイルへ戻す。
-        """
-        tilemap = pyxel.tilemaps[0]
-        wm = self.world_map
-        for y in range(MAP_H):
-            for x in range(MAP_W):
-                tile = wm[y][x]
-                if tile == T_PATH:
-                    variant = get_path_variant(wm, x, y)
-                    u, v = self.path_variant_bank.get(
-                        id(variant),
-                        self.tile_bank[T_PATH],
-                    )
-                elif tile == T_WATER:
-                    variant = get_shore_variant(wm, x, y)
-                    if variant is None:
-                        u, v = self.tile_bank[T_WATER]
-                    else:
-                        u, v = self.shore_variant_bank.get(
-                            id(variant),
-                            self.tile_bank[T_WATER],
-                        )
-                else:
-                    u, v = self.tile_bank.get(tile, self.tile_bank[T_GRASS])
-                tu, tv = u // 8, v // 8
-                tilemap.pset(2 * x,     2 * y,     (tu,     tv))
-                tilemap.pset(2 * x + 1, 2 * y,     (tu + 1, tv))
-                tilemap.pset(2 * x,     2 * y + 1, (tu,     tv + 1))
-                tilemap.pset(2 * x + 1, 2 * y + 1, (tu + 1, tv + 1))
 
 
-    def _derive_world_from_tilemap(self):
-        """tilemap[0] から self.world_map を組み立てる（編集を反映）。"""
-        tilemap = pyxel.tilemaps[0]
-        derived = []
-        _miss = 0
-        for y in range(MAP_H):
-            row = []
-            for x in range(MAP_W):
-                tu, tv = tilemap.pget(2 * x, 2 * y)
-                key = (tu * 8, tv * 8)
-                tid = self.tile_id_by_pixel.get(key, T_GRASS)
-                if key not in self.tile_id_by_pixel:
-                    _miss += 1
-                row.append(tid)
-            derived.append(row)
-        if _miss:
-            print(f"[tilemap] world derive: {_miss} tiles fell back to T_GRASS")
-        self.world_map = derived
+
+
+
+
+
 
     # ----- Image bank: layout (positions) と paint (pset) を分離 -----
     # 通常起動時は .pyxres から load してレイアウト辞書だけ計算する。
     # .pyxres が無ければ paint してから save する（初回のみ）。
 
-    def _tile_iter(self):
-        """タイルバンクに格納する順序を返す。レイアウト/ペイント両方で使う。
 
-        yields: (kind, key, data)
-            kind: "tile" | "water2" | "path" | "shore"
-            key: tile id / "water2" / id(pdata)
-            data: 16x16 のピクセル配列（paint時のみ使う）
-        """
-        for tid, tdata in TILE_DATA.items():
-            yield ("tile", tid, tdata)
-        yield ("water2", "water2", TILE_WATER2)
-        for _name, pdata in [
-            ("V", PATH_V), ("H", PATH_H), ("CROSS", PATH_CROSS),
-            ("SE", PATH_SE), ("SW", PATH_SW), ("NE", PATH_NE), ("NW", PATH_NW),
-            ("T_NES", PATH_T_NES), ("T_NWS", PATH_T_NWS),
-            ("T_EWS", PATH_T_EWS), ("T_NEW", PATH_T_NEW),
-        ]:
-            yield ("path", id(pdata), pdata)
-        for _name, sdata in [
-            ("N", SHORE_N), ("S", SHORE_S), ("W", SHORE_W), ("E", SHORE_E),
-            ("NE", SHORE_NE), ("NW", SHORE_NW), ("SE", SHORE_SE), ("SW", SHORE_SW),
-        ]:
-            yield ("shore", id(sdata), sdata)
 
-    def _layout_tile_bank(self):
-        """レイアウト辞書のみ計算（pset なし）。"""
-        self.tile_bank = {}
-        self.path_variant_bank = {}
-        self.shore_variant_bank = {}
-        col = 0; row = 0
-        for kind, key, _data in self._tile_iter():
-            bx = col * 16; by = row * 16
-            if kind == "tile":
-                self.tile_bank[key] = (bx, by)
-            elif kind == "water2":
-                self.tile_bank_water2 = (bx, by)
-            elif kind == "path":
-                self.path_variant_bank[key] = (bx, by)
-            elif kind == "shore":
-                self.shore_variant_bank[key] = (bx, by)
-            col += 1
-            if col >= 16:
-                col = 0; row += 1
 
-    def _paint_tile_bank(self):
-        """pset でタイル絵をバンクに焼き込む（.pyxres 生成時のみ呼ぶ）。"""
-        bank = pyxel.images[0]
-        col = 0; row = 0
-        for _kind, _key, data in self._tile_iter():
-            bx = col * 16; by = row * 16
-            for py in range(16):
-                for px in range(16):
-                    bank.pset(bx + px, by + py, data[py][px])
-            col += 1
-            if col >= 16:
-                col = 0; row += 1
 
-    def _render_tiles_to_bank(self):
-        """互換ラッパー：_layout + _paint を順に呼ぶ。"""
-        self._layout_tile_bank()
-        self._paint_tile_bank()
 
-    def _sprite_iter(self):
-        sprites_to_render = {
-            "hero_down": HERO_DOWN, "hero_walk": HERO_DOWN_WALK,
-        }
-        sprites_to_render.update(ENEMY_SPRITES)
-        for name, sdata in sprites_to_render.items():
-            yield (name, sdata)
 
-    def _layout_sprite_bank(self):
-        self.sprite_bank = {}
-        col = 0; row = 0
-        for name, _data in self._sprite_iter():
-            bx = col * 16; by = row * 16
-            self.sprite_bank[name] = (bx, by)
-            col += 1
-            if col >= 16:
-                col = 0; row += 1
 
-    def _paint_sprite_bank(self):
-        bank = pyxel.images[1]
-        col = 0; row = 0
-        for _name, sdata in self._sprite_iter():
-            bx = col * 16; by = row * 16
-            for py in range(16):
-                for px in range(16):
-                    bank.pset(bx + px, by + py, sdata[py][px])
-            col += 1
-            if col >= 16:
-                col = 0; row += 1
-
-    def _render_sprites_to_bank(self):
-        """互換ラッパー：_layout + _paint を順に呼ぶ。"""
-        self._layout_sprite_bank()
-        self._paint_sprite_bank()
 
     # -----------------------------------------------------------------
     # UPDATE
