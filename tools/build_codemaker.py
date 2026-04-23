@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""G12: Code Maker 用 zip ビルド.
+"""G12 / Phase 2: Code Maker 用 zip ビルド.
 
-main.py + blockquest.pyxres を production/code-maker.zip にパッケージする。
-pyxres は Code Maker 互換の my_resource.pyxres にリネームして同梱。
+codemaker_bundler.py が `codemaker_manifest.txt` 通りに全 .py を連結した
+source text を生成し、本モジュールはそれを CORE_BLOCK にラップして
+`production/code-maker.zip` に main.py + my_resource.pyxres として梱包する。
 
 生成される main.py は Code Maker 教材版としてラップされ、
-編集可能領域とコア自己検査を含む。
+STUDENT AREA（編集可能領域）とコア自己検査（CORE_HASH）を含む。
 
 使い方:
     python tools/build_codemaker.py
@@ -14,6 +15,12 @@ import hashlib
 import sys
 from pathlib import Path
 from zipfile import ZipFile
+
+_HERE = Path(__file__).resolve().parent
+if str(_HERE) not in sys.path:
+    sys.path.insert(0, str(_HERE))
+
+from codemaker_bundler import build_bundled_source
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "production" / "code-maker.zip"
@@ -36,6 +43,7 @@ def _sha256_text(text: str) -> str:
 
 
 def _split_core_and_entrypoint(source_text: str) -> tuple[str, str]:
+    """ENTRY POINT marker で core と entry に分割する。"""
     marker_index = source_text.rfind(ENTRY_POINT_MARKER)
     if marker_index == -1:
         raise ValueError("ENTRY POINT が見つかりません")
@@ -45,13 +53,21 @@ def _split_core_and_entrypoint(source_text: str) -> tuple[str, str]:
 
 
 def _normalize_entrypoint_source(entrypoint_source: str) -> str:
+    """entry の末尾に `game = run()` を足す（bundler 生成では含まれない）。"""
     normalized = entrypoint_source.rstrip() + "\n"
     if "def run(" in normalized and not normalized.rstrip().endswith("run()"):
         normalized += "\ngame = run()\n"
     return normalized
 
 
-def build_codemaker_main_text(source_text: str) -> str:
+def build_codemaker_main_text(source_text: str | None = None) -> str:
+    """bundler から source text を受け取り、Code Maker 用 main.py を生成する。
+
+    `source_text` は P2 以降は無視される（bundler が常に manifest から
+    生成するため）。呼出し互換のため引数は残している。
+    """
+    del source_text  # P2 以降 unused（引数は互換のため残している）
+    source_text = build_bundled_source()
     core_source, entrypoint_source = _split_core_and_entrypoint(source_text)
     entrypoint_source = _normalize_entrypoint_source(entrypoint_source)
     core_hash = _sha256_text(core_source)
@@ -87,18 +103,20 @@ def build_codemaker_main_text(source_text: str) -> str:
     )
 
 
-def build_codemaker_zip(main_py: Path, *, pyxres: Path, output: Path) -> Path:
-    main_py = Path(main_py)
+def build_codemaker_zip(main_py: Path | None = None, *, pyxres: Path, output: Path) -> Path:
+    """bundler から main.py を生成し、pyxres と一緒に zip にする。
+
+    `main_py` は Phase 2 からは無視する（bundler は常に `codemaker_manifest.txt`
+    に従って全 src を連結するため）。呼出し互換のため引数は残している。
+    """
+    del main_py  # Phase 2 以降 unused
     pyxres = Path(pyxres)
     output = Path(output)
 
-    if not main_py.exists():
-        raise FileNotFoundError(f"{main_py} が見つかりません")
     if not pyxres.exists():
         raise FileNotFoundError(f"{pyxres} が見つかりません")
 
-    source_text = main_py.read_text(encoding="utf-8")
-    generated_main = build_codemaker_main_text(source_text)
+    generated_main = build_codemaker_main_text()
     output.parent.mkdir(parents=True, exist_ok=True)
     with ZipFile(output, "w") as zf:
         zf.writestr(f"{BUNDLE_DIR}/main.py", generated_main)
@@ -107,17 +125,17 @@ def build_codemaker_zip(main_py: Path, *, pyxres: Path, output: Path) -> Path:
 
 
 def main():
-    main_py = ROOT / "src" / "runtime" / "main_runtime.py"
     pyxres = ROOT / "assets" / "blockquest.pyxres"
 
     try:
-        build_codemaker_zip(main_py, pyxres=pyxres, output=OUTPUT)
+        build_codemaker_zip(pyxres=pyxres, output=OUTPUT)
     except (FileNotFoundError, ValueError) as exc:
         print(f"ERROR: {exc}")
         return 1
 
     print(f"OK: {OUTPUT} を生成しました")
-    print(f"    main.py: {main_py.stat().st_size} bytes")
+    main_bytes = (OUTPUT.stat().st_size)
+    print(f"    zip: {main_bytes} bytes")
     print(f"    my_resource.pyxres: {pyxres.stat().st_size} bytes")
     return 0
 
