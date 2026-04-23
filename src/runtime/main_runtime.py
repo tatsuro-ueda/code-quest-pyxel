@@ -170,80 +170,11 @@ from src.shared.services.save_store import (
     make_save_store,
 )
 
-# === inlined: src/shared/services/browser_resource_override.py ===
-
-import base64
-import io
-from zipfile import BadZipFile, ZipFile
-
-
-BROWSER_IMPORT_ZIP_KEY = "blockquest_codemaker_zip_v1"
-BROWSER_IMPORT_META_KEY = "blockquest_codemaker_zip_meta_v1"
-RESOURCE_ENTRY_NAME = "my_resource.pyxres"
-CODE_ENTRY_NAME = "main.py"
-
-
-def _load_browser_import_payload(js_module):
-    raw_zip = js_module.localStorage.getItem(BROWSER_IMPORT_ZIP_KEY)
-    raw_meta = js_module.localStorage.getItem(BROWSER_IMPORT_META_KEY)
-    if raw_zip is None or raw_meta is None:
-        return None
-    try:
-        meta = json.loads(str(raw_meta))
-    except json.JSONDecodeError:
-        return None
-    if not isinstance(meta, dict):
-        return None
-    return str(raw_zip), meta
-
-
-def _extract_browser_import_resource(archive_bytes: bytes) -> bytes:
-    try:
-        zip_file = ZipFile(io.BytesIO(archive_bytes))
-    except BadZipFile as exc:
-        raise ValueError("Code Maker zip として読めません") from exc
-
-    with zip_file:
-        entries = zip_file.namelist()
-        exact_path = f"block-quest/{RESOURCE_ENTRY_NAME}"
-        if exact_path in entries:
-            resource_entry = exact_path
-        else:
-            matches = [
-                entry
-                for entry in entries
-                if entry.endswith(f"/{RESOURCE_ENTRY_NAME}") or entry == RESOURCE_ENTRY_NAME
-            ]
-            if not matches:
-                raise ValueError("Code Maker zip に my_resource.pyxres がありません")
-            if len(matches) != 1:
-                raise ValueError("Code Maker zip に my_resource.pyxres が複数あります")
-            resource_entry = matches[0]
-        return zip_file.read(resource_entry)
-
-
-def stage_browser_imported_resource(runtime_root: Path, *, js_module=None) -> Path | None:
-    runtime_root = Path(runtime_root).resolve()
-    if js_module is None:
-        try:
-            import js as js_module  # type: ignore[import-not-found]
-        except ImportError:
-            return None
-
-    payload = _load_browser_import_payload(js_module)
-    if payload is None:
-        return None
-
-    raw_zip, _meta = payload
-    try:
-        archive_bytes = base64.b64decode(raw_zip.encode("ascii"), validate=True)
-        resource_bytes = _extract_browser_import_resource(archive_bytes)
-    except (TypeError, ValueError):
-        return None
-
-    target_path = runtime_root / RESOURCE_ENTRY_NAME
-    target_path.write_bytes(resource_bytes)
-    return target_path
+from src.shared.services.browser_resource_override import (
+    BROWSER_IMPORT_ZIP_KEY,
+    BROWSER_IMPORT_META_KEY,
+    stage_browser_imported_resource,
+)
 
 # === inlined: src/sfx_system.py ===
 """Sound effects (SFX) for ブロッククエスト.
