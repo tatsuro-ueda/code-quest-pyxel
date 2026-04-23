@@ -1606,6 +1606,7 @@ from src.scenes.shop.scene import ShopScene
 from src.scenes.menu.scene import MenuScene
 from src.scenes.ai_help.scene import AiHelpScene
 from src.scenes.ending.scene import EndingScene
+from src.scenes.settings.scene import SettingsScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1699,7 +1700,8 @@ class Game:
         self.dungeon_rooms = None
 
         self.player = create_initial_player()
-        self._apply_av_settings()
+        # 注意：settings_scene はこの __init__ の末尾で生成されるので、
+        # 起動時の apply_av は scene 生成後に呼ぶ（末尾で実行）。
 
         self.state = "splash"
         # splash_frame は SplashModel.frame に移動（P1-G2）
@@ -1737,8 +1739,7 @@ class Game:
         # a_cooldown は ExploreModel.a_cooldown に移動（P1-G3）
 
         # Title cursor は TitleModel.cursor に移動（P1-G1）
-        self.settings_cursor = 0
-        self.settings_origin = "title"
+        # settings_cursor / settings_origin は SettingsModel に移動（P1-G8）
 
         # Save store (D1/D12/D17)
         save_path = Path(__file__).resolve().parent / "save.json"
@@ -1771,6 +1772,10 @@ class Game:
         self.menu_scene = MenuScene(game=self)
         self.ai_help_scene = AiHelpScene(game=self)
         self.ending_scene = EndingScene(game=self)
+        self.settings_scene = SettingsScene(game=self)
+
+        # 起動時の AV 設定適用（settings_scene 生成後に呼ぶ）
+        self.settings_scene.apply_av()
 
         self._sync_audio()
 
@@ -2202,7 +2207,7 @@ class Game:
         elif self.state == "menu":
             self.menu_scene.update()
         elif self.state == "settings":
-            self.update_settings()
+            self.settings_scene.update()
         elif self.state == "message":
             self.update_message()
         elif self.state == "town":
@@ -2572,63 +2577,6 @@ class Game:
                 if spell["learn_lv"] == p["lv"] and spell["name"] not in p["spells"]:
                     p["spells"].append(spell["name"])
 
-    def _open_settings(self, origin: str):
-        self.settings_origin = origin
-        self.settings_cursor = 0
-        self.menu_scene.model.sub = None
-        self.state = "settings"
-
-    def _settings_rows(self):
-        return [
-            ("all_av", self._t("ぜんぶ", "ALL")),
-            ("bgm_enabled", self._t("BGM", "BGM")),
-            ("sfx_enabled", self._t("こうかおん", "SFX")),
-            ("vfx_enabled", self._t("ひかり", "FLASH")),
-            ("back", self._t("もどる", "BACK")),
-        ]
-
-    def _settings_return_state(self):
-        return "menu" if self.settings_origin == "menu" else "title"
-
-    def _apply_av_settings(self):
-        self.audio.set_enabled(self.player.get("bgm_enabled", True))
-        self.sfx.set_enabled(self.player.get("sfx_enabled", True))
-
-    def _toggle_setting(self, key: str):
-        if key == "all_av":
-            next_value = not (
-                self.player.get("bgm_enabled", True)
-                and self.player.get("sfx_enabled", True)
-                and self.player.get("vfx_enabled", True)
-            )
-            self.player["bgm_enabled"] = next_value
-            self.player["sfx_enabled"] = next_value
-            self.player["vfx_enabled"] = next_value
-            self._apply_av_settings()
-            return
-        self.player[key] = not self.player.get(key, True)
-        self._apply_av_settings()
-
-    def update_settings(self):
-        rows = self._settings_rows()
-        if self._btnp(UP_BUTTONS):
-            self.settings_cursor = (self.settings_cursor - 1) % len(rows)
-            self.sfx.play("cursor")
-            return
-        if self._btnp(DOWN_BUTTONS):
-            self.settings_cursor = (self.settings_cursor + 1) % len(rows)
-            self.sfx.play("cursor")
-            return
-        if self._btnp(CANCEL_BUTTONS):
-            self.state = self._settings_return_state()
-            return
-        if self._btnp(LEFT_BUTTONS) or self._btnp(RIGHT_BUTTONS) or self._btnp(CONFIRM_BUTTONS):
-            key, _label = rows[self.settings_cursor]
-            if key == "back":
-                self.state = self._settings_return_state()
-                return
-            self._toggle_setting(key)
-
     def _apply_spell_effect(self, spell) -> str:
         """Apply a spell effect (heal or attack). Caller is responsible for MP cost."""
         p = self.player
@@ -2777,7 +2725,7 @@ class Game:
     def _sync_audio(self):
         battle_enemy_max_hp = self.battle_enemy["hp"] if self.battle_enemy else 0
         state_for_audio = self.state
-        if self.state == "settings" and self.settings_origin == "title":
+        if self.state == "settings" and self.settings_scene.model.origin == "title":
             state_for_audio = "title"
         scene_name = choose_bgm_scene(
             state=state_for_audio,
@@ -3086,12 +3034,12 @@ class Game:
             self.draw_status_bar()
             self.menu_scene.draw()
         elif self.state == "settings":
-            if self.settings_origin == "menu":
+            if self.settings_scene.model.origin == "menu":
                 self.explore_scene.draw()
                 self.draw_status_bar()
             else:
                 self.title_scene.draw()
-            self.draw_settings()
+            self.settings_scene.draw()
         elif self.state == "message":
             self.explore_scene.draw()
             self.draw_status_bar()
@@ -3259,30 +3207,6 @@ class Game:
                         self.text(18, cy, ">", 10)
 
         self._draw_vfx_overlay()
-
-    def draw_settings(self):
-        pyxel.rect(28, 54, 200, 148, 1)
-        pyxel.rectb(28, 54, 200, 148, 7)
-        self.text(92, 66, self._t("せってい", "SETTINGS"), 10)
-        for i, (key, label) in enumerate(self._settings_rows()):
-            cy = 94 + i * 22
-            col = 10 if i == self.settings_cursor else 6
-            marker = ">" if i == self.settings_cursor else " "
-            if key == "back":
-                value = ""
-            elif key == "all_av":
-                value = "ON" if (
-                    self.player.get("bgm_enabled", True)
-                    and self.player.get("sfx_enabled", True)
-                    and self.player.get("vfx_enabled", True)
-                ) else "OFF"
-            else:
-                value = "ON" if self.player.get(key, True) else "OFF"
-            row = f"{marker} {label}"
-            if value:
-                row = f"{row}: {value}"
-            self.text(44, cy, row, col)
-        self.text(44, 176, self._t("けっていで きりかえ", "Press confirm to toggle"), 7)
 
     def draw_town_menu(self):
         # Background: show the map underneath so players keep their bearings.

@@ -63,11 +63,11 @@ class TitleScene:
                 }
                 game.player = create_initial_player()
                 game.player.update(settings)
-                game._apply_av_settings()
+                game.settings_scene.apply_av()
                 game.state = "map"
                 return
             if self.model.cursor == 2:
-                game._open_settings("title")
+                game.settings_scene.open("title")
                 return
             # つづきから — has_save が False ならグレーアウト
             if not game._has_save:
@@ -122,7 +122,7 @@ class TitleScene:
         restored = restore_snapshot(snap)
         for key, value in restored["player"].items():
             game.player[key] = value
-        game._apply_av_settings()
+        game.settings_scene.apply_av()
         tx, ty = restored["town_pos"]
         game.player["x"] = tx
         game.player["y"] = ty

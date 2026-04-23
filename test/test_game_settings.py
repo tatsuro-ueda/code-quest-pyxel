@@ -92,8 +92,9 @@ class GameSettingsTest(unittest.TestCase):
         g.title_scene = M.TitleScene(game=g)
         # P1-G7: menu_sub は MenuScene.model.sub に移動
         g.menu_scene = M.MenuScene(game=g)
-        g.settings_cursor = 0
-        g.settings_origin = "title"
+        g.settings_scene = M.SettingsScene(game=g)
+        g.settings_scene.model.cursor = 0
+        g.settings_scene.model.origin = "title"
         return g
 
     def test_title_settings_item_opens_settings(self):
@@ -107,15 +108,15 @@ class GameSettingsTest(unittest.TestCase):
         g.title_scene.update()
 
         self.assertEqual(g.state, "settings")
-        self.assertEqual(g.settings_origin, "title")
+        self.assertEqual(g.settings_scene.model.origin, "title")
 
     def test_settings_toggle_updates_audio_flags(self):
         g = self._make_game()
         g.state = "settings"
-        g.settings_cursor = 1
+        g.settings_scene.model.cursor = 1
         g._btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
 
-        g.update_settings()
+        g.settings_scene.update()
 
         self.assertFalse(g.player["bgm_enabled"])
         g.audio.set_enabled.assert_called_once_with(False)
@@ -123,10 +124,10 @@ class GameSettingsTest(unittest.TestCase):
     def test_settings_toggle_all_updates_all_flags(self):
         g = self._make_game()
         g.state = "settings"
-        g.settings_cursor = 0
+        g.settings_scene.model.cursor = 0
         g._btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
 
-        g.update_settings()
+        g.settings_scene.update()
 
         self.assertFalse(g.player["bgm_enabled"])
         self.assertFalse(g.player["sfx_enabled"])
@@ -135,17 +136,17 @@ class GameSettingsTest(unittest.TestCase):
     def test_settings_cancel_returns_to_origin(self):
         g = self._make_game()
         g.state = "settings"
-        g.settings_origin = "menu"
+        g.settings_scene.model.origin = "menu"
         g._btnp = MagicMock(side_effect=lambda buttons: buttons == M.CANCEL_BUTTONS)
 
-        g.update_settings()
+        g.settings_scene.update()
 
         self.assertEqual(g.state, "menu")
 
     def test_title_settings_keeps_title_bgm_scene(self):
         g = self._make_game()
         g.state = "settings"
-        g.settings_origin = "title"
+        g.settings_scene.model.origin = "title"
         g.battle_enemy = None
         g.battle_enemy_hp = 0
         g.battle_is_glitch_lord = False

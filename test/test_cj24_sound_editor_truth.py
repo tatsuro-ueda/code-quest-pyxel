@@ -93,14 +93,19 @@ class CJ24SoundEditorTruthTest(unittest.TestCase):
         imported_attack = ("c4", "p", "7", "n", 8)
         attack_slot = module.SFX_BASE_SLOT + list(module.SFX_DEFINITIONS).index("attack")
 
-        module.AudioManager = lambda pyxel_module: types.SimpleNamespace(pyxel=pyxel_module)
+        module.AudioManager = lambda pyxel_module: types.SimpleNamespace(
+            pyxel=pyxel_module, set_enabled=lambda *a, **kw: None
+        )
+        module.SfxSystem_original = getattr(module, "SfxSystem", None)
+        # SfxSystem は apply_av から set_enabled を呼ばれるので対応
         module.StructuredDialogRunner = lambda data: types.SimpleNamespace(source=data)
         module.generate_world_map = lambda: [[0]]
-        module.create_initial_player = lambda: types.SimpleNamespace()
+        module.create_initial_player = lambda: types.SimpleNamespace(
+            get=lambda key, default=None: default
+        )
         module.make_save_store = lambda path: types.SimpleNamespace(exists=lambda: False)
         module.InputStateTracker = lambda: types.SimpleNamespace()
         module.Game._setup_world_tilemap = lambda self: None
-        module.Game._apply_av_settings = lambda self: None
         module.Game._sync_audio = lambda self: None
 
         def fake_setup_image_banks(game_self) -> None:
