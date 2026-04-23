@@ -50,13 +50,15 @@ class ImageBanks:
         self.pyxres_path = None
 
         import src.runtime.main_runtime as M
-        root = Path(M.__file__).resolve().parent
+        # main_runtime.py は src/runtime/ に居るので、プロジェクトルートは 2 階層上。
+        # bundled pyxapp でも app/src/runtime/main_runtime.py の 2 階層上 = app/ が root。
         # P3-E: browser_resource_override 削除済み。import された resource は
         # web_runtime_server が assets/blockquest.pyxres に直接書き戻すため、
         # ここでは my_resource.pyxres / assets/blockquest.pyxres のどちらかを選ぶだけ
+        project_root = Path(M.__file__).resolve().parent.parent.parent
         candidates = [
-            root / "my_resource.pyxres",
-            root / "assets" / "blockquest.pyxres",
+            project_root / "my_resource.pyxres",
+            project_root / "assets" / "blockquest.pyxres",
         ]
         pyxres_path = next((p for p in candidates if p.exists()), candidates[-1])
         self.pyxres_path = pyxres_path
