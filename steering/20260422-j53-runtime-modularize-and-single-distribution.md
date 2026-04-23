@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: done
 priority: high
 scheduled: 2026-04-22T23:54:40+00:00
 dateCreated: 2026-04-22T23:54:40+00:00
-dateModified: 2026-04-23T00:00:00+00:00
+dateModified: 2026-04-23T11:10:00+00:00
 tags:
   - task
   - j53
@@ -11,12 +11,13 @@ tags:
   - runtime
   - refactor
   - single-distribution
+  - archived
 ---
 
 # 2026年4月22日 J53 runtime monolith 分解と dev/prod 単一化
 
-> 状態：`in-progress`（P1/P1.5/P2/P3 完了 tag 済み、feature ブランチ main にマージ済み、Phase 4 未着手）
-> 次のゲート：（ユーザー）Phase 4 (systemd 常駐化) の Tasklist を確認して着手可否を指示する
+> 状態：`done`（全 Phase 完了。tags: `j53-phase1-methods-complete` / `j53-phase1-5-complete` / `j53-phase2-complete` / `j53-phase3-complete` / `j53-phase4-complete`）
+> 次のゲート：なし（本タスクノート終了）
 
 ---
 
@@ -436,26 +437,26 @@ Phase 3 まで完了して本番 1 本構成に整理済み。Phase 4 では `to
 
 ### P4-A. web_runtime_server の autostart 対応調査（2 タスク）
 
-- [ ] **P4-A1**：現 `tools/web_runtime_server.py` の起動フローを確認し、systemd ExecStart
+- [x] **P4-A1**：現 `tools/web_runtime_server.py` の起動フローを確認し、systemd ExecStart
   で起動可能な CLI 引数（port / serve-dir / db-path）が揃っているかを棚卸し。不足
   があれば追加
-- [ ] **P4-A2**：起動時に `production/` が存在しない場合のフォールバック（初回
+- [x] **P4-A2**：起動時に `production/` が存在しない場合のフォールバック（初回
   ビルドを自動実行するか、503 エラーを返すか）を決定し、必要なら実装
 
 ### P4-B. systemd unit file 作成（2 タスク）
 
-- [ ] **P4-B1**：`infra/autostart/code-quest-runtime.service` を新規作成
-- [ ] **P4-B2**：`infra/autostart/README.md` を追加（install 手順と troubleshooting）
+- [x] **P4-B1**：`infra/autostart/code-quest-runtime.service` を新規作成
+- [x] **P4-B2**：`infra/autostart/README.md` を追加（install 手順と troubleshooting）
 
 ### P4-C. 常駐起動の確認（実機、ユーザー側）（2 タスク）
 
-- [ ] **P4-C1**：install 手順をユーザーが実行し、`systemctl status` で active 確認
-- [ ] **P4-C2**：ブラウザから selector 表示と code-maker import の再ビルド確認
+- [x] **P4-C1**：install 手順をユーザーが実行し、`systemctl status` で active 確認
+- [x] **P4-C2**：ブラウザから selector 表示と code-maker import の再ビルド確認
 
 ### P4-D. 検証と締め（2 タスク）
 
-- [ ] **P4-D1**：`python -m pytest test/ -q` 全 green 維持
-- [ ] **P4-D2**：Phase 4 完了コミット + git tag `j53-phase4-complete` + J53 タスクノート
+- [x] **P4-D1**：`python -m pytest test/ -q` 全 green 維持
+- [x] **P4-D2**：Phase 4 完了コミット + git tag `j53-phase4-complete` + J53 タスクノート
   全体を `status: done` に更新
 
 ---
@@ -506,9 +507,44 @@ Phase 3 まで完了して本番 1 本構成に整理済み。Phase 4 では `to
 - Game → `src/runtime/app.py` 移動で test_cj24 が落ちた原因は「pyxel stub の reach が src.runtime.app に届かない」問題。テスト側で sys.modules から `src.runtime.app` を一時的に除去して再ロードさせる fix で解決。これは P1-G で Game が main_runtime 内にあった時には発生しなかった問題
 - 当初 Q8 で「既存 `src/app.py::BlockQuestApp` 拡張」を想定したが、実装してみると BlockQuestApp は scene_manager + GameState の薄い shell で構造が違いすぎた。実装は `src/runtime/app.py` 新規で正解（BlockQuestApp は Phase 2 以降で統合余地あり）
 
-### 追記予定
+### 2026-04-23 Phase 2 / 3 / 4 完了の記録（追記）
 
-（Phase 2 着手後、各 category 完了時に追記）
+**Phase 2（Code Maker bundler）**:
+- `tools/codemaker_manifest.txt` + `tools/codemaker_bundler.py` 新設（concat 生成型、Q4B 決定）
+- `tools/build_codemaker.py` を bundler 呼び出しの薄い wrapper に書き換え
+- Phase 1.5 shim 化で意図せず壊れていた Code Maker zip を復旧（main.py が 1 行 shim bundle から 8400+ 行の完全 bundle に戻る）
+- git tag `j53-phase2-complete`
+
+**Phase 3（dev/prod 単一化）**:
+- `main_development.py` / `main_development_runtime.py` / `browser_resource_override.py` / `sync_main_data.py` を削除
+- selector を本番 1 カードに簡素化、codemaker import の localStorage fallback を削除
+- `tools/build_web_release.py` 417 → 135 行、`tools/resolve_release_source_of_truth.py` 320 → 120 行
+- `codemaker_resource_store.py` の staging 経路を撤廃、`apply_imported_resource` で直接 `assets/blockquest.pyxres` を上書き
+- git tag `j53-phase3-complete`
+
+**Phase 4（systemd 常駐化）**:
+- `tools/web_runtime_server.py` に `ensure_production_build()` を追加（起動時 production/ 未存在なら自動ビルド）
+- `infra/autostart/code-quest-runtime.service` + `infra/autostart/README.md` を新設
+- ユーザー側 exe.dev VM で `sudo systemctl enable --now code-quest-runtime.service` 実行、`active (running)` 確認
+- http://VM-IP:8000/ に接続して selector 表示を確認（1 カード化により「select」UI 自体は無い＝正常）
+- git tag `j53-phase4-complete`
+
+**最終状態**:
+- pytest 201 passed + 2 skip
+- web & codemaker build exit 0
+- production/ 1 本のみ生成（development/ 不在）
+- Block Quest は VM 再起動後も自動復旧して遊べる状態に
+- feature/20260422-j53-runtime-modularize ブランチを main にマージ済み
+
+**学び・反省**:
+- Phase 1.5 で shim 化した時、Code Maker zip が壊れていることにすぐ気づかなかった。次回は
+  Phase 間に **実機配信テスト**（zip を解凍して Code Maker に投入）を必須にする
+- Phase 3 での build tools 大幅簡素化は想定より楽だった。P3-D で 800 行近く削れたのは、
+  dev 版用 DevelopmentCandidate データクラスが意外と深く根を張っていたため
+- systemd autostart の ExecStartPre vs 起動時内部 fallback（`ensure_production_build`）は
+  後者を選んで正解だった。systemd の `ExecStartPre` は同期で重いビルドを走らせると
+  `TimeoutStartSec` に引っかかりがち。起動後の非同期呼び出し（本ケースは同期だが軽い
+  selector レンダリングだけで済む）の方が運用が素直
 
 ---
 
