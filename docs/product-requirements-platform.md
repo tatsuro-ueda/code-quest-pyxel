@@ -1,4 +1,4 @@
-# カスタマージャーニーgherkin: Platform（配信・Code Maker制約・体験設計）
+# プロダクト要求: Platform（配信・Code Maker制約・体験設計）
 
 - 対象カスタマージャーニー: CJ12, CJ20-CJ23, CJ25-CJ26, CJ31-CJ34, CJ43
 - 根拠: [`customer-journeys.md`](./customer-journeys.md)

@@ -1,4 +1,4 @@
-# カスタマージャーニーgherkin: Guardrails（AI改造のガードレール）
+# プロダクト要求: Guardrails（AI改造のガードレール）
 
 - 対象カスタマージャーニー: CJ35-CJ36, CJ38-CJ42
 - 根拠: [`customer-journeys.md`](./customer-journeys.md)

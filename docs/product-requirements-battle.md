@@ -1,4 +1,4 @@
-# カスタマージャーニーgherkin: Battle（戦闘・敵・呪文・バランス）
+# プロダクト要求: Battle（戦闘・敵・呪文・バランス）
 
 - 対象カスタマージャーニー: CJ08, CJ10, CJ13, CJ29
 - 根拠: [`customer-journeys.md`](./customer-journeys.md)

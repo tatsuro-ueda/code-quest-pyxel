@@ -1,4 +1,4 @@
-# カスタマージャーニーgherkin: AV（BGM・SFX・VFX）
+# プロダクト要求: AV（BGM・SFX・VFX）
 
 - 対象カスタマージャーニー: CJ15-CJ19, CJ24
 - 根拠: [`customer-journeys.md`](./customer-journeys.md)

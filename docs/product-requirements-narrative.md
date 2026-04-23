@@ -1,4 +1,4 @@
-# カスタマージャーニーgherkin: Narrative（ダイアログ・ストーリー・ナビ）
+# プロダクト要求: Narrative（ダイアログ・ストーリー・ナビ）
 
 - 対象カスタマージャーニー: CJ09, CJ14, CJ27, CJ30
 - 根拠: [`customer-journeys.md`](./customer-journeys.md)

@@ -1,4 +1,4 @@
-# カスタマージャーニーgherkin: Map（マップ・タイル操作）
+# プロダクト要求: Map（マップ・タイル操作）
 
 - 対象カスタマージャーニー: CJ01-CJ07
 - 根拠: [`customer-journeys.md`](./customer-journeys.md)

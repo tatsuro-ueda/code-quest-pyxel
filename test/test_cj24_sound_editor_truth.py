@@ -57,6 +57,13 @@ def _load_main_module(script_name: str, pyxel_stub: _FakePyxel) -> types.ModuleT
     module = types.ModuleType(f"{script_name.replace('.', '_')}_cj24_test")
     module.__file__ = str(script_path.resolve())
     original_pyxel = sys.modules.get("pyxel")
+    # P1.5-D 後: Game は src.runtime.app にあり、既にロード済みだと pyxel は
+    # そこで real pyxel を参照してしまう。pyxel を stub に差し替えた上で
+    # src.runtime.app を sys.modules から除いて再ロードさせる
+    removed_modules: dict[str, object] = {}
+    for mod_name in list(sys.modules.keys()):
+        if mod_name.startswith("src.runtime.app") or mod_name == script_path.stem:
+            removed_modules[mod_name] = sys.modules.pop(mod_name)
     sys.modules[module.__name__] = module
     sys.modules["pyxel"] = pyxel_stub
     try:
@@ -66,6 +73,8 @@ def _load_main_module(script_name: str, pyxel_stub: _FakePyxel) -> types.ModuleT
             del sys.modules["pyxel"]
         else:
             sys.modules["pyxel"] = original_pyxel
+        for mod_name, mod_obj in removed_modules.items():
+            sys.modules.setdefault(mod_name, mod_obj)
     return module
 
 

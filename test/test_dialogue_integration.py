@@ -157,10 +157,11 @@ class DialogueIntegrationTest(unittest.TestCase):
             self.assertIn(expected, main_text)
 
     def test_main_uses_audio_manager_for_bgm(self):
-        # P1-G15 後: sync_audio は shared/services/audio_system.py に移動
+        # P1-G15/P1.5-D 後: sync_audio は audio_system.py、Game は app.py に移動
         text = MAIN_RUNTIME.read_text(encoding="utf-8")
         for extra in (
             PYXEL_ROOT / "src" / "shared" / "services" / "audio_system.py",
+            PYXEL_ROOT / "src" / "runtime" / "app.py",
         ):
             text += "\n" + extra.read_text(encoding="utf-8")
 
