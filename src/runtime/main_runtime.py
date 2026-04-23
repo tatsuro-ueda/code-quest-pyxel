@@ -1603,6 +1603,7 @@ from src.scenes.splash.scene import SplashScene
 from src.scenes.title.scene import TitleScene
 from src.scenes.explore.scene import ExploreScene
 from src.scenes.shop.scene import ShopScene
+from src.scenes.menu.scene import MenuScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1726,12 +1727,6 @@ class Game:
         self.professor_ending_lines: list[str] = []
         self.professor_ending_idx = 0
 
-        # Menu state
-        self.menu_cursor = 0
-        self.menu_sub = None
-        self.menu_item_cursor = 0
-        self.menu_message = ""
-
         # Town menu state (D6)
         self.town_menu_cursor = 0
         self.town_menu_pos: tuple[int, int] | None = None
@@ -1772,6 +1767,7 @@ class Game:
         self.title_scene = TitleScene(game=self)
         self.explore_scene = ExploreScene(game=self)
         self.shop_scene = ShopScene(game=self)
+        self.menu_scene = MenuScene(game=self)
 
         self._sync_audio()
 
@@ -2201,7 +2197,7 @@ class Game:
         elif self.state == "battle":
             self.update_battle()
         elif self.state == "menu":
-            self.update_menu()
+            self.menu_scene.update()
         elif self.state == "settings":
             self.update_settings()
         elif self.state == "message":
@@ -2573,87 +2569,10 @@ class Game:
                 if spell["learn_lv"] == p["lv"] and spell["name"] not in p["spells"]:
                     p["spells"].append(spell["name"])
 
-    def update_menu(self):
-        menu_items = self._menu_labels()
-        if self.menu_sub is None:
-            if self._btnp(UP_BUTTONS):
-                self.menu_cursor = (self.menu_cursor - 1) % len(menu_items)
-                self.sfx.play("cursor")
-            if self._btnp(DOWN_BUTTONS):
-                self.menu_cursor = (self.menu_cursor + 1) % len(menu_items)
-                self.sfx.play("cursor")
-            if self._btnp(CANCEL_BUTTONS):
-                self.sfx.play("cancel")
-                self.state = "map"
-                return
-            if self._btnp(CONFIRM_BUTTONS):
-                self.sfx.play("select")
-                if self.menu_cursor == 0:
-                    self.menu_sub = "status"
-                elif self.menu_cursor == 1:
-                    self.menu_sub = "items"
-                    self.menu_item_cursor = 0
-                elif self.menu_cursor == 2:
-                    self.menu_sub = "equip"
-                    self.menu_item_cursor = 0
-                elif self.menu_cursor == 3:
-                    self._open_settings("menu")
-                elif self.menu_cursor == 4:
-                    self._enter_ai_help()
-                elif self.menu_cursor == 5:
-                    self.state = "map"
-        elif self.menu_sub == "status":
-            if self._btnp(CANCEL_BUTTONS) or self._btnp(CONFIRM_BUTTONS):
-                self.sfx.play("cancel")
-                self.menu_sub = None
-        elif self.menu_sub == "items":
-            items = self.player["items"]
-            if self._btnp(CANCEL_BUTTONS):
-                self.sfx.play("cancel")
-                self.menu_sub = None; return
-            if items:
-                if self._btnp(UP_BUTTONS):
-                    self.menu_item_cursor = max(0, self.menu_item_cursor - 1)
-                    self.menu_message = ""
-                    self.sfx.play("cursor")
-                if self._btnp(DOWN_BUTTONS):
-                    self.menu_item_cursor = min(len(items) - 1, self.menu_item_cursor + 1)
-                    self.menu_message = ""
-                    self.sfx.play("cursor")
-                if self._btnp(CONFIRM_BUTTONS):
-                    self.sfx.play("select")
-                    item = items[self.menu_item_cursor]
-                    item_data = ITEMS[item["id"]]
-                    msg = self._use_item(item_data)
-                    if not msg:
-                        # 使えなかった（HP満タンで回復薬など）→ 消費しない
-                        self.menu_message = "HPがまんたんで つかえない"
-                    else:
-                        self.menu_message = ""
-                        item["qty"] -= 1
-                        if item["qty"] <= 0:
-                            items.pop(self.menu_item_cursor)
-                            self.menu_item_cursor = max(0, min(self.menu_item_cursor, len(items) - 1))
-        elif self.menu_sub == "equip":
-            if self._btnp(CANCEL_BUTTONS):
-                self.sfx.play("cancel")
-                self.menu_sub = None; return
-            if self._btnp(UP_BUTTONS):
-                self.menu_item_cursor = (self.menu_item_cursor - 1) % 2
-                self.sfx.play("cursor")
-            if self._btnp(DOWN_BUTTONS):
-                self.menu_item_cursor = (self.menu_item_cursor + 1) % 2
-                self.sfx.play("cursor")
-
-    def _menu_labels(self):
-        if self.has_jp_font:
-            return ["ステータス", "アイテム", "そうび", "せってい", "AIでしゅうせい", "とじる"]
-        return ["STATUS", "ITEMS", "EQUIP", "SETTINGS", "AI HELP", "CLOSE"]
-
     def _open_settings(self, origin: str):
         self.settings_origin = origin
         self.settings_cursor = 0
-        self.menu_sub = None
+        self.menu_scene.model.sub = None
         self.state = "settings"
 
     def _settings_rows(self):
@@ -3240,7 +3159,7 @@ class Game:
         elif self.state == "menu":
             self.explore_scene.draw()
             self.draw_status_bar()
-            self.draw_menu()
+            self.menu_scene.draw()
         elif self.state == "settings":
             if self.settings_origin == "menu":
                 self.explore_scene.draw()
@@ -3415,67 +3334,6 @@ class Game:
                         self.text(18, cy, ">", 10)
 
         self._draw_vfx_overlay()
-
-    def draw_menu(self):
-        # Semi-transparent overlay
-        pyxel.rect(20, 30, 216, 200, 1)
-        pyxel.rectb(20, 30, 216, 200, 7)
-
-        menu_labels = self._menu_labels()
-        for i, label in enumerate(menu_labels):
-            cy = 40 + i * 16
-            col = 10 if i == self.menu_cursor and self.menu_sub is None else 6
-            self.text(36, cy, label, col)
-            if i == self.menu_cursor and self.menu_sub is None:
-                self.text(26, cy, ">", 10)
-
-        p = self.player
-        if self.menu_sub == "status":
-            pyxel.rect(40, 100, 180, 120, 0)
-            pyxel.rectb(40, 100, 180, 120, 7)
-            lines = [
-                f"レベル {p['lv']}  けいけん {p['exp']}",
-                f"HP {p['hp']}/{p['max_hp']}",
-                f"MP {p['mp']}/{p['max_mp']}",
-                f"こうげき {p['atk']+WEAPONS[p['weapon']]['atk']}  ぼうぎょ {p['def']+ARMORS[p['armor']]['def']}",
-                f"すばやさ {p['agi']}",
-                f"コイン {p['gold']}",
-            ]
-            for i, line in enumerate(lines):
-                self.text(50, 108 + i * 13, line, 7)
-
-        elif self.menu_sub == "items":
-            pyxel.rect(40, 100, 180, 120, 0)
-            pyxel.rectb(40, 100, 180, 120, 7)
-            items = p["items"]
-            if not items:
-                self.text(50, 110, self._t("アイテムがない", "No items"), 6)
-            else:
-                for i, item in enumerate(items[:8]):
-                    idata = ITEMS[item["id"]]
-                    cy = 108 + i * 13
-                    col = 10 if i == self.menu_item_cursor else 6
-                    self.text(56, cy, f"{self._name(idata['name'])} x{item['qty']}", col)
-                    if i == self.menu_item_cursor:
-                        self.text(46, cy, ">", 10)
-            if self.menu_message:
-                self.text(50, 210, self.menu_message, 8)
-
-        elif self.menu_sub == "equip":
-            pyxel.rect(40, 100, 180, 80, 0)
-            pyxel.rectb(40, 100, 180, 80, 7)
-            wlbl = self._t("ぶき", "WPN")
-            albl = self._t("ぼうぐ", "ARM")
-            labels = [
-                f"{wlbl}: {self._name(WEAPONS[p['weapon']]['name'])} (こうげき+{WEAPONS[p['weapon']]['atk']})",
-                f"{albl}: {self._name(ARMORS[p['armor']]['name'])} (ぼうぎょ+{ARMORS[p['armor']]['def']})",
-            ]
-            for i, label in enumerate(labels):
-                cy = 110 + i * 20
-                col = 10 if i == self.menu_item_cursor else 6
-                self.text(56, cy, label, col)
-                if i == self.menu_item_cursor:
-                    self.text(46, cy, ">", 10)
 
     def draw_settings(self):
         pyxel.rect(28, 54, 200, 148, 1)

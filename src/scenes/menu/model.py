@@ -5,6 +5,9 @@ from dataclasses import dataclass
 
 @dataclass
 class MenuModel:
-    """menu シーンの状態（Phase 1 スケルトン、P1-G7 で中身を埋める）。"""
+    """menu シーンの状態（P1-G7 で Game.menu_* を取り込み）。"""
 
-    pass
+    cursor: int = 0
+    sub: str | None = None
+    item_cursor: int = 0
+    message: str = ""

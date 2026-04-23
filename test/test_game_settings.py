@@ -90,6 +90,8 @@ class GameSettingsTest(unittest.TestCase):
         g.state = "title"
         # P1-G1: title_cursor は TitleScene.model.cursor に移動
         g.title_scene = M.TitleScene(game=g)
+        # P1-G7: menu_sub は MenuScene.model.sub に移動
+        g.menu_scene = M.MenuScene(game=g)
         g.settings_cursor = 0
         g.settings_origin = "title"
         return g
