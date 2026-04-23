@@ -1,0 +1,23 @@
+[Unit]
+Description=Block Quest web runtime server (J53 Phase 4 autostart)
+Documentation=https://github.com/tatsuro-ueda/code-quest-pyxel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=exedev
+Group=exedev
+WorkingDirectory=/home/exedev/code-quest-pyxel
+ExecStart=/usr/bin/python3 /home/exedev/code-quest-pyxel/tools/web_runtime_server.py --host 0.0.0.0 --port 8000 --serve-dir /home/exedev/code-quest-pyxel
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+
+# production/ が無い fresh checkout 直後や、pyxres 編集後の再起動でも
+# web_runtime_server 側の ensure_production_build() が初回ビルドを走らせる。
+# 追加の ExecStartPre は不要。
+
+[Install]
+WantedBy=multi-user.target
