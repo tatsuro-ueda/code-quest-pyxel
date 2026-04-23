@@ -1602,6 +1602,7 @@ from src.shared.services.text_format import NAME_EN_MAP, name_en
 from src.scenes.splash.scene import SplashScene
 from src.scenes.title.scene import TitleScene
 from src.scenes.explore.scene import ExploreScene
+from src.scenes.shop.scene import ShopScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1736,12 +1737,6 @@ class Game:
         self.town_menu_pos: tuple[int, int] | None = None
         self.last_town_pos: tuple[int, int] | None = None
 
-        # Shop state (Task #7)
-        self.shop_kind: str = ""
-        self.shop_inventory: list[int] = []
-        self.shop_cursor: int = 0
-        self.shop_message: str = ""
-
         # a_cooldown は ExploreModel.a_cooldown に移動（P1-G3）
 
         # Title cursor は TitleModel.cursor に移動（P1-G1）
@@ -1776,6 +1771,7 @@ class Game:
         self.splash_scene = SplashScene(game=self)
         self.title_scene = TitleScene(game=self)
         self.explore_scene = ExploreScene(game=self)
+        self.shop_scene = ShopScene(game=self)
 
         self._sync_audio()
 
@@ -2221,7 +2217,7 @@ class Game:
         elif self.state == "professor_ending_accepted":
             self.update_professor_ending_accepted()
         elif self.state == "shop":
-            self.update_shop()
+            self.shop_scene.update()
         elif self.state == "ending":
             self.update_ending()
         elif self.state == "ai_help":
@@ -2935,7 +2931,7 @@ class Game:
             if label == "はなす":
                 self._town_menu_talk()
             elif label in SHOP_KIND_BY_LABEL:
-                self._enter_shop(SHOP_KIND_BY_LABEL[label])
+                self.shop_scene.enter(SHOP_KIND_BY_LABEL[label])
             elif label == "やどや":
                 self._town_menu_inn()
             elif label == "セーブ":
@@ -2991,110 +2987,6 @@ class Game:
         return INN_PRICES[idx] if idx < len(INN_PRICES) else INN_COST
 
     # ----- Shop (Task #7) -----
-    def _enter_shop(self, kind: str):
-        """ショップ画面に遷移する。kind は 'weapons' / 'armors' / 'items'。"""
-        idx = self._current_town_index()
-        shop = SHOPS[idx]
-        self.shop_kind = kind
-        self.shop_inventory = list(shop[kind])
-        self.shop_cursor = 0
-        self.shop_message = ""
-        self.last_town_pos = self.town_menu_pos
-        self.state = "shop"
-
-    def update_shop(self):
-        if not self.shop_inventory:
-            if self._btnp(CANCEL_BUTTONS) or self._btnp(CONFIRM_BUTTONS):
-                self.sfx.play("cancel")
-                self.state = "town_menu"
-            return
-        if self._btnp(UP_BUTTONS):
-            self.shop_cursor = (self.shop_cursor - 1) % len(self.shop_inventory)
-            self.sfx.play("cursor")
-            return
-        if self._btnp(DOWN_BUTTONS):
-            self.shop_cursor = (self.shop_cursor + 1) % len(self.shop_inventory)
-            self.sfx.play("cursor")
-            return
-        if self._btnp(CANCEL_BUTTONS):
-            self.sfx.play("cancel")
-            self.state = "town_menu"
-            return
-        if self._btnp(CONFIRM_BUTTONS):
-            self.sfx.play("select")
-            self._try_purchase()
-
-    def _try_purchase(self):
-        idx = self.shop_inventory[self.shop_cursor]
-        kind = self.shop_kind
-        if kind == "weapons":
-            entry = WEAPONS[idx]
-        elif kind == "armors":
-            entry = ARMORS[idx]
-        else:
-            entry = ITEMS[idx]
-        price = entry.get("price", 0)
-        # 同じ装備を二重購入させない（装備＝所持なので、装備中のものは買えない）
-        if kind == "weapons" and self.player["weapon"] == idx:
-            self.shop_message = "すでに もっています"
-            return
-        if kind == "armors" and self.player["armor"] == idx:
-            self.shop_message = "すでに もっています"
-            return
-        if self.player["gold"] < price:
-            self.shop_message = "コインが たりません"
-            return
-        self.player["gold"] -= price
-        if kind == "weapons":
-            self.player["weapon"] = idx
-            self.shop_message = entry.get("buy_msg") or f"{entry['name']}を てにいれた！"
-        elif kind == "armors":
-            self.player["armor"] = idx
-            self.shop_message = entry.get("buy_msg") or f"{entry['name']}を てにいれた！"
-        else:
-            # アイテムは inventory に追加
-            for inv in self.player["items"]:
-                if inv["id"] == idx:
-                    inv["qty"] += 1
-                    break
-            else:
-                self.player["items"].append({"id": idx, "qty": 1})
-            self.shop_message = f"{entry['name']}を てにいれた！"
-
-    def draw_shop(self):
-        pyxel.cls(0)
-        if self.has_jp_font:
-            title_map = {"weapons": "ぶきや", "armors": "ぼうぐや", "items": "どうぐや"}
-            title = title_map.get(self.shop_kind, "ショップ")
-        else:
-            title_map = {"weapons": "WEAPONS", "armors": "ARMOR", "items": "ITEMS"}
-            title = title_map.get(self.shop_kind, "SHOP")
-        self.text(8, 6, title, 7)
-        self.text(160, 6, f"G:{self.player['gold']}", 10)
-        if not self.shop_inventory:
-            self.text(8, 40, self._t("(ざいこなし)", "(no stock)"), 6)
-            return
-        for i, idx in enumerate(self.shop_inventory):
-            owned = False
-            if self.shop_kind == "weapons":
-                e = WEAPONS[idx]
-                line = f"{self._name(e['name'])}  こうげき+{e['atk']}  {e['price']}G"
-                owned = self.player["weapon"] == idx
-            elif self.shop_kind == "armors":
-                e = ARMORS[idx]
-                line = f"{self._name(e['name'])}  ぼうぎょ+{e['def']}  {e['price']}G"
-                owned = self.player["armor"] == idx
-            else:
-                e = ITEMS[idx]
-                line = f"{self._name(e['name'])}  {e['price']}G"
-            if owned:
-                line = f"{line}  [もっています]"
-            color = 10 if i == self.shop_cursor else 7
-            marker = ">" if i == self.shop_cursor else " "
-            self.text(8, 30 + i * 14, f"{marker} {line}", color)
-        if self.shop_message:
-            self.text(8, 200, self.shop_message, 11)
-
     def _town_menu_save(self):
         snap = dump_snapshot(self.player, town_pos=self.town_menu_pos)
         try:
@@ -3367,7 +3259,7 @@ class Game:
         elif self.state == "town_menu":
             self.draw_town_menu()
         elif self.state == "shop":
-            self.draw_shop()
+            self.shop_scene.draw()
         elif self.state == "ending":
             self.draw_ending()
         elif self.state == "professor_intro":

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class ShopModel:
-    """shop シーンの状態（Phase 1 スケルトン、P1-G5 で中身を埋める）。"""
+    """shop シーンの状態（P1-G5 で Game から shop_* を取り込み）。"""
 
-    pass
+    kind: str = ""
+    inventory: list[int] = field(default_factory=list)
+    cursor: int = 0
+    message: str = ""
