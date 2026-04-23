@@ -702,3 +702,86 @@ Phase 1.5では、まず次の順で進めると安定します。
 最後に、規約を一文で言うならこうです。
 
 **「入力はPresenter、状態はModel、描画はView、PyxelはViewだけ、共有状態は明示、曖昧な便利実装は禁止」**
+
+---
+
+# 付録: 本プロジェクト適用メモ（2026-04-23）
+
+この規約を本リポジトリ（Block Quest Pyxel）に段階適用する際の、**未実施の方針メモ**。Phase 1.5 終了時点では着手していない。実装時はこの節を根拠資料として参照する。
+
+## A. Model への責務寄せ（2-1 節への補足）
+
+ルールは可能な限り Model に集める。ただし本プロジェクトでは Scene 横断の player state があるため、3 層で整理する。
+
+**Level 1: scene-local Model にルールを引き上げる**
+
+現在 Presenter / Scene に散っている判定を、まず各 scene の Model へ：
+
+- `BattleModel.apply_damage / can_use_spell / advance_phase`
+- `MenuModel.move_cursor_up / confirm`
+- `ShopModel.can_buy / deduct_gold`
+
+**Level 2: `PlayerModel` を新設し、`player` dict を吸収する**
+
+player は複数 scene をまたぐので scene-local Model には置けない。**GameState が `player: PlayerModel` を保有**し、PlayerModel 自身がルールを持つ：
+
+- `player.apply_damage(amount)`
+- `player.heal(amount)`
+- `player.use_item(item)` ← `src/shared/services/item_use.py` の中身を吸収
+- `player.gain_exp(amount) -> bool`（true で level up）
+- `player.can_use_spell(spell)`
+
+これで `item_use.py` は消滅し、`player_state.py` の `exp_for_level / stats_for_level` も PlayerModel のメソッドへ移動。2-1 節の「HP計算／レベルアップ判定／アイテム増減／位置更新」が Model に集まる。
+
+**Level 3: Scene 横断かつ player 以外のルールは Domain Support Service に残す**
+
+- `world_generation`（マップ生成＝state 生成）
+- `landmark_events`（座標判定）
+- `audio_system.choose_bgm_scene`（純粋関数）
+- `dialog_runner`（YAML ドリブンエンジン）
+
+優先順位は **Model 最優先 → player は PlayerModel → どうしても横断なら Service**。
+
+## B. `GameState` の圧縮（8-1 / 8-2 節への適用）
+
+現在の 19 フィールドを規約に照らすと、セーブ価値のある 7 フィールド前後まで縮む。
+
+### GameState に残すもの
+
+```python
+@dataclass
+class GameState:
+    player: PlayerModel              # 成長・所持・位置・装備
+    progress: ProgressFlags          # 進行フラグ 4 件を集約
+    world_map: list                  # 現在ワールド地形
+    dungeon_map: list | None         # 現在ダンジョン地形
+    last_town_pos: tuple[int, int]
+    world_return_x: int
+    world_return_y: int
+```
+
+`ProgressFlags` は `cave_unblock_shown / tree_cleared_shown / poison_step_counter / has_save` を束ねた dataclass。
+
+### GameState から出すもの
+
+| 現フィールド | 理由（8-2 節該当） | 移し先 |
+|---|---|---|
+| `cam_x, cam_y` | 画面アニメ途中値 | `ExploreModel` か新 `ViewportService` |
+| `state, prev_state` | scene 切替メタ | `SceneManager` |
+| `debug_mode, debug_seq` | 保存対象でない補助情報 | 新 `DebugService` |
+| `dungeon_template, dungeon_template_rooms, dungeon_rooms, dungeon_spawn` | 生成時の中間物（保存しない） | `WorldGenerationService` の結果 cache |
+
+### 波及する整理
+
+- `save_store` の dump/restore は GameState と 1:1 対応になり、`test_save_compat.py` の対象がクリアになる
+- `Game` クラス（`src/runtime/app.py`）が抱える `debug_mode / debug_seq / cam_x / cam_y` が別クラスへ移り、8-3 節の「最外殻」方針に近づく
+- `state / prev_state` が SceneManager 側になると `BlockQuestApp.set_scene` が `GameState.state` を書かなくなり、6-1 節の「Scene 間遷移の決定権は Presenter」との整合が取りやすい
+
+## C. 進める順序
+
+インパクト順：
+
+1. **Level 2（`player` dict → `PlayerModel`）を最初に** — これが決まると item_use / player_state の消化と GameState 圧縮が一緒についてくる
+2. Level 1（scene-local Model へのルール引き上げ）を scene 単位で進める
+3. ViewModel 導入（6 節）は scene.py を解体する過程で scene ごとに入れる
+4. 副作用コマンド（9 節）は Presenter テストを書くタイミングで段階導入
