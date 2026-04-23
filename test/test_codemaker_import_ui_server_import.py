@@ -195,7 +195,8 @@ class CodeMakerImportUiServerImportTest(unittest.TestCase):
         self.assertFalse(result["storedMeta"])
         self.assertIn("server", result["status"])
 
-    def test_import_button_falls_back_to_browser_storage_when_server_is_unavailable(self):
+    def test_import_button_shows_error_when_server_is_unavailable(self):
+        # P3-C: localStorage fallback を削除。server エラー時はメッセージ表示のみ
         result = run_node_harness(server_ok=False)
 
         self.assertEqual(
@@ -212,9 +213,9 @@ class CodeMakerImportUiServerImportTest(unittest.TestCase):
                 }
             ],
         )
-        self.assertTrue(result["storedZip"])
-        self.assertTrue(result["storedMeta"])
-        self.assertIn("このブラウザ", result["status"])
+        self.assertFalse(result["storedZip"])
+        self.assertFalse(result["storedMeta"])
+        self.assertIn("しばらくたってから", result["status"])
 
 
 if __name__ == "__main__":

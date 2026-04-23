@@ -3,11 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from src.shared.services.browser_resource_override import (
-    BROWSER_IMPORT_META_KEY,
-    BROWSER_IMPORT_ZIP_KEY,
-)
-from tools.resolve_release_source_of_truth import load_development_meta, validate_change_list_freshness
+from tools.resolve_release_source_of_truth import validate_change_list_freshness
 
 
 TOP_CHANGES_FILE = Path("top_changes.json")
@@ -26,9 +22,7 @@ TOP_CHANGE_LIST_FRESHNESS_DEPENDENCIES = (
     Path("templates/selector.html"),
     Path("templates/codemaker_import_ui.js"),
 )
-DEVELOPMENT_SELECTOR_LABEL = "開発版"
 PRODUCTION_SELECTOR_LABEL = "本番"
-PYXEL_CODEMAKER_URL = "https://kitao.github.io/pyxel/wasm/code-maker/"
 
 
 def versioned_asset_url(path: str, token: str) -> str:
@@ -61,54 +55,12 @@ def generate_selector(
     project_root: Path,
     *,
     current_wrapper_name: str = "play.html",
-    preview_wrapper_name: str = "play-development.html",
-    preview_zip_name: str = "",
-    changes: list[str] | None = None,
     current_changes: list[str] | None = None,
 ) -> Path:
+    """本番 1 カードの selector を生成する（P3-C で dev/preview 関連を削除済み）。"""
     template_path = project_root / "templates" / "selector.html"
     template = template_path.read_text(encoding="utf-8")
     import_script = (project_root / "templates" / "codemaker_import_ui.js").read_text(encoding="utf-8")
-    import_script = (
-        import_script
-        .replace("{{BROWSER_IMPORT_ZIP_KEY}}", BROWSER_IMPORT_ZIP_KEY)
-        .replace("{{BROWSER_IMPORT_META_KEY}}", BROWSER_IMPORT_META_KEY)
-    )
-    if preview_wrapper_name:
-        if changes:
-            change_list = "\n".join(f"      <li>{c}</li>" for c in changes)
-        else:
-            change_list = ""
-        preview_links = ""
-        if preview_zip_name:
-            preview_links = (
-                '    <div class="sub-links">\n'
-                f'      <a class="sub-link" id="codemaker-download-link" href="{preview_zip_name}" download>'
-                "リソースファイルをダウンロード</a>\n"
-                f'      <a class="sub-link" href="{PYXEL_CODEMAKER_URL}" target="_blank" '
-                'rel="noopener noreferrer">リソースエディタを開く</a>\n'
-                "    </div>\n"
-            )
-        preview_card = (
-            '  <div class="version-card">\n'
-            f"    <h2>{DEVELOPMENT_SELECTOR_LABEL}</h2>\n"
-            '    <ul class="changes">\n'
-            f"{change_list}\n"
-            '    </ul>\n'
-            f'    <a class="play-btn" href="{preview_wrapper_name}">あそんでみる</a>\n'
-            f"{preview_links}"
-            "  </div>"
-        )
-        hint_block = (
-            '  <p class="hint">\n'
-            "    りょうほう あそんだら<br>\n"
-            "    おとうさんに おしえてね！<br>\n"
-            '    「こっちが いい！」って\n'
-            "  </p>"
-        )
-    else:
-        preview_card = ""
-        hint_block = ""
     if current_changes:
         current_card_body = (
             '    <ul class="changes">\n'
@@ -119,8 +71,8 @@ def generate_selector(
         current_card_body = '    <p class="desc">いままでと おなじ</p>\n'
     html = (
         template
-        .replace("{{PREVIEW_CARD}}", preview_card)
-        .replace("{{HINT_BLOCK}}", hint_block)
+        .replace("{{PREVIEW_CARD}}", "")
+        .replace("{{HINT_BLOCK}}", "")
         .replace("{{CURRENT_CARD_BODY}}", current_card_body.rstrip())
         .replace("{{CURRENT_WRAPPER_SRC}}", current_wrapper_name)
         .replace("{{CODEMAKER_IMPORT_SCRIPT}}", import_script)
@@ -152,17 +104,12 @@ def generate_top_selector(
     project_root: Path,
     *,
     current_wrapper_name: str = "play.html",
-    preview_wrapper_name: str = "play-development.html",
-    preview_zip_name: str = "",
 ) -> Path:
+    """本番 1 カードの selector を生成する（P3-C で dev/preview 引数を削除）。"""
     current_changes = load_top_page_changes(project_root)
-    changes = load_development_meta(project_root) if preview_wrapper_name else []
     return generate_selector(
         build_dir,
         project_root,
         current_wrapper_name=current_wrapper_name,
-        preview_wrapper_name=preview_wrapper_name,
-        preview_zip_name=preview_zip_name,
-        changes=changes,
         current_changes=current_changes,
     )
