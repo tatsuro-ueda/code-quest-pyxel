@@ -7,8 +7,7 @@ from src.core.scene_manager import SceneManager
 from src.scenes.battle.model import BattleModel
 from src.scenes.battle.presenter import BattlePresenter
 from src.scenes.battle.scene import BattleScene
-from src.scenes.dialog.model import StructuredDialogRunner
-from src.scenes.dialog.scene import DialogScene
+from src.shared.services.dialog_runner import StructuredDialogRunner
 from src.scenes.explore.model import ExploreModel
 from src.scenes.explore.presenter import ExplorePresenter
 from src.scenes.explore.scene import ExploreScene
@@ -114,53 +113,9 @@ class BattleSceneTest(unittest.TestCase):
         self.assertEqual(snapshot, {"phase": "enemy_attack"})
 
 
-class DialogSceneTest(unittest.TestCase):
-    def test_scene_start_and_draw_return_active_step_snapshot(self):
-        runner = StructuredDialogRunner(
-            {
-                "variables": [],
-                "scenes": {
-                    "hello": {
-                        "speaker": "guide",
-                        "text": "やあ！",
-                        "choices": [{"text": "つぎへ", "next": "next"}],
-                    },
-                    "next": {"text": "つづきだよ"},
-                },
-            }
-        )
-        scene = DialogScene(runner=runner)
-
-        step = scene.start("hello")
-        snapshot = scene.draw()
-
-        self.assertEqual(step.text, "やあ！")
-        self.assertEqual(
-            snapshot,
-            {"speaker": "guide", "text": "やあ！", "choices": ["つぎへ"]},
-        )
-
-    def test_scene_choose_updates_active_step(self):
-        runner = StructuredDialogRunner(
-            {
-                "variables": [],
-                "scenes": {
-                    "hello": {
-                        "text": "やあ！",
-                        "choices": [{"text": "つぎへ", "next": "next"}],
-                    },
-                    "next": {"text": "つづきだよ"},
-                },
-            }
-        )
-        scene = DialogScene(runner=runner)
-        scene.start("hello")
-
-        step = scene.choose(0)
-        snapshot = scene.draw()
-
-        self.assertEqual(step.text, "つづきだよ")
-        self.assertEqual(snapshot, {"speaker": None, "text": "つづきだよ", "choices": []})
+# J53 Q1A: DialogScene / DialogPresenter / DialogView は解体された。
+# dialog は shared/services/dialog_runner.py の StructuredDialogRunner として
+# scene から呼ばれる utility になる。旧 DialogSceneTest は削除。
 
 
 class SharedUiTest(unittest.TestCase):

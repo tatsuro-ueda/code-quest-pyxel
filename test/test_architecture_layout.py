@@ -93,12 +93,14 @@ class TestArchitectureLayout(unittest.TestCase):
         self.assertTrue(hasattr(input_bindings, 'InputStateTracker'))
         self.assertTrue(hasattr(play_session_logging, 'summarize_sessions'))
 
-    def test_dialog_scene_modules_exist(self):
-        dialog_model = importlib.import_module('src.scenes.dialog.model')
-        dialog_scene = importlib.import_module('src.scenes.dialog.scene')
+    def test_dialog_runner_service_exists(self):
+        # J53 Q1A: dialog は scene ではなく shared/services の utility になった。
+        dialog_runner = importlib.import_module('src.shared.services.dialog_runner')
 
-        self.assertTrue(hasattr(dialog_model, 'StructuredDialogRunner'))
-        self.assertTrue(hasattr(dialog_scene, 'DialogScene'))
+        self.assertTrue(hasattr(dialog_runner, 'StructuredDialogRunner'))
+        self.assertTrue(hasattr(dialog_runner, 'DialogStep'))
+        self.assertTrue(hasattr(dialog_runner, 'DialogChoice'))
+        self.assertTrue(hasattr(dialog_runner, 'DialogValidationError'))
 
     def test_app_and_scene_manager_exist(self):
         app = importlib.import_module('src.app')

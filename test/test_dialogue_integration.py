@@ -186,7 +186,7 @@ class DialogueIntegrationTest(unittest.TestCase):
 
 class ProfessorDialogueTest(unittest.TestCase):
     def setUp(self):
-        from src.scenes.dialog.model import StructuredDialogRunner
+        from src.shared.services.dialog_runner import StructuredDialogRunner
         from src.game_data import DIALOGUE_JA
         self.runner = StructuredDialogRunner(DIALOGUE_JA)
 
@@ -219,7 +219,7 @@ class ProfessorDialogueTest(unittest.TestCase):
 
 class GlitchLordDialogueTest(unittest.TestCase):
     def setUp(self):
-        from src.scenes.dialog.model import StructuredDialogRunner
+        from src.shared.services.dialog_runner import StructuredDialogRunner
         from src.game_data import DIALOGUE_JA
         self.runner = StructuredDialogRunner(DIALOGUE_JA)
 

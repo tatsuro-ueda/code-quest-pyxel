@@ -8,7 +8,7 @@ from pathlib import Path
 PYXEL_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PYXEL_ROOT))
 
-from src.scenes.dialog.model import (  # noqa: E402
+from src.shared.services.dialog_runner import (  # noqa: E402
     DialogValidationError,
     StructuredDialogRunner,
 )
