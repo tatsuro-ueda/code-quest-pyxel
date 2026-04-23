@@ -31,20 +31,20 @@ class CurrentNoiseGuardianTest(unittest.TestCase):
         self.assertNotIn("ノイズガーディアン", zone2_names)
 
     def test_noise_guardian_event_battle_still_starts(self):
+        from src.scenes.battle.scene import BattleScene
         game = self.main.Game.__new__(self.main.Game)
-        game._start_battle = MagicMock()
         game._dialog_text = MagicMock(return_value="boss.noise_guardian.intro")
-        game._noise_guardian_battle = False
-        game.battle_text = ""
+        game.battle_scene = BattleScene(game=game)
+        game.battle_scene.start = MagicMock()
 
-        self.main.Game._start_noise_guardian_battle(game)
+        game.battle_scene.start_noise_guardian()
 
-        game._start_battle.assert_called_once_with(
+        game.battle_scene.start.assert_called_once_with(
             self.main.NOISE_GUARDIAN_DATA,
             is_glitch_lord=False,
         )
-        self.assertTrue(game._noise_guardian_battle)
-        self.assertEqual(game.battle_text, "boss.noise_guardian.intro")
+        self.assertTrue(game.battle_scene.model.noise_guardian)
+        self.assertEqual(game.battle_scene.model.text, "boss.noise_guardian.intro")
 
 
 if __name__ == "__main__":

@@ -1609,6 +1609,7 @@ from src.scenes.ending.scene import EndingScene
 from src.scenes.settings.scene import SettingsScene
 from src.scenes.town.scene import TownScene
 from src.scenes.professor.scene import ProfessorScene
+from src.scenes.battle.scene import BattleScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1710,20 +1711,9 @@ class Game:
         self.prev_state = "map"
         # walk_frame / walk_timer / move_cooldown は ExploreModel に移動（P1-G3）
 
-        # Battle state
-        self.battle_enemy = None
-        self.battle_enemy_hp = 0
-        self.battle_menu = 0
-        self.battle_phase = "menu"  # menu, player_attack, enemy_attack, result
-        self.battle_text = ""
-        self.battle_text_timer = 0
+        # Battle state は BattleModel に移動（P1-G6）
         self.vfx_timer = 0
         self.vfx_type = ""
-        self.battle_item_select = 0
-        self.battle_spell_select = 0
-        self.battle_is_glitch_lord = False
-        self.battle_is_professor = False
-        self.battle_boss_phase = "phase1"
 
         # professor state は ProfessorModel に移動（P1-G10）
         # town_menu state は TownModel に移動（P1-G4）
@@ -1768,6 +1758,7 @@ class Game:
         self.settings_scene = SettingsScene(game=self)
         self.town_scene = TownScene(game=self)
         self.professor_scene = ProfessorScene(game=self)
+        self.battle_scene = BattleScene(game=self)
 
         # 起動時の AV 設定適用（settings_scene 生成後に呼ぶ）
         self.settings_scene.apply_av()
@@ -2198,7 +2189,7 @@ class Game:
         elif self.state == "map":
             self.explore_scene.update()
         elif self.state == "battle":
-            self.update_battle()
+            self.battle_scene.update()
         elif self.state == "menu":
             self.menu_scene.update()
         elif self.state == "settings":
@@ -2227,284 +2218,13 @@ class Game:
     # update_splash は SplashScene に移動（P1-G2）
     # update_title / _do_load は TitleScene に移動（P1-G1）
 
-    def _start_noise_guardian_battle(self):
-        """ノイズガーディアン強制戦闘を開始する。"""
-        self._noise_guardian_battle = True
-        self._start_battle(NOISE_GUARDIAN_DATA, is_glitch_lord=False)
-        self.battle_text = self._dialog_text("boss.noise_guardian.intro")
 
-    def _on_noise_guardian_defeated(self):
-        """ノイズガーディアン撃破後の処理。"""
-        self.player["towerNoiseCleared"] = True
-        self._noise_guardian_battle = False
-        self._enter_message(self._dialog_lines("landmark.tower.epilogue"))
 
-    def _check_noise_guardian_phase(self):
-        """ノイズガーディアン戦のフェーズメッセージを差し込む。"""
-        max_hp = self.battle_enemy["hp"]
-        if max_hp <= 0:
-            return
-        ratio = self.battle_enemy_hp / max_hp
-        ng_phases = {0.75: "75", 0.40: "40", 0.10: "10"}
-        for threshold, phase_key in sorted(ng_phases.items()):
-            if ratio < threshold:
-                new_phase = phase_key
-                break
-        else:
-            new_phase = "100"
-        if new_phase != self.battle_boss_phase and new_phase != "100":
-            self.battle_boss_phase = new_phase
-            msg = self._dialog_text(f"boss.noise_guardian.phase_{new_phase}")
-            if msg:
-                self.battle_text = (self.battle_text + " " + msg).strip()
 
-    def _start_battle(self, enemy_template, is_glitch_lord=False, is_professor=False):
-        self.sfx.play("encounter")
-        self.battle_enemy = dict(enemy_template)
-        self.battle_enemy_hp = enemy_template["hp"]
-        self.battle_menu = 0
-        self.battle_phase = "menu"
-        self.battle_text = ""
-        self.battle_text_timer = 0
-        self.battle_item_select = 0
-        self.battle_spell_select = 0
-        self.battle_is_glitch_lord = is_glitch_lord
-        self.battle_is_professor = is_professor
-        self.battle_boss_phase = "phase1" if not is_professor else "100"
-        if is_glitch_lord:
-            self.battle_text = self._dialog_text("boss.glitch.intro")
-        self.state = "battle"
 
-    def update_battle(self):
-        if self.vfx_timer > 0:
-            self.vfx_timer -= 1
-        if self.battle_phase == "menu":
-            if self._btnp(UP_BUTTONS):
-                self.battle_menu = (self.battle_menu - 1) % 4
-                self.sfx.play("cursor")
-            if self._btnp(DOWN_BUTTONS):
-                self.battle_menu = (self.battle_menu + 1) % 4
-                self.sfx.play("cursor")
-            if self._btnp(CONFIRM_BUTTONS):
-                self.sfx.play("select")
-                if self.battle_menu == 0:  # Attack
-                    self._do_player_attack()
-                elif self.battle_menu == 1:  # じゅもん
-                    if self.player["spells"]:
-                        self.battle_phase = "spell_select"
-                        self.battle_spell_select = 0
-                    else:
-                        self.battle_text = "まだ じゅもんを おぼえていない"
-                elif self.battle_menu == 2:  # Item
-                    self.battle_phase = "item_select"
-                    self.battle_item_select = 0
-                elif self.battle_menu == 3:  # Run
-                    if not self.battle_is_glitch_lord and random.random() < 0.5:
-                        self.battle_text = self._dialog_text("battle.normal.run.success")
-                        self.battle_phase = "result"
-                        self.battle_text_timer = 60
-                    else:
-                        scene_name = (
-                            "boss.glitch.run.fail"
-                            if self.battle_is_glitch_lord
-                            else "battle.normal.run.fail"
-                        )
-                        self.battle_text = self._dialog_text(scene_name)
-                        self.battle_phase = "player_attack"
-                        self.battle_text_timer = 30
 
-        elif self.battle_phase == "spell_select":
-            spells = self.player["spells"]
-            if not spells:
-                self.battle_phase = "menu"
-                return
-            if self._btnp(UP_BUTTONS):
-                self.battle_spell_select = max(0, self.battle_spell_select - 1)
-                self.sfx.play("cursor")
-            if self._btnp(DOWN_BUTTONS):
-                self.battle_spell_select = min(len(spells) - 1, self.battle_spell_select + 1)
-                self.sfx.play("cursor")
-            if self._btnp(CANCEL_BUTTONS):
-                self.sfx.play("cancel")
-                self.battle_phase = "menu"
-            if self._btnp(CONFIRM_BUTTONS):
-                self.sfx.play("select")
-                spell_name = spells[self.battle_spell_select]
-                spell = SPELL_BY_NAME.get(spell_name)
-                if spell is None:
-                    self.battle_phase = "menu"
-                    return
-                if self.player["mp"] < spell["mp"]:
-                    self.battle_text = "MPが たりない！"
-                    return
-                self.player["mp"] -= spell["mp"]
-                self.sfx.play("magic")
-                self._start_vfx("flash_white")
-                self.battle_text = self._apply_spell_effect(spell)
-                self.battle_phase = "player_attack"
-                self.battle_text_timer = 30
 
-        elif self.battle_phase == "item_select":
-            items = self.player["items"]
-            if not items:
-                self.battle_phase = "menu"
-                return
-            if self._btnp(UP_BUTTONS):
-                self.battle_item_select = max(0, self.battle_item_select - 1)
-                self.sfx.play("cursor")
-            if self._btnp(DOWN_BUTTONS):
-                self.battle_item_select = min(len(items) - 1, self.battle_item_select + 1)
-                self.sfx.play("cursor")
-            if self._btnp(CANCEL_BUTTONS):
-                self.sfx.play("cancel")
-                self.battle_phase = "menu"
-            if self._btnp(CONFIRM_BUTTONS):
-                self.sfx.play("select")
-                item = items[self.battle_item_select]
-                item_data = ITEMS[item["id"]]
-                # warp はバトル中無効
-                if item_data["type"] == "warp":
-                    self.battle_text = "せんとうちゅうはつかえない…"
-                    self.battle_phase = "enemy_attack"
-                    self.battle_text_timer = 30
-                else:
-                    msg = self._use_item(item_data)
-                    if not msg:
-                        # HP満タンなど使えなかった → アイテム選択に戻る
-                        self.battle_text = "HPがまんたんで つかえない"
-                        self.battle_text_timer = 30
-                    else:
-                        self.battle_text = msg
-                        item["qty"] -= 1
-                        if item["qty"] <= 0:
-                            items.pop(self.battle_item_select)
-                        self.battle_phase = "enemy_attack"
-                        self.battle_text_timer = 30
 
-        elif self.battle_phase == "player_attack":
-            # 決定ボタン押しっぱなしで 400ms (12 frame @ 30fps) まで早送り
-            if self._btn(CONFIRM_BUTTONS) and self.battle_text_timer > 12:
-                self.battle_text_timer = 12
-            self.battle_text_timer -= 1
-            if self.battle_text_timer <= 0:
-                if self.battle_enemy_hp <= 0:
-                    self._battle_victory()
-                else:
-                    self._do_enemy_attack()
-
-        elif self.battle_phase == "enemy_attack":
-            if self._btn(CONFIRM_BUTTONS) and self.battle_text_timer > 12:
-                self.battle_text_timer = 12
-            self.battle_text_timer -= 1
-            if self.battle_text_timer <= 0:
-                if self.player["hp"] <= 0:
-                    self._battle_defeat()
-                else:
-                    self.battle_phase = "menu"
-
-        elif self.battle_phase == "result":
-            # 結果表示も同様に押しっぱなし高速化（400ms 後に自動前進）
-            if self._btn(CONFIRM_BUTTONS) and self.battle_text_timer > 12:
-                self.battle_text_timer = 12
-            self.battle_text_timer -= 1
-            if self.battle_text_timer <= 0:
-                if self._btn(CONFIRM_BUTTONS) or self._btnp(CONFIRM_BUTTONS) or self.battle_text_timer < -30:
-                    if self.player["hp"] <= 0:
-                        # Defeat: lose half gold, restore HP
-                        self.player["gold"] = self.player["gold"] // 2
-                        self.player["hp"] = self.player["max_hp"]
-                        self.player["x"], self.player["y"] = CASTLE_POS
-                        self.player["in_dungeon"] = False
-                        self.state = "map"
-                    elif self.battle_is_professor and self.battle_enemy_hp <= 0:
-                        self.player["professor_defeated"] = True
-                        self.professor_scene.enter_ending_main()
-                    else:
-                        if self.battle_is_glitch_lord and self.battle_enemy_hp <= 0:
-                            self.sfx.play("boss_defeat")
-                            self.player["glitch_lord_defeated"] = True
-                        # ノイズガーディアン撃破 → エピローグへ
-                        if getattr(self, "_noise_guardian_battle", False) and self.battle_enemy_hp <= 0:
-                            self._on_noise_guardian_defeated()
-                            return
-                        self.state = "map"
-
-    def _do_player_attack(self):
-        p = self.player
-        e = self.battle_enemy
-        weapon_atk = WEAPONS[p["weapon"]]["atk"] if p["weapon"] < len(WEAPONS) else 0
-        atk = p["atk"] + weapon_atk
-        dmg = max(1, atk - e["def"] // 2 + random.randint(-2, 2))
-        if self.debug_mode:
-            dmg = 9999
-        self.sfx.play("attack")
-        self._start_vfx("flash_white")
-        self.battle_enemy_hp = max(0, self.battle_enemy_hp - dmg)
-        self.battle_text = self._dialog_text(
-            random.choice(BATTLE_ATTACK_SCENES),
-            enemy=e["name"],
-            dmg=dmg,
-        )
-        self._check_glitch_lord_phase_transition()
-        self.battle_phase = "player_attack"
-        self.battle_text_timer = 40
-
-    def _check_glitch_lord_phase_transition(self):
-        """ボスのHPが閾値を跨いだら phase を更新し、移行メッセージを差し込む。"""
-        if self.battle_enemy is None:
-            return
-        # ノイズガーディアン戦のフェーズメッセージ
-        if getattr(self, "_noise_guardian_battle", False):
-            self._check_noise_guardian_phase()
-            return
-        if not (self.battle_is_glitch_lord or self.battle_is_professor):
-            return
-        max_hp = self.battle_enemy["hp"]
-        if max_hp <= 0:
-            return
-        ratio = self.battle_enemy_hp / max_hp
-        if self.battle_is_professor:
-            new_phase = self.professor_scene.battle_phase(ratio)
-            if new_phase != self.battle_boss_phase:
-                self.battle_boss_phase = new_phase
-                try:
-                    transition_msg = self._dialog_text(f"castle.professor.phase_{new_phase}")
-                except KeyError:
-                    transition_msg = ""
-                if transition_msg:
-                    self.battle_text = (self.battle_text + " " + transition_msg).strip()
-            return
-        new_phase = glitch_lord_phase(ratio)
-        if new_phase != self.battle_boss_phase:
-            self.battle_boss_phase = new_phase
-            transition_msg = GLITCH_LORD_PHASE_MESSAGES.get(new_phase)
-            if transition_msg:
-                # 既存ダメージメッセージに連結
-                self.battle_text = (self.battle_text + " " + transition_msg).strip()
-
-    def _do_enemy_attack(self):
-        p = self.player
-        e = self.battle_enemy
-        armor_def = ARMORS[p["armor"]]["def"] if p["armor"] < len(ARMORS) else 0
-        total_def = p["def"] + armor_def
-        dmg = max(1, e["atk"] - total_def // 2 + random.randint(-2, 2))
-        if self.debug_mode:
-            dmg = 0
-        self.sfx.play("hit")
-        self._start_vfx("flash_red")
-        p["hp"] = max(0, p["hp"] - dmg)
-        self.battle_text = self._dialog_text(
-            self._enemy_hit_scene_name(),
-            enemy=e["name"],
-            dmg=dmg,
-        )
-        # 毒付与判定（can_poison を持つ敵は 25% の確率で毒にする）
-        if e.get("can_poison") and not p.get("poisoned") and random.random() < 0.25:
-            p["poisoned"] = True
-            self.sfx.play("poison")
-            self.battle_text += " バグに汚染された！"
-        self.battle_phase = "enemy_attack"
-        self.battle_text_timer = 40
 
     def _start_vfx(self, vfx_type):
         if not self.player.get("vfx_enabled", True):
@@ -2514,63 +2234,9 @@ class Game:
             self.vfx_type = vfx_type
             self.vfx_timer = cfg["duration"]
 
-    def _battle_victory(self):
-        e = self.battle_enemy
-        if self.battle_is_professor:
-            # 静かな勝利。EXP/Gold報酬とレベルアップ表示を抑制（D7）
-            # 派手な victory ジングルもならさない
-            self.battle_text = self._dialog_text("castle.professor.silent_victory")
-            self.battle_phase = "result"
-            self.battle_text_timer = 60
-            return
-        self.sfx.play("victory")
-        exp = e["exp"]; gold = e["gold"]
-        self.player["exp"] += exp
-        self.player["gold"] += gold
-        self.battle_text = self._dialog_text(
-            self._victory_scene_name(),
-            enemy=e["name"],
-            exp=exp,
-            gold=gold,
-        )
-        self.battle_phase = "result"
-        self.battle_text_timer = 60
-        # Level up check
-        self._check_level_up()
 
-    def _battle_defeat(self):
-        self.sfx.play("dead")
-        self.battle_text = self._dialog_text("battle.normal.defeat")
-        self.battle_phase = "result"
-        self.battle_text_timer = 60
 
-    def _check_level_up(self):
-        p = self.player
-        while p["lv"] < MAX_LEVEL and p["exp"] >= exp_for_level(p["lv"] + 1):
-            self.sfx.play("levelup")
-            p["lv"] += 1
-            s = stats_for_level(p["lv"])
-            p["max_hp"] = s["max_hp"]; p["hp"] = p["max_hp"]
-            p["max_mp"] = s["max_mp"]; p["mp"] = p["max_mp"]
-            p["atk"] = s["atk"]
-            p["def"] = s["def"]
-            p["agi"] = s["agi"]
-            # 呪文習得
-            for spell in SPELLS:
-                if spell["learn_lv"] == p["lv"] and spell["name"] not in p["spells"]:
-                    p["spells"].append(spell["name"])
 
-    def _apply_spell_effect(self, spell) -> str:
-        """Apply a spell effect (heal or attack). Caller is responsible for MP cost."""
-        p = self.player
-        if spell["type"] == "heal":
-            heal = spell["power"]
-            p["hp"] = min(p["max_hp"], p["hp"] + heal)
-            return f'{spell["name"]}を となえた。HPが{heal}回復した！'
-        # attack
-        damage = max(1, spell["power"])
-        self.battle_enemy_hp = max(0, self.battle_enemy_hp - damage)
-        return f'{spell["name"]}！ {damage}のダメージ！'
 
     def _use_item(self, item_data) -> str:
         """Apply an item's effect and return a status message string.
@@ -2683,20 +2349,11 @@ class Game:
         self.prev_state = "map"
         self.state = "message"
 
-    def _enemy_hit_scene_name(self):
-        if self.battle_is_glitch_lord:
-            return "boss.glitch.enemy_hit"
-        category = self.battle_enemy.get("category", "sequential")
-        return ENEMY_HIT_SCENES.get(category, ENEMY_HIT_SCENES["sequential"])
 
-    def _victory_scene_name(self):
-        if self.battle_is_glitch_lord:
-            return "boss.glitch.defeat"
-        zone = get_zone(self.player["y"], self.player["in_dungeon"])
-        return VICTORY_SCENES_BY_ZONE.get(zone, "battle.normal.victory.early")
 
     def _sync_audio(self):
-        battle_enemy_max_hp = self.battle_enemy["hp"] if self.battle_enemy else 0
+        bm = self.battle_scene.model
+        battle_enemy_max_hp = bm.enemy["hp"] if bm.enemy else 0
         state_for_audio = self.state
         if self.state == "settings" and self.settings_scene.model.origin == "title":
             state_for_audio = "title"
@@ -2704,10 +2361,10 @@ class Game:
             state=state_for_audio,
             in_dungeon=self.player["in_dungeon"],
             zone=get_zone(self.player["y"], self.player["in_dungeon"]),
-            battle_is_glitch_lord=self.battle_is_glitch_lord,
-            battle_enemy_hp=self.battle_enemy_hp,
+            battle_is_glitch_lord=bm.is_glitch_lord,
+            battle_enemy_hp=bm.enemy_hp,
             battle_enemy_max_hp=battle_enemy_max_hp,
-            battle_phase=self.battle_phase,
+            battle_phase=bm.phase,
         )
         self.audio.set_enabled(self.player.get("bgm_enabled", True))
         self.audio.play_scene(scene_name)
@@ -2774,7 +2431,7 @@ class Game:
             self.explore_scene.draw()
             self.draw_status_bar()
         elif self.state == "battle":
-            self.draw_battle()
+            self.battle_scene.draw()
         elif self.state == "menu":
             self.explore_scene.draw()
             self.draw_status_bar()
@@ -2856,103 +2513,6 @@ class Game:
         if self.vfx_timer % 2 == 0:
             pyxel.rect(0, 0, 256, 256, cfg["color"])
 
-    def draw_battle(self):
-        pyxel.cls(1)
-        e = self.battle_enemy
-        if not e:
-            return
-
-        # Draw enemy sprite (3x scale centered)
-        sprite_key = e.get("sprite", "slime")
-        bp = self.sprite_bank.get(sprite_key)
-        if bp:
-            # Draw 3x scaled sprite
-            sx, sy = bp
-            for py in range(16):
-                for px in range(16):
-                    c = pyxel.images[1].pget(sx + px, sy + py)
-                    if c != 0:
-                        for dy in range(3):
-                            for dx2 in range(3):
-                                pyxel.pset(104 + px * 3 + dx2, 30 + py * 3 + dy, c)
-
-        # Enemy name and HP bar
-        self.text(80, 10, self._name(e["name"]), 7)
-        bar_x = 80; bar_w = 96
-        pyxel.rect(bar_x, 85, bar_w, 8, 0)
-        hp_ratio = self.battle_enemy_hp / max(1, e["hp"])
-        pyxel.rect(bar_x, 85, int(bar_w * hp_ratio), 8, 8)
-        self.text(bar_x + 2, 86, f"HP {self.battle_enemy_hp}/{e['hp']}", 7)
-
-        # Player stats
-        p = self.player
-        pyxel.rect(10, 100, 236, 40, 0)
-        pyxel.rectb(10, 100, 236, 40, 7)
-        self.text(16, 104, f"{self._t('プログラマー', 'PROGRAMMER')}  レベル{p['lv']}", 7)
-        self.text(16, 116, f"HP {p['hp']}/{p['max_hp']}  MP {p['mp']}/{p['max_mp']}", 7)
-        # Player HP bar
-        pyxel.rect(170, 116, 60, 6, 0)
-        hp_r = p["hp"] / max(1, p["max_hp"])
-        pyxel.rect(170, 116, int(60 * hp_r), 6, 11 if hp_r > 0.3 else 8)
-
-        # Battle text
-        if self.battle_text:
-            pyxel.rect(10, 148, 236, 30, 0)
-            pyxel.rectb(10, 148, 236, 30, 7)
-            self.text(16, 154, self.battle_text, 7)
-
-        # Menu
-        if self.battle_phase == "menu":
-            menu_labels = (
-                ["たたかう", "じゅもん", "アイテム", "にげる"]
-                if self.has_jp_font
-                else ["FIGHT", "SPELL", "ITEM", "RUN"]
-            )
-            pyxel.rect(10, 190, 236, 56, 0)
-            pyxel.rectb(10, 190, 236, 56, 7)
-            for i, label in enumerate(menu_labels):
-                cx = 30 + (i % 2) * 110
-                cy = 198 + (i // 2) * 18
-                col = 10 if i == self.battle_menu else 6
-                self.text(cx, cy, label, col)
-                if i == self.battle_menu:
-                    self.text(cx - 12, cy, ">", 10)
-
-        elif self.battle_phase == "spell_select":
-            spells = self.player["spells"]
-            pyxel.rect(10, 190, 236, 56, 0)
-            pyxel.rectb(10, 190, 236, 56, 7)
-            if not spells:
-                self.text(16, 200, self._t("じゅもんをおぼえていない", "No spells learned"), 6)
-            else:
-                for i, name in enumerate(spells[:4]):
-                    spell = SPELL_BY_NAME.get(name)
-                    if spell is None:
-                        continue
-                    cy = 196 + i * 12
-                    col = 10 if i == self.battle_spell_select else 6
-                    self.text(30, cy, f"{self._name(name)}  MP{spell['mp']}", col)
-                    if i == self.battle_spell_select:
-                        self.text(18, cy, ">", 10)
-
-        elif self.battle_phase == "item_select":
-            items = self.player["items"]
-            pyxel.rect(10, 190, 236, 56, 0)
-            pyxel.rectb(10, 190, 236, 56, 7)
-            if self.battle_text:
-                self.text(16, 192, self.battle_text, 8)
-            if not items:
-                self.text(16, 200, self._t("アイテムがない", "No items"), 6)
-            else:
-                for i, item in enumerate(items[:4]):
-                    idata = ITEMS[item["id"]]
-                    cy = 196 + i * 12
-                    col = 10 if i == self.battle_item_select else 6
-                    self.text(30, cy, f"{self._name(idata['name'])} x{item['qty']}", col)
-                    if i == self.battle_item_select:
-                        self.text(18, cy, ">", 10)
-
-        self._draw_vfx_overlay()
 
     def draw_message_window(self):
         pyxel.rect(8, 208, 240, 44, 0)

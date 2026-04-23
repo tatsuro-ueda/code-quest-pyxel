@@ -86,7 +86,7 @@ class ProfessorScene:
             if m.choice_cursor == 0:
                 self.enter_ending_accepted()
             else:
-                game._start_battle(M.PROFESSOR_DATA, is_professor=True)
+                game.battle_scene.start(M.PROFESSOR_DATA, is_professor=True)
 
     def draw_intro(self) -> None:
         """Professor intro 画面を描画する。"""

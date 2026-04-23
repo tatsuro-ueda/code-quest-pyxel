@@ -95,6 +95,7 @@ class GameSettingsTest(unittest.TestCase):
         g.settings_scene = M.SettingsScene(game=g)
         g.settings_scene.model.cursor = 0
         g.settings_scene.model.origin = "title"
+        g.battle_scene = M.BattleScene(game=g)
         return g
 
     def test_title_settings_item_opens_settings(self):
@@ -147,10 +148,6 @@ class GameSettingsTest(unittest.TestCase):
         g = self._make_game()
         g.state = "settings"
         g.settings_scene.model.origin = "title"
-        g.battle_enemy = None
-        g.battle_enemy_hp = 0
-        g.battle_is_glitch_lord = False
-        g.battle_phase = "menu"
 
         g._sync_audio()
 

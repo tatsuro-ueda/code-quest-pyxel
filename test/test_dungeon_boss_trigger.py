@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from src.scenes.explore.scene import ExploreScene
 from src.scenes.ending.scene import EndingScene
+from src.scenes.battle.scene import BattleScene
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -32,8 +33,9 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         game = self.main.Game.__new__(self.main.Game)
         game.explore_scene = ExploreScene(game=game)
         game.ending_scene = EndingScene(game=game)
+        game.battle_scene = BattleScene(game=game)
+        game.battle_scene.start = MagicMock()
         game.player = {"in_dungeon": True, "glitch_lord_defeated": False}
-        game._start_battle = MagicMock()
         return game
 
     def make_draw_game(self):
@@ -143,7 +145,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
         game.explore_scene._check_tile_events(self.main.T_GLITCH_LORD_TRIGGER, 7, 8)
 
-        game._start_battle.assert_called_once_with(
+        game.battle_scene.start.assert_called_once_with(
             self.main.GLITCH_LORD_DATA,
             is_glitch_lord=True,
         )
@@ -154,7 +156,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
         game.explore_scene._check_tile_events(self.main.T_GLITCH_LORD_TRIGGER, 7, 8)
 
-        game._start_battle.assert_not_called()
+        game.battle_scene.start.assert_not_called()
 
     def test_stair_exit_after_glitch_lord_defeat_routes_message_to_ending(self):
         game = self.make_stair_exit_game()

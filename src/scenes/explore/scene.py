@@ -131,7 +131,7 @@ class ExploreScene:
 
         if p["in_dungeon"] and tile == M.T_GLITCH_LORD_TRIGGER:
             if not p.get("glitch_lord_defeated"):
-                game._start_battle(M.GLITCH_LORD_DATA, is_glitch_lord=True)
+                game.battle_scene.start(M.GLITCH_LORD_DATA, is_glitch_lord=True)
             return
 
         if tile == M.T_TOWN:
@@ -182,7 +182,7 @@ class ExploreScene:
                 zone = M.get_zone(p["y"], p["in_dungeon"])
                 enemies = M.ZONE_ENEMIES.get(zone, M.ZONE_ENEMIES[0])
                 enemy_template = random.choice(enemies)
-                game._start_battle(enemy_template, is_glitch_lord=False)
+                game.battle_scene.start(enemy_template, is_glitch_lord=False)
 
     def _check_landmark_events(self) -> bool:
         """ランドマークイベントを判定し、発生したら True を返す。"""
@@ -210,7 +210,7 @@ class ExploreScene:
         if scene_name == "landmark.tower.quest":
             game._enter_message(
                 game._dialog_lines(scene_name),
-                callback=game._start_noise_guardian_battle,
+                callback=game.battle_scene.start_noise_guardian,
             )
             return True
 
