@@ -40,7 +40,8 @@ src/shared/services/landmark_events.py
 src/shared/services/player_state.py
 src/shared/services/save_store.py
 src/shared/services/codemaker_resource_store.py
-src/shared/services/play_session_logging.py
+# play_session_logging.py は tools/web_runtime_server.py 専用（sqlite3 依存）。
+# Pyxel Code Maker (Pyodide) には sqlite3 が無いので bundle から除外。
 src/shared/services/text_format.py
 src/shared/services/audio_system.py
 src/shared/services/dialog_runner.py
