@@ -10,9 +10,11 @@ scene に DI する。scene-local な state（battle_phase など）はこの cl
 from dataclasses import dataclass, field
 from typing import Any
 
+from src.shared.services.player_state import create_initial_player
+
 
 def _default_player() -> dict[str, Any]:
-    """空の player dict。実値は create_initial_player() が埋める。"""
+    """空の player dict。実値は from_new_game() か from_snapshot() が埋める。"""
     return {}
 
 
@@ -51,3 +53,18 @@ class GameState:
     # --- debug ---
     debug_mode: bool = False
     debug_seq: list = field(default_factory=list)
+
+    @classmethod
+    def from_new_game(cls) -> "GameState":
+        """ニューゲーム用の GameState（レベル1プレイヤー）を組み立てる。"""
+        return cls(player=create_initial_player())
+
+    @property
+    def in_dungeon(self) -> bool:
+        """player dict 内の in_dungeon を安全に参照する（欠損時は False）。"""
+        return bool(self.player.get("in_dungeon", False))
+
+    @property
+    def glitch_lord_defeated(self) -> bool:
+        """player dict 内の glitch_lord_defeated を安全に参照する（欠損時は False）。"""
+        return bool(self.player.get("glitch_lord_defeated", False))
