@@ -15,8 +15,8 @@ tags:
 
 # 2026年4月22日 J53 runtime monolith 分解と dev/prod 単一化
 
-> 状態：`in-progress`（Phase 1 完了 `j53-phase1-methods-complete` / Phase 1.5 完了 `j53-phase1-5-complete` / Phase 2 未着手）
-> 次のゲート：（ユーザー）Phase 2 (Code Maker bundler) の Tasklist を確認して着手可否を指示する
+> 状態：`in-progress`（P1/P1.5/P2/P3 完了 tag 済み、feature ブランチ main にマージ済み、Phase 4 未着手）
+> 次のゲート：（ユーザー）Phase 4 (systemd 常駐化) の Tasklist を確認して着手可否を指示する
 
 ---
 
@@ -375,39 +375,88 @@ Phase 3 ではこれらを全て prod 1 本に統合する。import された re
 
 ### P3-A. dev runtime 削除（2 タスク）
 
-- [ ] **P3-A1**：root `main_development.py` を削除。`src/runtime/main_development_runtime.py` も削除（codemaker_manifest にも無いので bundle には影響しない）
-- [ ] **P3-A2**：`test_preview_*.py` シリーズ（preview 専用テスト群）を削除または skip 化。`test_dialogue_integration.py` の `test_main_preview_*` 3 件を skip
+- [x] **P3-A1**：root `main_development.py` を削除。`src/runtime/main_development_runtime.py` も削除（codemaker_manifest にも無いので bundle には影響しない）
+- [x] **P3-A2**：`test_preview_*.py` シリーズ（preview 専用テスト群）を削除または skip 化。`test_dialogue_integration.py` の `test_main_preview_*` 3 件を skip
 
 ### P3-B. development artifacts 削除（1 タスク）
 
-- [ ] **P3-B1**：`development/` ディレクトリを削除（既に Phase 1 で deletion が staged されていた）。`.gitignore` 要調整なら追記
+- [x] **P3-B1**：`development/` ディレクトリを削除（既に Phase 1 で deletion が staged されていた）。`.gitignore` 要調整なら追記
 
 ### P3-C. selector 1 カード化（2 タスク）
 
-- [ ] **P3-C1**：`templates/selector.html` を本番 1 カードに簡素化。「開発版」カードと関連 JS（`codemaker_import_ui.js` の fallback 分岐）を削除
-- [ ] **P3-C2**：`tools/render_release_selector.py` の DevelopmentCandidate 表示ロジックを削除
+- [x] **P3-C1**：`templates/selector.html` を本番 1 カードに簡素化。「開発版」カードと関連 JS（`codemaker_import_ui.js` の fallback 分岐）を削除
+- [x] **P3-C2**：`tools/render_release_selector.py` の DevelopmentCandidate 表示ロジックを削除
 
 ### P3-D. build tools 簡素化（3 タスク）
 
-- [ ] **P3-D1**：`tools/resolve_release_source_of_truth.py` の `DevelopmentCandidate` 系関数・データクラス・定数を削除。`file_sha256` / `is_git_dirty` / `revision_timestamp` / `build_cache_token` / `validate_change_list_freshness` は維持
-- [ ] **P3-D2**：`tools/build_web_release.py` の dev 関連関数を削除。`development_dir()` / preview hash 管理系を全削除。production 1 本のビルドに特化
-- [ ] **P3-D3**：`tools/build_release_artifacts.py` を簡素化。`build_codemaker_release()` から dev 分岐を削除
+- [x] **P3-D1**：`tools/resolve_release_source_of_truth.py` の `DevelopmentCandidate` 系関数・データクラス・定数を削除。`file_sha256` / `is_git_dirty` / `revision_timestamp` / `build_cache_token` / `validate_change_list_freshness` は維持
+- [x] **P3-D2**：`tools/build_web_release.py` の dev 関連関数を削除。`development_dir()` / preview hash 管理系を全削除。production 1 本のビルドに特化
+- [x] **P3-D3**：`tools/build_release_artifacts.py` を簡素化。`build_codemaker_release()` から dev 分岐を削除
 
 ### P3-E. resource import 経路の整理（2 タスク）
 
-- [ ] **P3-E1**：`src/shared/services/browser_resource_override.py` を削除（Phase 3 削除予定として markup 済み）。関連 import を main_runtime / image_banks から削除
-- [ ] **P3-E2**：`src/shared/services/codemaker_resource_store.py` から `promote_imported_resource` / `IMPORT_MANIFEST` / `IMPORT_RESOURCE` 等の development 向け関数を削除
+- [x] **P3-E1**：`src/shared/services/browser_resource_override.py` を削除（Phase 3 削除予定として markup 済み）。関連 import を main_runtime / image_banks から削除
+- [x] **P3-E2**：`src/shared/services/codemaker_resource_store.py` から `promote_imported_resource` / `IMPORT_MANIFEST` / `IMPORT_RESOURCE` 等の development 向け関数を削除
 
 ### P3-F. test suite の整理（2 タスク）
 
-- [ ] **P3-F1**：`test/test_build_web_release.py` の `TestPreview*` / `TestExplicitPreviewCommands` / `TestResourceOnlyDevelopmentBuild` 等のクラスを削除（すでに production 単独ビルドになるため意味を失う）
-- [ ] **P3-F2**：残った test が全 green を確認。削減された test 数と理由を Discussion に記録
+- [x] **P3-F1**：`test/test_build_web_release.py` の `TestPreview*` / `TestExplicitPreviewCommands` / `TestResourceOnlyDevelopmentBuild` 等のクラスを削除（すでに production 単独ビルドになるため意味を失う）
+- [x] **P3-F2**：残った test が全 green を確認。削減された test 数と理由を Discussion に記録
 
 ### P3-G. 検証と締め（3 タスク）
 
-- [ ] **P3-G1**：`python -m pytest test/ -q` 全 green
-- [ ] **P3-G2**：`python tools/build_web_release.py` と `python tools/build_codemaker.py` が exit 0。生成物の `production/` だけが存在し `development/` は無い
-- [ ] **P3-G3**：Phase 3 完了コミット + git tag `j53-phase3-complete`
+- [x] **P3-G1**：`python -m pytest test/ -q` 全 green
+- [x] **P3-G2**：`python tools/build_web_release.py` と `python tools/build_codemaker.py` が exit 0。生成物の `production/` だけが存在し `development/` は無い
+- [x] **P3-G3**：Phase 3 完了コミット + git tag `j53-phase3-complete`
+
+---
+
+## 4.8) Tasklist（Phase 4: web_runtime_server systemd 常駐化）
+
+### 背景
+
+Phase 3 まで完了して本番 1 本構成に整理済み。Phase 4 では `tools/web_runtime_server.py`
+を systemd service として exe.dev VM 上で常駐起動するようにする。これにより
+「手動で python tools/web_runtime_server.py を起動する」運用を撤廃し、
+**子どもがいつブラウザを開いても Block Quest が動く**状態を実現する。
+
+マトリクスの記述（section 6D）:
+- `tools/web_runtime_server.py` `[書き換え／Phase 3+4]` — Phase 3 で codemaker
+  import を assets/blockquest.pyxres への直接書き戻しに変更済み（P3-E）。
+  Phase 4 では systemd autostart に対応する
+- `infra/autostart/code-quest-runtime.service` `[新規／Phase 4]`
+
+### 運用ルール
+
+- 1 タスク = 1 commit、commit 後に `pytest -q` を維持（Phase 4 は infra 側の
+  変更が主なのでコード側のテストには影響少）
+- commit message 規約：`j53(P4-X): <内容>`
+- **exe.dev VM への systemd 登録は手動確認が必要**。コミット自体は service ファイルと
+  install 手順の追加まで。実機反映はユーザー側で `sudo systemctl ...` を走らせる
+
+### P4-A. web_runtime_server の autostart 対応調査（2 タスク）
+
+- [ ] **P4-A1**：現 `tools/web_runtime_server.py` の起動フローを確認し、systemd ExecStart
+  で起動可能な CLI 引数（port / serve-dir / db-path）が揃っているかを棚卸し。不足
+  があれば追加
+- [ ] **P4-A2**：起動時に `production/` が存在しない場合のフォールバック（初回
+  ビルドを自動実行するか、503 エラーを返すか）を決定し、必要なら実装
+
+### P4-B. systemd unit file 作成（2 タスク）
+
+- [ ] **P4-B1**：`infra/autostart/code-quest-runtime.service` を新規作成
+- [ ] **P4-B2**：`infra/autostart/README.md` を追加（install 手順と troubleshooting）
+
+### P4-C. 常駐起動の確認（実機、ユーザー側）（2 タスク）
+
+- [ ] **P4-C1**：install 手順をユーザーが実行し、`systemctl status` で active 確認
+- [ ] **P4-C2**：ブラウザから selector 表示と code-maker import の再ビルド確認
+
+### P4-D. 検証と締め（2 タスク）
+
+- [ ] **P4-D1**：`python -m pytest test/ -q` 全 green 維持
+- [ ] **P4-D2**：Phase 4 完了コミット + git tag `j53-phase4-complete` + J53 タスクノート
+  全体を `status: done` に更新
 
 ---
 
