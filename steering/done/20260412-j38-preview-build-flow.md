@@ -55,7 +55,7 @@ flowchart TB
 
 ### 現状
 
-- `docs/cj-gherkin-platform.md` の CJG31/CJG32 では、変更確認は `pyxel-preview.html` 側で行う前提になっている
+- `docs/product-requirements-platform.md` の CJG31/CJG32 では、変更確認は `pyxel-preview.html` 側で行う前提になっている
 - しかし現在の通常 build は `pyxel.html` / `pyxel.pyxapp` を直接更新するので、変更が current 側へ混ざる
 - 今回は応急処置として preview 側へファイルを退避したが、次に `make build` を実行するとまた current 側へ出る
 

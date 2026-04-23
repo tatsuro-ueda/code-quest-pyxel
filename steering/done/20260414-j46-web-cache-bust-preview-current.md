@@ -44,10 +44,10 @@ tags:
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG31`
   `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG31`
   `Scenario: 選択ページの変更説明が実際の配信内容と一致する`
 

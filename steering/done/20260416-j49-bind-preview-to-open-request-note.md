@@ -64,11 +64,11 @@ tags:
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md` `CJG31`
+- `docs/product-requirements-platform.md` `CJG31`
 - `Scenario: 次の依頼が来ると前のおためし版がもとのまま版へ繰り上がる`
-- `docs/cj-gherkin-platform.md` `CJG33`
+- `docs/product-requirements-platform.md` `CJG33`
 - `Scenario: 変更一覧は今の依頼に対応するおためし版だけを説明する`
-- `docs/cj-gherkin-platform.md` `CJG33`
+- `docs/product-requirements-platform.md` `CJG33`
 - `Scenario: 前のおためし版を繰り上げたあとは新しい差分だけを説明する`
 
 ---

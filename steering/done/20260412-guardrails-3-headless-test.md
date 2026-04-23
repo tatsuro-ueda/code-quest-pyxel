@@ -48,7 +48,7 @@ flowchart TB
 
 ## 2. カスタマージャーニーgherkin
 
-根拠: [`cj-gherkin-guardrails.md`](../../docs/cj-gherkin-guardrails.md) CJG35
+根拠: [`product-requirements-guardrails.md`](../../docs/product-requirements-guardrails.md) CJG35
 
 ```gherkin
 Feature: 壊れた版を子どもに届けない

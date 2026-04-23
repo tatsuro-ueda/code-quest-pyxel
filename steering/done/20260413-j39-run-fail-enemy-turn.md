@@ -62,7 +62,7 @@ flowchart TB
 
 - `CJ42` では `逃走失敗で敵ターンが来ない` 状態そのものが「RPGなのに最後まで遊べない」例として入っている
 - `CJ39` では、戦闘ターン制御や行動順ロジックの破損がゲーム全体を不安定にする問題として定義されている
-- `docs/cj-gherkin-guardrails.md` の `CJG39` には `Scenario: 逃走失敗後も戦闘ターンが継続する` があり、今回のバグはこの gherkin に直接対応する
+- `docs/product-requirements-guardrails.md` の `CJG39` には `Scenario: 逃走失敗後も戦闘ターンが継続する` があり、今回のバグはこの gherkin に直接対応する
 - 現行コードでは `main.py` の `update_battle()` 内で、逃走失敗時に `battle_phase = "enemy_attack"` へ遷移している一方、その `enemy_attack` フェーズ側では敵行動を起こさずタイマー後に `menu` へ戻しているように見える
 
 ### 今回の方針
@@ -94,7 +94,7 @@ flowchart TB
 
 ### 対応する guardrail
 
-- `docs/cj-gherkin-guardrails.md` `CJG39`
+- `docs/product-requirements-guardrails.md` `CJG39`
 - `Scenario: 逃走失敗後も戦闘ターンが継続する`
   `Then 敵ターンが正常に実行される`
   `And 次のターンへ進行できる`

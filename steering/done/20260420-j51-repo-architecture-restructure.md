@@ -91,11 +91,11 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md` `CJG21`
-- `docs/cj-gherkin-platform.md` `CJG26`
-- `docs/cj-gherkin-platform.md` `CJG31`
-- `docs/cj-gherkin-platform.md` `CJG33`
-- `docs/cj-gherkin-platform.md` `CJG43`
+- `docs/product-requirements-platform.md` `CJG21`
+- `docs/product-requirements-platform.md` `CJG26`
+- `docs/product-requirements-platform.md` `CJG31`
+- `docs/product-requirements-platform.md` `CJG33`
+- `docs/product-requirements-platform.md` `CJG43`
 
 ---
 

@@ -98,7 +98,7 @@ flowchart TB
 ### 調査起点
 
 - `docs/customer-journeys.md`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
 - `tools/build_web_release.py`
 - `tools/web_runtime_server.py`
 - `test/test_build_web_release.py`

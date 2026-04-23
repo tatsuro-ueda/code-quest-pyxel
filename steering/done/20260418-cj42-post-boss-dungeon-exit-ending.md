@@ -113,7 +113,7 @@ flowchart TB
 
 - `docs/customer-journeys.md`
   `CJ42` の「ボスを倒す → エンディングに到達する」を今回の主根拠として固定する
-- `docs/cj-gherkin-guardrails.md`
+- `docs/product-requirements-guardrails.md`
   `CJG38` の主要パス完走と矛盾しないか確認する
 - `main.py`
   ダンジョン脱出、message callback、ending 遷移、クリア後導線の現在地を確認する

@@ -272,7 +272,7 @@ flowchart TD
 - `test/test_scene_responsibilities.py`
 - `docs/architecture.md`
 - `docs/customer-journeys.md`
-- `docs/cj-gherkin-guardrails.md`
+- `docs/product-requirements-guardrails.md`
 
 ### 実世界の確認点
 

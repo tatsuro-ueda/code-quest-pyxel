@@ -93,11 +93,11 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md` `CJG26`
+- `docs/product-requirements-platform.md` `CJG26`
   `Scenario: Code Makerからダウンロードしたzipがローカルでも動く`
-- `docs/cj-gherkin-platform.md` `CJG31`
+- `docs/product-requirements-platform.md` `CJG31`
   `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
-- `docs/cj-gherkin-platform.md` `CJG33`
+- `docs/product-requirements-platform.md` `CJG33`
   `Scenario: 変更一覧は今の依頼に対応するおためし版だけを説明する`
 - 追加候補:
   `CJG26: index.html から開発版 Code Maker zip をダウンロードできる`
@@ -167,6 +167,6 @@ flowchart TB
 
 ### 2026年4月18日 16:38（修正・検証完了）
 
-**Observe**：`customer-journeys.md` には `CJ26` 自体が欠けており、`cj-gherkin-platform.md` にも selector から開発版 zip を落とすシナリオがなかった。実装上も `tools/build_codemaker.py` は current 固定で、preview build 後でも `index.html` から Code Maker へ持ち出す導線は存在しなかった。さらに通常 build を回すと `top_changes.json` の freshness guard で止まり、selector SoT のズレも残っていた。  
+**Observe**：`customer-journeys.md` には `CJ26` 自体が欠けており、`product-requirements-platform.md` にも selector から開発版 zip を落とすシナリオがなかった。実装上も `tools/build_codemaker.py` は current 固定で、preview build 後でも `index.html` から Code Maker へ持ち出す導線は存在しなかった。さらに通常 build を回すと `top_changes.json` の freshness guard で止まり、selector SoT のズレも残っていた。  
 **Think**：必要なのは preview/current で別々の Code Maker zip artifact を build 所有で生成し、selector は preview zip が fresh な時だけそのリンクを出すことだった。あわせて `CJ26` の欠番を docs で埋め、`top_changes.json` も今の shipped content に合わせ直さないと通常 build を閉じられない。  
-**Act**：`tools/build_codemaker.py` を helper 化し、`tools/build_web_release.py` で `code-maker.zip` と `code-maker-preview.zip` を生成するようにした。`templates/selector.html` と selector 生成では `Code Makerでひらく` リンクを `開発版` カードに追加し、preview 不在時は stale preview zip ごと掃除するようにした。docs では `customer-journeys.md` に `CJ26` を追加し、`cj-gherkin-platform.md` に開発版 zip ダウンロードと非表示条件の scenario を追記した。検証は `python -m pytest test/test_build_web_release.py -q` で `38 passed`、`python tools/build_web_release.py --preview`、`python tools/build_web_release.py`、`python -m pytest test/ -q` で `205 passed`、`python tools/test_web_compat.py` で `OK: Web版テスト通過（10秒間クラッシュ・致命的エラーなし）` を確認した。実物確認では `index.html` に `href="code-maker-preview.zip?v=1776530062"` が入り、`sha256sum` 比較で `code-maker.zip` 内 `block-quest/main.py` は `main.py`、`code-maker-preview.zip` 内 `block-quest/main.py` は `main_preview.py`、両 zip 内 `my_resource.pyxres` は `assets/blockquest.pyxres` と一致した。
+**Act**：`tools/build_codemaker.py` を helper 化し、`tools/build_web_release.py` で `code-maker.zip` と `code-maker-preview.zip` を生成するようにした。`templates/selector.html` と selector 生成では `Code Makerでひらく` リンクを `開発版` カードに追加し、preview 不在時は stale preview zip ごと掃除するようにした。docs では `customer-journeys.md` に `CJ26` を追加し、`product-requirements-platform.md` に開発版 zip ダウンロードと非表示条件の scenario を追記した。検証は `python -m pytest test/test_build_web_release.py -q` で `38 passed`、`python tools/build_web_release.py --preview`、`python tools/build_web_release.py`、`python -m pytest test/ -q` で `205 passed`、`python tools/test_web_compat.py` で `OK: Web版テスト通過（10秒間クラッシュ・致命的エラーなし）` を確認した。実物確認では `index.html` に `href="code-maker-preview.zip?v=1776530062"` が入り、`sha256sum` 比較で `code-maker.zip` 内 `block-quest/main.py` は `main.py`、`code-maker-preview.zip` 内 `block-quest/main.py` は `main_preview.py`、両 zip 内 `my_resource.pyxres` は `assets/blockquest.pyxres` と一致した。

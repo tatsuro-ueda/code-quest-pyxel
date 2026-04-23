@@ -66,14 +66,14 @@ flowchart TB
 - `docs/customer-journeys.md` には `CJ39: システムを変えたらゲーム全体が壊れた` があり、壊れ方の説明はある
 - しかし「探索 → 戦闘 → 成長 → ボス → エンディング」を最後まで通せること自体を、正の体験として束ねたカスタマージャーニーはない
 - そのため、「逃走失敗後に敵ターンが来ない」のようなバグを `RPGとして成立していない` 問題として受け止める軸が docs 上で弱い
-- `docs/cj-gherkin-guardrails.md` には主要パス完走や戦闘完走の考え方はあるが、`CJ42` のような守る対象としてはまだ結ばれていない
+- `docs/product-requirements-guardrails.md` には主要パス完走や戦闘完走の考え方はあるが、`CJ42` のような守る対象としてはまだ結ばれていない
 
 ### 今回の方針
 
 - `customer-journeys.md` の `育てるループ` に新しい `CJ42` を追加する
 - 物理的な置き場所は `育てるループ` だが、既存参照を壊さないため番号は `CJ42` にする
 - `CJ42` の job は `J2: 好循環` のみとし、まずは「最後まで遊べる」体験に絞る
-- `cj-gherkin-guardrails.md` は `CJ35-CJ42` を対象カスタマージャーニーに広げ、既存の `CJG38/CJG39` の本文と scenario で `CJ42` を守る構成にする
+- `product-requirements-guardrails.md` は `CJ35-CJ42` を対象カスタマージャーニーに広げ、既存の `CJG38/CJG39` の本文と scenario で `CJ42` を守る構成にする
 - 新しい改造レイヤーは増やさず、`CJ42` は既存レイヤーをまたぐ縦断体験として扱う
 
 ### 委任度
@@ -90,7 +90,7 @@ flowchart TB
 
 ### シナリオ2：正常系（guardrail が CJ42 を守る構成になる）
 
-> {`cj-gherkin-guardrails.md` を更新する} で {対象カスタマージャーニーと関連 section を確認する} と {`CJ35-CJ42` が対象になり、`CJG38/CJG39` が `CJ42` を守る縦断 guardrail として読める}
+> {`product-requirements-guardrails.md` を更新する} で {対象カスタマージャーニーと関連 section を確認する} と {`CJ35-CJ42` が対象になり、`CJG38/CJG39` が `CJ42` を守る縦断 guardrail として読める}
 
 ### シナリオ3：正常系（逃走失敗バグを guardrail で表現できる）
 
@@ -111,19 +111,19 @@ flowchart TB
   `育てるループ` の末尾に `CJ42: 子どもが冒険を最後までやり切れる` を追加する。本文は「探索 → 戦闘 → 成長 → ボス → エンディング」が最後までつながることを、子どもの達成体験として書く
 - `docs/customer-journeys.md`
   下部のジャーニー一覧にも `CJ42 | 育てる | 子どもが冒険を最後までやり切れる | J2: 好循環` を追加する
-- `docs/cj-gherkin-guardrails.md`
+- `docs/product-requirements-guardrails.md`
   冒頭の `対象カスタマージャーニー` を `CJ35-CJ42` に変更する
-- `docs/cj-gherkin-guardrails.md`
+- `docs/product-requirements-guardrails.md`
   `CJ42` は新しい layer にはせず、`CJG38/CJG39` 本文で「CJ42 を守る縦断体験をここで担保する」と説明する
-- `docs/cj-gherkin-guardrails.md`
+- `docs/product-requirements-guardrails.md`
   既存の主要パス走破 scenario を `探索 → 通常戦闘 → 経験値獲得 → 成長確認 → ボス撃破 → エンディング` に強化する
-- `docs/cj-gherkin-guardrails.md`
+- `docs/product-requirements-guardrails.md`
   `CJG39` に `逃走失敗後も戦闘ターンが継続する` scenario を追加し、無限に逃走を試せる状態を失敗条件として明記する
 
 ### 検証方針
 
 - `customer-journeys.md` に `CJ42` を追加しても、既存番号参照が壊れないことを `rg "CJ4[0-2]" docs` で目視確認する
-- `cj-gherkin-guardrails.md` で `CJ35-CJ42` と本文の `CJ42` 説明が矛盾しないことを確認する
+- `product-requirements-guardrails.md` で `CJ35-CJ42` と本文の `CJ42` 説明が矛盾しないことを確認する
 - `CJG38/CJG39` の既存 scenario と重複しすぎず、役割分担が読めることを差分で確認する
 
 ---
@@ -132,8 +132,8 @@ flowchart TB
 
 - [x] `customer-journeys.md` に `CJ42: 子どもが冒険を最後までやり切れる` を追加する
 - [x] `customer-journeys.md` のジャーニー一覧へ `CJ42` を追加する
-- [x] `cj-gherkin-guardrails.md` の対象カスタマージャーニーを `CJ35-CJ42` に更新する
-- [x] `cj-gherkin-guardrails.md` の `CJG38/CJG39` 本文に `CJ42` を守る説明を追加する
+- [x] `product-requirements-guardrails.md` の対象カスタマージャーニーを `CJ35-CJ42` に更新する
+- [x] `product-requirements-guardrails.md` の `CJG38/CJG39` 本文に `CJ42` を守る説明を追加する
 - [x] 主要パス scenario を `探索 → 通常戦闘 → 経験値獲得 → 成長確認 → ボス撃破 → エンディング` に強化する
 - [x] `CJG39` に `逃走失敗後も戦闘ターンが継続する` scenario を追加する
 - [x] 差分確認で既存番号や layer 追加が起きていないことを確認する
@@ -152,9 +152,9 @@ flowchart TB
 
 ### 2026年4月13日 23:29（docs更新・検証完了）
 
-**Observe**：`customer-journeys.md` には `CJ42` がなく、`cj-gherkin-guardrails.md` でも `CJ35-CJ41` の範囲に止まっていたため、「RPGとして最後まで遊べる」正の体験と、その体験を守る guardrail の接続が弱かった。  
+**Observe**：`customer-journeys.md` には `CJ42` がなく、`product-requirements-guardrails.md` でも `CJ35-CJ41` の範囲に止まっていたため、「RPGとして最後まで遊べる」正の体験と、その体験を守る guardrail の接続が弱かった。  
 **Think**：新しい改造レイヤーを増やすより、`育てるループ` に `CJ42` を追加し、`CJG38/CJG39` の本文と scenario を縦断体験の保護へ寄せる方が、既存構造を壊さずに意図を明確化できる。  
-**Act**：`docs/customer-journeys.md` に `CJ42: 子どもが冒険を最後までやり切れる` と一覧行を追加し、`docs/cj-gherkin-guardrails.md` では対象カスタマージャーニーを `CJ35-CJ42` に拡張、`CJG38/CJG39` に `CJ42` を守る説明を追加、主要パス scenario を `探索 → 通常戦闘 → 経験値獲得 → 成長確認 → ボス撃破 → エンディング` へ強化し、`逃走失敗後も戦闘ターンが継続する` scenario を新設した。`rg -n "CJ4[0-2]" docs` で `CJ42` 追加と既存番号維持を確認し、`python -m pytest test/ -q` で `153 passed, 2 skipped` を確認した。
+**Act**：`docs/customer-journeys.md` に `CJ42: 子どもが冒険を最後までやり切れる` と一覧行を追加し、`docs/product-requirements-guardrails.md` では対象カスタマージャーニーを `CJ35-CJ42` に拡張、`CJG38/CJG39` に `CJ42` を守る説明を追加、主要パス scenario を `探索 → 通常戦闘 → 経験値獲得 → 成長確認 → ボス撃破 → エンディング` へ強化し、`逃走失敗後も戦闘ターンが継続する` scenario を新設した。`rg -n "CJ4[0-2]" docs` で `CJ42` 追加と既存番号維持を確認し、`python -m pytest test/ -q` で `153 passed, 2 skipped` を確認した。
 
 ---
 

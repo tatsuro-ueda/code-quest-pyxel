@@ -31,7 +31,7 @@ tags:
 
 - **この note が `done` なら、人間は何が成立していると思うか**：親がAIに変更を頼んだら、その新しい内容は常に `preview` / `おためしばん` に入り、選択ページには「ここを変えたから、遊んでみて！」という説明が preview の実内容から自動で出る
 - **その期待を裏切りやすいズレ**：新しい変更が先に `current` に入ってしまう、`main.py` と `main_preview.py` の役割が混ざる、選択ページの説明が `preview_meta.json` などの手更新に依存して実物とずれる
-- **ズレを潰すために見るべき現物**：`docs/customer-journeys.md`、`docs/cj-gherkin-platform.md`、`tools/build_web_release.py`、`main.py`、`main_preview.py`、選択ページ用 metadata
+- **ズレを潰すために見るべき現物**：`docs/customer-journeys.md`、`docs/product-requirements-platform.md`、`tools/build_web_release.py`、`main.py`、`main_preview.py`、選択ページ用 metadata
 
 ```mermaid
 flowchart TB
@@ -56,7 +56,7 @@ flowchart TB
 
 ### 現状
 
-- `customer-journeys.md` と `cj-gherkin-platform.md` は、今回の整理で「AI変更の受け皿は常に preview」「説明は preview から自動生成」という期待へ更新した
+- `customer-journeys.md` と `product-requirements-platform.md` は、今回の整理で「AI変更の受け皿は常に preview」「説明は preview から自動生成」という期待へ更新した
 - しかし現行実装は、通常 build と preview build の責務、`main.py` と `main_preview.py` の運用、選択ページ説明の SoT がまだその期待に揃い切っていない
 - 直近の洞窟脱出修正でも、修正自体は `main.py` と `main_preview.py` の両方へ入った一方、子どもに見せる導線としては「preview に入った新変更を説明つきで試す」という筋が弱い
 - このままだと、CJ31/CJ33 で定義した「親が直した内容を、子どもが説明つきで preview から選ぶ」流れが実装・運用どちらでも再び崩れやすい
@@ -130,19 +130,19 @@ flowchart TD
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG31`
   `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG31`
   `Scenario: 変更内容が子どもに理解できる`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG31`
   `Scenario: 選択ページの変更説明が実際の配信内容と一致する`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG33`
   `Scenario: 変更一覧はおためし版から自動生成される`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG33`
   `Scenario: 変更一覧が実際のおためし版とずれるなら build で検知できる`
 

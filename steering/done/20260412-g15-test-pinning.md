@@ -55,7 +55,7 @@ flowchart TB
 
 ## 2) カスタマージャーニーgherkin（完了条件）
 
-G15の4シナリオ（cj-gherkin-guardrails.md参照）の既存カバレッジ確認：
+G15の4シナリオ（product-requirements-guardrails.md参照）の既存カバレッジ確認：
 
 | シナリオ | カバーするテスト |
 |---|---|
