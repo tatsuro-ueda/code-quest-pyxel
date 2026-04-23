@@ -70,7 +70,7 @@ class MessageDisplay:
 
     def any_advance_btnp(self) -> bool:
         """メッセージを進める入力。決定/キャンセル/方向のどれでもOK。"""
-        btnp = self.game._btnp
+        btnp = self.game.input_state.btnp
         return (
             btnp(CONFIRM_BUTTONS)
             or btnp(CANCEL_BUTTONS)
