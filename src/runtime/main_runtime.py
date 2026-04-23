@@ -1608,6 +1608,7 @@ from src.scenes.ai_help.scene import AiHelpScene
 from src.scenes.ending.scene import EndingScene
 from src.scenes.settings.scene import SettingsScene
 from src.scenes.town.scene import TownScene
+from src.scenes.professor.scene import ProfessorScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1724,14 +1725,7 @@ class Game:
         self.battle_is_professor = False
         self.battle_boss_phase = "phase1"
 
-        # Professor encounter state
-        self.professor_intro_lines: list[str] = []
-        self.professor_intro_idx = 0
-        self.professor_choice_active = False
-        self.professor_choice_cursor = 1  # 0=うけいれる / 1=ことわる
-        self.professor_ending_lines: list[str] = []
-        self.professor_ending_idx = 0
-
+        # professor state は ProfessorModel に移動（P1-G10）
         # town_menu state は TownModel に移動（P1-G4）
         self.last_town_pos: tuple[int, int] | None = None
 
@@ -1773,6 +1767,7 @@ class Game:
         self.ending_scene = EndingScene(game=self)
         self.settings_scene = SettingsScene(game=self)
         self.town_scene = TownScene(game=self)
+        self.professor_scene = ProfessorScene(game=self)
 
         # 起動時の AV 設定適用（settings_scene 生成後に呼ぶ）
         self.settings_scene.apply_av()
@@ -2215,11 +2210,11 @@ class Game:
         elif self.state == "town_menu":
             self.town_scene.update_menu()
         elif self.state == "professor_intro":
-            self.update_professor_intro()
+            self.professor_scene.update_intro()
         elif self.state == "professor_ending_main":
-            self.update_professor_ending_main()
+            self.professor_scene.update_ending_main()
         elif self.state == "professor_ending_accepted":
-            self.update_professor_ending_accepted()
+            self.professor_scene.update_ending_accepted()
         elif self.state == "shop":
             self.shop_scene.update()
         elif self.state == "ending":
@@ -2423,7 +2418,7 @@ class Game:
                         self.state = "map"
                     elif self.battle_is_professor and self.battle_enemy_hp <= 0:
                         self.player["professor_defeated"] = True
-                        self._enter_professor_ending_main()
+                        self.professor_scene.enter_ending_main()
                     else:
                         if self.battle_is_glitch_lord and self.battle_enemy_hp <= 0:
                             self.sfx.play("boss_defeat")
@@ -2469,7 +2464,7 @@ class Game:
             return
         ratio = self.battle_enemy_hp / max_hp
         if self.battle_is_professor:
-            new_phase = self._professor_battle_phase(ratio)
+            new_phase = self.professor_scene.battle_phase(ratio)
             if new_phase != self.battle_boss_phase:
                 self.battle_boss_phase = new_phase
                 try:
@@ -2486,18 +2481,6 @@ class Game:
             if transition_msg:
                 # 既存ダメージメッセージに連結
                 self.battle_text = (self.battle_text + " " + transition_msg).strip()
-
-    def _professor_battle_phase(self, ratio: float) -> str:
-        """HP比率からプロフェッサーのフェーズキーを返す（YAMLキー suffix と一致）。
-
-        ratio が 0.85 を初めて下回ったら "85"、0.10 まで下回ったら "10"。
-        100%時は "100"（フェーズ未開始）。最も最近に跨いだしきい値を返す。
-        """
-        pct = ratio * 100
-        for thr in (10, 25, 40, 55, 70, 85):
-            if pct < thr:
-                return str(thr)
-        return "100"
 
     def _do_enemy_attack(self):
         p = self.player
@@ -2681,16 +2664,6 @@ class Game:
         self.msg_index = 0
         self.msg_callback = callback
 
-    def _professor_phase(self):
-        if self.player["glitch_lord_defeated"]:
-            return "late"
-        max_zone = self.player["max_zone_reached"]
-        if max_zone >= 3:
-            return "late"
-        if max_zone >= 1:
-            return "mid"
-        return "early"
-
     def _dialog_text(self, scene_name, **extra_context):
         return self.dialog.start(
             scene_name,
@@ -2774,66 +2747,6 @@ class Game:
     # ----- Shop (Task #7) -----
     # ----- Professor encounter (隠し章) -----
     # ----- AI でしゅうせい (Code Maker と外部 AI の橋渡し) -----
-    def _enter_professor_intro(self):
-        p = self.player
-        if p.get("professor_intro_seen"):
-            scene = "castle.professor.revisit_intro_01"
-        else:
-            scene = "castle.professor.intro_01"
-        p["professor_intro_seen"] = True
-        self.professor_intro_lines = self._dialog_lines(scene)
-        self.professor_intro_idx = 0
-        self.professor_choice_active = False
-        self.professor_choice_cursor = 1  # default: ことわる
-        self.state = "professor_intro"
-
-    def update_professor_intro(self):
-        if not self.professor_choice_active:
-            if self._btnp(CONFIRM_BUTTONS):
-                self.professor_intro_idx, done = self._advance_dialog_page(
-                    self.professor_intro_idx,
-                    self.professor_intro_lines,
-                )
-                if done:
-                    self.professor_choice_active = True
-            return
-        # choice mode
-        if self._btnp(UP_BUTTONS) or self._btnp(DOWN_BUTTONS):
-            self.professor_choice_cursor = 1 - self.professor_choice_cursor
-            self.sfx.play("cursor")
-            return
-        if self._btnp(CONFIRM_BUTTONS):
-            self.sfx.play("select")
-            if self.professor_choice_cursor == 0:
-                self._enter_professor_ending_accepted()
-            else:
-                self._start_battle(PROFESSOR_DATA, is_professor=True)
-
-    def draw_professor_intro(self):
-        pyxel.cls(0)
-        if self.professor_intro_lines and self.professor_intro_idx < len(self.professor_intro_lines):
-            for i, sub in enumerate(
-                self._current_dialog_page_lines(
-                    self.professor_intro_lines,
-                    self.professor_intro_idx,
-                    max_chars=28,
-                    max_rows=6,
-                )
-            ):
-                self.text(16, 60 + i * 14, sub, 7)
-            if not self.professor_choice_active and (pyxel.frame_count // 15) % 2:
-                self.text(228, 200, "v", 7)
-        if self.professor_choice_active:
-            labels = (
-                ["うけいれる", "ことわる"]
-                if self.has_jp_font
-                else ["ACCEPT", "REFUSE"]
-            )
-            for i, label in enumerate(labels):
-                color = 10 if i == self.professor_choice_cursor else 7
-                marker = ">" if i == self.professor_choice_cursor else " "
-                self.text(96, 180 + i * 16, f"{marker} {label}", color)
-
     def _wrap_text(self, text: str, max_chars: int = 28) -> list[str]:
         """簡易な折返し（CJK文字幅考慮なし、おおよその目安）。"""
         out: list[str] = []
@@ -2847,74 +2760,6 @@ class Game:
             if cur:
                 out.append(cur)
         return out or [""]
-
-    def _enter_professor_ending_main(self):
-        p = self.player
-        if p.get("professor_ending_seen"):
-            scene = "castle.professor.revisit_epilogue_01"
-        else:
-            scene = "castle.professor.epilogue_01"
-        p["professor_ending_seen"] = True
-        self.professor_ending_lines = self._dialog_lines(scene)
-        self.professor_ending_idx = 0
-        self.state = "professor_ending_main"
-
-    def update_professor_ending_main(self):
-        if self._btnp(CONFIRM_BUTTONS):
-            self.professor_ending_idx, done = self._advance_dialog_page(
-                self.professor_ending_idx,
-                self.professor_ending_lines,
-            )
-            if done:
-                # フィールドに戻す（D8）。城タイル上のままなのでクールダウン
-                self.explore_scene.model.a_cooldown = True
-                self.state = "map"
-
-    def draw_professor_ending_main(self):
-        pyxel.cls(0)
-        if self.professor_ending_lines and self.professor_ending_idx < len(self.professor_ending_lines):
-            for i, sub in enumerate(
-                self._current_dialog_page_lines(
-                    self.professor_ending_lines,
-                    self.professor_ending_idx,
-                    max_chars=28,
-                    max_rows=6,
-                )
-            ):
-                self.text(16, 80 + i * 14, sub, 10)
-            if (pyxel.frame_count // 15) % 2:
-                self.text(228, 200, "v", 7)
-
-    def _enter_professor_ending_accepted(self):
-        self.professor_ending_lines = self._dialog_lines("castle.professor.accepted_01")
-        self.professor_ending_idx = 0
-        self.state = "professor_ending_accepted"
-
-    def update_professor_ending_accepted(self):
-        if self._btnp(CONFIRM_BUTTONS):
-            self.professor_ending_idx, done = self._advance_dialog_page(
-                self.professor_ending_idx,
-                self.professor_ending_lines,
-            )
-            if done:
-                # 受諾エンド：professor_defeated は立てない。タイトルへ戻る
-                self.state = "title"
-                self.explore_scene.model.a_cooldown = True
-
-    def draw_professor_ending_accepted(self):
-        pyxel.cls(0)
-        if self.professor_ending_lines and self.professor_ending_idx < len(self.professor_ending_lines):
-            for i, sub in enumerate(
-                self._current_dialog_page_lines(
-                    self.professor_ending_lines,
-                    self.professor_ending_idx,
-                    max_chars=28,
-                    max_rows=6,
-                )
-            ):
-                self.text(16, 90 + i * 14, sub, 6)
-            if (pyxel.frame_count // 15) % 2:
-                self.text(228, 200, "v", 7)
 
     # -----------------------------------------------------------------
     # DRAW
@@ -2956,11 +2801,11 @@ class Game:
         elif self.state == "ending":
             self.ending_scene.draw()
         elif self.state == "professor_intro":
-            self.draw_professor_intro()
+            self.professor_scene.draw_intro()
         elif self.state == "professor_ending_main":
-            self.draw_professor_ending_main()
+            self.professor_scene.draw_ending_main()
         elif self.state == "professor_ending_accepted":
-            self.draw_professor_ending_accepted()
+            self.professor_scene.draw_ending_accepted()
         elif self.state == "ai_help":
             self.ai_help_scene.draw()
 

@@ -100,7 +100,7 @@ class TownScene:
         import src.runtime.main_runtime as M
         scene_name = M.TOWN_DIALOG_SCENES.get(self.model.menu_pos)
         if scene_name is not None:
-            lines = game._dialog_lines(scene_name, ProfessorPhase=game._professor_phase())
+            lines = game._dialog_lines(scene_name, ProfessorPhase=game.professor_scene.phase())
             self._enter_message(lines)
             return
         idx = self.current_town_index()

@@ -142,13 +142,13 @@ class ExploreScene:
 
         if tile == M.T_CASTLE:
             if game.player.get("glitch_lord_defeated") and (nx, ny) == (25, 6):
-                game._enter_professor_intro()
+                game.professor_scene.enter_intro()
                 return
             scene_name = M.TOWN_DIALOG_SCENES.get((nx, ny))
             if scene_name is None:
                 lines = ["..."]
             else:
-                lines = game._dialog_lines(scene_name, ProfessorPhase=game._professor_phase())
+                lines = game._dialog_lines(scene_name, ProfessorPhase=game.professor_scene.phase())
             game.show_message(lines)
             game.state = "town"
             return
