@@ -175,21 +175,49 @@ def make_server(
     return http.server.ThreadingHTTPServer((host, port), handler)
 
 
+def ensure_production_build(project_root: Path, serve_dir: Path) -> None:
+    """起動時に production/ artifacts が無ければビルドする（systemd autostart 用）。
+
+    systemd で常駐させた際、`production/index.html` が無い（fresh checkout や
+    artifacts 未生成）と selector が配信できないため、初回ビルドをここで走らせる。
+    """
+    production_index = serve_dir / "production" / "index.html"
+    if production_index.is_file():
+        return
+    print("[web_runtime_server] production/ artifacts not found; running initial build")
+    from tools.build_web_release import build_web_release
+
+    try:
+        build_web_release(project_root)
+        print("[web_runtime_server] initial build completed")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[web_runtime_server] initial build failed: {exc}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Serve Block Quest web files and internal play session logging")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--serve-dir", default=str(ROOT))
     parser.add_argument("--db-path", default=str(ROOT / ".runtime" / "play_sessions.sqlite3"))
+    parser.add_argument(
+        "--skip-initial-build",
+        action="store_true",
+        help="production/ 不在時の初回ビルドを行わない（test 用）",
+    )
     args = parser.parse_args()
 
+    serve_dir = Path(args.serve_dir).resolve()
+    if not args.skip_initial_build:
+        ensure_production_build(ROOT, serve_dir)
+
     server = make_server(
-        Path(args.serve_dir),
+        serve_dir,
         host=args.host,
         port=args.port,
         db_path=Path(args.db_path),
     )
-    print(f"Serving {Path(args.serve_dir).resolve()} on http://{args.host}:{args.port}")
+    print(f"Serving {serve_dir} on http://{args.host}:{args.port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
