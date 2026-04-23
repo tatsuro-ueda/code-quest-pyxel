@@ -60,15 +60,24 @@ class DialogueIntegrationTest(unittest.TestCase):
         self.assertEqual(missing_en, [], f"{filename} missing EN scenes: {missing_en}")
 
     def test_main_references_scene_names_instead_of_runtime_text(self):
-        """main.py がダイアログシーン名を参照していること。
+        """main.py とその scene モジュールがダイアログシーン名を参照していること。
 
-        main.py は単一ファイル構造（src/*.py をインライン含む）のため、
-        from src.xxx import パターンではなく、シンボル自体の存在を検証する。
+        J53 P1-G 以降、runtime の責務は scenes/ / shared/services/ に分散している。
+        main_runtime.py 単体ではなく、scenes を含めた集合でシンボル参照を検証する。
         """
         main_text = MAIN_RUNTIME.read_text(encoding="utf-8")
         landmark_text = (PYXEL_ROOT / "src" / "shared" / "services" / "landmark_events.py").read_text(
             encoding="utf-8"
         )
+        # J53 P1-G: scenes/ と shared/services/ に移動したシンボルも集める
+        extra_texts: list[str] = []
+        for scene_dir in (PYXEL_ROOT / "src" / "scenes").iterdir():
+            if scene_dir.is_dir():
+                for py in scene_dir.glob("*.py"):
+                    extra_texts.append(py.read_text(encoding="utf-8"))
+        for svc in (PYXEL_ROOT / "src" / "shared" / "services").glob("*.py"):
+            extra_texts.append(svc.read_text(encoding="utf-8"))
+        combined_text = main_text + "\n".join(extra_texts)
 
         for expected in (
             "find_landmark_event",
@@ -95,7 +104,7 @@ class DialogueIntegrationTest(unittest.TestCase):
             "castle.professor.revisit_epilogue_01",
             "TOWN_NPC_LINES",
         ):
-            self.assertIn(expected, main_text)
+            self.assertIn(expected, combined_text)
 
         for scene_name in (
             "landmark.tree.first",

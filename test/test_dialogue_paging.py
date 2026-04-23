@@ -4,6 +4,7 @@ import sys
 import types
 import unittest
 from pathlib import Path
+from src.scenes.explore.scene import ExploreScene
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -27,6 +28,7 @@ class DialoguePagingTest(unittest.TestCase):
 
     def make_game(self):
         game = self.main.Game.__new__(self.main.Game)
+        game.explore_scene = ExploreScene(game=game)
         self.main.pyxel.rect = lambda *args, **kwargs: None
         self.main.pyxel.rectb = lambda *args, **kwargs: None
         self.main.pyxel.cls = lambda *args, **kwargs: None
@@ -120,7 +122,7 @@ class DialoguePagingTest(unittest.TestCase):
             "x": 40,
             "y": 32,
         }
-        game._a_cooldown = False
+        game.explore_scene.model.a_cooldown = False
         game._btnp = lambda buttons: buttons == self.main.CONFIRM_BUTTONS
         game.state = "ending"
 
@@ -129,7 +131,7 @@ class DialoguePagingTest(unittest.TestCase):
         self.assertEqual(game.state, "map")
         self.assertFalse(game.player["in_dungeon"])
         self.assertEqual((game.player["x"], game.player["y"]), (40, 32))
-        self.assertTrue(game._a_cooldown)
+        self.assertTrue(game.explore_scene.model.a_cooldown)
 
 
 if __name__ == "__main__":

@@ -1601,6 +1601,7 @@ ZONE_NAMES_EN = {0: "Grasslands", 1: "Logic Forest", 2: "Algo Mountains", 3: "De
 from src.shared.services.text_format import NAME_EN_MAP, name_en
 from src.scenes.splash.scene import SplashScene
 from src.scenes.title.scene import TitleScene
+from src.scenes.explore.scene import ExploreScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1699,9 +1700,7 @@ class Game:
         self.state = "splash"
         # splash_frame は SplashModel.frame に移動（P1-G2）
         self.prev_state = "map"
-        self.walk_frame = 0
-        self.walk_timer = 0
-        self.move_cooldown = 0
+        # walk_frame / walk_timer / move_cooldown は ExploreModel に移動（P1-G3）
 
         # Battle state
         self.battle_enemy = None
@@ -1743,9 +1742,7 @@ class Game:
         self.shop_cursor: int = 0
         self.shop_message: str = ""
 
-        # A-button cooldown for map state (D13)
-        # 「でる」直後 / ロード直後の暴発を1回だけ防ぐ
-        self._a_cooldown = False
+        # a_cooldown は ExploreModel.a_cooldown に移動（P1-G3）
 
         # Title cursor は TitleModel.cursor に移動（P1-G1）
         self.settings_cursor = 0
@@ -1778,6 +1775,7 @@ class Game:
         # Scene instances（P1-G で Game メソッドを取り込んだ scene を保有する）
         self.splash_scene = SplashScene(game=self)
         self.title_scene = TitleScene(game=self)
+        self.explore_scene = ExploreScene(game=self)
 
         self._sync_audio()
 
@@ -2169,8 +2167,8 @@ class Game:
         # 「入力が効かない」と感じたときの最終手段
         if pyxel.btnp(pyxel.KEY_F1):
             self.state = "map"
-            self.move_cooldown = 0
-            self._a_cooldown = False
+            self.explore_scene.model.move_cooldown = 0
+            self.explore_scene.model.a_cooldown = False
             self.msg_lines = []
             self.msg_index = 0
             self.msg_callback = None
@@ -2203,7 +2201,7 @@ class Game:
         elif self.state == "title":
             self.title_scene.update()
         elif self.state == "map":
-            self.update_map()
+            self.explore_scene.update()
         elif self.state == "battle":
             self.update_battle()
         elif self.state == "menu":
@@ -2233,245 +2231,6 @@ class Game:
 
     # update_splash は SplashScene に移動（P1-G2）
     # update_title / _do_load は TitleScene に移動（P1-G1）
-
-    def update_map(self):
-        if self.move_cooldown > 0:
-            self.move_cooldown -= 1
-            return
-
-        # A-button cooldown (D13): 「でる」直後やロード直後の1フレーム目に
-        # 残っている A 押下を1回だけ捨てて、町メニューが暴発しないようにする。
-        if self._a_cooldown:
-            if self._btnp(CONFIRM_BUTTONS):
-                self._a_cooldown = False
-                return
-            # 何か別の入力があれば、そのまま通常処理へ（次フレームで解除される）
-            self._a_cooldown = False
-
-        # Open menu
-        if self._btnp(CANCEL_BUTTONS):
-            self.state = "menu"
-            self.menu_cursor = 0
-            self.menu_sub = None
-            return
-
-        p = self.player
-        dx, dy = 0, 0
-        if self._btn(UP_BUTTONS): dy = -1
-        elif self._btn(DOWN_BUTTONS): dy = 1
-        elif self._btn(LEFT_BUTTONS): dx = -1
-        elif self._btn(RIGHT_BUTTONS): dx = 1
-
-        if dx != 0 or dy != 0:
-            nx, ny = p["x"] + dx, p["y"] + dy
-            current_map = self.dungeon_map if p["in_dungeon"] else self.world_map
-            mw = len(current_map[0]); mh = len(current_map)
-
-            if 0 <= nx < mw and 0 <= ny < mh:
-                tile = current_map[ny][nx]
-                if tile not in IMPASSABLE:
-                    old_zone = get_zone(p["y"], p["in_dungeon"])
-                    p["x"] = nx; p["y"] = ny
-                    self.sfx.play("step")
-                    self.move_cooldown = 4
-                    self.walk_timer += 1
-                    new_zone = get_zone(p["y"], p["in_dungeon"])
-                    p["max_zone_reached"] = max(
-                        p["max_zone_reached"], new_zone,
-                    )
-                    if new_zone != old_zone:
-                        self.sfx.play("zone_change")
-                    if self.walk_timer >= 2:
-                        self.walk_frame = 1 - self.walk_frame
-                        self.walk_timer = 0
-
-                    # Poison tick: 数歩ごとにHPを少し削る
-                    if p.get("poisoned"):
-                        self._poison_step_counter = getattr(self, "_poison_step_counter", 0) + 1
-                        if self._poison_step_counter >= 4:
-                            self._poison_step_counter = 0
-                            p["hp"] = max(1, p["hp"] - 2)
-                            self.sfx.play("poison_tick")
-
-                    # Check events after move
-                    if self._check_landmark_events():
-                        return
-                    self._check_tile_events(tile, nx, ny)
-            elif p["in_dungeon"]:
-                # Exit dungeon at edges
-                p["in_dungeon"] = False
-                p["x"] = self.world_return_x
-                p["y"] = self.world_return_y
-                self.dungeon_map = None
-                self._enter_message(
-                    self._dialog_lines("dungeon.glitch.exit"),
-                    callback=self._dungeon_exit_callback(),
-                )
-                return
-
-    def _check_tile_events(self, tile, nx, ny):
-        p = self.player
-
-        # Dungeon stair → exit back to overworld
-        if p["in_dungeon"] and tile == T_STAIR_UP:
-            p["in_dungeon"] = False
-            p["x"] = self.world_return_x
-            p["y"] = self.world_return_y
-            self.dungeon_map = None
-            self._enter_message(
-                self._dialog_lines("dungeon.glitch.exit"),
-                callback=self._dungeon_exit_callback(),
-            )
-            return
-
-        if p["in_dungeon"] and tile == T_GLITCH_LORD_TRIGGER:
-            if not p.get("glitch_lord_defeated"):
-                self._start_battle(GLITCH_LORD_DATA, is_glitch_lord=True)
-            return
-
-        # Town entry → open the town menu (D6)
-        if tile == T_TOWN:
-            self.town_menu_pos = (nx, ny)
-            self.town_menu_cursor = 0
-            self.state = "town_menu"
-            return
-
-        # Castle still uses the legacy in-place dialog
-        if tile == T_CASTLE:
-            # クリア後の隠し導線：プロフェッサー編へ
-            if self.player.get("glitch_lord_defeated") and (nx, ny) == (25, 6):
-                self._enter_professor_intro()
-                return
-            scene = TOWN_DIALOG_SCENES.get((nx, ny))
-            if scene is None:
-                lines = ["..."]
-            else:
-                lines = self._dialog_lines(
-                    scene,
-                    ProfessorPhase=self._professor_phase(),
-                )
-            self.show_message(lines)
-            self.state = "town"
-            return
-
-        # Cave entry (dungeon)
-        if tile == T_CAVE and not p["in_dungeon"]:
-            # 洞窟ミッション: 通信塔のノイズを倒すまで根がブロック
-            if not p.get("towerNoiseCleared"):
-                self._enter_message(self._dialog_lines("cave.blocked"))
-                return
-            # 初回クリア時: 根がほどける演出
-            if not getattr(self, "_cave_unblock_shown", False):
-                self._cave_unblock_shown = True
-                self._enter_message(self._dialog_lines("cave.unblocked"))
-                return
-            self.sfx.play("dungeon_in")
-            self.world_return_x = nx; self.world_return_y = ny
-            # 全洞窟は同じ共有ダンジョンに通じる（tilemap[1] に保存・編集可）
-            self.dungeon_map = [row[:] for row in self.dungeon_template]
-            self.dungeon_rooms = self.dungeon_template_rooms
-            p["in_dungeon"] = True
-            # 階段位置にスポーン（最初の部屋の入り口）
-            sx, sy = self.dungeon_spawn
-            p["x"] = sx
-            p["y"] = sy
-            self._enter_message(self._dialog_lines("dungeon.glitch.enter"))
-            return
-
-        # Random encounter
-        if not self.debug_mode:
-            if p["in_dungeon"] and p["glitch_lord_defeated"]:
-                return
-            rate = ENCOUNTER_RATES.get(tile, 0)
-            if rate > 0 and random.random() < rate:
-                zone = get_zone(p["y"], p["in_dungeon"])
-                enemies = ZONE_ENEMIES.get(zone, ZONE_ENEMIES[0])
-                enemy_template = random.choice(enemies)
-                self._start_battle(enemy_template, is_glitch_lord=False)
-
-    def _check_landmark_events(self):
-        if self.player["in_dungeon"]:
-            return False
-
-        landmark = find_landmark_at(self.player["x"], self.player["y"])
-        if landmark is None:
-            return False
-
-        p = self.player
-        scene = self._resolve_landmark_scene(landmark)
-        if scene is None:
-            return False
-
-        # フラグ更新
-        if landmark.flag_name == "landmarkTreeSeen":
-            if not p.get("landmarkTreeSeen"):
-                p["landmarkTreeSeen"] = True
-                p["treeAsked"] = True
-        elif landmark.flag_name == "landmarkTowerSeen":
-            if not p.get("landmarkTowerSeen"):
-                p["landmarkTowerSeen"] = True
-
-        # 通信塔クエスト: treeAsked=true で初めて来た → ノイズガーディアン戦
-        if scene == "landmark.tower.quest":
-            self._enter_message(
-                self._dialog_lines(scene),
-                callback=self._start_noise_guardian_battle,
-            )
-            return True
-
-        # エピローグフラグ
-        if landmark.epilogue_flag and scene == landmark.epilogue_scene:
-            p[landmark.epilogue_flag] = True
-
-        self._enter_message(self._dialog_lines(scene))
-        return True
-
-    def _resolve_landmark_scene(self, landmark):
-        """洞窟ミッションのフラグに応じてランドマークのシーンを決定する。"""
-        p = self.player
-        cleared = p.get("towerNoiseCleared", False)
-        tree_asked = p.get("treeAsked", False)
-
-        if landmark.flag_name == "landmarkTreeSeen":
-            if not p.get("landmarkTreeSeen"):
-                return "landmark.tree.first"
-            if cleared:
-                # クリア後: 初回はcleared演出、以降はランダム
-                if not getattr(self, "_tree_cleared_shown", False):
-                    self._tree_cleared_shown = True
-                    return "landmark.tree.cleared"
-                return random.choice([
-                    "landmark.tree.repeat",
-                    "landmark.tree.repeat_02",
-                    "landmark.tree.repeat_03",
-                ])
-            # treeAsked=true, まだクリアしてない
-            return "landmark.tree.waiting"
-
-        if landmark.flag_name == "landmarkTowerSeen":
-            if not p.get("landmarkTowerSeen"):
-                return "landmark.tower.first"
-            if cleared:
-                # エピローグ（ボス撃破後）
-                if (
-                    p.get("glitch_lord_defeated")
-                    and landmark.epilogue_scene
-                    and not p.get(landmark.epilogue_flag, False)
-                ):
-                    return landmark.epilogue_scene
-                return random.choice([
-                    "landmark.tower.repeat",
-                    "landmark.tower.repeat_02",
-                    "landmark.tower.repeat_03",
-                ])
-            # 世界樹に相談済み → クエスト戦闘
-            if tree_asked:
-                return "landmark.tower.quest"
-            # まだ世界樹に行ってない → リピート
-            return "landmark.tower.repeat"
-
-        # その他のランドマーク（将来用）
-        return None
 
     def _start_noise_guardian_battle(self):
         """ノイズガーディアン強制戦闘を開始する。"""
@@ -3080,11 +2839,6 @@ class Game:
             extra_context=extra_context,
         )
 
-    def _dungeon_exit_callback(self):
-        if self.player.get("glitch_lord_defeated"):
-            return self._enter_ending
-        return None
-
     def _enter_message(self, lines, callback=None):
         self.show_message(lines, callback=callback)
         self.prev_state = "map"
@@ -3356,14 +3110,14 @@ class Game:
 
     def _town_menu_exit(self):
         self.state = "map"
-        self._a_cooldown = True
+        self.explore_scene.model.a_cooldown = True
         self.town_menu_pos = None
 
     def update_ending(self):
         if self._btnp(CONFIRM_BUTTONS):
             self.player["in_dungeon"] = False
             self.dungeon_map = None
-            self._a_cooldown = True
+            self.explore_scene.model.a_cooldown = True
             self.state = "map"
 
     # ----- Professor encounter (隠し章) -----
@@ -3408,7 +3162,7 @@ class Game:
             self.state = "menu"
 
     def draw_ai_help(self):
-        self.draw_map()
+        self.explore_scene.draw()
         self.draw_status_bar()
         # ウィンドウ
         x, y, w, h = 12, 36, 232, 196
@@ -3528,7 +3282,7 @@ class Game:
             )
             if done:
                 # フィールドに戻す（D8）。城タイル上のままなのでクールダウン
-                self._a_cooldown = True
+                self.explore_scene.model.a_cooldown = True
                 self.state = "map"
 
     def draw_professor_ending_main(self):
@@ -3560,7 +3314,7 @@ class Game:
             if done:
                 # 受諾エンド：professor_defeated は立てない。タイトルへ戻る
                 self.state = "title"
-                self._a_cooldown = True
+                self.explore_scene.model.a_cooldown = True
 
     def draw_professor_ending_accepted(self):
         pyxel.cls(0)
@@ -3587,27 +3341,27 @@ class Game:
         elif self.state == "title":
             self.title_scene.draw()
         elif self.state == "map":
-            self.draw_map()
+            self.explore_scene.draw()
             self.draw_status_bar()
         elif self.state == "battle":
             self.draw_battle()
         elif self.state == "menu":
-            self.draw_map()
+            self.explore_scene.draw()
             self.draw_status_bar()
             self.draw_menu()
         elif self.state == "settings":
             if self.settings_origin == "menu":
-                self.draw_map()
+                self.explore_scene.draw()
                 self.draw_status_bar()
             else:
                 self.title_scene.draw()
             self.draw_settings()
         elif self.state == "message":
-            self.draw_map()
+            self.explore_scene.draw()
             self.draw_status_bar()
             self.draw_message_window()
         elif self.state == "town":
-            self.draw_map()
+            self.explore_scene.draw()
             self.draw_status_bar()
             self.draw_message_window()
         elif self.state == "town_menu":
@@ -3640,124 +3394,6 @@ class Game:
 
     # draw_splash は SplashScene に移動（P1-G2）
     # draw_title は TitleScene に移動（P1-G1）
-
-    def draw_map(self):
-        p = self.player
-        current_map = self.dungeon_map if p["in_dungeon"] else self.world_map
-        mw = len(current_map[0]); mh = len(current_map)
-
-        # Camera centered on player
-        view_w = 256; view_h = 232
-        self.cam_x = p["x"] * 16 - view_w // 2 + 8
-        self.cam_y = p["y"] * 16 - view_h // 2 + 8
-        self.cam_x = max(0, min(mw * 16 - view_w, self.cam_x))
-        self.cam_y = max(0, min(mh * 16 - view_h, self.cam_y))
-
-        # Tile range to draw
-        tx_start = max(0, self.cam_x // 16)
-        ty_start = max(0, self.cam_y // 16)
-        tx_end = min(mw, (self.cam_x + view_w) // 16 + 2)
-        ty_end = min(mh, (self.cam_y + view_h) // 16 + 2)
-
-        water_frame2 = (pyxel.frame_count // 30) % 2 == 1
-
-        for ty in range(ty_start, ty_end):
-            for tx in range(tx_start, tx_end):
-                tile = current_map[ty][tx]
-                sx = tx * 16 - self.cam_x
-                sy = ty * 16 - self.cam_y + 24  # offset for status bar
-
-                if tile == T_PATH and not p["in_dungeon"]:
-                    variant = get_path_variant(current_map, tx, ty)
-                    bank_pos = self.path_variant_bank.get(id(variant))
-                    if bank_pos:
-                        pyxel.blt(sx, sy, 0, bank_pos[0], bank_pos[1], 16, 16, 0)
-                    else:
-                        # Fallback: draw from tile bank
-                        bp = self.tile_bank[T_PATH]
-                        pyxel.blt(sx, sy, 0, bp[0], bp[1], 16, 16)
-                elif tile == T_WATER:
-                    shore = None
-                    if not p["in_dungeon"]:
-                        shore = get_shore_variant(current_map, tx, ty)
-                    if shore:
-                        bank_pos = self.shore_variant_bank.get(id(shore))
-                        if bank_pos:
-                            pyxel.blt(sx, sy, 0, bank_pos[0], bank_pos[1], 16, 16)
-                        else:
-                            bp = self.tile_bank[T_WATER]
-                            pyxel.blt(sx, sy, 0, bp[0], bp[1], 16, 16)
-                    else:
-                        if water_frame2 and self.tile_bank_water2:
-                            bp = self.tile_bank_water2
-                        else:
-                            bp = self.tile_bank[T_WATER]
-                        pyxel.blt(sx, sy, 0, bp[0], bp[1], 16, 16)
-                else:
-                    bp = self.tile_bank.get(tile)
-                    if bp:
-                        pyxel.blt(sx, sy, 0, bp[0], bp[1], 16, 16)
-
-        # Draw landmark highlights (#13)
-        if not p["in_dungeon"]:
-            self._draw_landmark_highlights()
-        else:
-            self._draw_dungeon_glitch_lord_marker(current_map)
-
-        # Draw hero
-        hero_sx = p["x"] * 16 - self.cam_x
-        hero_sy = p["y"] * 16 - self.cam_y + 24
-        sprite_key = "hero_walk" if self.walk_frame == 1 else "hero_down"
-        bp = self.sprite_bank.get(sprite_key)
-        if bp:
-            pyxel.blt(hero_sx, hero_sy, 1, bp[0], bp[1], 16, 16, 0)
-
-    def _draw_dungeon_glitch_lord_marker(self, current_map):
-        """ダンジョン最奥のボス位置に目印キャラを描く。"""
-        p = self.player
-        if p.get("glitch_lord_defeated"):
-            return
-        bp = self.sprite_bank.get("hero_down")
-        if bp is None:
-            return
-
-        for ty, row in enumerate(current_map):
-            for tx, tile in enumerate(row):
-                if tile != T_GLITCH_LORD_TRIGGER:
-                    continue
-                sx = tx * 16 - self.cam_x
-                sy = ty * 16 - self.cam_y + 24
-                if sx < -16 or sx > 256 or sy < 8 or sy > 256:
-                    return
-                pyxel.blt(sx, sy, 1, bp[0], bp[1], 16, 16, 0)
-                return
-
-    def _draw_landmark_highlights(self):
-        """ランドマーク強調描画。フレーム枠とパルスで「目印」を示す。
-
-        - 世界樹 (32, 9)：常時、緑のパルス枠
-        - 通信塔 (40, 32)：常時、紫のパルス枠
-        - 城 (25, 6)：glitch_lord_defeated 後のみ、黄色のパルス枠（プロフェッサー編発見導線）
-        """
-        p = self.player
-        marks = [
-            (32, 9, 11, True),   # 世界樹: 緑
-            (40, 32, 2, True),   # 通信塔: 紫
-            (25, 6, 10, p.get("glitch_lord_defeated", False)),  # 城: 黄（クリア後のみ）
-        ]
-        # パルス（明滅）：30フレームで1周期
-        pulse = (pyxel.frame_count // 8) % 4
-        for tx, ty, color, enabled in marks:
-            if not enabled:
-                continue
-            sx = tx * 16 - self.cam_x
-            sy = ty * 16 - self.cam_y + 24
-            # 画面外はスキップ
-            if sx < -16 or sx > 256 or sy < 8 or sy > 256:
-                continue
-            # 二重枠で目立たせる
-            pyxel.rectb(sx - 1 - pulse, sy - 1 - pulse,
-                        18 + pulse * 2, 18 + pulse * 2, color)
 
     def draw_status_bar(self):
         pyxel.rect(0, 0, 256, 24, 1)
@@ -3975,7 +3611,7 @@ class Game:
 
     def draw_town_menu(self):
         # Background: show the map underneath so players keep their bearings.
-        self.draw_map()
+        self.explore_scene.draw()
         self.draw_status_bar()
         # Window
         x, y, w, h = 20, 40, 216, 170

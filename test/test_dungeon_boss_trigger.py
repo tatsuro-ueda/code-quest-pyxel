@@ -5,6 +5,7 @@ import types
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
+from src.scenes.explore.scene import ExploreScene
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -28,12 +29,14 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
     def make_game(self):
         game = self.main.Game.__new__(self.main.Game)
+        game.explore_scene = ExploreScene(game=game)
         game.player = {"in_dungeon": True, "glitch_lord_defeated": False}
         game._start_battle = MagicMock()
         return game
 
     def make_draw_game(self):
         game = self.main.Game.__new__(self.main.Game)
+        game.explore_scene = ExploreScene(game=game)
         game.player = {
             "in_dungeon": True,
             "glitch_lord_defeated": False,
@@ -60,12 +63,13 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
             "hero_down": (0, 0),
             "hero_walk": (16, 0),
         }
-        game.walk_frame = 0
-        game._draw_landmark_highlights = MagicMock()
+        game.explore_scene.model.walk_frame = 0
+        game.explore_scene._draw_landmark_highlights = MagicMock()
         return game
 
     def make_stair_exit_game(self, *, glitch_lord_defeated=True):
         game = self.main.Game.__new__(self.main.Game)
+        game.explore_scene = ExploreScene(game=game)
         game.player = {
             "in_dungeon": True,
             "glitch_lord_defeated": glitch_lord_defeated,
@@ -82,6 +86,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
 
     def make_edge_exit_game(self, *, glitch_lord_defeated=True):
         game = self.main.Game.__new__(self.main.Game)
+        game.explore_scene = ExploreScene(game=game)
         game.player = {
             "in_dungeon": True,
             "glitch_lord_defeated": glitch_lord_defeated,
@@ -93,12 +98,12 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         game.world_map = [[self.main.T_GRASS]]
         game.world_return_x = 40
         game.world_return_y = 32
-        game.move_cooldown = 0
-        game._a_cooldown = False
-        game.walk_timer = 0
-        game.walk_frame = 0
+        game.explore_scene.model.move_cooldown = 0
+        game.explore_scene.model.a_cooldown = False
+        game.explore_scene.model.walk_timer = 0
+        game.explore_scene.model.walk_frame = 0
         game.sfx = MagicMock()
-        game._check_landmark_events = MagicMock(return_value=False)
+        game.explore_scene._check_landmark_events = MagicMock(return_value=False)
         game._dialog_lines = MagicMock(return_value=["dungeon.glitch.exit"])
         game._enter_message = MagicMock()
         game._enter_ending = MagicMock()
@@ -131,7 +136,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
     def test_check_tile_events_starts_glitch_lord_battle_on_trigger(self):
         game = self.make_game()
 
-        self.main.Game._check_tile_events(game, self.main.T_GLITCH_LORD_TRIGGER, 7, 8)
+        game.explore_scene._check_tile_events(self.main.T_GLITCH_LORD_TRIGGER, 7, 8)
 
         game._start_battle.assert_called_once_with(
             self.main.GLITCH_LORD_DATA,
@@ -142,14 +147,14 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         game = self.make_game()
         game.player["glitch_lord_defeated"] = True
 
-        self.main.Game._check_tile_events(game, self.main.T_GLITCH_LORD_TRIGGER, 7, 8)
+        game.explore_scene._check_tile_events(self.main.T_GLITCH_LORD_TRIGGER, 7, 8)
 
         game._start_battle.assert_not_called()
 
     def test_stair_exit_after_glitch_lord_defeat_routes_message_to_ending(self):
         game = self.make_stair_exit_game()
 
-        self.main.Game._check_tile_events(game, self.main.T_STAIR_UP, 7, 8)
+        game.explore_scene._check_tile_events(self.main.T_STAIR_UP, 7, 8)
 
         game._enter_message.assert_called_once_with(
             ["dungeon.glitch.exit"],
@@ -161,7 +166,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
     def test_edge_exit_after_glitch_lord_defeat_routes_message_to_ending(self):
         game = self.make_edge_exit_game()
 
-        self.main.Game.update_map(game)
+        game.explore_scene.update()
 
         game._enter_message.assert_called_once_with(
             ["dungeon.glitch.exit"],
@@ -173,7 +178,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
     def test_stair_exit_before_glitch_lord_defeat_returns_without_ending(self):
         game = self.make_stair_exit_game(glitch_lord_defeated=False)
 
-        self.main.Game._check_tile_events(game, self.main.T_STAIR_UP, 7, 8)
+        game.explore_scene._check_tile_events(self.main.T_STAIR_UP, 7, 8)
 
         game._enter_message.assert_called_once_with(
             ["dungeon.glitch.exit"],
@@ -183,7 +188,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
     def test_edge_exit_before_glitch_lord_defeat_returns_without_ending(self):
         game = self.make_edge_exit_game(glitch_lord_defeated=False)
 
-        self.main.Game.update_map(game)
+        game.explore_scene.update()
 
         game._enter_message.assert_called_once_with(
             ["dungeon.glitch.exit"],
@@ -196,7 +201,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         self.main.pyxel.frame_count = 0
         self.main.pyxel.blt = lambda *args: blt_calls.append(args)
 
-        self.main.Game.draw_map(game)
+        game.explore_scene.draw()
 
         sprite_draws = [call for call in blt_calls if call[2] == 1]
         self.assertEqual(len(sprite_draws), 2)
@@ -208,7 +213,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         self.main.pyxel.frame_count = 0
         self.main.pyxel.blt = lambda *args: blt_calls.append(args)
 
-        self.main.Game.draw_map(game)
+        game.explore_scene.draw()
 
         sprite_draws = [call for call in blt_calls if call[2] == 1]
         self.assertEqual(len(sprite_draws), 1)
