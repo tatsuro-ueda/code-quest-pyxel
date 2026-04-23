@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class EndingModel:
-    """ending シーンの状態（Phase 1 スケルトン、P1-G11 で中身を埋める）。"""
+    """ending シーンの状態（P1-G11 で Game.ending_lines を取り込み）。"""
 
-    pass
+    lines: list[str] = field(default_factory=list)

@@ -266,7 +266,7 @@ class ExploreScene:
         """ダンジョン脱出時のコールバック（ボス撃破済みならエンディングへ）。"""
         game = self.game
         if game.player.get("glitch_lord_defeated"):
-            return game._enter_ending
+            return game.ending_scene.enter
         return None
 
     def draw(self) -> dict[str, str] | None:

@@ -29,6 +29,8 @@ class DialoguePagingTest(unittest.TestCase):
     def make_game(self):
         game = self.main.Game.__new__(self.main.Game)
         game.explore_scene = ExploreScene(game=game)
+        from src.scenes.ending.scene import EndingScene
+        game.ending_scene = EndingScene(game=game)
         self.main.pyxel.rect = lambda *args, **kwargs: None
         self.main.pyxel.rectb = lambda *args, **kwargs: None
         self.main.pyxel.cls = lambda *args, **kwargs: None
@@ -126,7 +128,7 @@ class DialoguePagingTest(unittest.TestCase):
         game._btnp = lambda buttons: buttons == self.main.CONFIRM_BUTTONS
         game.state = "ending"
 
-        self.main.Game.update_ending(game)
+        game.ending_scene.update()
 
         self.assertEqual(game.state, "map")
         self.assertFalse(game.player["in_dungeon"])

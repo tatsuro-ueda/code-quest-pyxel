@@ -1605,6 +1605,7 @@ from src.scenes.explore.scene import ExploreScene
 from src.scenes.shop.scene import ShopScene
 from src.scenes.menu.scene import MenuScene
 from src.scenes.ai_help.scene import AiHelpScene
+from src.scenes.ending.scene import EndingScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1748,7 +1749,6 @@ class Game:
         self.msg_lines = []
         self.msg_index = 0
         self.msg_callback = None
-        self.ending_lines = []
 
         # Debug mode
         self.debug_mode = False
@@ -1770,6 +1770,7 @@ class Game:
         self.shop_scene = ShopScene(game=self)
         self.menu_scene = MenuScene(game=self)
         self.ai_help_scene = AiHelpScene(game=self)
+        self.ending_scene = EndingScene(game=self)
 
         self._sync_audio()
 
@@ -2217,7 +2218,7 @@ class Game:
         elif self.state == "shop":
             self.shop_scene.update()
         elif self.state == "ending":
-            self.update_ending()
+            self.ending_scene.update()
         elif self.state == "ai_help":
             self.ai_help_scene.update()
 
@@ -2761,10 +2762,6 @@ class Game:
         self.prev_state = "map"
         self.state = "message"
 
-    def _enter_ending(self):
-        self.ending_lines = self._dialog_lines("ending.main.line01")
-        self.state = "ending"
-
     def _enemy_hit_scene_name(self):
         if self.battle_is_glitch_lord:
             return "boss.glitch.enemy_hit"
@@ -2925,13 +2922,6 @@ class Game:
         self.state = "map"
         self.explore_scene.model.a_cooldown = True
         self.town_menu_pos = None
-
-    def update_ending(self):
-        if self._btnp(CONFIRM_BUTTONS):
-            self.player["in_dungeon"] = False
-            self.dungeon_map = None
-            self.explore_scene.model.a_cooldown = True
-            self.state = "map"
 
     # ----- Professor encounter (隠し章) -----
     # ----- AI でしゅうせい (Code Maker と外部 AI の橋渡し) -----
@@ -3115,7 +3105,7 @@ class Game:
         elif self.state == "shop":
             self.shop_scene.draw()
         elif self.state == "ending":
-            self.draw_ending()
+            self.ending_scene.draw()
         elif self.state == "professor_intro":
             self.draw_professor_intro()
         elif self.state == "professor_ending_main":
@@ -3327,19 +3317,6 @@ class Game:
         # Blink indicator
         if (pyxel.frame_count // 15) % 2:
             self.text(228, 240, "v", 7)
-
-    def draw_ending(self):
-        pyxel.cls(1)
-        if not self.ending_lines:
-            self.ending_lines = self._dialog_lines("ending.main.line01")
-        if self.ending_lines:
-            self.text(60, 60, self.ending_lines[0], 10)
-        for index, line in enumerate(self.ending_lines[1:]):
-            self.text(20, 90 + index * 15, line, 7)
-        self.text(40, 180, "PRESS Z TO TITLE", 6)
-        p = self.player
-        self.text(30, 200, f"レベル{p['lv']} Time:{pyxel.frame_count//30//60}m", 6)
-
 
 # =====================================================================
 # DEBUG: グローバル say() 関数 — Scratch の「say」ブロックと同じ感覚
