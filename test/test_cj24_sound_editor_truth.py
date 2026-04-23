@@ -72,8 +72,8 @@ def _load_main_module(script_name: str, pyxel_stub: _FakePyxel) -> types.ModuleT
 class CJ24SoundEditorTruthTest(unittest.TestCase):
     def test_docs_keep_cj24_and_cjg24_roundtrip_contract_visible(self):
         journeys = (ROOT / "docs" / "customer-journeys.md").read_text(encoding="utf-8")
-        av = (ROOT / "docs" / "cj-gherkin-av.md").read_text(encoding="utf-8")
-        guardrails = (ROOT / "docs" / "cj-gherkin-guardrails.md").read_text(encoding="utf-8")
+        av = (ROOT / "docs" / "product-requirements-av.md").read_text(encoding="utf-8")
+        guardrails = (ROOT / "docs" / "product-requirements-guardrails.md").read_text(encoding="utf-8")
 
         self.assertIn("### CJ24: 効果音を自分で作る", journeys)
         self.assertIn("Scenario: Soundエディタで編集したSFXがゲーム内で使われる", av)
