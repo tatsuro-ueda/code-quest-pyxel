@@ -8,13 +8,18 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 
 
 def load_yaml(path: str | Path) -> Any:
-    """Load any YAML file under the project."""
+    """Load any YAML file under the project.
+
+    `yaml` (PyYAML) は遅延 import する。Pyodide 実行環境には PyYAML が
+    入っていないが、runtime は src/generated/*.py（YAML から事前生成済みの
+    純粋 Python データ）を読むだけなので、本関数は build 時の tools/gen_data
+    側からしか呼ばれない。
+    """
+    import yaml
     text = Path(path).read_text(encoding="utf-8")
     return yaml.safe_load(text)
 
