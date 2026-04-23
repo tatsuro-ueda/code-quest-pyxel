@@ -78,6 +78,8 @@ def _setup_pyxel_mock():
 _setup_pyxel_mock()
 
 import main as M  # noqa: E402
+from src.shared.services.audio_system import sync_audio as _sync_audio_fn
+from src.shared.services.input_bindings import InputStateTracker
 
 
 class GameSettingsTest(unittest.TestCase):
@@ -88,31 +90,38 @@ class GameSettingsTest(unittest.TestCase):
         g.sfx = MagicMock()
         g.audio = MagicMock()
         g.state = "title"
-        g.title_cursor = 0
-        g.settings_cursor = 0
-        g.settings_origin = "title"
+        # P1-G1: title_cursor は TitleScene.model.cursor に移動
+        g.title_scene = M.TitleScene(game=g)
+        # P1-G7: menu_sub は MenuScene.model.sub に移動
+        g.menu_scene = M.MenuScene(game=g)
+        g.settings_scene = M.SettingsScene(game=g)
+        g.settings_scene.model.cursor = 0
+        g.settings_scene.model.origin = "title"
+        g.battle_scene = M.BattleScene(game=g)
+        g.text_fmt = M.TextFormat(game=g)
+        g.input_state = InputStateTracker()
         return g
 
     def test_title_settings_item_opens_settings(self):
         g = self._make_game()
-        g.title_cursor = 2
+        g.title_scene.model.cursor = 2
         g._has_save = False
-        g._btnp = MagicMock(
+        g.input_state.btnp = MagicMock(
             side_effect=lambda buttons: buttons in (M.CONFIRM_BUTTONS, M.TITLE_START_BUTTONS)
         )
 
-        g.update_title()
+        g.title_scene.update()
 
         self.assertEqual(g.state, "settings")
-        self.assertEqual(g.settings_origin, "title")
+        self.assertEqual(g.settings_scene.model.origin, "title")
 
     def test_settings_toggle_updates_audio_flags(self):
         g = self._make_game()
         g.state = "settings"
-        g.settings_cursor = 1
-        g._btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
+        g.settings_scene.model.cursor = 1
+        g.input_state.btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
 
-        g.update_settings()
+        g.settings_scene.update()
 
         self.assertFalse(g.player["bgm_enabled"])
         g.audio.set_enabled.assert_called_once_with(False)
@@ -120,10 +129,10 @@ class GameSettingsTest(unittest.TestCase):
     def test_settings_toggle_all_updates_all_flags(self):
         g = self._make_game()
         g.state = "settings"
-        g.settings_cursor = 0
-        g._btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
+        g.settings_scene.model.cursor = 0
+        g.input_state.btnp = MagicMock(side_effect=lambda buttons: buttons == M.CONFIRM_BUTTONS)
 
-        g.update_settings()
+        g.settings_scene.update()
 
         self.assertFalse(g.player["bgm_enabled"])
         self.assertFalse(g.player["sfx_enabled"])
@@ -132,22 +141,18 @@ class GameSettingsTest(unittest.TestCase):
     def test_settings_cancel_returns_to_origin(self):
         g = self._make_game()
         g.state = "settings"
-        g.settings_origin = "menu"
-        g._btnp = MagicMock(side_effect=lambda buttons: buttons == M.CANCEL_BUTTONS)
+        g.settings_scene.model.origin = "menu"
+        g.input_state.btnp = MagicMock(side_effect=lambda buttons: buttons == M.CANCEL_BUTTONS)
 
-        g.update_settings()
+        g.settings_scene.update()
 
         self.assertEqual(g.state, "menu")
 
     def test_title_settings_keeps_title_bgm_scene(self):
         g = self._make_game()
         g.state = "settings"
-        g.settings_origin = "title"
-        g.battle_enemy = None
-        g.battle_enemy_hp = 0
-        g.battle_is_glitch_lord = False
-        g.battle_phase = "menu"
+        g.settings_scene.model.origin = "title"
 
-        g._sync_audio()
+        _sync_audio_fn(g)
 
         g.audio.play_scene.assert_called_once_with("title")

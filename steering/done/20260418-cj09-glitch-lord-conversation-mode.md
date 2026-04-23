@@ -108,7 +108,7 @@ flowchart TB
 
 - `docs/customer-journeys.md`
   `CJ09` と `CJ42` のどちらを主に置くべきかの根拠
-- `docs/cj-gherkin-narrative.md`
+- `docs/product-requirements-narrative.md`
   `CJG09` に沿う narrative 変更かどうかの確認
 - `steering/done/20260413-j37-dialogue-page-advance.md`
   会話送りの共通化で過去にどこまで整理したかの確認

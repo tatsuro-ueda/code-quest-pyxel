@@ -89,9 +89,9 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md` `CJG31`
+- `docs/product-requirements-platform.md` `CJG31`
 - `Scenario: 変更内容が子どもに理解できる`
-- `docs/cj-gherkin-platform.md` `CJG33`
+- `docs/product-requirements-platform.md` `CJG33`
 - `Scenario: おためし版に含まれる変更一覧が表示される`
 
 ---
@@ -154,10 +154,10 @@ flowchart TB
 
 **Observe**：基本文書を読み直すと、中心は `CJ21` ではなく `CJ31/CJ33` だった。問題は「友達に見せる」ことより、「子どもが選択ページの説明を信じて比較・承認する」導線が壊れていたことだった。コード上の根本原因は、normal build の `top_changes.json` と preview build の `preview_meta.json` に freshness guard がなく、実配信ソースより古い説明でも build が通っていた点にあった。  
 **Think**：手動更新を前提に残すにしても、少なくとも stale metadata を build/test で検知できなければ `CJ31/CJ33` は守れない。今回の最小修正は、change list metadata を消すことではなく、「対応するソースより古ければ失敗する」guardrail を build script に入れることだった。  
-**Act**：`customer-journeys.md` と `cj-gherkin-platform.md` を `CJ31/CJ33` 軸で補強し、`test/test_build_web_release.py` に stale `top_changes.json` / stale `preview_meta.json` の failing test を追加した。`tools/build_web_release.py` に freshness validation を実装し、`top_changes.json` も current 内容へ更新した。検証は `python -m pytest test/test_build_web_release.py -q` で `18 passed`、`make build` で `157 passed, 2 skipped` + `tools/build_web_release.py` 完了、`python tools/test_web_compat.py` で `OK: Web版テスト通過` を確認した。
+**Act**：`customer-journeys.md` と `product-requirements-platform.md` を `CJ31/CJ33` 軸で補強し、`test/test_build_web_release.py` に stale `top_changes.json` / stale `preview_meta.json` の failing test を追加した。`tools/build_web_release.py` に freshness validation を実装し、`top_changes.json` も current 内容へ更新した。検証は `python -m pytest test/test_build_web_release.py -q` で `18 passed`、`make build` で `157 passed, 2 skipped` + `tools/build_web_release.py` 完了、`python tools/test_web_compat.py` で `OK: Web版テスト通過` を確認した。
 
 ### 2026年4月14日 00:20（運用ルール固定）
 
 **Observe**：今回のズレは、実装ミスだけでなく「関連 docs を先に読む」ルールが開発ガイドに明文化されていなかったことも再発要因になっていた。  
-**Think**：selector / preview / build flow を触るときは、少なくとも `customer-journeys.md`、`cj-gherkin-platform.md`、対応 task note、`tools/build_web_release.py`、`test/test_build_web_release.py` を読む手順を固定すべき。  
+**Think**：selector / preview / build flow を触るときは、少なくとも `customer-journeys.md`、`product-requirements-platform.md`、対応 task note、`tools/build_web_release.py`、`test/test_build_web_release.py` を読む手順を固定すべき。  
 **Act**：`AGENTS.md` に pre-read ルールを追記し、build / selector / preview / release-note 変更前の必読文書を明記した。

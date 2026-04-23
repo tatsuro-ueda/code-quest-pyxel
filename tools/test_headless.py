@@ -39,7 +39,10 @@ def main():
         # main.py はモジュールトップレベルで Game() と game.start() を実行する。
         # headless_init と fake_run により、画面なし・ループなしで初期化が完走する。
         sys.path.insert(0, ".")
-        import main  # noqa: F401
+        import main
+
+        if "update" not in run_captured and hasattr(main, "run"):
+            main.run()
 
         # Step 4: update() と draw() を1回ずつ呼ぶ（1フレーム描画）
         if "update" not in run_captured:

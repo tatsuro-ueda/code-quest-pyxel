@@ -57,6 +57,13 @@ def _load_main_module(script_name: str, pyxel_stub: _FakePyxel) -> types.ModuleT
     module = types.ModuleType(f"{script_name.replace('.', '_')}_cj24_test")
     module.__file__ = str(script_path.resolve())
     original_pyxel = sys.modules.get("pyxel")
+    # P1.5-D 後: Game は src.runtime.app にあり、既にロード済みだと pyxel は
+    # そこで real pyxel を参照してしまう。pyxel を stub に差し替えた上で
+    # src.runtime.app を sys.modules から除いて再ロードさせる
+    removed_modules: dict[str, object] = {}
+    for mod_name in list(sys.modules.keys()):
+        if mod_name.startswith("src.runtime.app") or mod_name == script_path.stem:
+            removed_modules[mod_name] = sys.modules.pop(mod_name)
     sys.modules[module.__name__] = module
     sys.modules["pyxel"] = pyxel_stub
     try:
@@ -66,14 +73,16 @@ def _load_main_module(script_name: str, pyxel_stub: _FakePyxel) -> types.ModuleT
             del sys.modules["pyxel"]
         else:
             sys.modules["pyxel"] = original_pyxel
+        for mod_name, mod_obj in removed_modules.items():
+            sys.modules.setdefault(mod_name, mod_obj)
     return module
 
 
 class CJ24SoundEditorTruthTest(unittest.TestCase):
     def test_docs_keep_cj24_and_cjg24_roundtrip_contract_visible(self):
         journeys = (ROOT / "docs" / "customer-journeys.md").read_text(encoding="utf-8")
-        av = (ROOT / "docs" / "cj-gherkin-av.md").read_text(encoding="utf-8")
-        guardrails = (ROOT / "docs" / "cj-gherkin-guardrails.md").read_text(encoding="utf-8")
+        av = (ROOT / "docs" / "product-requirements-av.md").read_text(encoding="utf-8")
+        guardrails = (ROOT / "docs" / "product-requirements-guardrails.md").read_text(encoding="utf-8")
 
         self.assertIn("### CJ24: 効果音を自分で作る", journeys)
         self.assertIn("Scenario: Soundエディタで編集したSFXがゲーム内で使われる", av)
@@ -83,9 +92,7 @@ class CJ24SoundEditorTruthTest(unittest.TestCase):
     def test_main_runtime_keeps_imported_attack_sfx_after_pyxres_load(self):
         self._assert_runtime_keeps_imported_attack_sfx("main.py")
 
-    def test_main_development_runtime_keeps_imported_attack_sfx_after_pyxres_load(self):
-        self._assert_runtime_keeps_imported_attack_sfx("main_development.py")
-
+    # P3-A: main_development.py 削除済み
     def _assert_runtime_keeps_imported_attack_sfx(self, script_name: str) -> None:
         pyxel_stub = _FakePyxel(f"pyxel_for_{script_name}")
         module = _load_main_module(script_name, pyxel_stub)
@@ -93,22 +100,42 @@ class CJ24SoundEditorTruthTest(unittest.TestCase):
         imported_attack = ("c4", "p", "7", "n", 8)
         attack_slot = module.SFX_BASE_SLOT + list(module.SFX_DEFINITIONS).index("attack")
 
-        module.AudioManager = lambda pyxel_module: types.SimpleNamespace(pyxel=pyxel_module)
+        module.AudioManager = lambda pyxel_module: types.SimpleNamespace(
+            pyxel=pyxel_module, set_enabled=lambda *a, **kw: None
+        )
+        module.SfxSystem_original = getattr(module, "SfxSystem", None)
+        # SfxSystem は apply_av から set_enabled を呼ばれるので対応
         module.StructuredDialogRunner = lambda data: types.SimpleNamespace(source=data)
         module.generate_world_map = lambda: [[0]]
-        module.create_initial_player = lambda: types.SimpleNamespace()
+        module.create_initial_player = lambda: types.SimpleNamespace(
+            get=lambda key, default=None: default
+        )
         module.make_save_store = lambda path: types.SimpleNamespace(exists=lambda: False)
         module.InputStateTracker = lambda: types.SimpleNamespace()
-        module.Game._setup_world_tilemap = lambda self: None
-        module.Game._apply_av_settings = lambda self: None
-        module.Game._sync_audio = lambda self: None
+        # P1-G15: _sync_audio は module-level _sync_audio_fn に移動
+        if hasattr(module, "_sync_audio_fn"):
+            module._sync_audio_fn = lambda g: None
+        else:
+            module.Game._sync_audio = lambda self: None
 
-        def fake_setup_image_banks(game_self) -> None:
-            game_self._pyxres_loaded = True
-            game_self._pyxres_path = Path("my_resource.pyxres")
-            pyxel_stub.sounds[attack_slot].set(*imported_attack)
+        if hasattr(module, "ImageBanks"):
+            # P1-G13 後: ImageBanks に移動済み
+            def fake_setup_image_banks(banks_self) -> None:
+                banks_self.pyxres_loaded = True
+                banks_self.pyxres_path = Path("my_resource.pyxres")
+                pyxel_stub.sounds[attack_slot].set(*imported_attack)
 
-        module.Game._setup_image_banks = fake_setup_image_banks
+            module.ImageBanks.setup_image_banks = fake_setup_image_banks
+            module.ImageBanks.setup_world_tilemap = lambda self: None
+        else:
+            # 旧 main_development_runtime: Game に残存
+            def fake_setup_image_banks_legacy(game_self) -> None:
+                game_self._pyxres_loaded = True
+                game_self._pyxres_path = Path("my_resource.pyxres")
+                pyxel_stub.sounds[attack_slot].set(*imported_attack)
+
+            module.Game._setup_image_banks = fake_setup_image_banks_legacy
+            module.Game._setup_world_tilemap = lambda self: None
 
         game = module.Game()
 

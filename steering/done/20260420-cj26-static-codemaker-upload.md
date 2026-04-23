@@ -101,7 +101,7 @@ flowchart TB
 - `tools/build_web_release.py`
 - `tools/web_runtime_server.py`
 - `main.py`, `main_development.py`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
 
 ### 実世界の確認点
 

@@ -95,14 +95,14 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG26`
   `Scenario: 選択ページの開発版から Code Maker 用 zip を落とせる`
 - 追加候補:
   `CJG26: 選択ページの開発版から落とす Code Maker 用 zip は今の preview と一致する`
 - 追加候補:
   `CJG26: 選択ページから落とした preview zip を Code Maker で開いてリソースを編集できる`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG31`
   `Scenario: おためし版がない時は開発版の Code Maker zip 導線を出さない`
 
@@ -115,7 +115,7 @@ flowchart TB
 
 ### 調査起点
 
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   `CJG26` に何があり、何が不足しているか
 - `steering/done/20260418-cj26-preview-codemaker-download.md`
   すでに note 側で定義されている人間期待と、今回の stale zip 事象がどこで漏れたか
@@ -179,4 +179,4 @@ flowchart TB
 
 **Observe**：根本原因は `preview_codemaker_zip_is_available()` が `main_preview.py` と `preview_meta.json` しか見ておらず、`tools/build_codemaker.py` の更新後でも `code-maker-preview.zip` を fresh と誤判定できたことだった。さらに preview zip の version token も play-preview と同じ依存で計算されており、Code Maker 生成ロジック変更時の cache bust が弱かった。  
 **Think**：最小の筋の良い修正は、preview play 用 token と preview Code Maker zip 用 token を分け、preview zip だけは `main_preview.py`・`assets/blockquest.pyxres`・`tools/build_codemaker.py` に追従させることだった。これで stale zip は通常 build の selector から消え、preview build をやり直したときも zip URL が更新される。  
-**Act**：`tools/build_web_release.py` に preview Code Maker zip 専用依存を追加し、normal/preview build の selector で専用 token を使うようにした。`test/test_build_web_release.py` には `tools/build_codemaker.py` が新しくなったときに `code-maker-preview.zip` 導線を隠すテストと、preview build で zip URL の token が変わるテストを追加した。docs では `cj-gherkin-platform.md` の `CJG26` に freshness と editability の scenario を追記した。検証は `python -m pytest test/test_build_web_release.py -q` で `42 passed`、`python -m pytest test/ -q` で `212 passed`、`python tools/build_web_release.py --preview` の実行後に `index.html` で `play-preview.html?v=1776531820` と `code-maker-preview.zip?v=1776533174` が別 token で出ること、`code-maker-preview.zip` に `block-quest/main.py` と `block-quest/my_resource.pyxres` が入り、`main.py` が `main_preview.py` 由来であることを直接確認した。
+**Act**：`tools/build_web_release.py` に preview Code Maker zip 専用依存を追加し、normal/preview build の selector で専用 token を使うようにした。`test/test_build_web_release.py` には `tools/build_codemaker.py` が新しくなったときに `code-maker-preview.zip` 導線を隠すテストと、preview build で zip URL の token が変わるテストを追加した。docs では `product-requirements-platform.md` の `CJG26` に freshness と editability の scenario を追記した。検証は `python -m pytest test/test_build_web_release.py -q` で `42 passed`、`python -m pytest test/ -q` で `212 passed`、`python tools/build_web_release.py --preview` の実行後に `index.html` で `play-preview.html?v=1776531820` と `code-maker-preview.zip?v=1776533174` が別 token で出ること、`code-maker-preview.zip` に `block-quest/main.py` と `block-quest/my_resource.pyxres` が入り、`main.py` が `main_preview.py` 由来であることを直接確認した。

@@ -27,16 +27,13 @@ class BattleRunLogicTest(unittest.TestCase):
         cls.main = load_main_module()
 
     def make_game(self):
+        from src.scenes.battle.scene import BattleScene
+        from src.shared.services.message_display import MessageDisplay
+        from src.shared.services.vfx import VfxSystem
+        from src.shared.services.input_bindings import InputStateTracker
         game = self.main.Game.__new__(self.main.Game)
-        game.vfx_timer = 0
-        game.battle_phase = "menu"
-        game.battle_menu = 3
-        game.battle_text = ""
-        game.battle_text_timer = 0
-        game.battle_is_glitch_lord = False
-        game.battle_is_professor = False
-        game.battle_enemy = {"name": "Slime", "atk": 8, "def": 1}
-        game.battle_enemy_hp = 10
+        game.vfx = VfxSystem(game=game)
+        game.input_state = InputStateTracker()
         game.debug_mode = False
         game.player = {
             "hp": 20,
@@ -46,46 +43,54 @@ class BattleRunLogicTest(unittest.TestCase):
         }
         game.sfx = MagicMock()
         game._start_vfx = MagicMock()
-        game._enemy_hit_scene_name = MagicMock(return_value="battle.normal.enemy_hit")
-        game._dialog_text = MagicMock(side_effect=lambda scene_name, **_: scene_name)
-        game._do_player_attack = MagicMock()
-        game._do_enemy_attack = MagicMock()
-        game._battle_victory = MagicMock()
-        game._battle_defeat = MagicMock()
-        game._btn = MagicMock(return_value=False)
+        game.messages = MessageDisplay(game=game)
+        game.messages.dialog_text = MagicMock(side_effect=lambda scene_name, **_: scene_name)
+        game.input_state.btn = MagicMock(return_value=False)
 
         def btnp(buttons):
             return buttons == self.main.CONFIRM_BUTTONS
 
-        game._btnp = MagicMock(side_effect=btnp)
+        game.input_state.btnp = MagicMock(side_effect=btnp)
+        game.battle_scene = BattleScene(game=game)
+        m = game.battle_scene.model
+        m.menu = 3
+        m.enemy = {"name": "Slime", "atk": 8, "def": 1}
+        m.enemy_hp = 10
+        game.battle_scene.do_player_attack = MagicMock()
+        game.battle_scene.do_enemy_attack = MagicMock()
+        game.battle_scene.victory = MagicMock()
+        game.battle_scene.defeat = MagicMock()
+        game.battle_scene.enemy_hit_scene_name = MagicMock(return_value="battle.normal.enemy_hit")
         return game
 
     def test_failed_run_triggers_enemy_attack_after_fail_message(self):
         game = self.make_game()
+        m = game.battle_scene.model
         original_random = self.main.random.random
         self.main.random.random = lambda: 0.9
         try:
-            self.main.Game.update_battle(game)
-            self.assertEqual(game.battle_text, "battle.normal.run.fail")
+            game.battle_scene.update()
+            self.assertEqual(m.text, "battle.normal.run.fail")
 
-            game._btnp = MagicMock(return_value=False)
-            game.battle_text_timer = 1
-            self.main.Game.update_battle(game)
+            game.input_state.btnp = MagicMock(return_value=False)
+            m.text_timer = 1
+            game.battle_scene.update()
 
-            game._do_enemy_attack.assert_called_once_with()
+            game.battle_scene.do_enemy_attack.assert_called_once_with()
         finally:
             self.main.random.random = original_random
 
     def test_successful_run_exits_battle_without_enemy_attack(self):
         game = self.make_game()
+        m = game.battle_scene.model
         original_random = self.main.random.random
         self.main.random.random = lambda: 0.1
         try:
-            self.main.Game.update_battle(game)
+            game.battle_scene.update()
 
-            self.assertEqual(game.battle_text, "battle.normal.run.success")
-            self.assertEqual(game.battle_phase, "result")
-            game._do_enemy_attack.assert_not_called()
+            self.assertEqual(m.text, "battle.normal.run.success")
+            self.assertEqual(m.phase, "result")
+            game.battle_scene.do_enemy_attack.assert_not_called()
         finally:
             self.main.random.random = original_random
 

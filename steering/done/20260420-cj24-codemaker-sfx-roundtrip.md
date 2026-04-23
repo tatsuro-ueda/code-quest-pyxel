@@ -107,9 +107,9 @@ flowchart TB
 ### 調査起点
 
 - `docs/customer-journeys.md`
-- `docs/cj-gherkin-av.md`
-- `docs/cj-gherkin-platform.md`
-- `docs/cj-gherkin-guardrails.md`
+- `docs/product-requirements-av.md`
+- `docs/product-requirements-platform.md`
+- `docs/product-requirements-guardrails.md`
 - `main.py`, `main_development.py`
 - `src/shared/services/audio_system.py`
 - `src/shared/services/codemaker_resource_store.py`

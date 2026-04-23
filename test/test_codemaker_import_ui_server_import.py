@@ -12,19 +12,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.shared.services.browser_resource_override import (  # noqa: E402
-    BROWSER_IMPORT_META_KEY,
-    BROWSER_IMPORT_ZIP_KEY,
-)
+# P3-E: browser_resource_override 削除済み。localStorage key はテスト内で使わない。
+# storedZip / storedMeta は常に False になる（fallback 削除後）。
+_LEGACY_ZIP_KEY = "blockquest_codemaker_zip_v1"
+_LEGACY_META_KEY = "blockquest_codemaker_zip_meta_v1"
 
 
 def render_import_script() -> str:
-    script = (ROOT / "templates" / "codemaker_import_ui.js").read_text(encoding="utf-8")
-    return (
-        script
-        .replace("{{BROWSER_IMPORT_ZIP_KEY}}", BROWSER_IMPORT_ZIP_KEY)
-        .replace("{{BROWSER_IMPORT_META_KEY}}", BROWSER_IMPORT_META_KEY)
-    )
+    # codemaker_import_ui.js は P3-C で placeholder を削除済み
+    return (ROOT / "templates" / "codemaker_import_ui.js").read_text(encoding="utf-8")
 
 
 def build_node_harness(*, server_ok: bool) -> str:
@@ -142,8 +138,8 @@ def build_node_harness(*, server_ok: bool) -> str:
         console.log(JSON.stringify({{
           fetchCalls,
           status: importStatus.textContent,
-          storedZip: storage.has("{BROWSER_IMPORT_ZIP_KEY}"),
-          storedMeta: storage.has("{BROWSER_IMPORT_META_KEY}"),
+          storedZip: storage.has("{_LEGACY_ZIP_KEY}"),
+          storedMeta: storage.has("{_LEGACY_META_KEY}"),
         }}));
         """
     )
@@ -195,7 +191,8 @@ class CodeMakerImportUiServerImportTest(unittest.TestCase):
         self.assertFalse(result["storedMeta"])
         self.assertIn("server", result["status"])
 
-    def test_import_button_falls_back_to_browser_storage_when_server_is_unavailable(self):
+    def test_import_button_shows_error_when_server_is_unavailable(self):
+        # P3-C: localStorage fallback を削除。server エラー時はメッセージ表示のみ
         result = run_node_harness(server_ok=False)
 
         self.assertEqual(
@@ -212,9 +209,9 @@ class CodeMakerImportUiServerImportTest(unittest.TestCase):
                 }
             ],
         )
-        self.assertTrue(result["storedZip"])
-        self.assertTrue(result["storedMeta"])
-        self.assertIn("このブラウザ", result["status"])
+        self.assertFalse(result["storedZip"])
+        self.assertFalse(result["storedMeta"])
+        self.assertIn("しばらくたってから", result["status"])
 
 
 if __name__ == "__main__":

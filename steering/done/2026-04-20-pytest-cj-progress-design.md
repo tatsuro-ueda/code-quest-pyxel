@@ -35,7 +35,7 @@
 達成率の SoT は docs の `実装状況` とする。
 
 - `CJ` 一覧: `docs/customer-journeys.md`
-- `CJG` 一覧とステータス: `docs/cj-gherkin-*.md`
+- `CJG` 一覧とステータス: `docs/product-requirements-*.md`
 
 判定ルールは厳密にする。
 
@@ -162,7 +162,7 @@ Unmet CJG:
 
 ### `CJG`
 
-`docs/cj-gherkin-*.md` から次の形式だけを拾う。
+`docs/product-requirements-*.md` から次の形式だけを拾う。
 
 - `## CJG01: はじめてのタイル配置`
 
@@ -187,7 +187,7 @@ Unmet CJG:
 
 ### docs の移動や rename
 
-ファイル path は固定せず、`docs/cj-gherkin-*.md` の glob で読む。
+ファイル path は固定せず、`docs/product-requirements-*.md` の glob で読む。
 
 ### docs の書式崩れ
 

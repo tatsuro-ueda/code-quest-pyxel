@@ -1,0 +1,13 @@
+15:# === inlined: src/chiptune_tracks.py ===
+130:# === inlined: src/shared/services/input_bindings.py ===
+181:# === inlined: src/landmark_events.py ===
+269:# === inlined: src/player_factory.py ===
+352:# === inlined: src/player_snapshot.py ===
+416:# === inlined: src/shared/services/save_store.py ===
+550:# === inlined: src/shared/services/browser_resource_override.py ===
+625:# === inlined: src/sfx_system.py ===
+781:# === inlined: src/scenes/dialog/model.py ===
+1099:# === inlined: src/shared/services/audio_system.py ===
+1248:# === inlined: src/game_data.py ===
+1756:# === inlined: src/generated/dialogue.py ===
+2565:# === inlined: src/jp_font_data.py ===

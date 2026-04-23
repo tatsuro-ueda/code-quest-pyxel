@@ -8,6 +8,7 @@ from pathlib import Path
 
 
 PYXEL_ROOT = Path(__file__).resolve().parent.parent
+MAIN_RUNTIME = PYXEL_ROOT / "src" / "runtime" / "main_runtime.py"
 SCENE_PREFIXES = {"battle", "boss", "castle", "dungeon", "ending", "landmark", "town"}
 
 
@@ -58,15 +59,28 @@ class DialogueIntegrationTest(unittest.TestCase):
         self.assertEqual(missing_en, [], f"{filename} missing EN scenes: {missing_en}")
 
     def test_main_references_scene_names_instead_of_runtime_text(self):
-        """main.py がダイアログシーン名を参照していること。
+        """main.py とその scene モジュールがダイアログシーン名を参照していること。
 
-        main.py は単一ファイル構造（src/*.py をインライン含む）のため、
-        from src.xxx import パターンではなく、シンボル自体の存在を検証する。
+        J53 P1-G 以降、runtime の責務は scenes/ / shared/services/ に分散している。
+        main_runtime.py 単体ではなく、scenes を含めた集合でシンボル参照を検証する。
         """
-        main_text = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8")
+        main_text = MAIN_RUNTIME.read_text(encoding="utf-8")
         landmark_text = (PYXEL_ROOT / "src" / "shared" / "services" / "landmark_events.py").read_text(
             encoding="utf-8"
         )
+        # J53 P1-G: scenes/ と shared/services/ に移動したシンボルも集める
+        # J53 P1.5: shared/constants/ と runtime/app.py にも一部シンボルが移動
+        extra_texts: list[str] = []
+        for scene_dir in (PYXEL_ROOT / "src" / "scenes").iterdir():
+            if scene_dir.is_dir():
+                for py in scene_dir.glob("*.py"):
+                    extra_texts.append(py.read_text(encoding="utf-8"))
+        for svc in (PYXEL_ROOT / "src" / "shared" / "services").glob("*.py"):
+            extra_texts.append(svc.read_text(encoding="utf-8"))
+        for const in (PYXEL_ROOT / "src" / "shared" / "constants").glob("*.py"):
+            extra_texts.append(const.read_text(encoding="utf-8"))
+        extra_texts.append((PYXEL_ROOT / "src" / "runtime" / "app.py").read_text(encoding="utf-8"))
+        combined_text = main_text + "\n".join(extra_texts)
 
         for expected in (
             "find_landmark_event",
@@ -93,7 +107,7 @@ class DialogueIntegrationTest(unittest.TestCase):
             "castle.professor.revisit_epilogue_01",
             "TOWN_NPC_LINES",
         ):
-            self.assertIn(expected, main_text)
+            self.assertIn(expected, combined_text)
 
         for scene_name in (
             "landmark.tree.first",
@@ -101,36 +115,28 @@ class DialogueIntegrationTest(unittest.TestCase):
         ):
             self.assertIn(scene_name, landmark_text)
 
-    def test_main_preview_references_preview_only_glitch_intro_scene(self):
-        preview_text = (PYXEL_ROOT / "main_development.py").read_text(encoding="utf-8")
-
-        for expected in (
-            "boss.glitch.prebattle_01",
-            "_enter_glitch_lord_intro",
-            "fullscreen_dialog",
-        ):
-            self.assertIn(expected, preview_text)
-
-    def test_main_preview_inlines_preview_only_glitch_intro_scene(self):
-        preview_text = (PYXEL_ROOT / "main_development.py").read_text(encoding="utf-8")
-
-        self.assertIn("'boss.glitch.prebattle_01': {", preview_text)
+    # P3-A: preview/development 関連テストは dev 版削除に伴い削除済み
+    # （test_main_preview_* 3 件、test_main_inlined_dialogue_covers 1 件）
 
     def test_main_inlined_dialogue_covers_runtime_scene_ids(self):
         self.assert_bundled_dialogue_covers_runtime_scene_ids(
-            "main.py",
+            "src/runtime/main_runtime.py",
             "main_dialogue_scene_coverage_test",
         )
 
-    def test_main_preview_inlined_dialogue_covers_runtime_scene_ids(self):
-        self.assert_bundled_dialogue_covers_runtime_scene_ids(
-            "main_development.py",
-            "main_preview_dialogue_scene_coverage_test",
-        )
-
     def test_main_uses_shared_input_bindings(self):
-        """main.py が入力バインディングのシンボルを使っていること。"""
-        main_text = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8")
+        """main.py が入力バインディングのシンボルを使っていること。
+
+        P1.5 後は main_runtime.py は re-export shim なので、app.py や scene も
+        含めてシンボルを探索する。
+        """
+        main_text = MAIN_RUNTIME.read_text(encoding="utf-8")
+        main_text += "\n" + (PYXEL_ROOT / "src" / "runtime" / "app.py").read_text(encoding="utf-8")
+        for scene_dir in (PYXEL_ROOT / "src" / "scenes").iterdir():
+            if scene_dir.is_dir():
+                for py in scene_dir.glob("*.py"):
+                    main_text += "\n" + py.read_text(encoding="utf-8")
+        main_text += "\n" + (PYXEL_ROOT / "src" / "shared" / "services" / "input_bindings.py").read_text(encoding="utf-8")
 
         for expected in (
             "UP_BUTTONS",
@@ -146,15 +152,21 @@ class DialogueIntegrationTest(unittest.TestCase):
             self.assertIn(expected, main_text)
 
     def test_main_uses_audio_manager_for_bgm(self):
-        main_text = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8")
+        # P1-G15/P1.5-D 後: sync_audio は audio_system.py、Game は app.py に移動
+        text = MAIN_RUNTIME.read_text(encoding="utf-8")
+        for extra in (
+            PYXEL_ROOT / "src" / "shared" / "services" / "audio_system.py",
+            PYXEL_ROOT / "src" / "runtime" / "app.py",
+        ):
+            text += "\n" + extra.read_text(encoding="utf-8")
 
         for expected in (
             "AudioManager",
             "choose_bgm_scene",
             "self.audio = AudioManager(pyxel)",
-            "self.audio.play_scene(",
+            "game.audio.play_scene(",
         ):
-            self.assertIn(expected, main_text)
+            self.assertIn(expected, text)
 
     def test_main_no_longer_hardcodes_dialogue_body_text(self):
         """main.py のダイアログ辞書 *外* にテキスト本文がハードコードされていないこと。
@@ -162,7 +174,7 @@ class DialogueIntegrationTest(unittest.TestCase):
         main.py には DIALOGUE_JA / DIALOGUE_EN がインラインで含まれるため、
         辞書定義部分（'text': '...' 形式）は除外して検査する。
         """
-        lines = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8").splitlines()
+        lines = MAIN_RUNTIME.read_text(encoding="utf-8").splitlines()
         # ダイアログ辞書の 'text': '...' 行を除外
         non_dialogue_text = "\n".join(
             line for line in lines if "'text':" not in line
@@ -184,7 +196,7 @@ class DialogueIntegrationTest(unittest.TestCase):
 
 class ProfessorDialogueTest(unittest.TestCase):
     def setUp(self):
-        from src.scenes.dialog.model import StructuredDialogRunner
+        from src.shared.services.dialog_runner import StructuredDialogRunner
         from src.game_data import DIALOGUE_JA
         self.runner = StructuredDialogRunner(DIALOGUE_JA)
 
@@ -217,7 +229,7 @@ class ProfessorDialogueTest(unittest.TestCase):
 
 class GlitchLordDialogueTest(unittest.TestCase):
     def setUp(self):
-        from src.scenes.dialog.model import StructuredDialogRunner
+        from src.shared.services.dialog_runner import StructuredDialogRunner
         from src.game_data import DIALOGUE_JA
         self.runner = StructuredDialogRunner(DIALOGUE_JA)
 

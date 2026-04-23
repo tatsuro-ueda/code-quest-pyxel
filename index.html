@@ -136,17 +136,7 @@ h1 {
 <div class="container">
   <h1>ブロッククエスト</h1>
 
-  <div class="version-card">
-    <h2>開発版</h2>
-    <ul class="changes">
-      <li>まおうまえに おはなしが はじまる</li>
-    </ul>
-    <a class="play-btn" href="development/play.html?v=1776681027">あそんでみる</a>
-    <div class="sub-links">
-      <a class="sub-link" href="development/code-maker.zip?v=1776681027" download>リソースファイルをダウンロード</a>
-      <a class="sub-link" href="https://kitao.github.io/pyxel/wasm/code-maker/" target="_blank" rel="noopener noreferrer">リソースエディタを開く</a>
-    </div>
-  </div>
+
 
   <div class="version-card" id="codemaker-import-panel">
     <h2>Code Maker から もどす</h2>
@@ -158,15 +148,18 @@ h1 {
 
   <div class="version-card">
     <h2>本番</h2>
-    <p class="desc">いままでと おなじ</p>
-    <a class="play-btn" href="production/play.html?v=1776680933">あそんでみる</a>
+    <ul class="changes">
+      <li>4/19 せってい で BGM・こうかおん・ひかり を きりかえられる</li>
+      <li>4/19 リソースエディタの みち と みずべ の みえかたが ゲームに ちかづいた</li>
+      <li>4/18 リソースファイルを ダウンロードして Pyxel Code Maker を ひらける</li>
+      <li>4/18 まおうを たおしたあと だんじょんをでると エンディングへ すすむ</li>
+      <li>4/16 つうしんとうの ノイズガーディアンが フィールドに でない</li>
+      <li>4/13 にげる しっぱいの あとも てきが こうげきする</li>
+    </ul>
+    <a class="play-btn" href="production/play.html?v=1776941959">あそんでみる</a>
   </div>
 
-  <p class="hint">
-    りょうほう あそんだら<br>
-    おとうさんに おしえてね！<br>
-    「こっちが いい！」って
-  </p>
+
   <p class="owner-link">
     コード編集:
     <a id="code-server-link" href="http://127.0.0.1:8081/" target="_blank" rel="noopener noreferrer">code-server :8081</a>
@@ -187,79 +180,51 @@ h1 {
   var importInput = document.getElementById("codemaker-import-input");
   var importButton = document.getElementById("codemaker-import-button");
   var importStatus = document.getElementById("codemaker-import-status");
-  if (!importInput || !importButton || !importStatus || !window.localStorage) {
+  if (!importInput || !importButton || !importStatus) {
     return;
   }
 
-  var ZIP_STORAGE_KEY = "blockquest_codemaker_zip_v1";
-  var META_STORAGE_KEY = "blockquest_codemaker_zip_meta_v1";
+  var SERVER_IMPORT_PATH = "/internal/codemaker-resource-import";
 
   function setStatus(text) {
     importStatus.textContent = text;
   }
 
-  function loadStoredMeta() {
-    var rawMeta = window.localStorage.getItem(META_STORAGE_KEY);
-    if (!rawMeta) {
-      return null;
+  async function importZipViaServer(file) {
+    var payload = await file.arrayBuffer();
+    var response = await fetch(SERVER_IMPORT_PATH, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/zip",
+        "X-Filename": file.name || "code-maker.zip"
+      },
+      body: payload
+    });
+    if (!response.ok) {
+      throw new Error("server import failed");
     }
     try {
-      return JSON.parse(rawMeta);
+      return await response.json();
     } catch (error) {
-      return null;
+      return {};
     }
   }
 
-  function renderStoredStatus() {
-    var storedMeta = loadStoredMeta();
-    if (storedMeta && storedMeta.source_name) {
-      setStatus("さいごに ほぞんした zip: " + storedMeta.source_name);
-      return;
-    }
-    setStatus("zip を えらんでください");
-  }
-
-  function bytesToBase64(bytes) {
-    var chunkSize = 0x8000;
-    var parts = [];
-    for (var index = 0; index < bytes.length; index += chunkSize) {
-      var chunk = bytes.subarray(index, index + chunkSize);
-      var binary = "";
-      for (var chunkIndex = 0; chunkIndex < chunk.length; chunkIndex += 1) {
-        binary += String.fromCharCode(chunk[chunkIndex]);
-      }
-      parts.push(binary);
-    }
-    return window.btoa(parts.join(""));
-  }
-
-  async function storeBrowserImport(file) {
-    var bytes = new Uint8Array(await file.arrayBuffer());
-    window.localStorage.setItem(ZIP_STORAGE_KEY, bytesToBase64(bytes));
-    window.localStorage.setItem(
-      META_STORAGE_KEY,
-      JSON.stringify({
-        source_name: file.name || "code-maker.zip",
-        stored_at: new Date().toISOString()
-      })
-    );
-  }
-
-  renderStoredStatus();
+  setStatus("zip を えらんでください");
 
   importButton.addEventListener("click", async function () {
     if (!importInput.files || !importInput.files.length) {
-      renderStoredStatus();
+      setStatus("zip を えらんでください");
       return;
     }
     var file = importInput.files[0];
     importButton.disabled = true;
-    setStatus("ほぞん ちゅう...");
+    setStatus("とりこみ ちゅう...");
     try {
-      await storeBrowserImport(file);
-      setStatus("このブラウザに ほぞんしました。つぎに ひらくゲームで つかいます");
+      await importZipViaServer(file);
+      setStatus("server に とりこみました。みんなに ゆきわたります");
     } catch (error) {
-      setStatus("このブラウザに ほぞんできませんでした");
+      setStatus("server に とりこみできませんでした。しばらくたってから もういちど");
     } finally {
       importButton.disabled = false;
     }

@@ -108,84 +108,84 @@ class TestVfxFlashConstant(unittest.TestCase):
 
 @unittest.skipUnless(IMPORTED, "main.py import failed")
 class TestStartVfx(unittest.TestCase):
-    """_start_vfx がタイマーとタイプを正しく設定する。"""
+    """vfx.start がタイマーとタイプを正しく設定する。"""
 
     def _make_game(self):
+        from src.shared.services.vfx import VfxSystem
         g = object.__new__(M.Game)
         g.player = {"vfx_enabled": True}
-        g.vfx_timer = 0
-        g.vfx_type = ""
+        g.vfx = VfxSystem(game=g)
         return g
 
     def test_start_flash_white(self):
         g = self._make_game()
-        g._start_vfx("flash_white")
-        self.assertEqual(g.vfx_type, "flash_white")
-        self.assertEqual(g.vfx_timer, M.VFX_FLASH["flash_white"]["duration"])
+        g.vfx.start("flash_white")
+        self.assertEqual(g.vfx.type, "flash_white")
+        self.assertEqual(g.vfx.timer, M.VFX_FLASH["flash_white"]["duration"])
 
     def test_start_flash_red(self):
         g = self._make_game()
-        g._start_vfx("flash_red")
-        self.assertEqual(g.vfx_type, "flash_red")
-        self.assertEqual(g.vfx_timer, M.VFX_FLASH["flash_red"]["duration"])
+        g.vfx.start("flash_red")
+        self.assertEqual(g.vfx.type, "flash_red")
+        self.assertEqual(g.vfx.timer, M.VFX_FLASH["flash_red"]["duration"])
 
     def test_start_unknown_type_does_nothing(self):
         g = self._make_game()
-        g._start_vfx("nonexistent")
-        self.assertEqual(g.vfx_timer, 0)
-        self.assertEqual(g.vfx_type, "")
+        g.vfx.start("nonexistent")
+        self.assertEqual(g.vfx.timer, 0)
+        self.assertEqual(g.vfx.type, "")
 
     def test_start_vfx_ignored_when_vfx_disabled(self):
         g = self._make_game()
         g.player["vfx_enabled"] = False
-        g._start_vfx("flash_white")
-        self.assertEqual(g.vfx_timer, 0)
-        self.assertEqual(g.vfx_type, "")
+        g.vfx.start("flash_white")
+        self.assertEqual(g.vfx.timer, 0)
+        self.assertEqual(g.vfx.type, "")
 
 
 @unittest.skipUnless(IMPORTED, "main.py import failed")
 class TestDrawVfxOverlay(unittest.TestCase):
-    """_draw_vfx_overlay が正しくオーバーレイを描画する。"""
+    """vfx.draw_overlay が正しくオーバーレイを描画する。"""
 
     def _make_game(self):
+        from src.shared.services.vfx import VfxSystem
         g = object.__new__(M.Game)
         g.player = {"vfx_enabled": True}
-        g.vfx_timer = 0
-        g.vfx_type = ""
+        g.vfx = VfxSystem(game=g)
         return g
 
     def test_no_overlay_when_timer_zero(self):
         import pyxel
         pyxel.rect.reset_mock()
         g = self._make_game()
-        g._draw_vfx_overlay()
+        g.vfx.draw_overlay()
         pyxel.rect.assert_not_called()
 
     def test_overlay_drawn_on_even_frame(self):
         import pyxel
         pyxel.rect.reset_mock()
         g = self._make_game()
-        g.vfx_timer = 4
-        g.vfx_type = "flash_white"
-        g._draw_vfx_overlay()
+        g.vfx.timer = 4
+        g.vfx.type = "flash_white"
+        g.vfx.draw_overlay()
         pyxel.rect.assert_called_once_with(0, 0, 256, 256, 7)
 
     def test_no_overlay_on_odd_frame(self):
         import pyxel
         pyxel.rect.reset_mock()
         g = self._make_game()
-        g.vfx_timer = 3
-        g.vfx_type = "flash_white"
-        g._draw_vfx_overlay()
+        g.vfx.timer = 3
+        g.vfx.type = "flash_white"
+        g.vfx.draw_overlay()
         pyxel.rect.assert_not_called()
 
     def test_red_flash_uses_color_8(self):
         import pyxel
         pyxel.rect.reset_mock()
         g = self._make_game()
-        g.vfx_timer = 2
-        g.vfx_type = "flash_red"
-        g._draw_vfx_overlay()
+        g.vfx.timer = 2
+        g.vfx.type = "flash_red"
+        g.vfx.draw_overlay()
         pyxel.rect.assert_called_once_with(0, 0, 256, 256, 8)
 
     def test_no_overlay_when_vfx_disabled(self):
@@ -193,9 +193,9 @@ class TestDrawVfxOverlay(unittest.TestCase):
         pyxel.rect.reset_mock()
         g = self._make_game()
         g.player["vfx_enabled"] = False
-        g.vfx_timer = 4
-        g.vfx_type = "flash_white"
-        g._draw_vfx_overlay()
+        g.vfx.timer = 4
+        g.vfx.type = "flash_white"
+        g.vfx.draw_overlay()
         pyxel.rect.assert_not_called()
 
 

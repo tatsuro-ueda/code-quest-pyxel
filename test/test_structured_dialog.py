@@ -8,7 +8,7 @@ from pathlib import Path
 PYXEL_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PYXEL_ROOT))
 
-from src.scenes.dialog.model import (  # noqa: E402
+from src.shared.services.dialog_runner import (  # noqa: E402
     DialogValidationError,
     StructuredDialogRunner,
 )
@@ -159,7 +159,9 @@ class DialogueDataSmokeTest(unittest.TestCase):
         self.en_runner = StructuredDialogRunner(DIALOGUE_EN)
 
     def test_main_uses_dialogue_data(self):
-        text = (PYXEL_ROOT / "main.py").read_text(encoding="utf-8")
+        # P1.5-D 後: DIALOGUE_JA/EN は app.py と main_runtime.py（import *）経由
+        text = (PYXEL_ROOT / "src" / "runtime" / "main_runtime.py").read_text(encoding="utf-8")
+        text += "\n" + (PYXEL_ROOT / "src" / "runtime" / "app.py").read_text(encoding="utf-8")
         self.assertIn("DIALOGUE_JA", text)
         self.assertIn("DIALOGUE_EN", text)
 

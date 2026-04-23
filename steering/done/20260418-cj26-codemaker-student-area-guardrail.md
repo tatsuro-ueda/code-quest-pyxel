@@ -93,11 +93,11 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   反映済み: `CJG26: Code Maker 教材版では編集可能領域が明示される`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
   反映済み: `CJG26: Code Maker 教材版で STUDENT AREA だけを編集しても起動できる`
-- `docs/cj-gherkin-guardrails.md`
+- `docs/product-requirements-guardrails.md`
   反映済み: `CJG41: Code Maker 教材版のコア領域が壊れていたら開始前に止める`
 
 ---
@@ -111,7 +111,7 @@ flowchart TB
 
 - `docs/customer-journeys.md`
   `CJ25` と `CJ26` のどちらを主軸に置くか確認する
-- `docs/cj-gherkin-guardrails.md`
+- `docs/product-requirements-guardrails.md`
   `CJG35` と `CJG41` にどこまで寄せるかを確認する
 - `tools/build_codemaker.py`
   現在の zip 生成責務を把握する
@@ -162,4 +162,4 @@ flowchart TB
 
 **Observe**：`tools/build_codemaker.py` は `main.py` をそのまま zip に入れていたので、Code Maker 側では編集境界がなく、子どもがどこを触るべきか分からなかった。最初に focused test を追加して、教材版 `main.py` に `STUDENT AREA` とコア自己検査が入ること、コア改変時に案内を出して停止することを Red/Green で固定した。その後、全体 `pytest` を回すと `test_build_web_release.py` の 2 件だけが「zip 内 main.py は素の `main.py` と一致する」という古い前提で落ちた。  
 **Think**：根本原因は build 本体ではなく回帰テストの期待値だった。`build_web_release` はすでに `build_codemaker_zip()` を通して教材版 `main.py` を生成していたため、テスト側だけを `build_codemaker_main_text()` 基準へ合わせるのが最小で正しい修正だった。  
-**Act**：`tools/build_codemaker.py` に classroom bundle 生成を実装し、zip 内 `main.py` に `CORE_BLOCK` / `CORE_HASH` / `verify_core()` / `STUDENT AREA` を入れた。`test/test_build_codemaker.py` を追加して 3 本の挙動テストで固定し、`test/test_build_web_release.py` の期待値も教材版生成仕様へ更新した。あわせて `customer-journeys.md`、`cj-gherkin-platform.md`、`cj-gherkin-guardrails.md` を更新した。実物確認として `python tools/build_codemaker.py` を実行し、`unzip -p code-maker.zip block-quest/main.py | rg -n "CORE_HASH|verify_core|BEGIN STUDENT AREA|END STUDENT AREA|コアを へんこうしています|game = Game\\(|game.start\\("` で必要要素が zip 内に入っていることを確認した。最終確認は `python -m pytest test/ -q` で `210 passed` だった。
+**Act**：`tools/build_codemaker.py` に classroom bundle 生成を実装し、zip 内 `main.py` に `CORE_BLOCK` / `CORE_HASH` / `verify_core()` / `STUDENT AREA` を入れた。`test/test_build_codemaker.py` を追加して 3 本の挙動テストで固定し、`test/test_build_web_release.py` の期待値も教材版生成仕様へ更新した。あわせて `customer-journeys.md`、`product-requirements-platform.md`、`product-requirements-guardrails.md` を更新した。実物確認として `python tools/build_codemaker.py` を実行し、`unzip -p code-maker.zip block-quest/main.py | rg -n "CORE_HASH|verify_core|BEGIN STUDENT AREA|END STUDENT AREA|コアを へんこうしています|game = Game\\(|game.start\\("` で必要要素が zip 内に入っていることを確認した。最終確認は `python -m pytest test/ -q` で `210 passed` だった。

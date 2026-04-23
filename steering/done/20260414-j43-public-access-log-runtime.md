@@ -85,7 +85,7 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md` `CJG43`
+- `docs/product-requirements-platform.md` `CJG43`
 - `Scenario: 親が実公開のアクセスログで遊ばれているか確認できる`
 - `Scenario: 公開サーバがログAPIを持たないなら見逃さない`
 
@@ -142,7 +142,7 @@ flowchart TB
 
 **Observe**：`CJ21` は done だが、`.runtime/play_sessions.sqlite3` は空だった。一方で、このVMの `code-quest-pyxel` は `python3 -m http.server 8888 --bind 0.0.0.0` で配られており、`play.html` が送る `POST /internal/play-sessions/start` に対して `501 Unsupported method` を返していた。  
 **Think**：問題は「ログ機能がない」ことではなく、「CJ21 で作ったログ機能が実公開導線につながっていない」ことだった。これは `CJ21` よりも `CJ43: 実公開で遊ばれた記録が見える` の未達として扱う方が自然。  
-**Act**：`customer-journeys.md` と `cj-gherkin-platform.md` で `CJ43` を新設し、実公開ログ経路の修正タスクとしてこの note を起票した。
+**Act**：`customer-journeys.md` と `product-requirements-platform.md` で `CJ43` を新設し、実公開ログ経路の修正タスクとしてこの note を起票した。
 
 ### 2026年4月14日 00:42（実公開導線の修正・確認）
 

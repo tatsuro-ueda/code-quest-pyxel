@@ -33,7 +33,7 @@ tags:
 
 - **この note が `done` なら、人間は何が成立していると思うか**：`CJ31/CJG31` を読めば、`おためしばん` は「今の依頼」に対応する版だけを指すと分かる。前の依頼の preview が残っているだけなら、それを新しい依頼みたいに見せてはいけないと仕様上はっきり読める
 - **その期待を裏切りやすいズレ**：`おためしばん` の説明は正しくても中身が前の依頼のまま残る、`main.py` と `main_preview.py` の役割が混ざる、preview がないのに古い card や artifact だけ残る
-- **ズレを潰すために見るべき現物**：`docs/customer-journeys.md`、`docs/cj-gherkin-platform.md`、`steering/20260416-j47-preview-first-selector-autogen.md`、`main.py`、`main_preview.py`、`preview_meta.json`、`index.html`、`tools/build_web_release.py`
+- **ズレを潰すために見るべき現物**：`docs/customer-journeys.md`、`docs/product-requirements-platform.md`、`steering/20260416-j47-preview-first-selector-autogen.md`、`main.py`、`main_preview.py`、`preview_meta.json`、`index.html`、`tools/build_web_release.py`
 
 ```mermaid
 flowchart TB
@@ -95,15 +95,15 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md` `CJG31`
+- `docs/product-requirements-platform.md` `CJG31`
 - `Scenario: 親がAIに頼んだ変更はまずおためし版に入る`
-- `docs/cj-gherkin-platform.md` `CJG31`
+- `docs/product-requirements-platform.md` `CJG31`
 - `Scenario: 前の依頼の preview を今の依頼のおためし版として見せない`
-- `docs/cj-gherkin-platform.md` `CJG31`
+- `docs/product-requirements-platform.md` `CJG31`
 - `Scenario: 選択ページの変更説明が実際の配信内容と一致する`
-- `docs/cj-gherkin-platform.md` `CJG33`
+- `docs/product-requirements-platform.md` `CJG33`
 - `Scenario: 変更一覧はおためし版から自動生成される`
-- `docs/cj-gherkin-platform.md` `CJG33`
+- `docs/product-requirements-platform.md` `CJG33`
 - `Scenario: 変更一覧は今の依頼に対応するおためし版だけを説明する`
 
 ---
@@ -171,4 +171,4 @@ flowchart TB
 
 **Observe**：`CJ31` は preview-first を書いていたが、「前の依頼の preview が残っているだけなら今の依頼の `おためしばん` として見せない」までは書いていなかった。`CJ33` も一覧の自動生成は書いていたが、「今の依頼に対応するおためしばんだけを説明する」ことは弱かった。  
 **Think**：このズレは先に docs で意味を固定しないと、実装側でも「説明は合っているからOK」と読み違えやすい。まず `CJ31/CJG31` を主語にして、`おためしばん` の意味を明文化するのが筋だった。  
-**Act**：`customer-journeys.md` の `CJ31/CJ33` と `cj-gherkin-platform.md` の `CJG31/CJG33` を更新し、「今の依頼に対応する preview だけを `おためしばん` として見せる」「前の preview を新しい依頼みたいに見せない」を明記した。J48 も docs スコープの note として完了扱いに更新した。
+**Act**：`customer-journeys.md` の `CJ31/CJ33` と `product-requirements-platform.md` の `CJG31/CJG33` を更新し、「今の依頼に対応する preview だけを `おためしばん` として見せる」「前の preview を新しい依頼みたいに見せない」を明記した。J48 も docs スコープの note として完了扱いに更新した。

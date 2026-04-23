@@ -36,7 +36,7 @@ Codex は、ユーザーが明示的に頼んだ場合を除き、
 ### docs は「参考資料」ではなく「要求」
 
 - `docs/customer-journeys.md` は、作りたい体験の要求です。
-- `docs/cj-gherkin-*.md` は、その体験について
+- `docs/product-requirements-*.md` は、その体験について
   `何を約束するか`
   `何を壊してはいけないか`
   `どう確かめるか`
@@ -203,8 +203,8 @@ Codex はそれを当然と思わず、
 常に重要:
 
 - `docs/customer-journeys.md`
-- `docs/cj-gherkin-platform.md`
-- 必要な分野の `docs/cj-gherkin-*.md`
+- `docs/product-requirements-platform.md`
+- 必要な分野の `docs/product-requirements-*.md`
 - 関係する `steering/`
 - 関係する `steering/done/`
 

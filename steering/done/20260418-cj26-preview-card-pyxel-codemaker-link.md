@@ -95,11 +95,11 @@ flowchart TB
 
 ### 対応するカスタマージャーニーgherkin
 
-- `docs/cj-gherkin-platform.md` `CJG26`
+- `docs/product-requirements-platform.md` `CJG26`
   `Scenario: 選択ページの開発版から Code Maker 用 zip を落とせる`
 - 追加候補:
   `CJG26: 選択ページの開発版から公式 Pyxel Code Maker を開ける`
-- `docs/cj-gherkin-platform.md` `CJG31`
+- `docs/product-requirements-platform.md` `CJG31`
   `Scenario: おためし版がない時は開発版の Code Maker zip 導線を出さない`
 - 追加候補:
   `CJG31: おためし版がない時は Pyxel Code Maker 外部リンクも出さない`
@@ -117,7 +117,7 @@ flowchart TB
 - `tools/build_web_release.py`
 - `test/test_build_web_release.py`
 - `docs/customer-journeys.md`
-- `docs/cj-gherkin-platform.md`
+- `docs/product-requirements-platform.md`
 - 既存 note:
   `steering/done/20260418-cj26-preview-codemaker-download.md`
 
@@ -164,4 +164,4 @@ flowchart TB
 
 **Observe**：`開発版` カードに preview 用 `code-maker-preview.zip` 導線はあるのに、公式 Pyxel Code Maker を開くリンクは template / selector 生成 / build テストのどこにも入っておらず、未表示の原因は「未実装」だった。  
 **Think**：preview round-trip の入口は zip ダウンロードと外部 Code Maker 入口がセットで初めて成立する。外部リンクだけを単独で出すと preview 不在時に文脈が崩れるため、preview zip を出す条件と同じ場所に束ねるのが筋だった。  
-**Act**：`templates/selector.html` と `tools/build_web_release.py` を更新し、preview zip が出るときだけ `Pyxel Code Makerをひらく` を同じカードに表示するようにした。`test/test_build_web_release.py` には selector 生成と preview/normal build の回帰テストを追加し、docs では `customer-journeys.md` と `cj-gherkin-platform.md` を更新した。検証は `python -m pytest test/test_build_web_release.py -q`、`python -m pytest test/ -q`、`python tools/build_web_release.py --preview`、`python tools/build_web_release.py` で行い、生成後の `index.html` に `https://kitao.github.io/pyxel/wasm/code-maker/` が入ることを確認した。
+**Act**：`templates/selector.html` と `tools/build_web_release.py` を更新し、preview zip が出るときだけ `Pyxel Code Makerをひらく` を同じカードに表示するようにした。`test/test_build_web_release.py` には selector 生成と preview/normal build の回帰テストを追加し、docs では `customer-journeys.md` と `product-requirements-platform.md` を更新した。検証は `python -m pytest test/test_build_web_release.py -q`、`python -m pytest test/ -q`、`python tools/build_web_release.py --preview`、`python tools/build_web_release.py` で行い、生成後の `index.html` に `https://kitao.github.io/pyxel/wasm/code-maker/` が入ることを確認した。

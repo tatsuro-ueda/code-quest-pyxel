@@ -25,7 +25,6 @@ ALLOWED_ROOT_FILES = {
 }
 TARGETS = [
     ROOT / 'main.py',
-    ROOT / 'main_development.py',
     ROOT / 'tools' / 'report_play_sessions.py',
     ROOT / 'tools' / 'web_runtime_server.py',
     ROOT / 'tools' / 'test_web_compat.py',
@@ -58,6 +57,20 @@ FORBIDDEN_IMPORTS = [
 
 
 class TestArchitectureLayout(unittest.TestCase):
+    def test_runtime_modules_exist_and_export_run(self):
+        # P3-A: dev 版削除済み。main_runtime のみチェック
+        runtime = importlib.import_module('src.runtime.main_runtime')
+
+        self.assertTrue(hasattr(runtime, 'run'))
+
+    def test_root_entrypoints_are_thin_wrappers(self):
+        # P3-A: main_development.py 削除済み
+        main_text = (ROOT / 'main.py').read_text(encoding='utf-8')
+
+        self.assertLessEqual(len(main_text.splitlines()), 20)
+        self.assertIn('src" / "runtime" / "main_runtime.py', main_text)
+        self.assertTrue(main_text.rstrip().endswith('run()'))
+
     def test_shared_service_modules_exist(self):
         audio = importlib.import_module('src.shared.services.audio_system')
         landmark_events = importlib.import_module('src.shared.services.landmark_events')
@@ -75,12 +88,14 @@ class TestArchitectureLayout(unittest.TestCase):
         self.assertTrue(hasattr(input_bindings, 'InputStateTracker'))
         self.assertTrue(hasattr(play_session_logging, 'summarize_sessions'))
 
-    def test_dialog_scene_modules_exist(self):
-        dialog_model = importlib.import_module('src.scenes.dialog.model')
-        dialog_scene = importlib.import_module('src.scenes.dialog.scene')
+    def test_dialog_runner_service_exists(self):
+        # J53 Q1A: dialog は scene ではなく shared/services の utility になった。
+        dialog_runner = importlib.import_module('src.shared.services.dialog_runner')
 
-        self.assertTrue(hasattr(dialog_model, 'StructuredDialogRunner'))
-        self.assertTrue(hasattr(dialog_scene, 'DialogScene'))
+        self.assertTrue(hasattr(dialog_runner, 'StructuredDialogRunner'))
+        self.assertTrue(hasattr(dialog_runner, 'DialogStep'))
+        self.assertTrue(hasattr(dialog_runner, 'DialogChoice'))
+        self.assertTrue(hasattr(dialog_runner, 'DialogValidationError'))
 
     def test_app_and_scene_manager_exist(self):
         app = importlib.import_module('src.app')
@@ -88,6 +103,26 @@ class TestArchitectureLayout(unittest.TestCase):
 
         self.assertTrue(hasattr(app, 'BlockQuestApp'))
         self.assertTrue(hasattr(scene_manager, 'SceneManager'))
+
+    def test_phase_1_5_constants_and_app_modules_exist(self):
+        """P1.5-A/B/C/D で作られた shared/constants と runtime/app を確認する。"""
+        tile_data = importlib.import_module('src.shared.constants.tile_data')
+        sprite_data = importlib.import_module('src.shared.constants.sprite_data')
+        game_config = importlib.import_module('src.shared.constants.game_config')
+        world_generation = importlib.import_module('src.shared.services.world_generation')
+        runtime_app = importlib.import_module('src.runtime.app')
+
+        self.assertTrue(hasattr(tile_data, 'TILE_DATA'))
+        self.assertTrue(hasattr(tile_data, 'T_GRASS'))
+        self.assertTrue(hasattr(tile_data, 'MAP_W'))
+        self.assertTrue(hasattr(sprite_data, 'HERO_DOWN'))
+        self.assertTrue(hasattr(sprite_data, 'ENEMY_SPRITES'))
+        self.assertTrue(hasattr(game_config, 'VFX_FLASH'))
+        self.assertTrue(hasattr(game_config, 'TOWN_NPC_LINES'))
+        self.assertTrue(hasattr(world_generation, 'generate_world_map'))
+        self.assertTrue(hasattr(world_generation, 'get_zone'))
+        self.assertTrue(hasattr(runtime_app, 'Game'))
+        self.assertTrue(hasattr(runtime_app, 'run'))
 
     def test_legacy_wrapper_modules_are_gone(self):
         missing = [path for path in DEPRECATED_WRAPPERS if path.exists()]

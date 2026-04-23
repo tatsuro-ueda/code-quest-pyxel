@@ -1,21 +1,22 @@
 ---
-status: open
+status: paused
 priority: high
 scheduled: 2026-04-22T13:48:24+00:00
 dateCreated: 2026-04-22T13:48:24+00:00
-dateModified: 2026-04-22T15:08:10+00:00
+dateModified: 2026-04-22T23:54:40+00:00
 tags:
   - task
   - cj26
   - codemaker
   - resource
   - build
+  - paused-by-j53
 ---
 
 # 2026年4月22日 CJ26 読み込んだ resource と配布する resource を一致させる
 
-> 状態：`open`
-> 次のゲート：（ユーザー）task note 確認後、実装へ進む
+> 状態：`paused`（`20260422-j53-runtime-modularize-and-single-distribution.md` の Phase 5 で再開）
+> 次のゲート：J53 の Phase 1〜4 完了後に本 note を open へ戻す
 
 ---
 
@@ -51,6 +52,12 @@ flowchart TB
 
     BEFORE ~~~ AFTER
 ```
+
+### 人間の期待と現時点のズレ
+
+- **この note が扱う期待**：selector から取り込んだ最新 resource が、子どもや親が実際に開く `development/` / `production/` の配布物にそのまま反映される
+- **いま見えているズレ**：ユーザー報告では resource file が `development/production` に反映されていない。既存 note は `development/code-maker.zip` 側の一致確認が中心で、`development/pyxel.html` / `development/pyxel.pyxapp` / `production/pyxel.html` / `production/pyxel.pyxapp` まで live に一致確認した記録が薄い
+- **コード上の要確認点**：`tools/build_web_release.py` は production artifact を `assets/blockquest.pyxres` 固定で build しており、import 済み resource は `resolve_development_candidate()` 経由で development candidate にだけ乗る。要求が「approve 前は development のみ」なのか「shared production/development の両方」なのかを曖昧にしたまま閉じてはいけない
 
 ### 委任度
 
@@ -234,7 +241,13 @@ flowchart TD
 
 - **実際に見るURL / path**：
   `/home/exedev/code-quest-pyxel/index.html`
+  `/home/exedev/code-quest-pyxel/production/play.html`
+  `/home/exedev/code-quest-pyxel/production/pyxel.html`
+  `/home/exedev/code-quest-pyxel/production/pyxel.pyxapp`
   `/home/exedev/code-quest-pyxel/development/code-maker.zip`
+  `/home/exedev/code-quest-pyxel/development/play.html`
+  `/home/exedev/code-quest-pyxel/development/pyxel.html`
+  `/home/exedev/code-quest-pyxel/development/pyxel.pyxapp`
   `/home/exedev/code-quest-pyxel/production/code-maker.zip`
   `/home/exedev/code-quest-pyxel/.runtime/codemaker_resource_imports/development/my_resource.pyxres`
   `/home/exedev/code-quest-pyxel/assets/blockquest.pyxres`
@@ -256,7 +269,7 @@ flowchart TD
 - 次に source 判定を `resolve_release_source_of_truth.py` へ寄せ、build 側の責務密集を解く
 - そのうえで `codemaker_import_ui.js` を server-first に切り替え、server unavailable の時だけ browser fallback を使う
 - `web_runtime_server.py` と build の結合点を test で固定し、shared `development/code-maker.zip` に imported resource が入ることを保つ
-- 最後に `python -m pytest test/test_build_web_release.py -q`、browser UI / server の対象 test、`python -m pytest test/ -q`、必要なら web 実行で zip 中身の hash を確認する
+- 最後に `python -m pytest test/test_build_web_release.py -q`、browser UI / server の対象 test、`python -m pytest test/ -q`、必要なら web 実行で zip 中身の hash だけでなく `development/production` の `pyxel.html` / `pyxel.pyxapp` 側まで確認する
 
 ---
 
@@ -271,6 +284,9 @@ flowchart TD
 - [x] import 後に shared `development/code-maker.zip` が imported resource を含むことを確認する
 - [x] 通常 build、開発版 build、approve / reject 後の露出条件にズレがないか確認する
 - [x] `python -m pytest test/ -q` を実行する
+- [ ] ユーザー報告どおり `development/` / `production/` の実 artifact に resource が反映されるかを live に再確認する
+- [ ] `build_development_release()` / `build_web_release()` の production resource 選択が要求と一致しているかを切り分ける
+- [ ] `code-maker.zip` だけでなく `development/production` の `pyxel.pyxapp` / `pyxel.html` まで固定する regression を追加する
 
 ---
 
@@ -295,3 +311,9 @@ flowchart TD
 **Observe**：selector JS は browser 保存だけをしていて、shared import API を使っていなかった。`build_web_release.py` も source 判定、artifact 生成、selector rendering を 1 ファイルで持っていた。  
 **Think**：別マシン共有を成立させるには、selector が server を優先して shared staging と shared artifact を更新し、browser 保存は fallback へ落とす必要がある。  
 **Act**：`tools/resolve_release_source_of_truth.py`、`tools/build_release_artifacts.py`、`tools/render_release_selector.py` を追加して build を分割し、`codemaker_import_ui.js` を server-first import に切り替えた。`test/test_codemaker_import_ui_server_import.py` を Red-Green で追加し、`python -m pytest test/ -q` と `python tools/test_web_compat.py` を通した。
+
+### 2026年4月22日 23:00（ユーザー報告で再整理）
+
+**Observe**：ユーザーから「resource file が `development/production` に反映されていない」と報告が入った。現行 note は `development/code-maker.zip` と shared staging の一致確認が中心で、`development/pyxel.html` / `development/pyxel.pyxapp` / `production/pyxel.html` / `production/pyxel.pyxapp` の実 artifact まで同じ resource を見ていると証明した記録は薄い。コード上も `build_development_release()` / `build_web_release()` の production 側は `assets/blockquest.pyxres` を明示的に使っている。  
+**Think**：この note を「配布する resource」を広く扱うまま閉じると、`code-maker.zip` だけ直って実際に遊ぶ `development/production` は古いまま、というズレを見逃す。まずは期待が `development のみ` なのか `production も含む` のかを requirements と実装で突き合わせ、zip ではなく実 artifact を主語に再確認する必要がある。  
+**Act**：active note を再オープン扱いで補強し、`development/production` の実 artifact 確認、production resource 選択の切り分け、`pyxel.pyxapp` / `pyxel.html` まで含む regression 追加を未完タスクとして戻した。

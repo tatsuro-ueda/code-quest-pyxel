@@ -66,9 +66,9 @@ production/code-maker.zip
 
 設計と開発の経緯は次にまとめています：
 
-- [`docs/customer-problem.md`](docs/customer-problem.md) — この製品で何を解決したいか
+- [`docs/customer-jobs.md`](docs/customer-jobs.md) — この製品で何を解決したいか
 - [`docs/customer-journeys.md`](docs/customer-journeys.md) — 子どもと親にどんな体験を作るか
-- [`docs/cj-gherkin-platform.md`](docs/cj-gherkin-platform.md) — 体験をどう約束し、どう確かめるか
+- [`docs/product-requirements-platform.md`](docs/product-requirements-platform.md) — 体験をどう約束し、どう確かめるか
 - [`steering/`](steering/) — 機能ごとの task note と完了記録
 
 ## ライセンス

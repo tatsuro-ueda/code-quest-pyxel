@@ -13,8 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src.shared.services.codemaker_resource_store import (
-    import_codemaker_resource_zip,
-    load_imported_resource_manifest,
+    apply_imported_resource,
 )
 from src.shared.services.play_session_logging import (
     end_session,
@@ -38,20 +37,13 @@ def _client_ip(request: http.server.BaseHTTPRequestHandler) -> str | None:
 
 
 def rebuild_after_codemaker_resource_import(project_root: Path) -> dict[str, object]:
-    from tools.build_web_release import build_development_release, build_web_release
+    """P3-E: import 後は本番を 1 本だけ再ビルドする（dev staging 廃止）。"""
+    from tools.build_web_release import build_web_release
 
-    try:
-        build_development_release(project_root)
-        return {
-            "development_available": True,
-            "development_play_url": "/development/play.html",
-        }
-    except ValueError:
-        build_web_release(project_root)
-        return {
-            "development_available": False,
-            "development_play_url": None,
-        }
+    build_web_release(project_root)
+    return {
+        "production_play_url": "/production/play.html",
+    }
 
 
 def _make_handler(
@@ -139,27 +131,14 @@ def _make_handler(
             self._send_no_content()
 
         def _handle_codemaker_import_status(self) -> None:
-            manifest = load_imported_resource_manifest(project_root)
-            payload: dict[str, object] = {
-                "available": True,
-                "has_imported_resource": manifest is not None,
-            }
-            if manifest is not None:
-                payload.update(
-                    {
-                        "source_name": manifest.get("source_name", ""),
-                        "ignored_code_entries": manifest.get("ignored_code_entries", []),
-                        "changed_from_base": bool(manifest.get("changed_from_base", False)),
-                        "imported_at": manifest.get("imported_at", ""),
-                    }
-                )
-            self._send_json(payload)
+            # P3-E: staging 経路を廃止したので manifest は返さない。
+            self._send_json({"available": True})
 
         def _handle_codemaker_resource_import(self) -> None:
             archive_bytes = self._read_raw_body()
             filename = self.headers.get("X-Filename", "code-maker.zip")
             try:
-                payload = import_codemaker_resource_zip(
+                payload = apply_imported_resource(
                     project_root,
                     archive_bytes,
                     source_name=filename,
