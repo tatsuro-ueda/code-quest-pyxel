@@ -153,17 +153,20 @@ class MessageDisplay:
             self.text(4, y, line, 10)
 
     def draw_window(self):
-        """メッセージウィンドウを描画する。"""
-        pyxel.rect(8, 208, 240, 44, 0)
-        pyxel.rectb(8, 208, 240, 44, 7)
+        """メッセージウィンドウを描画する（座標は MessageWindowLayout 参照）。"""
+        from src.shared.ui.message_window import MessageWindowLayout
+        layout = MessageWindowLayout()
+        x, y, w, h = layout.rect()
+        pyxel.rect(x, y, w, h, 0)
+        pyxel.rectb(x, y, w, h, 7)
         for i, line in enumerate(
             self.current_page_lines(
                 self.lines,
                 self.index,
-                max_chars=28,
+                max_chars=layout.wrap_width,
                 max_rows=3,
             )
         ):
-            self.text(16, 214 + i * 12, line, 7)
+            self.text(x + 8, y + 6 + i * 12, line, 7)
         if (pyxel.frame_count // 15) % 2:
-            self.text(228, 240, "v", 7)
+            self.text(x + w - 12, y + h - 12, "v", 7)

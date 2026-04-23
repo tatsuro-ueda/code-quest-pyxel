@@ -1615,7 +1615,7 @@ from src.shared.services.image_banks import ImageBanks
 from src.shared.services.vfx import VfxSystem
 from src.shared.services.text_format import TextFormat
 from src.shared.services.item_use import use_item as _item_use_fn
-from src.shared.services.status_bar import StatusBar
+from src.shared.ui.status_bar import StatusBar
 from src.shared.services.audio_system import sync_audio as _sync_audio_fn
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")

@@ -15,7 +15,7 @@ tags:
 
 # 2026年4月22日 J53 runtime monolith 分解と dev/prod 単一化
 
-> 状態：`in-progress`（Phase 1 の Game 113 メソッド移動は完了・`j53-phase1-complete` タグ済み／Phase 1.5 は未着手）
+> 状態：`in-progress`（Phase 1 の Game 109 メソッド移動は完了・`j53-phase1-methods-complete` タグ済み／Phase 1.5 は未着手）
 > 次のゲート：（ユーザー）Phase 1.5 の Tasklist を確認して着手可否を指示する
 
 ---
@@ -34,6 +34,14 @@ tags:
 - `main_development_runtime.py` は `main_runtime.py` のコピー＋開発版差分。dev/prod は artifact レベルでも `development/` / `production/` に分かれる
 - selector は 2 カード（開発版・本番）、取り込み UI 付き。`tools/web_runtime_server.py` は手動起動
 
+### Phase 1 完了時点（2026-04-23）のスナップショット
+
+- `src/runtime/main_runtime.py` は **1956 行**（7266 → 73% 削減）。Game クラスは `__init__ / start / update / draw` の 4 メソッドに縮小
+- Game メソッド 109 件（当初見積りの「113」は概数で、実移動は 109 件）を全て scenes（11 個）／shared/services（7 新規）／shared/ui（1 新規）に分配済み
+- inlined 13 ブロックはすべて import に置換済み（P1-C1〜C13 完了）
+- 270 テスト green / web & codemaker ビルド exit 0 / headless Game() + update/draw サイクル確認済み
+- Gherkin シナリオ 1・3 は達成。シナリオ 2（`wc -l < 50`）は Phase 1.5 に繰り越し
+
 ### 今回の方針
 
 - 「参考資料」セクションにある通りのディレクトリ構造にする
@@ -49,9 +57,9 @@ tags:
 > 🧱 Given: Phase 1 の作業が完了し、参考資料の分配マトリクスに従って monolith が分解されている。
 > 🎬 When: `find src/scenes src/shared -type f -name '*.py'` でファイル一覧を取得する。
 > ✅ Then: 以下がすべて存在する：
-> - `src/scenes/{title, splash, explore, town, shop, battle, dialog, message, menu, settings, ai_help, professor, ending}/` の 13 ディレクトリ
+> - `src/scenes/{title, splash, explore, town, shop, battle, menu, settings, ai_help, professor, ending}/` の **11 ディレクトリ**（Q1A 決定：dialog は解体、message は新設しない）
 > - 各 scene ディレクトリに `model.py / view.py / presenter.py / scene.py / __init__.py` の 5 ファイル
-> - `src/shared/services/` に既存 8（`audio_system / input_bindings / landmark_events / player_state / save_store / codemaker_resource_store / play_session_logging / browser_resource_override`）+ 新規 5（`world_generation / image_banks / vfx / item_use / text_format`）の 13 `.py`
+> - `src/shared/services/` に既存 8（`audio_system / input_bindings / landmark_events / player_state / save_store / codemaker_resource_store / play_session_logging / browser_resource_override`）+ 新規 8（`game_state / dialog_runner / message_display / world_generation / image_banks / vfx / item_use / text_format`）の **16 `.py`**
 > - `src/shared/ui/` に既存 3（`dialog_window / hud / menu_window`）+ 新規 2（`status_bar / message_window`）の 5 `.py`
 
 ### シナリオ2：異常系（monolith に inlined コピーと Game クラスが残っていない）
@@ -70,6 +78,8 @@ tags:
 
 - `CJG37: 責務分担表に従って直せる（別箇所が壊れない）` ← 本 note の主 CJ、ディレクトリ構造の分離がこれの物理的な下支え
 - `CJG22: フィードバックから修正と再共有が数分で回る`（構造が見えれば AI の修正局在が速くなる前提）
+
+**Phase 1 完了時点の達成状況（2026-04-23）**: **部分達成**。scenes / services / ui の分離は完遂（CJG37 の物理下支えは成立）したが、`main_runtime.py` 自体の 50 行未満化は未達（TILE_DATA 等 1500 行の定数抽出が Phase 1.5 に繰り越し）。AI の修正局在性は 113（実 109）メソッドの分類成立で既に大幅改善しており、CJG22 への貢献は先取り達成。
 
 ---
 
@@ -91,7 +101,7 @@ tags:
 
 ### 移動の順序戦略（bottom-up）
 
-1. **inlined → import 置換**（monolith → shared/services、14 ブロック）
+1. **inlined → import 置換**（monolith → shared/services、**13 ブロック** / P1-C1〜C12 の 12 タスクでカバー）
    - 既存 services と差分ゼロの block から順に `from src.shared.services.X import Y` に置換
    - 差分がある block（例：`SfxSystem` は未抽出）は先に service 側を拡張
    - 本ステップだけで `main_runtime.py` が 2500 行ほど削減される見込み
@@ -155,13 +165,13 @@ tags:
 - **1 タスク = 1 commit** 想定。commit 後に `pytest -q` + `python -c 'import src.runtime.main_runtime'` を必ず走らせ green 確認
 - **Q2B 段階承認**：category（P1-A 〜 P1-I の 9 群）完了時点で user review 待ち → OK 後に次の category へ
 - **commit message 規約**：`j53(P1-Cn): <移動内容>` で bisect 耐性を確保
-- 合計 **51 タスク**。見積もり：category あたり数十分〜2 時間、Phase 1 全体で 2〜3 日（集中作業時）
+- 合計 **68 タスク**（Phase 1: 51 タスク / Phase 1.5: 17 タスク）。見積もり：category あたり数十分〜2 時間、Phase 1 全体で 2〜3 日（集中作業時）
 
 ---
 
 ### P1-A. 準備（2 タスク）
 
-- [x] **P1-A1**：`grep -nE '^# === inlined' src/runtime/main_runtime.py` で inlined block の正確な行範囲と名前をメモ（14 blocks 想定）。結果を `tmp/inlined_blocks.txt` に保存
+- [x] **P1-A1**：`grep -nE '^# === inlined' src/runtime/main_runtime.py` で inlined block の正確な行範囲と名前をメモ（**13 blocks** 実測）。結果を `tmp/inlined_blocks.txt` に保存
 - [x] **P1-A2**：`test/test_architecture_layout.py` の存在確認。あれば内容を読む、なければ P1-H5 で新設する方針を確定
 
 ### P1-B. Game instance state 棚卸し（3 タスク）
@@ -239,7 +249,7 @@ tags:
 - [x] **P1-I2**：`python -c 'import src.runtime.main_runtime'` 成功（pyxel stub を噛ませて Game() 初期化 + update/draw 1 サイクル確認済み）
 - [ ] **P1-I3**：`python main.py` で実機 splash → title → ゲーム本編の **1 分動作確認** **※ Phase 1.5 でユーザー側実機確認（CI 環境では headless のため skip）**
 - [~] **P1-I4**：gherkin 3 シナリオを手動実行（`find` / `grep` / `wc` による機械検証） **※ シナリオ 1・3 は green、シナリオ 2（`wc -l < 50`）は Phase 1.5 で達成予定**
-- [x] **P1-I5**：Phase 1 完了コミット + git tag `j53-phase1-complete`（2026-04-23 作成）
+- [x] **P1-I5**：Phase 1 完了コミット + git tag `j53-phase1-methods-complete`（2026-04-23 作成、元の `j53-phase1-complete` から改名。シナリオ 2 未達のため「113 メソッド移動完了」の意味で命名）
 
 ---
 
@@ -278,10 +288,13 @@ Phase 1.5 では **定数と world 生成を専用モジュールへ抽出し、
 - [ ] **P1.5-C2**：`_make_empty` / `_carve_winding_path` / `_place_forests` / `_place_decorations` / `_place_landmarks` を追加移動
 - [ ] **P1.5-C3**：`generate_world_map` / `generate_dungeon` / `get_zone` / `_build_zone_enemies` を追加移動。`main_runtime.py` から元関数を削除して `from src.shared.services.world_generation import *` で再エクスポート
 
-### P1.5-D. Game クラス → src/runtime/app.py（3 タスク）
+### P1.5-D. Game クラス → BlockQuestApp に統合（3 タスク）
 
-- [ ] **P1.5-D1**：`src/runtime/app.py` を新規作成（既に `BlockQuestApp` があれば拡張）し、Game class の `__init__` / `start` / `update` / `draw` を移動。`Game._instance` 参照も移し、say / say_clear の module-level helper も一緒に移動
-- [ ] **P1.5-D2**：`main_runtime.py` の Game 定義を削除、`from src.runtime.app import Game, run, say, say_clear` で再エクスポート
+> Q8 決定：新規 `src/runtime/app.py` は作らず、**既存 `src/app.py::BlockQuestApp` を拡張**して Game の責務を統合する。
+
+- [x] **P1.5-D0**（Phase 1 整合性修正で先行実施）：`src/shared/services/status_bar.py` を `src/shared/ui/status_bar.py` に統合（Q6 決定：`bar` は UI 寄り）。既存 `StatusBarLayout` と `StatusBar` を同居させる
+- [ ] **P1.5-D1**：`src/app.py::BlockQuestApp` に Game の `__init__` ロジック（pyxel.init / services/scenes 生成 / apply_av / sync_audio）を統合。`Game._instance` 参照も `BlockQuestApp._instance` に移し、say / say_clear の module-level helper も `src/app.py` に移動
+- [ ] **P1.5-D2**：`main_runtime.py` の Game 定義を削除、`from src.app import BlockQuestApp as Game, run, say, say_clear` で再エクスポート（または明示的に `BlockQuestApp()` を `run()` 内で呼ぶ）
 - [ ] **P1.5-D3**：`pytest -q` で 270 件 green / `python main.py` の headless 起動が Phase 1 と同等に通ることを確認
 
 ### P1.5-E. main_runtime.py <50 行化（3 タスク）
@@ -303,13 +316,13 @@ Phase 1.5 では **定数と world 生成を専用モジュールへ抽出し、
 ### 2026-04-23 Phase 1 完了の記録
 
 **成果**:
-- Game クラスの 113 メソッドすべてを scenes（11 個）と shared/services（16 個）へ移動完了
+- Game クラスの **109 メソッド**（当初見積り 113 は概数、差分 4 は image_banks の helper 重複 2 + input_bindings の inline 置換 2）を scenes（11 個）／shared/services（7 新規 / 既存 8 拡張）／shared/ui（1 新規）へ移動完了
 - `main_runtime.py` を 7266 → 1956 行に圧縮（73% 削減）
 - 全 270 テスト green / web & codemaker ビルド exit 0 / headless Game() + update/draw サイクル成功
-- git tag `j53-phase1-complete` 作成済み
+- git tag `j53-phase1-methods-complete` 作成済み（元の `j53-phase1-complete` から改名。Gherkin シナリオ 2 の `wc -l < 50` 未達のため「113 メソッド移動完了」に限定した名前にした）
 
 **gherkin 達成状況**:
-- シナリオ 1（新規ディレクトリとファイル）: ✅
+- シナリオ 1（scenes 11 ディレクトリ・services 16・ui 5）: ✅
 - シナリオ 2（monolith に Game と inlined コピーゼロ、`wc -l < 50`）: 🟡 Game dispatcher 残存・1956 行残存 → Phase 1.5 へ
 - シナリオ 3（ImportError ゼロ / architecture_layout test green）: ✅
 
@@ -339,6 +352,12 @@ Phase 1.5 では **定数と world 生成を専用モジュールへ抽出し、
   - **Q3B** Phase 1 は `main_runtime.py` のみ作業、dev 版は Phase 3 まで一時的乖離を許容
   - **Q4B** bundler は concat 生成型（`codemaker_manifest.txt` に並べた順で concat）
   - **Q5A** `image_banks.py` は単一ファイル（19 メソッド、500〜1000 行想定）
+- **v3**（2026-04-23 Phase 1 完了後）実装実績に合わせて件数・配置を整合
+  - **Q4 修正** `image_banks.py` のメソッド数を 19 → **17**（`_tile_iter` / `_sprite_iter` は helper で重複数え、実数 17）
+  - **Q6 修正** `status_bar` は `shared/ui/` に集約（`shared/services/status_bar.py` は統合して削除）
+  - **Q7 修正** `_any_advance_btnp` は `message_display` に移動（services/input_bindings の 3 件から減じ、message_display は 12 → 13）
+  - **Q10 修正** `shared/ui/message_window.py` は MessageDisplay.draw_window から参照される形に配線
+  - **合計修正** 113（見積り）→ **109**（実移動）
 
 **凡例**：
 - `[既存]` = すでに分類先に存在、取り込みのみ
@@ -452,12 +471,12 @@ class GameState:
 - **`dialog_runner.py`** `[新規 Q1A]` — 構造化会話（YAML ドリブン）
   - 旧 `src/scenes/dialog/model.py` から移動: DialogValidationError / DialogChoice / DialogStep / StructuredDialogRunner（`start` / `choose` / `continue_dialog` / `load_all_lines` / `_resolve_scene` / `_select_body` / `_apply_set` / `_format_text` / `_validate_*` 群）
   - 追加 state なし（Runner は呼ばれるたびに instance 化される）
-- **`message_display.py`** `[新規 Q1A]` — 短いメッセージウィンドウ（overlay 的な utility）
-  - Game から: `_enter_message` / `show_message` / `update_message` / `draw_message_window` / `_wrap_text` / `_dialog_lines` / `_dialog_text` / `_current_dialog_page_lines` / `_advance_dialog_page` / `_draw_say_overlay` / `say` / `text`（12 メソッド）
+- **`message_display.py`** `[新規 Q1A / v3 Q7 で 13 に修正]` — 短いメッセージウィンドウ（overlay 的な utility）
+  - Game から: `_enter_message` / `show_message` / `update_message` / `draw_message_window` / `_wrap_text` / `_dialog_lines` / `_dialog_text` / `_current_dialog_page_lines` / `_advance_dialog_page` / `_draw_say_overlay` / `say` / `text` / **`_any_advance_btnp`**（**13 メソッド**）
   - 保有 state: `msg_callback`, `msg_index`, `msg_lines`, `_say_buffer`
 - **`world_generation.py`** `[新規]` — マップ自動生成
   - runtime monolith から: `get_path_variant` / `get_shore_variant` / `_make_empty` / `_carve_winding_path` / `_place_forests` / `_place_decorations` / `_place_landmarks` / `generate_world_map` / `generate_dungeon` / `get_zone` / `_build_zone_enemies`（line 1673, 4612 の重複は 1 本に統合）
-- **`image_banks.py`** `[新規 Q5A]` — pyxres / tile / sprite / font バンクの全責務を単一ファイルで（19 メソッド、500〜1000 行想定）
+- **`image_banks.py`** `[新規 Q5A / v3 Q4 で 17 に修正]` — pyxres / tile / sprite / font バンクの全責務を単一ファイルで（**17 メソッド**、実測 360 行）
   - Game から: `_setup_image_banks` / `_paint_jp_font_bank` / `_build_reverse_tile_map` / `_tile_bank_layout_valid` / `_setup_world_tilemap` / `_bake_dungeon_to_tilemap` / `_derive_dungeon_from_tilemap` / `_bake_world_to_tilemap` / `_derive_world_from_tilemap` / `_tile_iter` / `_layout_tile_bank` / `_paint_tile_bank` / `_render_tiles_to_bank` / `_sprite_iter` / `_layout_sprite_bank` / `_paint_sprite_bank` / `_render_sprites_to_bank`
   - 保有 state: `font`, `has_jp_font`, `tile_bank`, `tile_bank_water2`, `sprite_bank`, `path_variant_bank`, `shore_variant_bank`, `tile_id_by_pixel`, `_pyxres_loaded`, `_pyxres_path`
 - **`vfx.py`** `[新規]` — 画面エフェクト
@@ -472,8 +491,8 @@ class GameState:
 
 - **`audio_system.py`** `[既存]` — BGM/SFX の場面選択
   - 取り込み: inlined SfxSystem / Game._sync_audio
-- **`input_bindings.py`** `[既存]` — 入力グループ定義と押下追跡
-  - 取り込み: Game.{_btn, _btnp, _any_advance_btnp} は直接 InputStateTracker 呼び出しに置換
+- **`input_bindings.py`** `[既存 / v3 Q7 で修正]` — 入力グループ定義と押下追跡
+  - 取り込み: Game.{_btn, _btnp} は `game.input_state.btn/btnp(...)` の直接呼び出しに置換（service 内メソッド増加なし）。`_any_advance_btnp` は `message_display` に移動（オーバーレイ用 UX なので）
 - **`landmark_events.py`** `[既存]`
 - **`player_state.py`** `[既存]`
 - **`save_store.py`** `[既存]`
@@ -485,13 +504,13 @@ class GameState:
 
 #### C. shared/ui（UI 矩形と配置）
 
-既存 3 + 新規 2 = 5（変更なし）。
+既存 3 + 新規 2 = 5。
 
 - **`dialog_window.py`** `[既存]` — DialogWindow.rect（dialog_runner service が参照）
 - **`hud.py`** `[既存]` — HudLayout.origin
 - **`menu_window.py`** `[既存]` — MenuWindow.rect
-- **`status_bar.py`** `[新規]` — Game.draw_status_bar の座標
-- **`message_window.py`** `[新規]` — message_display の行幅・改行位置（_wrap_text が参照）
+- **`status_bar.py`** `[新規 / v3 Q6 で修正]` — `StatusBarLayout`（座標）と `StatusBar`（描画ロジック）を同居。`draw_status_bar` の責務は全てここで完結（Game.draw から `self.status_bar.draw()` で呼ぶ）
+- **`message_window.py`** `[新規 / v3 Q10 で配線]` — `MessageWindowLayout` を保持。`message_display.MessageDisplay.draw_window` が `layout.rect()` / `layout.wrap_width` を参照する形で配線済み
 
 ---
 
@@ -542,7 +561,7 @@ class GameState:
 
 ---
 
-### Game クラス 113 メソッドの分配サマリ（v2）
+### Game クラス 109 メソッドの分配サマリ（v3・実装実績）
 
 | 分類先 | 件数 | 備考 |
 |---|---|---|
@@ -557,19 +576,25 @@ class GameState:
 | scenes/ai_help | 4 | ai_help 系 |
 | scenes/professor | 11 | professor 系 |
 | scenes/ending | 3 | ending 系 |
-| **scenes 計** | **70** | 11 scenes（v1 の 82 から -12） |
-| shared/services/message_display | **12** | **v2 追加**：v1 の scenes/message 12 件をここへ移動 |
-| shared/services/image_banks | 19 | pyxres / tile / sprite / font バンク系 |
-| shared/services/input_bindings | 3 | _btn / _btnp / _any_advance_btnp |
+| **scenes 計** | **70** | 11 scenes |
+| shared/services/message_display | **13** | v3 Q7：v2 の 12 に `_any_advance_btnp` を追加 |
+| shared/services/image_banks | **17** | v3 Q4：v2 の 19 から `_tile_iter`/`_sprite_iter` の重複カウント解消 |
+| shared/services/input_bindings | **0** | v3 Q7：`_btn`/`_btnp` は直接呼び出しに置換、`_any_advance_btnp` は message_display へ |
 | shared/services/text_format | 2 | _name / _t |
 | shared/services/vfx | 2 | _start_vfx / _draw_vfx_overlay |
-| shared/services/audio_system | 1 | _sync_audio |
+| shared/services/audio_system | 1 | _sync_audio（module function として） |
 | shared/services/item_use | 1 | _use_item |
-| **shared/services 計** | **40** | v1 の 28 から +12 |
-| shared/ui/status_bar（描画は scene 側） | 1 | draw_status_bar |
-| 対象外（BlockQuestApp → SceneManager へ吸収） | 2 | update / draw（top-level dispatcher） |
-| **合計** | **113** | |
+| **shared/services 計** | **36** | v2 の 40 から -4（image_banks -2 / input_bindings -3 / message_display +1） |
+| shared/ui/status_bar | 1 | draw_status_bar（v3 Q6：services から ui へ移管） |
+| 対象外（BlockQuestApp → SceneManager へ吸収） | 2 | update / draw（top-level dispatcher。Phase 1.5 で実施） |
+| **合計** | **109** | |
 
-**v1 との主な差分**: v1 の `scenes/message (12)` を v2 で `shared/services/message_display (12)` に移動。scenes 数は 12 → 11（`scenes/dialog/` 解体、`scenes/message/` 不新設）。
+**v2 との主な差分**（v3）:
+- **image_banks**: 19 → 17（重複カウント解消、実装では `tile_iter`/`sprite_iter` はメソッドとして存在するが ImageBanks 内 helper）
+- **input_bindings**: 3 → 0（`_btn`/`_btnp` は `input_state.btn/btnp` に inline 置換、`_any_advance_btnp` は message_display に移動）
+- **message_display**: 12 → 13（`_any_advance_btnp` を吸収）
+- **合計**: 113（見積り） → **109**（実移動）。差分 4 の内訳：image_banks 重複 2 + input_bindings 直接置換 2
+
+**v1 / v2 との互換性**: v1 の `scenes/message (12)` は v2 で `shared/services/message_display` に移動済み。scenes 数は 11（`scenes/dialog/` 解体、`scenes/message/` 不新設）。
 
 このマトリクスは Phase 1 の Tasklist（section 4 で後述）の**移動先確定表**として参照する。各 scene / service は「skeleton commit → state 移動 commit → method 移動 commit」の 3 段階で埋まっていく想定。
