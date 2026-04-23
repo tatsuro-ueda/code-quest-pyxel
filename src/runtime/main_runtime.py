@@ -1599,6 +1599,7 @@ ZONE_NAMES = {0: "はじまりのそうげん", 1: "ロジックのもり", 2: "
 ZONE_NAMES_EN = {0: "Grasslands", 1: "Logic Forest", 2: "Algo Mountains", 3: "Desert", 4: "Glitch Cave"}
 
 from src.shared.services.text_format import NAME_EN_MAP, name_en
+from src.scenes.splash.scene import SplashScene
 from src.scenes.title.scene import TitleScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
@@ -1696,7 +1697,7 @@ class Game:
         self._apply_av_settings()
 
         self.state = "splash"
-        self.splash_frame = 0
+        # splash_frame は SplashModel.frame に移動（P1-G2）
         self.prev_state = "map"
         self.walk_frame = 0
         self.walk_timer = 0
@@ -1775,6 +1776,7 @@ class Game:
         self.world_return_y = 0
 
         # Scene instances（P1-G で Game メソッドを取り込んだ scene を保有する）
+        self.splash_scene = SplashScene(game=self)
         self.title_scene = TitleScene(game=self)
 
         self._sync_audio()
@@ -2197,7 +2199,7 @@ class Game:
                 self.debug_seq = []
 
         if self.state == "splash":
-            self.update_splash()
+            self.splash_scene.update()
         elif self.state == "title":
             self.title_scene.update()
         elif self.state == "map":
@@ -2229,12 +2231,7 @@ class Game:
 
         self._sync_audio()
 
-    def update_splash(self):
-        self.splash_frame += 1
-        # 90フレーム = 約3秒で自動遷移。任意キーでもスキップ可能
-        if self.splash_frame >= 90 or self._btnp(CONFIRM_BUTTONS) or self._btnp(CANCEL_BUTTONS):
-            self.state = "title"
-
+    # update_splash は SplashScene に移動（P1-G2）
     # update_title / _do_load は TitleScene に移動（P1-G1）
 
     def update_map(self):
@@ -3586,7 +3583,7 @@ class Game:
     def draw(self):
         pyxel.cls(0)
         if self.state == "splash":
-            self.draw_splash()
+            self.splash_scene.draw()
         elif self.state == "title":
             self.title_scene.draw()
         elif self.state == "map":
@@ -3641,25 +3638,7 @@ class Game:
             pyxel.rect(2, y - 1, 252, 12, 0)
             self.text(4, y, line, 10)
 
-    def draw_splash(self):
-        pyxel.cls(0)
-        # 中央にロゴと "presents" 風の演出
-        # フェードイン: 0-30フレームで明るくなり、30-90で安定、最後はフェードアウトしない
-        f = self.splash_frame
-        # タイル枠で囲む（縦長のブロック演出）
-        col = 1 if f < 15 else (5 if f < 30 else 12)
-        for i in range(8):
-            x = 16 + i * 28
-            pyxel.rect(x, 100, 12, 12, col)
-        title_color = 7 if f >= 20 else 5
-        self.text(80, 80, "BLOCK QUEST", title_color)
-        if f >= 40:
-            self.text(50, 130, self._t("コードのたびは、ここから", "Coding journey starts here"), 10)
-        if f >= 60:
-            self.text(70, 160, self._t("presented by うえだたつろう", "by Tatsuro Ueda"), 6)
-        if f >= 75 and (pyxel.frame_count // 8) % 2:
-            self.text(60, 220, "PRESS ANY KEY", 7)
-
+    # draw_splash は SplashScene に移動（P1-G2）
     # draw_title は TitleScene に移動（P1-G1）
 
     def draw_map(self):

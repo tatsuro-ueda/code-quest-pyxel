@@ -5,6 +5,6 @@ from dataclasses import dataclass
 
 @dataclass
 class SplashModel:
-    """splash シーンの状態（Phase 1 スケルトン、P1-G2 で中身を埋める）。"""
+    """splash シーンの状態（P1-G2 で Game.splash_frame を取り込み）。"""
 
-    pass
+    frame: int = 0
