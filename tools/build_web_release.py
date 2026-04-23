@@ -125,6 +125,7 @@ def build_web_release(
         work_dir,
         root,
         current_wrapper_name=versioned_asset_url("production/play.html", current_token),
+        current_codemaker_zip=versioned_asset_url("production/code-maker.zip", current_token),
     )
     shutil.copy2(selector_path, index_path)
 

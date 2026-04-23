@@ -23,6 +23,8 @@ TOP_CHANGE_LIST_FRESHNESS_DEPENDENCIES = (
     Path("templates/codemaker_import_ui.js"),
 )
 PRODUCTION_SELECTOR_LABEL = "本番"
+PYXEL_CODEMAKER_URL = "https://kitao.github.io/pyxel/wasm/code-maker/"
+CURRENT_CODEMAKER_ZIP_PATH = "production/code-maker.zip"
 
 
 def versioned_asset_url(path: str, token: str) -> str:
@@ -56,6 +58,7 @@ def generate_selector(
     *,
     current_wrapper_name: str = "play.html",
     current_changes: list[str] | None = None,
+    current_codemaker_zip: str | None = CURRENT_CODEMAKER_ZIP_PATH,
 ) -> Path:
     """本番 1 カードの selector を生成する（P3-C で dev/preview 関連を削除済み）。"""
     template_path = project_root / "templates" / "selector.html"
@@ -69,11 +72,26 @@ def generate_selector(
         )
     else:
         current_card_body = '    <p class="desc">いままでと おなじ</p>\n'
+
+    # 本番カード下部のサブリンク（リソースファイル DL + Pyxel Code Maker を開く）
+    if current_codemaker_zip:
+        current_card_sub_links = (
+            '    <div class="sub-links">\n'
+            f'      <a class="sub-link" id="codemaker-download-link" href="{current_codemaker_zip}" download>'
+            "リソースファイルをダウンロード</a>\n"
+            f'      <a class="sub-link" href="{PYXEL_CODEMAKER_URL}" target="_blank" '
+            'rel="noopener noreferrer">リソースエディタを開く</a>\n'
+            "    </div>"
+        )
+    else:
+        current_card_sub_links = ""
+
     html = (
         template
         .replace("{{PREVIEW_CARD}}", "")
         .replace("{{HINT_BLOCK}}", "")
         .replace("{{CURRENT_CARD_BODY}}", current_card_body.rstrip())
+        .replace("{{CURRENT_CARD_SUB_LINKS}}", current_card_sub_links)
         .replace("{{CURRENT_WRAPPER_SRC}}", current_wrapper_name)
         .replace("{{CODEMAKER_IMPORT_SCRIPT}}", import_script)
     )
@@ -104,6 +122,7 @@ def generate_top_selector(
     project_root: Path,
     *,
     current_wrapper_name: str = "play.html",
+    current_codemaker_zip: str | None = CURRENT_CODEMAKER_ZIP_PATH,
 ) -> Path:
     """本番 1 カードの selector を生成する（P3-C で dev/preview 引数を削除）。"""
     current_changes = load_top_page_changes(project_root)
@@ -112,4 +131,5 @@ def generate_top_selector(
         project_root,
         current_wrapper_name=current_wrapper_name,
         current_changes=current_changes,
+        current_codemaker_zip=current_codemaker_zip,
     )
