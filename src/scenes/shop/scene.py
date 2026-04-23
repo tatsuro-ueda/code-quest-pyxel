@@ -121,21 +121,21 @@ class ShopScene:
         game.messages.text(8, 6, title, 7)
         game.messages.text(160, 6, f"G:{game.player['gold']}", 10)
         if not self.model.inventory:
-            game.messages.text(8, 40, game._t("(ざいこなし)", "(no stock)"), 6)
+            game.messages.text(8, 40, game.text_fmt.t("(ざいこなし)", "(no stock)"), 6)
             return
         for i, idx in enumerate(self.model.inventory):
             owned = False
             if self.model.kind == "weapons":
                 e = M.WEAPONS[idx]
-                line = f"{game._name(e['name'])}  こうげき+{e['atk']}  {e['price']}G"
+                line = f"{game.text_fmt.name(e['name'])}  こうげき+{e['atk']}  {e['price']}G"
                 owned = game.player["weapon"] == idx
             elif self.model.kind == "armors":
                 e = M.ARMORS[idx]
-                line = f"{game._name(e['name'])}  ぼうぎょ+{e['def']}  {e['price']}G"
+                line = f"{game.text_fmt.name(e['name'])}  ぼうぎょ+{e['def']}  {e['price']}G"
                 owned = game.player["armor"] == idx
             else:
                 e = M.ITEMS[idx]
-                line = f"{game._name(e['name'])}  {e['price']}G"
+                line = f"{game.text_fmt.name(e['name'])}  {e['price']}G"
             if owned:
                 line = f"{line}  [もっています]"
             color = 10 if i == self.model.cursor else 7

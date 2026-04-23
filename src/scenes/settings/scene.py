@@ -42,11 +42,11 @@ class SettingsScene:
     def _rows(self) -> list[tuple[str, str]]:
         game = self.game
         return [
-            ("all_av", game._t("ぜんぶ", "ALL")),
-            ("bgm_enabled", game._t("BGM", "BGM")),
-            ("sfx_enabled", game._t("こうかおん", "SFX")),
-            ("vfx_enabled", game._t("ひかり", "FLASH")),
-            ("back", game._t("もどる", "BACK")),
+            ("all_av", game.text_fmt.t("ぜんぶ", "ALL")),
+            ("bgm_enabled", game.text_fmt.t("BGM", "BGM")),
+            ("sfx_enabled", game.text_fmt.t("こうかおん", "SFX")),
+            ("vfx_enabled", game.text_fmt.t("ひかり", "FLASH")),
+            ("back", game.text_fmt.t("もどる", "BACK")),
         ]
 
     def _return_state(self) -> str:
@@ -106,7 +106,7 @@ class SettingsScene:
             return
         pyxel.rect(28, 54, 200, 148, 1)
         pyxel.rectb(28, 54, 200, 148, 7)
-        game.messages.text(92, 66, game._t("せってい", "SETTINGS"), 10)
+        game.messages.text(92, 66, game.text_fmt.t("せってい", "SETTINGS"), 10)
         for i, (key, label) in enumerate(self._rows()):
             cy = 94 + i * 22
             col = 10 if i == self.model.cursor else 6
@@ -125,4 +125,4 @@ class SettingsScene:
             if value:
                 row = f"{row}: {value}"
             game.messages.text(44, cy, row, col)
-        game.messages.text(44, 176, game._t("けっていで きりかえ", "Press confirm to toggle"), 7)
+        game.messages.text(44, 176, game.text_fmt.t("けっていで きりかえ", "Press confirm to toggle"), 7)

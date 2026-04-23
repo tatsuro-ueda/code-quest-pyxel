@@ -29,8 +29,9 @@ class BattleRunLogicTest(unittest.TestCase):
     def make_game(self):
         from src.scenes.battle.scene import BattleScene
         from src.shared.services.message_display import MessageDisplay
+        from src.shared.services.vfx import VfxSystem
         game = self.main.Game.__new__(self.main.Game)
-        game.vfx_timer = 0
+        game.vfx = VfxSystem(game=game)
         game.debug_mode = False
         game.player = {
             "hp": 20,

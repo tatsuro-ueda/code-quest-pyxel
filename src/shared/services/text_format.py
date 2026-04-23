@@ -58,3 +58,22 @@ NAME_EN_MAP = {
 def name_en(name: str) -> str:
     """日本語名を英語名に変換する。マップに無ければそのまま返す。"""
     return NAME_EN_MAP.get(name, name)
+
+
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass
+class TextFormat:
+    """日本語/英語の言語フォールバック（P1-G14 で Game から 2 メソッドを取り込み）。"""
+
+    game: Any = None
+
+    def t(self, jp: str, en: str) -> str:
+        """言語フォールバック。BDF フォントが無いときは英語版を返す。"""
+        return jp if self.game.has_jp_font else en
+
+    def name(self, jp: str) -> str:
+        """データ名（敵・アイテム・装備）の翻訳。NAME_EN_MAP を引く。"""
+        return jp if self.game.has_jp_font else name_en(jp)

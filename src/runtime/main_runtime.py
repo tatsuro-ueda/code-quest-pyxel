@@ -1612,6 +1612,9 @@ from src.scenes.professor.scene import ProfessorScene
 from src.scenes.battle.scene import BattleScene
 from src.shared.services.message_display import MessageDisplay
 from src.shared.services.image_banks import ImageBanks
+from src.shared.services.vfx import VfxSystem
+from src.shared.services.text_format import TextFormat
+from src.shared.services.item_use import use_item as _item_use_fn
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1711,8 +1714,9 @@ class Game:
         # walk_frame / walk_timer / move_cooldown は ExploreModel に移動（P1-G3）
 
         # Battle state は BattleModel に移動（P1-G6）
-        self.vfx_timer = 0
-        self.vfx_type = ""
+        # vfx state は VfxSystem に移動（P1-G14）
+        self.vfx = VfxSystem(game=self)
+        self.text_fmt = TextFormat(game=self)
 
         # professor state は ProfessorModel に移動（P1-G10）
         # town_menu state は TownModel に移動（P1-G4）
@@ -1884,63 +1888,13 @@ class Game:
 
 
 
-    def _start_vfx(self, vfx_type):
-        if not self.player.get("vfx_enabled", True):
-            return
-        cfg = VFX_FLASH.get(vfx_type)
-        if cfg:
-            self.vfx_type = vfx_type
-            self.vfx_timer = cfg["duration"]
 
 
 
 
 
-    def _use_item(self, item_data) -> str:
-        """Apply an item's effect and return a status message string.
 
-        Returns empty string when the item could not be used.
-        """
-        kind = item_data["type"]
-        if kind == "heal":
-            if self.player["hp"] >= self.player["max_hp"]:
-                return ""
-            self.player["hp"] = min(self.player["max_hp"], self.player["hp"] + item_data["value"])
-            self.sfx.play("heal")
-            return self._dialog_text(
-                "battle.normal.item.heal",
-                item=item_data["name"],
-                value=item_data["value"],
-            )
-        if kind == "mp_heal":
-            self.player["mp"] = min(self.player["max_mp"], self.player["mp"] + item_data["value"])
-            self.sfx.play("heal")
-            return self._dialog_text(
-                "battle.normal.item.mp_heal",
-                item=item_data["name"],
-                value=item_data["value"],
-            )
-        if kind == "cure_poison":
-            if self.player.get("poisoned"):
-                self.player["poisoned"] = False
-                self.sfx.play("cure")
-                return f'{item_data["name"]}を使った。バグ汚染が消えた！'
-            return f'{item_data["name"]}を使った。だが今は必要なかった。'
-        if kind == "warp":
-            # 最後に訪れた町に戻す。未訪問なら開始位置 (25,6)。
-            tx, ty = getattr(self, "last_town_pos", None) or (25, 6)
-            self.player["x"], self.player["y"] = tx, ty
-            self.player["in_dungeon"] = False
-            return f'{item_data["name"]}を使った。記録した場所に戻った。'
-        return ""
 
-    def _t(self, jp: str, en: str) -> str:
-        """言語フォールバック。BDF フォントが無いときは英語版を返す。"""
-        return jp if self.has_jp_font else en
-
-    def _name(self, jp: str) -> str:
-        """データ名（敵・アイテム・装備）の翻訳。NAME_EN_MAP を引く。"""
-        return jp if self.has_jp_font else name_en(jp)
 
 
 
@@ -2049,16 +2003,6 @@ class Game:
         if self.debug_mode:
             self.messages.text(130, 2, "DEBUG", 8)
 
-    def _draw_vfx_overlay(self):
-        if not self.player.get("vfx_enabled", True):
-            return
-        if self.vfx_timer <= 0:
-            return
-        cfg = VFX_FLASH.get(self.vfx_type)
-        if not cfg:
-            return
-        if self.vfx_timer % 2 == 0:
-            pyxel.rect(0, 0, 256, 256, cfg["color"])
 
 
 

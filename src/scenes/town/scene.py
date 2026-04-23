@@ -168,7 +168,7 @@ class TownScene:
         x, y, w, h = 20, 40, 216, 170
         pyxel.rect(x, y, w, h, 1)
         pyxel.rectb(x, y, w, h, 7)
-        game.messages.text(x + 8, y + 8, game._t("まちメニュー", "TOWN MENU"), 7)
+        game.messages.text(x + 8, y + 8, game.text_fmt.t("まちメニュー", "TOWN MENU"), 7)
         labels = M.TOWN_MENU_LABELS if game.has_jp_font else M.TOWN_MENU_LABELS_EN
         for i, label in enumerate(labels):
             ly = y + 28 + i * 16

@@ -106,8 +106,8 @@ class BattleScene:
             return
         import src.runtime.main_runtime as M
         m = self.model
-        if game.vfx_timer > 0:
-            game.vfx_timer -= 1
+        if game.vfx.timer > 0:
+            game.vfx.timer -= 1
         if m.phase == "menu":
             if game._btnp(UP_BUTTONS):
                 m.menu = (m.menu - 1) % 4
@@ -169,7 +169,7 @@ class BattleScene:
                     return
                 game.player["mp"] -= spell["mp"]
                 game.sfx.play("magic")
-                game._start_vfx("flash_white")
+                game.vfx.start("flash_white")
                 m.text = self.apply_spell_effect(spell)
                 m.phase = "player_attack"
                 m.text_timer = 30
@@ -197,7 +197,8 @@ class BattleScene:
                     m.phase = "enemy_attack"
                     m.text_timer = 30
                 else:
-                    msg = game._use_item(item_data)
+                    from src.shared.services.item_use import use_item as _use_item_fn
+                    msg = _use_item_fn(game, item_data)
                     if not msg:
                         m.text = "HPがまんたんで つかえない"
                         m.text_timer = 30
@@ -266,7 +267,7 @@ class BattleScene:
         if game.debug_mode:
             dmg = 9999
         game.sfx.play("attack")
-        game._start_vfx("flash_white")
+        game.vfx.start("flash_white")
         m.enemy_hp = max(0, m.enemy_hp - dmg)
         m.text = game.messages.dialog_text(
             random.choice(M.BATTLE_ATTACK_SCENES),
@@ -322,7 +323,7 @@ class BattleScene:
         if game.debug_mode:
             dmg = 0
         game.sfx.play("hit")
-        game._start_vfx("flash_red")
+        game.vfx.start("flash_red")
         p["hp"] = max(0, p["hp"] - dmg)
         m.text = game.messages.dialog_text(
             self.enemy_hit_scene_name(),
@@ -442,7 +443,7 @@ class BattleScene:
                             for dx2 in range(3):
                                 pyxel.pset(104 + px * 3 + dx2, 30 + py * 3 + dy, c)
 
-        game.messages.text(80, 10, game._name(e["name"]), 7)
+        game.messages.text(80, 10, game.text_fmt.name(e["name"]), 7)
         bar_x = 80; bar_w = 96
         pyxel.rect(bar_x, 85, bar_w, 8, 0)
         hp_ratio = m.enemy_hp / max(1, e["hp"])
@@ -452,7 +453,7 @@ class BattleScene:
         p = game.player
         pyxel.rect(10, 100, 236, 40, 0)
         pyxel.rectb(10, 100, 236, 40, 7)
-        game.messages.text(16, 104, f"{game._t('プログラマー', 'PROGRAMMER')}  レベル{p['lv']}", 7)
+        game.messages.text(16, 104, f"{game.text_fmt.t('プログラマー', 'PROGRAMMER')}  レベル{p['lv']}", 7)
         game.messages.text(16, 116, f"HP {p['hp']}/{p['max_hp']}  MP {p['mp']}/{p['max_mp']}", 7)
         pyxel.rect(170, 116, 60, 6, 0)
         hp_r = p["hp"] / max(1, p["max_hp"])
@@ -484,7 +485,7 @@ class BattleScene:
             pyxel.rect(10, 190, 236, 56, 0)
             pyxel.rectb(10, 190, 236, 56, 7)
             if not spells:
-                game.messages.text(16, 200, game._t("じゅもんをおぼえていない", "No spells learned"), 6)
+                game.messages.text(16, 200, game.text_fmt.t("じゅもんをおぼえていない", "No spells learned"), 6)
             else:
                 for i, name in enumerate(spells[:4]):
                     spell = SPELL_BY_NAME.get(name)
@@ -492,7 +493,7 @@ class BattleScene:
                         continue
                     cy = 196 + i * 12
                     col = 10 if i == m.spell_select else 6
-                    game.messages.text(30, cy, f"{game._name(name)}  MP{spell['mp']}", col)
+                    game.messages.text(30, cy, f"{game.text_fmt.name(name)}  MP{spell['mp']}", col)
                     if i == m.spell_select:
                         game.messages.text(18, cy, ">", 10)
 
@@ -503,15 +504,15 @@ class BattleScene:
             if m.text:
                 game.messages.text(16, 192, m.text, 8)
             if not items:
-                game.messages.text(16, 200, game._t("アイテムがない", "No items"), 6)
+                game.messages.text(16, 200, game.text_fmt.t("アイテムがない", "No items"), 6)
             else:
                 for i, item in enumerate(items[:4]):
                     idata = ITEMS[item["id"]]
                     cy = 196 + i * 12
                     col = 10 if i == m.item_select else 6
-                    game.messages.text(30, cy, f"{game._name(idata['name'])} x{item['qty']}", col)
+                    game.messages.text(30, cy, f"{game.text_fmt.name(idata['name'])} x{item['qty']}", col)
                     if i == m.item_select:
                         game.messages.text(18, cy, ">", 10)
 
-        game._draw_vfx_overlay()
+        game.vfx.draw_overlay()
         return None

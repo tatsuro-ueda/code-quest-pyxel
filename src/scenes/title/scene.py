@@ -88,11 +88,11 @@ class TitleScene:
             )
         pyxel.cls(1)
         game.messages.text(70, 80, "BLOCK QUEST", 7)
-        game.messages.text(50, 110, game._t("- コードのぼうけん -", "- A Coding Quest -"), 10)
+        game.messages.text(50, 110, game.text_fmt.t("- コードのぼうけん -", "- A Coding Quest -"), 10)
         labels = [
-            game._t("はじめから", "NEW GAME"),
-            game._t("つづきから", "CONTINUE"),
-            game._t("せってい", "SETTINGS"),
+            game.text_fmt.t("はじめから", "NEW GAME"),
+            game.text_fmt.t("つづきから", "CONTINUE"),
+            game.text_fmt.t("せってい", "SETTINGS"),
         ]
         for i, label in enumerate(labels):
             ly = 150 + i * 16
@@ -103,7 +103,7 @@ class TitleScene:
             game.messages.text(80, ly, f"{marker} {label}", color)
         if self.model.cursor == 1 and not game._has_save:
             game.messages.text(
-                40, 200, game._t("(まだなにもかきとめていない)", "(no save yet)"), 5
+                40, 200, game.text_fmt.t("(まだなにもかきとめていない)", "(no save yet)"), 5
             )
 
     def _do_load(self) -> None:

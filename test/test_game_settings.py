@@ -96,6 +96,7 @@ class GameSettingsTest(unittest.TestCase):
         g.settings_scene.model.cursor = 0
         g.settings_scene.model.origin = "title"
         g.battle_scene = M.BattleScene(game=g)
+        g.text_fmt = M.TextFormat(game=g)
         return g
 
     def test_title_settings_item_opens_settings(self):

@@ -93,7 +93,7 @@ class MenuScene:
                     game.sfx.play("select")
                     item = items[m.item_cursor]
                     item_data = M.ITEMS[item["id"]]
-                    msg = game._use_item(item_data)
+                    msg = game.use_item(item_data)
                     if not msg:
                         m.message = "HPがまんたんで つかえない"
                     else:
@@ -151,13 +151,13 @@ class MenuScene:
             pyxel.rectb(40, 100, 180, 120, 7)
             items = p["items"]
             if not items:
-                game.messages.text(50, 110, game._t("アイテムがない", "No items"), 6)
+                game.messages.text(50, 110, game.text_fmt.t("アイテムがない", "No items"), 6)
             else:
                 for i, item in enumerate(items[:8]):
                     idata = M.ITEMS[item["id"]]
                     cy = 108 + i * 13
                     col = 10 if i == m.item_cursor else 6
-                    game.messages.text(56, cy, f"{game._name(idata['name'])} x{item['qty']}", col)
+                    game.messages.text(56, cy, f"{game.text_fmt.name(idata['name'])} x{item['qty']}", col)
                     if i == m.item_cursor:
                         game.messages.text(46, cy, ">", 10)
             if m.message:
@@ -165,11 +165,11 @@ class MenuScene:
         elif m.sub == "equip":
             pyxel.rect(40, 100, 180, 80, 0)
             pyxel.rectb(40, 100, 180, 80, 7)
-            wlbl = game._t("ぶき", "WPN")
-            albl = game._t("ぼうぐ", "ARM")
+            wlbl = game.text_fmt.t("ぶき", "WPN")
+            albl = game.text_fmt.t("ぼうぐ", "ARM")
             labels = [
-                f"{wlbl}: {game._name(M.WEAPONS[p['weapon']]['name'])} (こうげき+{M.WEAPONS[p['weapon']]['atk']})",
-                f"{albl}: {game._name(M.ARMORS[p['armor']]['name'])} (ぼうぎょ+{M.ARMORS[p['armor']]['def']})",
+                f"{wlbl}: {game.text_fmt.name(M.WEAPONS[p['weapon']]['name'])} (こうげき+{M.WEAPONS[p['weapon']]['atk']})",
+                f"{albl}: {game.text_fmt.name(M.ARMORS[p['armor']]['name'])} (ぼうぎょ+{M.ARMORS[p['armor']]['def']})",
             ]
             for i, label in enumerate(labels):
                 cy = 110 + i * 20
