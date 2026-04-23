@@ -1607,6 +1607,7 @@ from src.scenes.menu.scene import MenuScene
 from src.scenes.ai_help.scene import AiHelpScene
 from src.scenes.ending.scene import EndingScene
 from src.scenes.settings.scene import SettingsScene
+from src.scenes.town.scene import TownScene
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
 TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
@@ -1731,9 +1732,7 @@ class Game:
         self.professor_ending_lines: list[str] = []
         self.professor_ending_idx = 0
 
-        # Town menu state (D6)
-        self.town_menu_cursor = 0
-        self.town_menu_pos: tuple[int, int] | None = None
+        # town_menu state は TownModel に移動（P1-G4）
         self.last_town_pos: tuple[int, int] | None = None
 
         # a_cooldown は ExploreModel.a_cooldown に移動（P1-G3）
@@ -1773,6 +1772,7 @@ class Game:
         self.ai_help_scene = AiHelpScene(game=self)
         self.ending_scene = EndingScene(game=self)
         self.settings_scene = SettingsScene(game=self)
+        self.town_scene = TownScene(game=self)
 
         # 起動時の AV 設定適用（settings_scene 生成後に呼ぶ）
         self.settings_scene.apply_av()
@@ -2211,9 +2211,9 @@ class Game:
         elif self.state == "message":
             self.update_message()
         elif self.state == "town":
-            self.update_town()
+            self.town_scene.update()
         elif self.state == "town_menu":
-            self.update_town_menu()
+            self.town_scene.update_menu()
         elif self.state == "professor_intro":
             self.update_professor_intro()
         elif self.state == "professor_ending_main":
@@ -2770,107 +2770,8 @@ class Game:
                 if self.msg_callback:
                     self.msg_callback()
 
-    def update_town(self):
-        # Show message then return to map
-        if self._any_advance_btnp():
-            self.msg_index, done = self._advance_dialog_page(self.msg_index, self.msg_lines)
-            if done:
-                self.state = "map"
-
     # ----- town_menu (Save Player Journey steering) -----
-    def update_town_menu(self):
-        if self._btnp(UP_BUTTONS):
-            self.sfx.play("cursor")
-            self.town_menu_cursor = (self.town_menu_cursor - 1) % len(TOWN_MENU_LABELS)
-            return
-        if self._btnp(DOWN_BUTTONS):
-            self.sfx.play("cursor")
-            self.town_menu_cursor = (self.town_menu_cursor + 1) % len(TOWN_MENU_LABELS)
-            return
-        if self._btnp(CANCEL_BUTTONS):
-            self.sfx.play("cancel")
-            self._town_menu_exit()
-            return
-        if self._btnp(CONFIRM_BUTTONS):
-            self.sfx.play("select")
-            label = TOWN_MENU_LABELS[self.town_menu_cursor]
-            if label == "はなす":
-                self._town_menu_talk()
-            elif label in SHOP_KIND_BY_LABEL:
-                self.shop_scene.enter(SHOP_KIND_BY_LABEL[label])
-            elif label == "やどや":
-                self._town_menu_inn()
-            elif label == "セーブ":
-                self._town_menu_save()
-            elif label == "でる":
-                self._town_menu_exit()
-
-    def _enter_town_message(self, lines, callback=None):
-        """町メニュー内の通知。閉じたら town_menu に戻る (D11/P10)。"""
-        self.msg_lines = lines
-        self.msg_index = 0
-        self.msg_callback = callback
-        self.prev_state = "town_menu"
-        self.state = "message"
-
-    def _town_menu_talk(self):
-        # 城のプロフェッサーは従来のダイアログシーン
-        scene = TOWN_DIALOG_SCENES.get(self.town_menu_pos)
-        if scene is not None:
-            lines = self._dialog_lines(scene, ProfessorPhase=self._professor_phase())
-            self._enter_town_message(lines)
-            return
-        # 町NPCはラウンドロビン
-        idx = self._current_town_index()
-        if idx >= len(TOWN_NPC_LINES):
-            self._enter_town_message(["……ここには はなせるひとが いない。"])
-            return
-        npc_lines = TOWN_NPC_LINES[idx]
-        talk_idx = self.player.get("town_talk_idx", [0, 0, 0])
-        line = npc_lines[talk_idx[idx] % len(npc_lines)]
-        talk_idx[idx] = (talk_idx[idx] + 1) % len(npc_lines)
-        self.player["town_talk_idx"] = talk_idx
-        self._enter_town_message([line])
-
-    def _town_menu_inn(self):
-        cost = self._inn_cost_for_current_town()
-        if self.player["gold"] < cost:
-            self._enter_town_message([INN_LACK_MSG])
-            return
-        self.player["gold"] -= cost
-        self.player["hp"] = self.player["max_hp"]
-        self.player["mp"] = self.player["max_mp"]
-        self.player["poisoned"] = False
-        self._enter_town_message([INN_OK_MSG])
-
-    def _current_town_index(self) -> int:
-        if self.town_menu_pos is None:
-            return 0
-        return TOWN_INDEX_BY_POS.get(self.town_menu_pos, 0)
-
-    def _inn_cost_for_current_town(self) -> int:
-        idx = self._current_town_index()
-        return INN_PRICES[idx] if idx < len(INN_PRICES) else INN_COST
-
     # ----- Shop (Task #7) -----
-    def _town_menu_save(self):
-        snap = dump_snapshot(self.player, town_pos=self.town_menu_pos)
-        try:
-            self.save_store.save(snap)
-        except SaveStoreError:
-            is_web = isinstance(self.save_store, LocalStorageSaveStore)
-            msg = SAVE_FAIL_MSG_WEB if is_web else SAVE_FAIL_MSG_DESKTOP
-            self._enter_town_message([msg])
-            return
-        self._has_save = True
-        self.sfx.play("save")
-        self._enter_town_message([SAVE_OK_MSG])
-
-    def _town_menu_exit(self):
-        self.state = "map"
-        self.explore_scene.model.a_cooldown = True
-        self.town_menu_pos = None
-
     # ----- Professor encounter (隠し章) -----
     # ----- AI でしゅうせい (Code Maker と外部 AI の橋渡し) -----
     def _enter_professor_intro(self):
@@ -3049,7 +2950,7 @@ class Game:
             self.draw_status_bar()
             self.draw_message_window()
         elif self.state == "town_menu":
-            self.draw_town_menu()
+            self.town_scene.draw_menu()
         elif self.state == "shop":
             self.shop_scene.draw()
         elif self.state == "ending":
@@ -3207,24 +3108,6 @@ class Game:
                         self.text(18, cy, ">", 10)
 
         self._draw_vfx_overlay()
-
-    def draw_town_menu(self):
-        # Background: show the map underneath so players keep their bearings.
-        self.explore_scene.draw()
-        self.draw_status_bar()
-        # Window
-        x, y, w, h = 20, 40, 216, 170
-        pyxel.rect(x, y, w, h, 1)
-        pyxel.rectb(x, y, w, h, 7)
-        self.text(x + 8, y + 8, self._t("まちメニュー", "TOWN MENU"), 7)
-        labels = TOWN_MENU_LABELS if self.has_jp_font else TOWN_MENU_LABELS_EN
-        for i, label in enumerate(labels):
-            ly = y + 28 + i * 16
-            color = 10 if i == self.town_menu_cursor else 7
-            marker = ">" if i == self.town_menu_cursor else " "
-            self.text(x + 16, ly, f"{marker} {label}", color)
-        gold = self.player["gold"]
-        self.text(x + 8, y + h - 16, f"GOLD: {gold}", 6)
 
     def draw_message_window(self):
         pyxel.rect(8, 208, 240, 44, 0)

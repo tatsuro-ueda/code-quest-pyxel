@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 @dataclass
 class TownModel:
-    """town シーンの状態（Phase 1 スケルトン、P1-G4 で中身を埋める）。"""
+    """town シーンの状態（P1-G4 で Game.town_menu_* を取り込み）。"""
 
-    pass
+    menu_cursor: int = 0
+    menu_pos: tuple[int, int] | None = None

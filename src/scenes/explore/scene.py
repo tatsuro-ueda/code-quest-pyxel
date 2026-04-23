@@ -135,8 +135,8 @@ class ExploreScene:
             return
 
         if tile == M.T_TOWN:
-            game.town_menu_pos = (nx, ny)
-            game.town_menu_cursor = 0
+            game.town_scene.model.menu_pos = (nx, ny)
+            game.town_scene.model.menu_cursor = 0
             game.state = "town_menu"
             return
 
