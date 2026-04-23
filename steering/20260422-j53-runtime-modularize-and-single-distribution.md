@@ -339,8 +339,8 @@ class GameState:
     cave_unblock_shown: bool
     tree_cleared_shown: bool
     poison_step_counter: int
-    glitch_lord_defeated: bool
     has_save: bool
+    # glitch_lord_defeated は player dict 内のキー（P1-B で確認、line 335 で初期化）
 
     # --- world / dungeon ---
     world_map: list                 # list[list[int]]
@@ -349,7 +349,7 @@ class GameState:
     dungeon_spawn: tuple[int, int] | None
     dungeon_template: Any
     dungeon_template_rooms: list
-    # in_dungeon は dungeon_map is not None で派生
+    # in_dungeon は player dict 内のキー（P1-B で確認、line 5557 で `p["in_dungeon"]`）
 
     # --- position / camera ---
     cam_x: int
