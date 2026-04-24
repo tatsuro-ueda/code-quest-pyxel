@@ -228,11 +228,14 @@ flowchart TD
 
 ### Phase E：docs/product-requirements-guardrails.md（M1〜M5）
 
-- [ ] M1 Pyxel API 境界：grep ガードの regression（`grep -nE '^(import pyxel|from pyxel)|[^_a-zA-Z]pyxel\.' src/scenes/*/presenter.py src/scenes/*/model.py` → 0 件、違反したら fail）
-- [ ] M2 View / ViewModel：View 層で `input_state.btnp` が使われていないこと（grep ガード）
-- [ ] M3 Presenter / Scene / Command：Presenter が `pyxel.text` / `pyxel.rect` 等を呼んでいないこと（grep ガード）
-- [ ] M4 Model / Service / GameState / PlayerModel：`player` dict が src 配下に残っていないこと（grep ガード、`game.player` と `\bp\[['\"]` の 2 段）
-- [ ] M5 命名 / テスト：`src/scenes/*/` が `scene.py? / model.py / presenter.py / view.py / view_model.py?` の範囲に収まっていること（find ガード）
+すべて `test/test_cjg_framework_rule_guards.py` に集約（11 tests + 22 subtests）。
+
+- [x] M1 Pyxel API 境界：scenes/*/model.py / presenter.py / player_model.py に `pyxel.*` 直呼び 0 件
+- [x] M2 View / ViewModel：scenes/*/view.py / view_model.py に入力取得（`pyxel.btnp` / `input_state.btnp`）0 件
+- [x] M3 Presenter 描画禁止：scenes/*/presenter.py に `pyxel.text / rect / blt` 等の描画呼び 0 件
+- [x] M4 player dict 禁止：src/ 全域に `game.player` dict 風参照 0 件、scenes/ 配下に `player["key"]` 0 件
+- [x] M4 SSoT 参照規約：scenes/ が `M.SHOPS` 生辞書を参照しない / scenes/ が `src.generated` を直接 import しない（2026-04-25 shop KeyError 再発防止）
+- [x] M5 scene 構造規約：各 scenes/*/ に model / presenter / view が揃う、規約外 .py が混在しない
 
 ### Phase F：docs/product-requirements-battle.md
 
