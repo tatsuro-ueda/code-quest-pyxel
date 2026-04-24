@@ -43,7 +43,9 @@ from src.scenes.settings.scene import SettingsScene
 from src.scenes.shop.scene import ShopScene
 from src.scenes.splash.scene import SplashScene
 from src.scenes.title.scene import TitleScene
-from src.scenes.town.scene import TownScene
+from src.scenes.town.model import TownModel
+from src.scenes.town.presenter import TownPresenter
+from src.scenes.town.view import TownView
 
 
 class Game:
@@ -114,7 +116,9 @@ class Game:
         self.ai_help_scene = AiHelpScene(game=self)
         self.ending_scene = EndingScene(game=self)
         self.settings_scene = SettingsScene(game=self)
-        self.town_scene = TownScene(game=self)
+        self.town_model = TownModel()
+        self.town_view = TownView(game=self)
+        self.town_presenter = TownPresenter(model=self.town_model, game=self)
         self.professor_scene = ProfessorScene(game=self)
         self.battle_scene = BattleScene(game=self)
         self.status_bar = StatusBar(game=self)
@@ -177,9 +181,9 @@ class Game:
         elif self.state == "message":
             self.messages.update()
         elif self.state == "town":
-            self.town_scene.update()
+            self.town_presenter.update_message()
         elif self.state == "town_menu":
-            self.town_scene.update_menu()
+            self.town_presenter.update_menu()
         elif self.state == "professor_intro":
             self.professor_scene.update_intro()
         elif self.state == "professor_ending_main":
@@ -226,7 +230,7 @@ class Game:
             self.status_bar.draw()
             self.messages.draw_window()
         elif self.state == "town_menu":
-            self.town_scene.draw_menu()
+            self.town_view.render_menu(self.town_presenter.build_menu_view_model())
         elif self.state == "shop":
             self.shop_scene.draw()
         elif self.state == "ending":

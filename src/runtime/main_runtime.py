@@ -34,7 +34,6 @@ from src.scenes.menu.scene import MenuScene
 from src.scenes.ai_help.scene import AiHelpScene
 from src.scenes.ending.scene import EndingScene
 from src.scenes.settings.scene import SettingsScene
-from src.scenes.town.scene import TownScene
 from src.scenes.professor.scene import ProfessorScene
 from src.scenes.battle.scene import BattleScene
 from src.runtime.app import Game, say, say_clear

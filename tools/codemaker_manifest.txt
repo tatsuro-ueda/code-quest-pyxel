@@ -117,9 +117,9 @@ src/scenes/title/presenter.py
 src/scenes/title/scene.py
 
 src/scenes/town/model.py
+src/scenes/town/view_model.py
 src/scenes/town/view.py
 src/scenes/town/presenter.py
-src/scenes/town/scene.py
 
 # --- 10. src/runtime/app.py: Game クラス本体（全 scenes/services を使う）
 src/runtime/app.py

@@ -34,7 +34,7 @@ class ShopScene:
         game = self.game
         import src.runtime.main_runtime as M
         # 町情報は GameState.current_town から受け取る（framework-rule.md M4-3）。
-        # shop は town の内部状態（town_scene.model）を直接のぞき込まない。
+        # shop は town の内部状態（town_model）を直接のぞき込まない。
         if game.current_town is None:
             # フォールバック: 町情報が未設定ならインデックス0の町扱い
             idx = 0

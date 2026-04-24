@@ -137,8 +137,8 @@ class ExploreScene:
         if tile == M.T_TOWN:
             from src.shared.services.game_state import TownContext
             pos = (nx, ny)
-            game.town_scene.model.menu_pos = pos
-            game.town_scene.model.menu_cursor = 0
+            game.town_model.menu_pos = pos
+            game.town_model.menu_cursor = 0
             game.current_town = TownContext(
                 index=M.TOWN_INDEX_BY_POS.get(pos, 0),
                 pos=pos,
