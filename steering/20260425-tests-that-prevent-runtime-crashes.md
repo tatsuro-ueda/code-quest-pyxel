@@ -242,7 +242,7 @@ flowchart TD
 - [x] `test_cjg_battle_data_shape.py`：CJG08/CJG10 由来の敵データ契約。required keys / 非負整数 / HP>0 / zone 範囲 / category 列挙 / 全エンカウント zone に敵が紐付いていること（7 tests + 75 subtests）
 - [ ] 戦闘 scene smoke：エンカウント→選択→攻撃→敵撃破→報酬→マップ復帰が AttributeError / KeyError なく通る
 - [ ] 戦闘中のアイテム使用：warp 系が「せんとうちゅうはつかえない」に分岐する（既存 battle/scene.py:195）
-- [ ] 戦闘 BGM 同期：`sync_audio` が `game.player_model` 経由で読める（`bgm_enabled` / `in_dungeon` / `y`）
+- [x] `test_cjg_sync_audio_player_model.py`：`sync_audio` が PlayerModel 経由（`bgm_enabled` / `in_dungeon` / `y`）で crash せず読めること。map 状態 / battle 状態 / dungeon 状態 / glitch_lord 戦 / 全 field zone の 5 ルートを fake game で検証（6 tests + 4 subtests）
 
 ### Phase G：docs/product-requirements-narrative.md
 
