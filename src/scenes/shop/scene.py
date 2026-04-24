@@ -42,7 +42,7 @@ class ShopScene:
         else:
             idx = game.current_town.index
             game.last_town_pos = game.current_town.pos
-        shop = M.SHOPS[idx]
+        shop = M.SHOP_LIST[idx]
         self.model.kind = kind
         self.model.inventory = list(shop[kind])
         self.model.cursor = 0

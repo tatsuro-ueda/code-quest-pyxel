@@ -93,7 +93,8 @@ class MenuScene:
                     game.sfx.play("select")
                     item = items[m.item_cursor]
                     item_data = M.ITEMS[item.id]
-                    msg = game.use_item(item_data)
+                    from src.shared.services.item_use import use_item as _use_item_fn
+                    msg = _use_item_fn(game, item_data)
                     if not msg:
                         m.message = "HPがまんたんで つかえない"
                     else:
