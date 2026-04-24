@@ -65,9 +65,9 @@ class MenuScene:
                     m.sub = "equip"
                     m.item_cursor = 0
                 elif m.cursor == 3:
-                    game._open_settings("menu")
+                    game.settings_scene.open("menu")
                 elif m.cursor == 4:
-                    game._enter_ai_help()
+                    game.ai_help_scene.enter()
                 elif m.cursor == 5:
                     game.state = "map"
         elif m.sub == "status":

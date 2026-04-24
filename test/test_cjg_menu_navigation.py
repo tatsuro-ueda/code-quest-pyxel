@@ -53,6 +53,22 @@ class _FakeMessages:
 
 
 @dataclass
+class _FakeSettingsScene:
+    opened: list[str] = field(default_factory=list)
+
+    def open(self, origin: str):
+        self.opened.append(origin)
+
+
+@dataclass
+class _FakeAiHelpScene:
+    entered: int = 0
+
+    def enter(self):
+        self.entered += 1
+
+
+@dataclass
 class _FakeGame:
     state: str = "menu"
     has_jp_font: bool = True
@@ -60,14 +76,8 @@ class _FakeGame:
     input_state: _FakeInputState = field(default_factory=_FakeInputState)
     sfx: _FakeSfx = field(default_factory=_FakeSfx)
     messages: _FakeMessages = field(default_factory=_FakeMessages)
-    ai_help_called: int = 0
-    settings_origin: str | None = None
-
-    def _open_settings(self, origin: str):
-        self.settings_origin = origin
-
-    def _enter_ai_help(self):
-        self.ai_help_called += 1
+    settings_scene: _FakeSettingsScene = field(default_factory=_FakeSettingsScene)
+    ai_help_scene: _FakeAiHelpScene = field(default_factory=_FakeAiHelpScene)
 
 
 class MenuCursorTest(unittest.TestCase):
@@ -132,7 +142,8 @@ class MenuSubEntryTest(unittest.TestCase):
         self.assertEqual(scene.model.sub, "items")
         self.assertEqual(scene.model.item_cursor, 0)
 
-    def test_confirm_on_settings_calls_open_settings_with_menu_origin(self):
+    def test_confirm_on_settings_calls_settings_scene_open_with_menu_origin(self):
+        """menu から settings_scene.open('menu') を直接呼ぶ（存在しない game._open_settings を呼ばない）。"""
         from src.shared.services.input_bindings import CONFIRM_BUTTONS
 
         game = _FakeGame()
@@ -141,9 +152,10 @@ class MenuSubEntryTest(unittest.TestCase):
         scene.model.cursor = 3
         scene.update()
 
-        self.assertEqual(game.settings_origin, "menu")
+        self.assertEqual(game.settings_scene.opened, ["menu"])
 
-    def test_confirm_on_ai_help_calls_enter_ai_help(self):
+    def test_confirm_on_ai_help_calls_ai_help_scene_enter(self):
+        """menu から ai_help_scene.enter() を直接呼ぶ（存在しない game._enter_ai_help を呼ばない）。"""
         from src.shared.services.input_bindings import CONFIRM_BUTTONS
 
         game = _FakeGame()
@@ -152,7 +164,7 @@ class MenuSubEntryTest(unittest.TestCase):
         scene.model.cursor = 4
         scene.update()
 
-        self.assertEqual(game.ai_help_called, 1)
+        self.assertEqual(game.ai_help_scene.entered, 1)
 
     def test_confirm_on_close_returns_to_map(self):
         from src.shared.services.input_bindings import CONFIRM_BUTTONS
@@ -255,6 +267,34 @@ class MenuEquipSubCursorTest(unittest.TestCase):
         scene.update()
 
         self.assertIsNone(scene.model.sub)
+
+
+class MenuDoesNotCallNonexistentGameShimTest(unittest.TestCase):
+    """menu/scene.py が Game に存在しない shim メソッドを呼んでいないこと（実機 crash 再発防止）。
+
+    2026-04-25 に game._open_settings / _enter_ai_help の AttributeError で
+    実機落ちが発覚した。同じ穴を踏まないように、menu/scene.py のソースに
+    Game クラスに実在するメソッドだけが現れることを静的に保証する。
+    """
+
+    _BANNED_PATTERNS = (
+        r"\bgame\._open_settings\(",
+        r"\bgame\._enter_ai_help\(",
+        r"\bgame\.use_item\(",  # menu/battle は item_use サービス直呼びに統一済み
+    )
+
+    def test_menu_scene_does_not_call_banned_shims(self):
+        import re
+
+        path = ROOT / "src" / "scenes" / "menu" / "scene.py"
+        text = path.read_text(encoding="utf-8")
+
+        for pattern in self._BANNED_PATTERNS:
+            with self.subTest(pattern=pattern):
+                self.assertIsNone(
+                    re.search(pattern, text),
+                    f"menu/scene.py に禁止 shim `{pattern}` の呼び出しが復活している",
+                )
 
 
 if __name__ == "__main__":
