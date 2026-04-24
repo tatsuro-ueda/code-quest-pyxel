@@ -34,6 +34,9 @@ src/generated/dialogue.py
 # --- 4. src/game_data.py: generated/ を束ねる facade
 src/game_data.py
 
+# --- 5a. shared/state: PlayerModel など state dataclass（services より先に置く）
+src/shared/state/player_model.py
+
 # --- 5. shared/services: 純粋 services（他 service 依存が少ないものを先に）
 src/shared/services/input_bindings.py
 src/shared/services/landmark_events.py
