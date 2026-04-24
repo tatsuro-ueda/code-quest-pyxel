@@ -138,6 +138,13 @@ h1 {
 
 {{PREVIEW_CARD}}
 
+  <div class="version-card">
+    <h2>本番</h2>
+{{CURRENT_CARD_BODY}}
+    <a class="play-btn" href="{{CURRENT_WRAPPER_SRC}}">あそんでみる</a>
+{{CURRENT_CARD_SUB_LINKS}}
+  </div>
+
   <div class="version-card" id="codemaker-import-panel">
     <h2>Code Maker から もどす</h2>
     <p class="desc">code-maker.zip を このブラウザに ほぞんします<br>がぞう、マップ、こうかおん、おんがくだけを とりこみます<br>プログラムは とりこみません</p>
@@ -146,14 +153,7 @@ h1 {
     <p class="import-status" id="codemaker-import-status">zip を えらんでください</p>
   </div>
 
-  <div class="version-card">
-    <h2>本番</h2>
-{{CURRENT_CARD_BODY}}
-    <a class="play-btn" href="{{CURRENT_WRAPPER_SRC}}">あそんでみる</a>
-{{CURRENT_CARD_SUB_LINKS}}
-  </div>
-
-{{HINT_BLOCK}}
+  {{HINT_BLOCK}}
   <p class="owner-link">
     コード編集:
     <a id="code-server-link" href="http://127.0.0.1:8081/" target="_blank" rel="noopener noreferrer">code-server :8081</a>
