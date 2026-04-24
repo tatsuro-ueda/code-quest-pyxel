@@ -116,6 +116,43 @@ class StatusBarPlayerModelTest(unittest.TestCase):
         )
 
 
+class StatusBarDungeonZoneTest(unittest.TestCase):
+    """in_dungeon のときは "グリッチのどうくつ" が描画される（zone=4）。"""
+
+    def test_in_dungeon_zone_name_is_glitch_cave_jp(self):
+        from src.shared.ui import status_bar as status_bar_mod
+        from src.shared.ui.status_bar import StatusBar
+
+        game = _FakeGame(player_model=self._pm())
+        game.player_model.in_dungeon = True
+        bar = StatusBar(game=game)
+
+        with patch.object(status_bar_mod, "pyxel", _FakePyxel()):
+            bar.draw()
+
+        rendered = " / ".join(call[2] for call in game.messages.calls)
+        self.assertIn("グリッチのどうくつ", rendered)
+
+    def test_in_dungeon_zone_name_is_glitch_cave_en(self):
+        from src.shared.ui import status_bar as status_bar_mod
+        from src.shared.ui.status_bar import StatusBar
+
+        game = _FakeGame(player_model=self._pm(), has_jp_font=False)
+        game.player_model.in_dungeon = True
+        bar = StatusBar(game=game)
+
+        with patch.object(status_bar_mod, "pyxel", _FakePyxel()):
+            bar.draw()
+
+        rendered = " / ".join(call[2] for call in game.messages.calls)
+        self.assertIn("Glitch Cave", rendered)
+
+    def _pm(self):
+        from src.shared.state.player_model import PlayerModel
+
+        return PlayerModel.new_game()
+
+
 class StatusBarNoGamePlayerAttrTest(unittest.TestCase):
     """status_bar.py に `game.player` の dict 風アクセスが残っていないこと（grep ガード）。"""
 
