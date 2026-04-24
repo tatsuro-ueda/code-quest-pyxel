@@ -413,6 +413,39 @@ flowchart TD
 - 「やらないこと」「人間の期待」「今回の方針」「Tasklist」をスコープ拡張に合わせて更新
 - 次ゲート：Journey 再承認 →「Gherkin」へ
 
+### 2026年4月25日 00:20（実装後半：PlayerModel 全廃 + town/ 分解）
+
+**Observe**：
+- `game.player` dict を全 scene / service から廃止。`game.player_model` (PlayerModel) のみが player 状態の正本。14 ファイルで `game.player["key"]` → `game.player_model.key`、`p["key"]` / `p.get("key")` → `p.key`、`p["def"]` → `p.defense`、`item["id"]/["qty"]` → `item.id/item.qty` に書き換え
+- `Game.player = create_initial_player()` を削除、`GameState.player: dict` フィールドも削除。`in_dungeon` / `glitch_lord_defeated` property は `player_model` 経由に
+- `item_use.py` は PlayerModel.heal / restore_mp / cure_poison 経由に書き換え
+- 21 個の既存テスト（test_damage_vfx / test_dialogue_paging / test_dungeon_boss_trigger / test_game_settings / test_battle_run_logic）を PlayerModel ベースに移行。`_pm_from_dict` helper を注入して dict setup を保持
+- `src/scenes/town/` を 5 ファイル構成に分解：`model.py`（22 行）/ `presenter.py`（172 行）/ `view.py`（38 行）/ `view_model.py`（16 行）/ `scene.py`（47 行）。`TownMenuViewModel` を導入
+- 元の `scene.py` 179 行から 47 行へ縮退。Pyxel API 直呼び / ゲームルール / 副作用指揮は scene.py から消え、Presenter / Model / View / PlayerModel に分散
+- 全 233 テスト通過（2 skipped）
+
+**Think**：
+- Gherkin シナリオ1〜3 の条件達成：
+  - (a) 依存方向・層ファイル：town/ に model/presenter/view/view_model/scene の 5 ファイル。PlayerModel / GameState.current_town 導入済み
+  - (b) PlayerModel：`src/shared/state/player_model.py` に 32 テスト通過
+  - (c) GameState.current_town：TownContext dataclass で追加
+  - (d) Game dispatcher：scene.py 経由で Presenter / View を呼ぶ形（薄い配線）
+  - (A) Pyxel API は View のみ：model.py / presenter.py に pyxel なし
+  - (B) Model は Scene を知らない：model.py に `_scene.` / `game.state =` なし
+  - (C) Presenter 描画なし・View 入力なし・Model 入力なし
+  - (D) InputStateTracker 経由：presenter.py で `game.input_state.btnp(...)` のみ
+  - (E) player dict 禁止：全廃（shim の player_state.py のみ残存、既存テスト test_player_factory / test_player_snapshot の互換のため）
+  - (F) shop→town 旧参照：`grep _current_town_index town_menu_pos src/` → 0 件
+- (G) `town/scene.py` 完全廃止：**部分達成**。`scene.py` は 47 行の薄い配線として残存。framework-rule.md M3-2 では「Scene を薄い配線すら持たず、Presenter が update / draw の入口を兼ねるところまで縮退してよい」とあり、**現状の 47 行配線は規約上 OK**。完全削除するには `runtime/app.py` の dispatcher を `self.town_presenter.update()` 等に書き換える必要がある（未着手）
+- ブラウザ手動確認は未実施（ユーザー依頼）。単一配信のビルドは別途必要
+
+**Act**：
+- 2 commit 済み：
+  - `eacd5c3`: PlayerModel 新設 + GameState.current_town + 買い物エラー解消
+  - `61e0b76`: 全 scene の player dict → PlayerModel 移行
+- 3 commit 目：town/ 分解（本コミットで実施予定）
+- 次ゲート：ユーザー確認 →「(i) 完全 scene.py 削除まで進める / (ii) 現状で OK・PRD 書き換えへ進む / (iii) 他」
+
 ### 2026年4月24日 23:46（実装前半：買い物エラー解消までの部分実装）
 
 **Observe**：
