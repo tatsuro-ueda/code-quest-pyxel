@@ -213,7 +213,7 @@ flowchart TD
 
 - [x] `test_cjg_status_bar_player_model.py`：`game.player` dict 参照が status_bar に残っていないこと。`StatusBar.draw()` が player_model 経由で落ちずに描画できること（4 tests）
 - [x] `test_cjg_shop_enter_regression.py`：`ShopScene.enter` が `M.SHOP_LIST[idx]` から読めていること。`M.SHOPS[idx]` に書き換えると KeyError を期待どおり吐くことも赤→緑で検証済み（4 tests + 5 subtests）
-- [x] `test_cjg_town_entry_sets_current_town.py`：`_check_tile_events(T_TOWN, x, y)` が `game.current_town` を populate し、その直後の `ShopScene.enter` が index/pos を読めること。`TOWN_INDEX_BY_POS` に無い座標は index=0 にフォールバック（4 tests）
+- [x] `test_cjg_town_entry_populates_current_town.py`：`_check_tile_events(T_TOWN, x, y)` が `game.current_town` を populate し、その直後の `ShopScene.enter` が index/pos を読めること。`TOWN_INDEX_BY_POS` に無い座標は index=0 にフォールバック（4 tests + 6 subtests、TOWN_INDEX_BY_POS 全 3 町で赤→緑検証済み）
 - [x] `test_cjg_menu_item_use_service.py`：menu 経由のアイテム使用が `game.use_item` 非実在 shim ではなく `item_use.use_item` service を呼ぶこと。heal / mp_heal / cure_poison / warp の効果が PlayerModel 経由で適用されること（7 tests）
 
 ### Phase C：docs/customer-jobs.md Make3 起点の smoke
@@ -239,6 +239,7 @@ flowchart TD
 
 ### Phase F：docs/product-requirements-battle.md
 
+- [x] `test_cjg_battle_data_shape.py`：CJG08/CJG10 由来の敵データ契約。required keys / 非負整数 / HP>0 / zone 範囲 / category 列挙 / 全エンカウント zone に敵が紐付いていること（7 tests + 75 subtests）
 - [ ] 戦闘 scene smoke：エンカウント→選択→攻撃→敵撃破→報酬→マップ復帰が AttributeError / KeyError なく通る
 - [ ] 戦闘中のアイテム使用：warp 系が「せんとうちゅうはつかえない」に分岐する（既存 battle/scene.py:195）
 - [ ] 戦闘 BGM 同期：`sync_audio` が `game.player_model` 経由で読める（`bgm_enabled` / `in_dungeon` / `y`）
