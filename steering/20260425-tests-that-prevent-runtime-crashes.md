@@ -218,8 +218,8 @@ flowchart TD
 
 ### Phase C：docs/customer-jobs.md Make3 起点の smoke
 
-- [ ] ゲーム起動 smoke：`Game()` 相当が初期化できる（Pyxel 依存は fake）
-- [ ] 主要 state 遷移 smoke：`splash` → `title` → `map` → `town_menu` → `shop` → `map` → `battle` → `map` → `menu` の各遷移で AttributeError / KeyError / TypeError が出ない
+- [x] `test_cjg_game_init_smoke.py`：`Game()` の __init__ が pyxel stub で crash せず完走、state=splash、主要 scene / service / PlayerModel が attach 済み、town_scene / player dict が復活していないこと（6 tests + 16 subtests）
+- [ ] 主要 state 遷移 smoke：`splash` → `title` → `map` → `town_menu` → `shop` → `map` → `battle` → `map` → `menu` の各遷移で AttributeError / KeyError / TypeError が出ない（presenter 単位に分解して行う、Phase F 以降）
 
 ### Phase D：docs/product-requirements-platform.md（CJG12 系）
 
