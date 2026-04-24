@@ -33,13 +33,20 @@ class ShopScene:
         """ショップ画面に遷移する。kind は 'weapons' / 'armors' / 'items'。"""
         game = self.game
         import src.runtime.main_runtime as M
-        idx = game._current_town_index()
+        # 町情報は GameState.current_town から受け取る（framework-rule.md M4-3）。
+        # shop は town の内部状態（town_scene.model）を直接のぞき込まない。
+        if game.current_town is None:
+            # フォールバック: 町情報が未設定ならインデックス0の町扱い
+            idx = 0
+            game.last_town_pos = None
+        else:
+            idx = game.current_town.index
+            game.last_town_pos = game.current_town.pos
         shop = M.SHOPS[idx]
         self.model.kind = kind
         self.model.inventory = list(shop[kind])
         self.model.cursor = 0
         self.model.message = ""
-        game.last_town_pos = game.town_menu_pos
         game.state = "shop"
 
     def update(self) -> None:

@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from src.shared.services.player_state import create_initial_player
+from src.shared.state.player_model import PlayerModel
 
 
 def _default_player() -> dict[str, Any]:
@@ -18,11 +19,20 @@ def _default_player() -> dict[str, Any]:
     return {}
 
 
+@dataclass(frozen=True)
+class TownContext:
+    """町メニューから shop 等へ渡す町識別情報（framework-rule.md M4-3）。"""
+    index: int
+    pos: tuple[int, int]
+
+
 @dataclass
 class GameState:
-    """scene 跨ぎ共有 state（20 フィールド、P1-B inventory で確定）。"""
+    """scene 跨ぎ共有 state。"""
 
     # --- player ---
+    # PlayerModel 移行中。player_model が新しい正本、player dict は未移行 scene 向けの互換ビュー。
+    player_model: PlayerModel = field(default_factory=PlayerModel)
     player: dict[str, Any] = field(default_factory=_default_player)
 
     # --- progression flags ---
@@ -46,6 +56,9 @@ class GameState:
     world_return_y: int = 0
     last_town_pos: tuple[int, int] = (0, 0)
 
+    # --- current town context（shop→town 境界、framework-rule.md M4-3）---
+    current_town: TownContext | None = None
+
     # --- scene tracking ---
     state: str = ""
     prev_state: str = ""
@@ -57,7 +70,7 @@ class GameState:
     @classmethod
     def from_new_game(cls) -> "GameState":
         """ニューゲーム用の GameState（レベル1プレイヤー）を組み立てる。"""
-        return cls(player=create_initial_player())
+        return cls(player=create_initial_player(), player_model=PlayerModel.new_game())
 
     @property
     def in_dungeon(self) -> bool:

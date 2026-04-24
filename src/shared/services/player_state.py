@@ -1,22 +1,34 @@
 from __future__ import annotations
 
-"""Player state lifecycle helpers.
+"""PlayerModel 移行のための互換 shim（framework-rule.md M4-4 Level 2）。
 
-This module groups pure player-domain helpers that are reused across
-runtime, tests, and save compatibility checks:
-
-- level/stat formulas
-- initial player creation
-- save snapshot serialization/restoration
+新規コードは ``src.shared.state.player_model.PlayerModel`` を直接使うこと。
+このモジュールは Scene 内の段階的移行が完了するまで残し、完了後に削除する。
 """
 
 from typing import Any
 
+from src.shared.state.player_model import (
+    MAX_LEVEL,
+    SAVE_VERSION,
+    PlayerItem,
+    PlayerModel,
+    exp_for_level,
+    stats_for_level as _stats_for_level_defense,
+)
 
-MAX_LEVEL = 100
-SAVE_VERSION = 1
+__all__ = [
+    "MAX_LEVEL",
+    "SAVE_VERSION",
+    "SAVED_PLAYER_KEYS",
+    "exp_for_level",
+    "stats_for_level",
+    "create_initial_player",
+    "dump_snapshot",
+    "restore_snapshot",
+]
 
-# 明示リスト。新しいフィールドを保存対象にしたいときはここに追加する。
+
 SAVED_PLAYER_KEYS: tuple[str, ...] = (
     "x", "y",
     "hp", "max_hp", "mp", "max_mp",
@@ -37,66 +49,25 @@ SAVED_PLAYER_KEYS: tuple[str, ...] = (
 )
 
 
-def exp_for_level(lv: int) -> int:
-    """指定レベル到達に必要な累積経験値を返す。"""
-    if lv == 2:
-        return 26
-    return int(10 * lv * lv + 6 * lv)
-
-
 def stats_for_level(lv: int) -> dict[str, int]:
-    """指定レベルでのプレイヤー基礎ステータスを返す。"""
+    """旧 API 互換: `def` キーを使う dict を返す（PlayerModel 側は `defense`）。"""
+    s = _stats_for_level_defense(lv)
     return {
-        "max_hp": 30 + lv * 15,
-        "max_mp": 10 + lv * 6,
-        "atk": 5 + lv * 2,
-        "def": 3 + lv * 3,
-        "agi": 5 + lv * 2,
+        "max_hp": s["max_hp"],
+        "max_mp": s["max_mp"],
+        "atk": s["atk"],
+        "def": s["defense"],
+        "agi": s["agi"],
     }
 
 
 def create_initial_player(start_x: int = 25, start_y: int = 6) -> dict[str, Any]:
-    """ニューゲーム用のレベル1プレイヤー状態 dict を生成する。"""
-    base = stats_for_level(1)
-    return {
-        "x": start_x,
-        "y": start_y,
-        "hp": base["max_hp"],
-        "max_hp": base["max_hp"],
-        "mp": base["max_mp"],
-        "max_mp": base["max_mp"],
-        "atk": base["atk"],
-        "def": base["def"],
-        "agi": base["agi"],
-        "lv": 1,
-        "exp": 0,
-        "gold": 50,
-        "weapon": 0,
-        "armor": 0,
-        "items": [{"id": 0, "qty": 3}],
-        "spells": [],
-        "poisoned": False,
-        "in_dungeon": False,
-        "glitch_lord_defeated": False,
-        "max_zone_reached": 0,
-        "landmarkTreeSeen": False,
-        "landmarkTowerSeen": False,
-        "towerEpilogueSeen": False,
-        "treeAsked": False,
-        "towerNoiseCleared": False,
-        "professor_intro_seen": False,
-        "professor_defeated": False,
-        "professor_ending_seen": False,
-        "bgm_enabled": True,
-        "sfx_enabled": True,
-        "vfx_enabled": True,
-        "dialog_flags": {},
-        "town_talk_idx": [0, 0, 0],
-    }
+    """ニューゲーム用レベル1プレイヤー dict を返す（旧 API 互換）。"""
+    return player_model_to_dict(PlayerModel.new_game(start_x=start_x, start_y=start_y))
 
 
 def dump_snapshot(player: dict[str, Any], town_pos: tuple[int, int]) -> dict[str, Any]:
-    """プレイヤー状態と街座標から、SaveStore に渡せる保存用スナップショットを作る。"""
+    """player dict からセーブ dict を作る（旧 API 互換）。"""
     saved_player = {key: player[key] for key in SAVED_PLAYER_KEYS if key in player}
     return {
         "save_version": SAVE_VERSION,
@@ -106,7 +77,7 @@ def dump_snapshot(player: dict[str, Any], town_pos: tuple[int, int]) -> dict[str
 
 
 def restore_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
-    """SaveStore から読んだ旧形式も含む dict を、実行時が使える正規化形へ変換する。"""
+    """セーブ dict から player dict と town_pos を復元する（旧 API 互換）。"""
     raw_pos = snapshot["town_pos"]
     player = dict(snapshot["player"])
     if "glitch_lord_defeated" not in player and "boss_defeated" in player:
@@ -117,4 +88,38 @@ def restore_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
     return {
         "player": player,
         "town_pos": (int(raw_pos[0]), int(raw_pos[1])),
+    }
+
+
+def player_model_to_dict(pm: PlayerModel) -> dict[str, Any]:
+    """PlayerModel を旧互換 dict に変換する（Scene 内 player dict 参照の互換用）。
+
+    キー名は旧セーブ形式と同じ。`defense` は `def` として出力される。
+    """
+    return {
+        "x": pm.x, "y": pm.y,
+        "hp": pm.hp, "max_hp": pm.max_hp,
+        "mp": pm.mp, "max_mp": pm.max_mp,
+        "atk": pm.atk, "def": pm.defense, "agi": pm.agi,
+        "lv": pm.lv, "exp": pm.exp, "gold": pm.gold,
+        "weapon": pm.weapon, "armor": pm.armor,
+        "items": [{"id": it.id, "qty": it.qty} for it in pm.items],
+        "spells": list(pm.spells),
+        "poisoned": pm.poisoned,
+        "in_dungeon": pm.in_dungeon,
+        "glitch_lord_defeated": pm.glitch_lord_defeated,
+        "max_zone_reached": pm.max_zone_reached,
+        "landmarkTreeSeen": pm.landmarkTreeSeen,
+        "landmarkTowerSeen": pm.landmarkTowerSeen,
+        "towerEpilogueSeen": pm.towerEpilogueSeen,
+        "treeAsked": pm.treeAsked,
+        "towerNoiseCleared": pm.towerNoiseCleared,
+        "professor_intro_seen": pm.professor_intro_seen,
+        "professor_defeated": pm.professor_defeated,
+        "professor_ending_seen": pm.professor_ending_seen,
+        "bgm_enabled": pm.bgm_enabled,
+        "sfx_enabled": pm.sfx_enabled,
+        "vfx_enabled": pm.vfx_enabled,
+        "dialog_flags": dict(pm.dialog_flags),
+        "town_talk_idx": list(pm.town_talk_idx),
     }

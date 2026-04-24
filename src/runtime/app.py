@@ -23,8 +23,10 @@ from src.shared.services.input_bindings import (
     InputStateTracker,
 )
 from src.shared.services.message_display import MessageDisplay
+from src.shared.services.game_state import TownContext
 from src.shared.services.player_state import create_initial_player
 from src.shared.services.save_store import make_save_store
+from src.shared.state.player_model import PlayerModel
 from src.shared.services.text_format import TextFormat
 from src.shared.services.vfx import VfxSystem
 from src.shared.services.world_generation import generate_world_map
@@ -76,7 +78,10 @@ class Game:
         self.dungeon_map = None
         self.dungeon_rooms = None
 
+        # player は dict（未移行 scene 向け）と PlayerModel（新規コード向け）を並走。
+        # framework-rule.md M4-4 Level 2 に従い、PlayerModel を正本とする段階的移行。
         self.player = create_initial_player()
+        self.player_model = PlayerModel.new_game()
 
         self.state = "splash"
         self.prev_state = "map"
@@ -85,6 +90,9 @@ class Game:
         self.text_fmt = TextFormat(game=self)
 
         self.last_town_pos: tuple[int, int] | None = None
+        # 現在入場中の町の情報。町タイル入場時に explore が set し、退場時に town が clear する。
+        # framework-rule.md M4-3。GameState 完全統合後は game_state.current_town に移す。
+        self.current_town: TownContext | None = None
 
         # Save store (D1/D12/D17)
         save_path = Path(__file__).resolve().parent / "save.json"

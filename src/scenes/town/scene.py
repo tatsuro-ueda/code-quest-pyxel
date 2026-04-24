@@ -150,6 +150,7 @@ class TownScene:
         game.state = "map"
         game.explore_scene.model.a_cooldown = True
         self.model.menu_pos = None
+        game.current_town = None
 
     def draw(self) -> None:
         """town 状態（メッセージ表示中）は draw_menu 側から呼ばれる場合に備えて空。"""
