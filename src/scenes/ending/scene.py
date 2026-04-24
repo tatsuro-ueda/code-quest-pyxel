@@ -54,5 +54,5 @@ class EndingScene:
         for index, line in enumerate(self.model.lines[1:]):
             game.messages.text(20, 90 + index * 15, line, 7)
         game.messages.text(40, 180, "PRESS Z TO TITLE", 6)
-        p = game.player
-        game.messages.text(30, 200, f"レベル{p['lv']} Time:{pyxel.frame_count//30//60}m", 6)
+        p = game.player_model
+        game.messages.text(30, 200, f"レベル{p.lv} Time:{pyxel.frame_count//30//60}m", 6)

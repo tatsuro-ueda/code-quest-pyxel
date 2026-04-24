@@ -453,8 +453,8 @@ class BattleScene:
         p = game.player_model
         pyxel.rect(10, 100, 236, 40, 0)
         pyxel.rectb(10, 100, 236, 40, 7)
-        game.messages.text(16, 104, f"{game.text_fmt.t('プログラマー', 'PROGRAMMER')}  レベル{p['lv']}", 7)
-        game.messages.text(16, 116, f"HP {p['hp']}/{p['max_hp']}  MP {p['mp']}/{p['max_mp']}", 7)
+        game.messages.text(16, 104, f"{game.text_fmt.t('プログラマー', 'PROGRAMMER')}  レベル{p.lv}", 7)
+        game.messages.text(16, 116, f"HP {p.hp}/{p.max_hp}  MP {p.mp}/{p.max_mp}", 7)
         pyxel.rect(170, 116, 60, 6, 0)
         hp_r = p.hp / max(1, p.max_hp)
         pyxel.rect(170, 116, int(60 * hp_r), 6, 11 if hp_r > 0.3 else 8)

@@ -51,12 +51,12 @@ class ProfessorScene:
     def enter_intro(self) -> None:
         """Professor 会話イベントに入る。"""
         game = self.game
-        p = game.player
-        if p.get("professor_intro_seen"):
+        p = game.player_model
+        if p.professor_intro_seen:
             scene = "castle.professor.revisit_intro_01"
         else:
             scene = "castle.professor.intro_01"
-        p["professor_intro_seen"] = True
+        p.professor_intro_seen = True
         self.model.intro_lines = game.messages.dialog_lines(scene)
         self.model.intro_idx = 0
         self.model.choice_active = False
@@ -118,12 +118,12 @@ class ProfessorScene:
     def enter_ending_main(self) -> None:
         """Professor ending（撃破後）に入る。"""
         game = self.game
-        p = game.player
-        if p.get("professor_ending_seen"):
+        p = game.player_model
+        if p.professor_ending_seen:
             scene = "castle.professor.revisit_epilogue_01"
         else:
             scene = "castle.professor.epilogue_01"
-        p["professor_ending_seen"] = True
+        p.professor_ending_seen = True
         self.model.ending_lines = game.messages.dialog_lines(scene)
         self.model.ending_idx = 0
         game.state = "professor_ending_main"
