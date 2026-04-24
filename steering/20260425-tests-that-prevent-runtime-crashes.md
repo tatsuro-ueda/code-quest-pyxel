@@ -213,7 +213,7 @@ flowchart TD
 
 - [x] `test_cjg_status_bar_player_model.py`：`game.player` dict 参照が status_bar に残っていないこと。`StatusBar.draw()` が player_model 経由で落ちずに描画できること（4 tests）
 - [x] `test_cjg_shop_enter_regression.py`：`ShopScene.enter` が `M.SHOP_LIST[idx]` から読めていること。`M.SHOPS[idx]` に書き換えると KeyError を期待どおり吐くことも赤→緑で検証済み（4 tests + 5 subtests）
-- [ ] `test_cjg_town_entry_populates_current_town`：マップのタイル T_TOWN を踏むと `game.current_town = TownContext(index, pos)` がセットされ、shop から index / pos が読み出せること
+- [x] `test_cjg_town_entry_sets_current_town.py`：`_check_tile_events(T_TOWN, x, y)` が `game.current_town` を populate し、その直後の `ShopScene.enter` が index/pos を読めること。`TOWN_INDEX_BY_POS` に無い座標は index=0 にフォールバック（4 tests）
 - [x] `test_cjg_menu_item_use_service.py`：menu 経由のアイテム使用が `game.use_item` 非実在 shim ではなく `item_use.use_item` service を呼ぶこと。heal / mp_heal / cure_poison / warp の効果が PlayerModel 経由で適用されること（7 tests）
 
 ### Phase C：docs/customer-jobs.md Make3 起点の smoke
