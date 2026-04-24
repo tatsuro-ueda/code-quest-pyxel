@@ -1,9 +1,12 @@
 ---
-status: open
+status: ready-to-merge
 priority: normal
 scheduled: 2026-04-24T13:56:19+00:00
 dateCreated: 2026-04-24T13:56:19+00:00
-dateModified: 2026-04-24T14:30:00+00:00
+dateModified: 2026-04-24T15:45:00+00:00
+status_changelog:
+  - 2026-04-24 open（起票）
+  - 2026-04-25 ready-to-merge（PRD 書き換え完了）
 tags:
   - task
   - guardrails
@@ -14,8 +17,8 @@ tags:
 
 # 2026年4月24日 product-requirements-guardrails.md を現状と framework-rule.md に同期する
 
-> 状態：(3) Design（Gherkin・Design を 5 メタ構造に書き直し完了 2026-04-24）
-> 次のゲート：実装へ。town note の実装後に本 note の実装（PRD 書き換え）に着手する
+> 状態：(5) Result（実装完了 2026-04-25）
+> 次のゲート：ユーザー承認 → `done/` へ移動
 
 ---
 
@@ -448,6 +451,35 @@ flowchart LR
 **Act**：
 - `steering/20260424-guardrails-prd-framework-rule-sync.md` を `status: open` / `priority: normal` で起票
 - 次ゲート：Journey 修正・承認 →「Gherkin」へ
+
+### 2026年4月25日 00:45（実装完了）
+
+**Observe**：
+- `docs/product-requirements-guardrails.md` を書き換え（836 行 → 1023 行）
+- Gherkin シナリオ2 の検証コマンドをすべて実行し、以下を確認：
+  - (A) `main\.py.*Python 辞書で直書き` / `main\.py 内に多く残る` → 0 件
+  - (B) `main\.py` 表現 → 2 件のみ（Code Maker 教材版 entry の意図残し）
+  - (C) `^## CJG37` → 1 件（新「責務が曖昧で直すほど別の所が壊れる」）
+  - (D) `^## CJG44` → 1 件（新「リソース境界」）
+  - (E) 新 CJG37 配下の `### Rule M[1-5]:` → 5 件（M1〜M5 の親 Rule）
+  - (F) `framework-rule` 引用 → 19 件
+  - (G) 相対リンク参照 → `steering/20260424-town-framework-rule-align.md` を修正後に実在確認
+  - (H) CJG 番号孤児参照 → 0（CJG35, 36, 37, 38, 39, 40, 41, 44 すべて header 存在）
+  - G 表に G16〜G20 追加（M1〜M5 対応、すべて `未実装`）
+- 他 PRD からの CJG37 参照 → 0 件（波及なし）
+- `python -m pytest test/ -q` → 233 passed, 2 skipped
+
+**Think**：
+- 新 `CJG37` は framework-rule.md M1〜M5 を親 Rule として並べ、詳細は各 `M*-*` 子節へのリンクで二重管理を避ける構成にできた
+- 旧 `CJG37`（コンテンツ・演出）は新 `CJG44 = リソース境界` として独立番号で移設。customer-journeys.md の `CJ23` / `CJ24` の派生として紐付けた
+- 改造レイヤー分類表に `Layer 0 責務・構造 (CJG37)` を追加し、他レイヤー（CJG36, 38-44）の土台として配置
+- PlayerModel / GameState 圧縮の方針は PRD 内に宣言のみ（実装詳細は town note に任せる）
+- 「現状と目標状態」表を J53 完了後の姿に更新（runtime 分離、shared/services 抽出、PlayerModel 導入済み、town/ 分解済み）
+
+**Act**：
+- `docs/product-requirements-guardrails.md` を単一 commit で差し替え予定
+- ブランチ `refactor/town-framework-rule-align` に continuous commit（town note と同じブランチに混載）
+- 次ゲート：ユーザー確認 → `done/` 移動
 
 ### 2026年4月24日 23:25（メタ 5 構造への転換）
 
