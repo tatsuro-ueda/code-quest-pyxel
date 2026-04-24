@@ -35,15 +35,15 @@ tags:
 flowchart LR
     subgraph BEFORE[Before 現状]
         direction TB
-        B1[😊 pytest を叩いて 233 passed 2 skipped を見る<br>ターミナル]
-        B1 --> B2[😓 実機で遊ぶと ステータスバー 武器購入 アイテム使用 で落ちる<br>ブラウザのゲーム画面]
-        B2 --> B_END[❌ 子どもが次の周回を回せずフィードバックループが止まる<br>親子の会話]
+        B1[❌ （子ども）遊ぶと落ちる<br>（ブラウザのゲーム画面）]
+        B1 --> B2[❌ ゲームがストップ<br>（ブラウザのゲーム画面）]
+        B2 --> B_END[❌ 要望もストップ<br>（心の中）
+        子どもが次の周回を回せずフィードバックループが止まる<br>親子の会話]
     end
     subgraph AFTER[After 達成状態]
         direction TB
-        A1[😊 pytest を叩いて全 green を見る<br>ターミナル]
-        A1 --> A2[😌 実機で 町 戦闘 メニュー セーブ ロードを一通り通せる<br>ブラウザのゲーム画面]
-        A2 --> A_END[😄 子どもが次の変更を遊んで親にフィードバックを返せる<br>親子の会話]
+        A2[✅ （子ども）遊んで落ちない<br>（ブラウザのゲーム画面）]
+        A2 --> A_END[❤️ 要望が生まれる子どもが次の変更を遊んで親にフィードバックを返せる<br>親子の会話]
     end
     BEFORE ~~~ AFTER
     classDef oldStyle fill:#f8d7da,stroke:#721c24,color:#000000;
@@ -206,15 +206,15 @@ flowchart TD
 
 ### Phase A：足場
 
-- [ ] ヘッドレス scene ハーネスを `test/_harness/scene_harness.py` として新設する（Pyxel 依存をスタブし、`InputStateTracker` を fake にできる最小セット）
-- [ ] ハーネスを使う smoke テスト 1 本を書いて pytest に組み込む（ハーネス自体の green 保証）
+- [x] `test/conftest.py` でグローバル pyxel stub を仕込む（pyxel init 不要で全テストが走るようになる / test 実行時間 45s → 3.9s）
+- [ ] ヘッドレス scene ハーネスは必要になった段階で個別抽出（現状は各テストファイルに `_FakeGame` を持たせれば足りる）
 
 ### Phase B：実機バグ 3 件の regression
 
-- [ ] `test_status_bar_draws_without_game_player_attr`：`game.player` が存在しなくても `StatusBar.draw()` が落ちないこと（`game.player_model` 経由で値を読む）
-- [ ] `test_shop_enter_reads_shop_list_not_shops`：`ShopScene.enter('weapons')` が `SHOP_LIST[idx]` から読めていること。`SHOPS[0]` で KeyError を踏まない
-- [ ] `test_town_entry_populates_current_town`：マップのタイル T_TOWN を踏むと `game.current_town = TownContext(index, pos)` がセットされ、shop から index / pos が読み出せること
-- [ ] `test_menu_item_use_goes_through_item_use_service`：menu 経由のアイテム使用が `game.use_item` 非実在 shim ではなく `item_use.use_item` service を呼ぶこと
+- [x] `test_cjg_status_bar_player_model.py`：`game.player` dict 参照が status_bar に残っていないこと。`StatusBar.draw()` が player_model 経由で落ちずに描画できること（4 tests）
+- [x] `test_cjg_shop_enter_regression.py`：`ShopScene.enter` が `M.SHOP_LIST[idx]` から読めていること。`M.SHOPS[idx]` に書き換えると KeyError を期待どおり吐くことも赤→緑で検証済み（4 tests + 5 subtests）
+- [ ] `test_cjg_town_entry_populates_current_town`：マップのタイル T_TOWN を踏むと `game.current_town = TownContext(index, pos)` がセットされ、shop から index / pos が読み出せること
+- [x] `test_cjg_menu_item_use_service.py`：menu 経由のアイテム使用が `game.use_item` 非実在 shim ではなく `item_use.use_item` service を呼ぶこと。heal / mp_heal / cure_poison / warp の効果が PlayerModel 経由で適用されること（7 tests）
 
 ### Phase C：docs/customer-jobs.md Make3 起点の smoke
 
