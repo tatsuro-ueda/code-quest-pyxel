@@ -1,24 +1,26 @@
 ---
-status: ready-to-merge
+status: done
 priority: normal
 scheduled: 2026-04-24T13:56:19+00:00
 dateCreated: 2026-04-24T13:56:19+00:00
-dateModified: 2026-04-24T15:45:00+00:00
+dateModified: 2026-04-24T16:40:00+00:00
 status_changelog:
   - 2026-04-24 open（起票）
   - 2026-04-25 ready-to-merge（PRD 書き換え完了）
+  - 2026-04-25 done（commit c40ddc6 で merge 済みを確認・クローズ）
 tags:
   - task
   - guardrails
   - prd
   - framework-rule
   - docs
+  - archived
 ---
 
 # 2026年4月24日 product-requirements-guardrails.md を現状と framework-rule.md に同期する
 
-> 状態：(5) Result（実装完了 2026-04-25）
-> 次のゲート：ユーザー承認 → `done/` へ移動
+> 状態：(6) Discussion / done（2026-04-25 完了）
+> 完了内容：PRD を M1〜M5 の 5 メタ構造で書き換え、framework-rule.md 付録の適用メモも追加済み
 
 ---
 
@@ -505,3 +507,18 @@ flowchart LR
 - Tasklist を更新。framework-rule.md 書き換えは実施済みとしてチェック
 
 **次ゲート**：town note の Design に進むか、あるいは town note 側の framework-rule.md 章番号参照を先に M 番号に更新するか判断する
+
+### 2026年4月25日 01:40（クローズ）
+
+**Observe**：
+- `docs/product-requirements-guardrails.md` 書き換え：commit `c40ddc6 docs(guardrails): rewrite PRD to align with framework-rule.md M1-M5 and current repo layout`
+- `docs/framework-rule.md` 付録追記：commit `7b95b52 docs: framework-rule に本プロジェクト適用メモ（付録）を追記`
+- いずれも main 系列にマージ済み（現ブランチから `git log` で到達可能）
+
+**Think**：
+- 本 note のスコープは「文書更新のみ」だったため、Gherkin シナリオ1〜2 は PRD/framework-rule.md 内の物理的構造を対象とする。両 commit でその条件は満たされている
+- 新規ガードレール仕様の実装（hook / lint / test 追加）はスコープ外で、別 note で起票する前提だったため、未実装分は本 note の「完了しない対象」で合意済み
+
+**Act**：
+- status: ready-to-merge → done、tags に archived 追加
+- `steering/done/` へ移動

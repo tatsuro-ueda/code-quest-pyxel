@@ -1,20 +1,24 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-04-24T13:33:30+00:00
 dateCreated: 2026-04-24T13:33:30+00:00
-dateModified: 2026-04-24T14:40:00+00:00
+dateModified: 2026-04-24T16:39:00+00:00
+status_changelog:
+  - 2026-04-24 open（起票）
+  - 2026-04-25 done（scene.py 完全削除・dispatcher Presenter/View 直呼び）
 tags:
   - task
   - town
   - framework-rule
   - refactor
+  - archived
 ---
 
 # 2026年4月24日 town/ を framework-rule.md に沿って整える
 
-> 状態：(4) Tasklist 実行へ（Design 書き下し完了 2026-04-24 / ユーザーは風呂中のため自律で実装に入る）
-> 次のゲート：ステップ1-10 を順に実装し、風呂から戻ったユーザーに結果報告
+> 状態：(6) Discussion / done（2026-04-25 完了）
+> 完了内容：PlayerModel 新設・player dict 全廃・town/ 5 ファイル分解・scene.py 完全削除・dispatcher を Presenter/View 直呼びに
 
 ---
 
@@ -487,3 +491,24 @@ flowchart TD
 **Act**：
 - 状態を (3) Design に更新。Design の具体起草は、先に `steering/20260424-guardrails-prd-framework-rule-sync.md` を起票してから本 note に戻る
 - 次ゲート：別 note 起票 → 本 note の Design へ
+
+### 2026年4月25日 01:39（scene.py 完全削除・クローズ）
+
+**Observe**：
+- `src/scenes/town/scene.py`（47 行の薄い配線）を削除。`src/runtime/app.py` の dispatcher を `town_presenter.update_message()` / `update_menu()` / `town_view.render_menu(build_menu_view_model())` 直呼びに書き換え
+- `src/scenes/explore/scene.py` の `game.town_scene.model.menu_pos` / `menu_cursor` 参照を `game.town_model` 経由に変更（M4-1: 他 scene の `.scene.model` 経由をなくす）
+- `src/runtime/main_runtime.py` / `tools/codemaker_manifest.txt` から `town/scene.py` 参照を除去
+- `src/scenes/shop/scene.py` の historical コメント `(town_scene.model)` を `(town_model)` に更新
+- 全 233 テスト + 2 skipped で green（`python -m pytest test/ -q`）
+
+**Think**：
+- Gherkin シナリオ1 (d)「Game dispatcher は TownPresenter/TownView を直接呼ぶ」達成
+- Gherkin シナリオ2 (G)「`find src/scenes/town -name scene.py` → 0 件」「`grep -nE 'town_scene\\.(update|update_menu|draw|draw_menu)' src/runtime/app.py` → 0 件」達成
+- シナリオ2 (E)「player dict 禁止」は shim の `player_state.py` が既存テスト互換のため残存。全面移行は別 note 対象
+- ブラウザ手動確認は本 note では未実施（次の note で実機検証する）
+- 他 scene（battle / explore / menu / professor / title / ending / shop / settings / ai_help / splash）は依然として scene.py に Pyxel API / ゲームルール / 副作用が同居。battle/scene.py が 518 行、explore/scene.py が 395 行。これらは別 note で順次分解する
+
+**Act**：
+- commit `8a6c78c`: `refactor(town): delete scene.py and dispatch Presenter/View directly`
+- status: open → done、tags に archived 追加
+- 次タスク：他 scene の framework-rule 適合（scope 大きく、scene 単位で note を切る想定）・SQLite ログ事後 note 起票・guardrails note の done 化
