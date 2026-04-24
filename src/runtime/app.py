@@ -24,7 +24,6 @@ from src.shared.services.input_bindings import (
 )
 from src.shared.services.message_display import MessageDisplay
 from src.shared.services.game_state import TownContext
-from src.shared.services.player_state import create_initial_player
 from src.shared.services.save_store import make_save_store
 from src.shared.state.player_model import PlayerModel
 from src.shared.services.text_format import TextFormat
@@ -78,9 +77,7 @@ class Game:
         self.dungeon_map = None
         self.dungeon_rooms = None
 
-        # player は dict（未移行 scene 向け）と PlayerModel（新規コード向け）を並走。
-        # framework-rule.md M4-4 Level 2 に従い、PlayerModel を正本とする段階的移行。
-        self.player = create_initial_player()
+        # PlayerModel が player 状態の唯一の正本（framework-rule.md M4-1 / M4-4）。
         self.player_model = PlayerModel.new_game()
 
         self.state = "splash"

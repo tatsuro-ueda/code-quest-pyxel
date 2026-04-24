@@ -14,7 +14,7 @@ from src.shared.services.input_bindings import (
     CONFIRM_BUTTONS,
     TITLE_START_BUTTONS,
 )
-from src.shared.services.player_state import create_initial_player, restore_snapshot
+from src.shared.state.player_model import PlayerModel
 
 
 LOAD_OK_MSG = "きろくをよみかえした。りかいがもどってくる。"
@@ -55,14 +55,13 @@ class TitleScene:
         if game.input_state.btnp(CONFIRM_BUTTONS) or game.input_state.btnp(TITLE_START_BUTTONS):
             game.sfx.play("select")
             if self.model.cursor == 0:
-                # はじめから: プレイヤー状態をクリーンに作り直す
-                settings = {
-                    "bgm_enabled": game.player.get("bgm_enabled", True),
-                    "sfx_enabled": game.player.get("sfx_enabled", True),
-                    "vfx_enabled": game.player.get("vfx_enabled", True),
-                }
-                game.player = create_initial_player()
-                game.player.update(settings)
+                # はじめから: プレイヤー状態をクリーンに作り直す（AV設定は引き継ぐ）
+                prev = game.player_model
+                fresh = PlayerModel.new_game()
+                fresh.bgm_enabled = prev.bgm_enabled
+                fresh.sfx_enabled = prev.sfx_enabled
+                fresh.vfx_enabled = prev.vfx_enabled
+                game.player_model = fresh
                 game.settings_scene.apply_av()
                 game.state = "map"
                 return
@@ -119,14 +118,12 @@ class TitleScene:
             game.prev_state = "title"
             game.state = "message"
             return
-        restored = restore_snapshot(snap)
-        for key, value in restored["player"].items():
-            game.player[key] = value
+        restored_player, (tx, ty) = PlayerModel.from_snapshot(snap)
+        game.player_model = restored_player
         game.settings_scene.apply_av()
-        tx, ty = restored["town_pos"]
-        game.player["x"] = tx
-        game.player["y"] = ty
-        game.player["in_dungeon"] = False
+        game.player_model.x = tx
+        game.player_model.y = ty
+        game.player_model.in_dungeon = False
         game.dungeon_map = None
         # ロード直後の暴発を防ぐため A クールダウンを立てる
         game.explore_scene.model.a_cooldown = True

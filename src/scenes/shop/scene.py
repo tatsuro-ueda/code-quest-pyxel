@@ -87,29 +87,24 @@ class ShopScene:
         else:
             entry = M.ITEMS[idx]
         price = entry.get("price", 0)
-        if kind == "weapons" and game.player["weapon"] == idx:
+        pm = game.player_model
+        if kind == "weapons" and pm.weapon == idx:
             self.model.message = "すでに もっています"
             return
-        if kind == "armors" and game.player["armor"] == idx:
+        if kind == "armors" and pm.armor == idx:
             self.model.message = "すでに もっています"
             return
-        if game.player["gold"] < price:
+        if not pm.can_afford(price):
             self.model.message = "コインが たりません"
             return
-        game.player["gold"] -= price
         if kind == "weapons":
-            game.player["weapon"] = idx
+            pm.buy_weapon(idx, price)
             self.model.message = entry.get("buy_msg") or f"{entry['name']}を てにいれた！"
         elif kind == "armors":
-            game.player["armor"] = idx
+            pm.buy_armor(idx, price)
             self.model.message = entry.get("buy_msg") or f"{entry['name']}を てにいれた！"
         else:
-            for inv in game.player["items"]:
-                if inv["id"] == idx:
-                    inv["qty"] += 1
-                    break
-            else:
-                game.player["items"].append({"id": idx, "qty": 1})
+            pm.buy_item(idx, price)
             self.model.message = f"{entry['name']}を てにいれた！"
 
     def draw(self) -> None:
@@ -126,7 +121,7 @@ class ShopScene:
             title_map = {"weapons": "WEAPONS", "armors": "ARMOR", "items": "ITEMS"}
             title = title_map.get(self.model.kind, "SHOP")
         game.messages.text(8, 6, title, 7)
-        game.messages.text(160, 6, f"G:{game.player['gold']}", 10)
+        game.messages.text(160, 6, f"G:{game.player_model.gold}", 10)
         if not self.model.inventory:
             game.messages.text(8, 40, game.text_fmt.t("(ざいこなし)", "(no stock)"), 6)
             return
@@ -135,11 +130,11 @@ class ShopScene:
             if self.model.kind == "weapons":
                 e = M.WEAPONS[idx]
                 line = f"{game.text_fmt.name(e['name'])}  こうげき+{e['atk']}  {e['price']}G"
-                owned = game.player["weapon"] == idx
+                owned = game.player_model.weapon == idx
             elif self.model.kind == "armors":
                 e = M.ARMORS[idx]
                 line = f"{game.text_fmt.name(e['name'])}  ぼうぎょ+{e['def']}  {e['price']}G"
-                owned = game.player["armor"] == idx
+                owned = game.player_model.armor == idx
             else:
                 e = M.ITEMS[idx]
                 line = f"{game.text_fmt.name(e['name'])}  {e['price']}G"

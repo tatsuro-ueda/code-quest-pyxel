@@ -21,6 +21,17 @@ def load_main_module():
     return module
 
 
+def _pm_from_dict(d):
+    from src.shared.state.player_model import PlayerModel, PlayerItem
+    pm = PlayerModel()
+    for k, v in d.items():
+        attr = "defense" if k == "def" else k
+        if attr == "items":
+            v = [PlayerItem(id=i["id"], qty=i["qty"]) for i in v]
+        setattr(pm, attr, v)
+    return pm
+
+
 class DialoguePagingTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -122,14 +133,14 @@ class DialoguePagingTest(unittest.TestCase):
 
     def test_update_ending_returns_post_boss_clear_to_map(self):
         game = self.make_game()
-        game.player = {
+        game.player_model = _pm_from_dict({
             "glitch_lord_defeated": True,
             "professor_intro_seen": False,
             "professor_defeated": False,
             "in_dungeon": True,
             "x": 40,
             "y": 32,
-        }
+        })
         game.explore_scene.model.a_cooldown = False
         game.input_state.btnp = lambda buttons: buttons == self.main.CONFIRM_BUTTONS
         game.state = "ending"
@@ -137,8 +148,8 @@ class DialoguePagingTest(unittest.TestCase):
         game.ending_scene.update()
 
         self.assertEqual(game.state, "map")
-        self.assertFalse(game.player["in_dungeon"])
-        self.assertEqual((game.player["x"], game.player["y"]), (40, 32))
+        self.assertFalse(game.player_model.in_dungeon)
+        self.assertEqual((game.player_model.x, game.player_model.y), (40, 32))
         self.assertTrue(game.explore_scene.model.a_cooldown)
 
 

@@ -14,7 +14,6 @@ from src.shared.services.input_bindings import (
     CONFIRM_BUTTONS,
     CANCEL_BUTTONS,
 )
-from src.shared.services.player_state import dump_snapshot
 from src.shared.services.save_store import SaveStoreError, LocalStorageSaveStore
 
 
@@ -108,31 +107,24 @@ class TownScene:
             self._enter_message(["……ここには はなせるひとが いない。"])
             return
         npc_lines = M.TOWN_NPC_LINES[idx]
-        talk_idx = game.player.get("town_talk_idx", [0, 0, 0])
-        line = npc_lines[talk_idx[idx] % len(npc_lines)]
-        talk_idx[idx] = (talk_idx[idx] + 1) % len(npc_lines)
-        game.player["town_talk_idx"] = talk_idx
-        self._enter_message([line])
+        current = game.player_model.advance_npc_talk_idx(idx, len(npc_lines))
+        self._enter_message([npc_lines[current]])
 
     def _inn(self) -> None:
         """宿屋泊まり。"""
         game = self.game
         import src.runtime.main_runtime as M
         cost = self._inn_cost()
-        if game.player["gold"] < cost:
+        if not game.player_model.stay_at_inn(cost):
             self._enter_message([M.INN_LACK_MSG])
             return
-        game.player["gold"] -= cost
-        game.player["hp"] = game.player["max_hp"]
-        game.player["mp"] = game.player["max_mp"]
-        game.player["poisoned"] = False
         self._enter_message([M.INN_OK_MSG])
 
     def _save(self) -> None:
         """セーブ実行。"""
         game = self.game
         import src.runtime.main_runtime as M
-        snap = dump_snapshot(game.player, town_pos=self.model.menu_pos)
+        snap = game.player_model.to_snapshot(town_pos=self.model.menu_pos)
         try:
             game.save_store.save(snap)
         except SaveStoreError:
@@ -176,5 +168,5 @@ class TownScene:
             color = 10 if i == self.model.menu_cursor else 7
             marker = ">" if i == self.model.menu_cursor else " "
             game.messages.text(x + 16, ly, f"{marker} {label}", color)
-        gold = game.player["gold"]
+        gold = game.player_model.gold
         game.messages.text(x + 8, y + h - 16, f"GOLD: {gold}", 6)

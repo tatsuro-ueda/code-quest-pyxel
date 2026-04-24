@@ -31,9 +31,9 @@ class ProfessorScene:
     def phase(self) -> str:
         """プレイヤーの進行度に応じた Professor phase（early/mid/late）。"""
         game = self.game
-        if game.player["glitch_lord_defeated"]:
+        if game.player_model.glitch_lord_defeated:
             return "late"
-        max_zone = game.player["max_zone_reached"]
+        max_zone = game.player_model.max_zone_reached
         if max_zone >= 3:
             return "late"
         if max_zone >= 1:

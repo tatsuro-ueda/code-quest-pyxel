@@ -19,7 +19,7 @@ class VfxSystem:
     def start(self, vfx_type):
         """指定タイプの VFX を発動する（プレイヤー設定で無効なら何もしない）。"""
         game = self.game
-        if not game.player.get("vfx_enabled", True):
+        if not game.player_model.vfx_enabled:
             return
         import src.runtime.main_runtime as M
         cfg = M.VFX_FLASH.get(vfx_type)
@@ -30,7 +30,7 @@ class VfxSystem:
     def draw_overlay(self):
         """アクティブな VFX の点滅オーバーレイを描画する。"""
         game = self.game
-        if not game.player.get("vfx_enabled", True):
+        if not game.player_model.vfx_enabled:
             return
         if self.timer <= 0:
             return

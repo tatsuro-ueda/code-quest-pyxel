@@ -21,6 +21,17 @@ def load_main_module():
     return module
 
 
+def _pm_from_dict(d):
+    from src.shared.state.player_model import PlayerModel, PlayerItem
+    pm = PlayerModel()
+    for k, v in d.items():
+        attr = "defense" if k == "def" else k
+        if attr == "items":
+            v = [PlayerItem(id=i["id"], qty=i["qty"]) for i in v]
+        setattr(pm, attr, v)
+    return pm
+
+
 class BattleRunLogicTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -35,12 +46,12 @@ class BattleRunLogicTest(unittest.TestCase):
         game.vfx = VfxSystem(game=game)
         game.input_state = InputStateTracker()
         game.debug_mode = False
-        game.player = {
+        game.player_model = _pm_from_dict({
             "hp": 20,
             "max_hp": 20,
             "def": 2,
             "armor": 0,
-        }
+        })
         game.sfx = MagicMock()
         game._start_vfx = MagicMock()
         game.messages = MessageDisplay(game=game)

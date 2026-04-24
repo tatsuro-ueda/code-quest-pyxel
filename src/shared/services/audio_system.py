@@ -331,13 +331,13 @@ def sync_audio(game):
         state_for_audio = "title"
     scene_name = choose_bgm_scene(
         state=state_for_audio,
-        in_dungeon=game.player["in_dungeon"],
-        zone=M.get_zone(game.player["y"], game.player["in_dungeon"]),
+        in_dungeon=game.player_model.in_dungeon,
+        zone=M.get_zone(game.player_model.y, game.player_model.in_dungeon),
         battle_is_glitch_lord=bm.is_glitch_lord,
         battle_enemy_hp=bm.enemy_hp,
         battle_enemy_max_hp=battle_enemy_max_hp,
         battle_phase=bm.phase,
     )
-    game.audio.set_enabled(game.player.get("bgm_enabled", True))
+    game.audio.set_enabled(game.player_model.bgm_enabled)
     game.audio.play_scene(scene_name)
 

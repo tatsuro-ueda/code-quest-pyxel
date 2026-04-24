@@ -75,7 +75,7 @@ class BattleScene:
     def on_noise_guardian_defeated(self):
         """ノイズガーディアン撃破後の処理。"""
         game = self.game
-        game.player["towerNoiseCleared"] = True
+        game.player_model.towerNoiseCleared = True
         self.model.noise_guardian = False
         game.messages.enter(game.messages.dialog_lines("landmark.tower.epilogue"))
 
@@ -120,7 +120,7 @@ class BattleScene:
                 if m.menu == 0:  # Attack
                     self.do_player_attack()
                 elif m.menu == 1:  # じゅもん
-                    if game.player["spells"]:
+                    if game.player_model.spells:
                         m.phase = "spell_select"
                         m.spell_select = 0
                     else:
@@ -144,7 +144,7 @@ class BattleScene:
                         m.text_timer = 30
 
         elif m.phase == "spell_select":
-            spells = game.player["spells"]
+            spells = game.player_model.spells
             if not spells:
                 m.phase = "menu"
                 return
@@ -164,10 +164,10 @@ class BattleScene:
                 if spell is None:
                     m.phase = "menu"
                     return
-                if game.player["mp"] < spell["mp"]:
+                if game.player_model.mp < spell["mp"]:
                     m.text = "MPが たりない！"
                     return
-                game.player["mp"] -= spell["mp"]
+                game.player_model.mp -= spell["mp"]
                 game.sfx.play("magic")
                 game.vfx.start("flash_white")
                 m.text = self.apply_spell_effect(spell)
@@ -175,7 +175,7 @@ class BattleScene:
                 m.text_timer = 30
 
         elif m.phase == "item_select":
-            items = game.player["items"]
+            items = game.player_model.items
             if not items:
                 m.phase = "menu"
                 return
@@ -191,7 +191,7 @@ class BattleScene:
             if game.input_state.btnp(CONFIRM_BUTTONS):
                 game.sfx.play("select")
                 item = items[m.item_select]
-                item_data = ITEMS[item["id"]]
+                item_data = ITEMS[item.id]
                 if item_data["type"] == "warp":
                     m.text = "せんとうちゅうはつかえない…"
                     m.phase = "enemy_attack"
@@ -204,8 +204,8 @@ class BattleScene:
                         m.text_timer = 30
                     else:
                         m.text = msg
-                        item["qty"] -= 1
-                        if item["qty"] <= 0:
+                        item.qty -= 1
+                        if item.qty <= 0:
                             items.pop(m.item_select)
                         m.phase = "enemy_attack"
                         m.text_timer = 30
@@ -225,7 +225,7 @@ class BattleScene:
                 m.text_timer = 12
             m.text_timer -= 1
             if m.text_timer <= 0:
-                if game.player["hp"] <= 0:
+                if game.player_model.hp <= 0:
                     self.defeat()
                 else:
                     m.phase = "menu"
@@ -236,19 +236,19 @@ class BattleScene:
             m.text_timer -= 1
             if m.text_timer <= 0:
                 if game.input_state.btn(CONFIRM_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS) or m.text_timer < -30:
-                    if game.player["hp"] <= 0:
-                        game.player["gold"] = game.player["gold"] // 2
-                        game.player["hp"] = game.player["max_hp"]
-                        game.player["x"], game.player["y"] = M.CASTLE_POS
-                        game.player["in_dungeon"] = False
+                    if game.player_model.hp <= 0:
+                        game.player_model.gold = game.player_model.gold // 2
+                        game.player_model.hp = game.player_model.max_hp
+                        game.player_model.x, game.player_model.y = M.CASTLE_POS
+                        game.player_model.in_dungeon = False
                         game.state = "map"
                     elif m.is_professor and m.enemy_hp <= 0:
-                        game.player["professor_defeated"] = True
+                        game.player_model.professor_defeated = True
                         game.professor_scene.enter_ending_main()
                     else:
                         if m.is_glitch_lord and m.enemy_hp <= 0:
                             game.sfx.play("boss_defeat")
-                            game.player["glitch_lord_defeated"] = True
+                            game.player_model.glitch_lord_defeated = True
                         if m.noise_guardian and m.enemy_hp <= 0:
                             self.on_noise_guardian_defeated()
                             return
@@ -259,10 +259,10 @@ class BattleScene:
         game = self.game
         import src.runtime.main_runtime as M
         m = self.model
-        p = game.player
+        p = game.player_model
         e = m.enemy
-        weapon_atk = WEAPONS[p["weapon"]]["atk"] if p["weapon"] < len(WEAPONS) else 0
-        atk = p["atk"] + weapon_atk
+        weapon_atk = WEAPONS[p.weapon]["atk"] if p.weapon < len(WEAPONS) else 0
+        atk = p.atk + weapon_atk
         dmg = max(1, atk - e["def"] // 2 + random.randint(-2, 2))
         if game.debug_mode:
             dmg = 9999
@@ -315,23 +315,23 @@ class BattleScene:
         """敵の反撃処理。"""
         game = self.game
         m = self.model
-        p = game.player
+        p = game.player_model
         e = m.enemy
-        armor_def = ARMORS[p["armor"]]["def"] if p["armor"] < len(ARMORS) else 0
-        total_def = p["def"] + armor_def
+        armor_def = ARMORS[p.armor]["def"] if p.armor < len(ARMORS) else 0
+        total_def = p.defense + armor_def
         dmg = max(1, e["atk"] - total_def // 2 + random.randint(-2, 2))
         if game.debug_mode:
             dmg = 0
         game.sfx.play("hit")
         game.vfx.start("flash_red")
-        p["hp"] = max(0, p["hp"] - dmg)
+        p.hp = max(0, p.hp - dmg)
         m.text = game.messages.dialog_text(
             self.enemy_hit_scene_name(),
             enemy=e["name"],
             dmg=dmg,
         )
-        if e.get("can_poison") and not p.get("poisoned") and random.random() < 0.25:
-            p["poisoned"] = True
+        if e.get("can_poison") and not p.poisoned and random.random() < 0.25:
+            p.poisoned = True
             game.sfx.play("poison")
             m.text += " バグに汚染された！"
         m.phase = "enemy_attack"
@@ -349,8 +349,8 @@ class BattleScene:
             return
         game.sfx.play("victory")
         exp = e["exp"]; gold = e["gold"]
-        game.player["exp"] += exp
-        game.player["gold"] += gold
+        game.player_model.exp += exp
+        game.player_model.gold += gold
         m.text = game.messages.dialog_text(
             self.victory_scene_name(),
             enemy=e["name"],
@@ -374,28 +374,28 @@ class BattleScene:
         """経験値を元にレベルアップと呪文習得を行う。"""
         game = self.game
         import src.runtime.main_runtime as M
-        p = game.player
-        while p["lv"] < MAX_LEVEL and p["exp"] >= exp_for_level(p["lv"] + 1):
+        p = game.player_model
+        while p.lv < MAX_LEVEL and p.exp >= exp_for_level(p.lv + 1):
             game.sfx.play("levelup")
-            p["lv"] += 1
-            s = stats_for_level(p["lv"])
-            p["max_hp"] = s["max_hp"]; p["hp"] = p["max_hp"]
-            p["max_mp"] = s["max_mp"]; p["mp"] = p["max_mp"]
-            p["atk"] = s["atk"]
-            p["def"] = s["def"]
-            p["agi"] = s["agi"]
+            p.lv += 1
+            s = stats_for_level(p.lv)
+            p.max_hp = s["max_hp"]; p.hp = p.max_hp
+            p.max_mp = s["max_mp"]; p.mp = p.max_mp
+            p.atk = s["atk"]
+            p.defense = s["def"]
+            p.agi = s["agi"]
             for spell in M.SPELLS:
-                if spell["learn_lv"] == p["lv"] and spell["name"] not in p["spells"]:
-                    p["spells"].append(spell["name"])
+                if spell["learn_lv"] == p.lv and spell["name"] not in p.spells:
+                    p.spells.append(spell["name"])
 
     def apply_spell_effect(self, spell) -> str:
         """呪文効果を適用する（MP消費は呼び出し側）。"""
         game = self.game
         m = self.model
-        p = game.player
+        p = game.player_model
         if spell["type"] == "heal":
             heal = spell["power"]
-            p["hp"] = min(p["max_hp"], p["hp"] + heal)
+            p.hp = min(p.max_hp, p.hp + heal)
             return f'{spell["name"]}を となえた。HPが{heal}回復した！'
         damage = max(1, spell["power"])
         m.enemy_hp = max(0, m.enemy_hp - damage)
@@ -417,7 +417,7 @@ class BattleScene:
         m = self.model
         if m.is_glitch_lord:
             return "boss.glitch.defeat"
-        zone = M.get_zone(game.player["y"], game.player["in_dungeon"])
+        zone = M.get_zone(game.player_model.y, game.player_model.in_dungeon)
         return M.VICTORY_SCENES_BY_ZONE.get(zone, "battle.normal.victory.early")
 
     def draw(self) -> dict | None:
@@ -450,13 +450,13 @@ class BattleScene:
         pyxel.rect(bar_x, 85, int(bar_w * hp_ratio), 8, 8)
         game.messages.text(bar_x + 2, 86, f"HP {m.enemy_hp}/{e['hp']}", 7)
 
-        p = game.player
+        p = game.player_model
         pyxel.rect(10, 100, 236, 40, 0)
         pyxel.rectb(10, 100, 236, 40, 7)
         game.messages.text(16, 104, f"{game.text_fmt.t('プログラマー', 'PROGRAMMER')}  レベル{p['lv']}", 7)
         game.messages.text(16, 116, f"HP {p['hp']}/{p['max_hp']}  MP {p['mp']}/{p['max_mp']}", 7)
         pyxel.rect(170, 116, 60, 6, 0)
-        hp_r = p["hp"] / max(1, p["max_hp"])
+        hp_r = p.hp / max(1, p.max_hp)
         pyxel.rect(170, 116, int(60 * hp_r), 6, 11 if hp_r > 0.3 else 8)
 
         if m.text:
@@ -481,7 +481,7 @@ class BattleScene:
                     game.messages.text(cx - 12, cy, ">", 10)
 
         elif m.phase == "spell_select":
-            spells = game.player["spells"]
+            spells = game.player_model.spells
             pyxel.rect(10, 190, 236, 56, 0)
             pyxel.rectb(10, 190, 236, 56, 7)
             if not spells:
@@ -498,7 +498,7 @@ class BattleScene:
                         game.messages.text(18, cy, ">", 10)
 
         elif m.phase == "item_select":
-            items = game.player["items"]
+            items = game.player_model.items
             pyxel.rect(10, 190, 236, 56, 0)
             pyxel.rectb(10, 190, 236, 56, 7)
             if m.text:
@@ -507,7 +507,7 @@ class BattleScene:
                 game.messages.text(16, 200, game.text_fmt.t("アイテムがない", "No items"), 6)
             else:
                 for i, item in enumerate(items[:4]):
-                    idata = ITEMS[item["id"]]
+                    idata = ITEMS[item.id]
                     cy = 196 + i * 12
                     col = 10 if i == m.item_select else 6
                     game.messages.text(30, cy, f"{game.text_fmt.name(idata['name'])} x{item['qty']}", col)

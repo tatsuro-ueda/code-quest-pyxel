@@ -75,7 +75,7 @@ class MenuScene:
                 game.sfx.play("cancel")
                 m.sub = None
         elif m.sub == "items":
-            items = game.player["items"]
+            items = game.player_model.items
             if game.input_state.btnp(CANCEL_BUTTONS):
                 game.sfx.play("cancel")
                 m.sub = None
@@ -92,14 +92,14 @@ class MenuScene:
                 if game.input_state.btnp(CONFIRM_BUTTONS):
                     game.sfx.play("select")
                     item = items[m.item_cursor]
-                    item_data = M.ITEMS[item["id"]]
+                    item_data = M.ITEMS[item.id]
                     msg = game.use_item(item_data)
                     if not msg:
                         m.message = "HPがまんたんで つかえない"
                     else:
                         m.message = ""
-                        item["qty"] -= 1
-                        if item["qty"] <= 0:
+                        item.qty -= 1
+                        if item.qty <= 0:
                             items.pop(m.item_cursor)
                             m.item_cursor = max(0, min(m.item_cursor, len(items) - 1))
         elif m.sub == "equip":
@@ -132,32 +132,32 @@ class MenuScene:
             if i == m.cursor and m.sub is None:
                 game.messages.text(26, cy, ">", 10)
 
-        p = game.player
+        p = game.player_model
         if m.sub == "status":
             pyxel.rect(40, 100, 180, 120, 0)
             pyxel.rectb(40, 100, 180, 120, 7)
             lines = [
-                f"レベル {p['lv']}  けいけん {p['exp']}",
-                f"HP {p['hp']}/{p['max_hp']}",
-                f"MP {p['mp']}/{p['max_mp']}",
-                f"こうげき {p['atk']+M.WEAPONS[p['weapon']]['atk']}  ぼうぎょ {p['def']+M.ARMORS[p['armor']]['def']}",
-                f"すばやさ {p['agi']}",
-                f"コイン {p['gold']}",
+                f"レベル {p.lv}  けいけん {p.exp}",
+                f"HP {p.hp}/{p.max_hp}",
+                f"MP {p.mp}/{p.max_mp}",
+                f"こうげき {p.atk+M.WEAPONS[p.weapon]['atk']}  ぼうぎょ {p.defense+M.ARMORS[p.armor]['def']}",
+                f"すばやさ {p.agi}",
+                f"コイン {p.gold}",
             ]
             for i, line in enumerate(lines):
                 game.messages.text(50, 108 + i * 13, line, 7)
         elif m.sub == "items":
             pyxel.rect(40, 100, 180, 120, 0)
             pyxel.rectb(40, 100, 180, 120, 7)
-            items = p["items"]
+            items = p.items
             if not items:
                 game.messages.text(50, 110, game.text_fmt.t("アイテムがない", "No items"), 6)
             else:
                 for i, item in enumerate(items[:8]):
-                    idata = M.ITEMS[item["id"]]
+                    idata = M.ITEMS[item.id]
                     cy = 108 + i * 13
                     col = 10 if i == m.item_cursor else 6
-                    game.messages.text(56, cy, f"{game.text_fmt.name(idata['name'])} x{item['qty']}", col)
+                    game.messages.text(56, cy, f"{game.text_fmt.name(idata['name'])} x{item.qty}", col)
                     if i == m.item_cursor:
                         game.messages.text(46, cy, ">", 10)
             if m.message:
@@ -168,8 +168,8 @@ class MenuScene:
             wlbl = game.text_fmt.t("ぶき", "WPN")
             albl = game.text_fmt.t("ぼうぐ", "ARM")
             labels = [
-                f"{wlbl}: {game.text_fmt.name(M.WEAPONS[p['weapon']]['name'])} (こうげき+{M.WEAPONS[p['weapon']]['atk']})",
-                f"{albl}: {game.text_fmt.name(M.ARMORS[p['armor']]['name'])} (ぼうぎょ+{M.ARMORS[p['armor']]['def']})",
+                f"{wlbl}: {game.text_fmt.name(M.WEAPONS[p.weapon]['name'])} (こうげき+{M.WEAPONS[p.weapon]['atk']})",
+                f"{albl}: {game.text_fmt.name(M.ARMORS[p.armor]['name'])} (ぼうぎょ+{M.ARMORS[p.armor]['def']})",
             ]
             for i, label in enumerate(labels):
                 cy = 110 + i * 20

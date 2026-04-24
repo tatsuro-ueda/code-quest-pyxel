@@ -92,6 +92,17 @@ except Exception as e:
 
 
 @unittest.skipUnless(IMPORTED, "main.py import failed")
+def _pm_from_dict(d):
+    from src.shared.state.player_model import PlayerModel, PlayerItem
+    pm = PlayerModel()
+    for k, v in d.items():
+        attr = "defense" if k == "def" else k
+        if attr == "items":
+            v = [PlayerItem(id=i["id"], qty=i["qty"]) for i in v]
+        setattr(pm, attr, v)
+    return pm
+
+
 class TestVfxFlashConstant(unittest.TestCase):
     """VFX_FLASH 定数が正しく定義されている。"""
 
@@ -113,7 +124,7 @@ class TestStartVfx(unittest.TestCase):
     def _make_game(self):
         from src.shared.services.vfx import VfxSystem
         g = object.__new__(M.Game)
-        g.player = {"vfx_enabled": True}
+        g.player_model = _pm_from_dict({"vfx_enabled": True})
         g.vfx = VfxSystem(game=g)
         return g
 
@@ -137,7 +148,7 @@ class TestStartVfx(unittest.TestCase):
 
     def test_start_vfx_ignored_when_vfx_disabled(self):
         g = self._make_game()
-        g.player["vfx_enabled"] = False
+        g.player_model.vfx_enabled = False
         g.vfx.start("flash_white")
         self.assertEqual(g.vfx.timer, 0)
         self.assertEqual(g.vfx.type, "")
@@ -150,7 +161,7 @@ class TestDrawVfxOverlay(unittest.TestCase):
     def _make_game(self):
         from src.shared.services.vfx import VfxSystem
         g = object.__new__(M.Game)
-        g.player = {"vfx_enabled": True}
+        g.player_model = _pm_from_dict({"vfx_enabled": True})
         g.vfx = VfxSystem(game=g)
         return g
 
@@ -192,7 +203,7 @@ class TestDrawVfxOverlay(unittest.TestCase):
         import pyxel
         pyxel.rect.reset_mock()
         g = self._make_game()
-        g.player["vfx_enabled"] = False
+        g.player_model.vfx_enabled = False
         g.vfx.timer = 4
         g.vfx.type = "flash_white"
         g.vfx.draw_overlay()

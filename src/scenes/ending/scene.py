@@ -36,7 +36,7 @@ class EndingScene:
         if game is None:
             return
         if game.input_state.btnp(CONFIRM_BUTTONS):
-            game.player["in_dungeon"] = False
+            game.player_model.in_dungeon = False
             game.dungeon_map = None
             game.explore_scene.model.a_cooldown = True
             game.state = "map"

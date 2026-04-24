@@ -55,7 +55,7 @@ class MessageDisplay:
         game = self.game
         return game.dialog.start(
             scene_name,
-            state=game.player["dialog_flags"],
+            state=game.player_model.dialog_flags,
             extra_context=extra_context,
         ).text
 
@@ -64,7 +64,7 @@ class MessageDisplay:
         game = self.game
         return game.dialog.load_all_lines(
             scene_name,
-            state=game.player["dialog_flags"],
+            state=game.player_model.dialog_flags,
             extra_context=extra_context,
         )
 

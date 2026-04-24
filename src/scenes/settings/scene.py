@@ -55,24 +55,20 @@ class SettingsScene:
     def apply_av(self) -> None:
         """player の AV 設定を audio / sfx に反映する。"""
         game = self.game
-        game.audio.set_enabled(game.player.get("bgm_enabled", True))
-        game.sfx.set_enabled(game.player.get("sfx_enabled", True))
+        game.audio.set_enabled(game.player_model.bgm_enabled)
+        game.sfx.set_enabled(game.player_model.sfx_enabled)
 
     def _toggle(self, key: str) -> None:
         game = self.game
-        p = game.player
+        p = game.player_model
         if key == "all_av":
-            next_value = not (
-                p.get("bgm_enabled", True)
-                and p.get("sfx_enabled", True)
-                and p.get("vfx_enabled", True)
-            )
-            p["bgm_enabled"] = next_value
-            p["sfx_enabled"] = next_value
-            p["vfx_enabled"] = next_value
+            next_value = not (p.bgm_enabled and p.sfx_enabled and p.vfx_enabled)
+            p.bgm_enabled = next_value
+            p.sfx_enabled = next_value
+            p.vfx_enabled = next_value
             self.apply_av()
             return
-        p[key] = not p.get(key, True)
+        setattr(p, key, not getattr(p, key, True))
         self.apply_av()
 
     def update(self) -> None:
@@ -115,12 +111,12 @@ class SettingsScene:
                 value = ""
             elif key == "all_av":
                 value = "ON" if (
-                    game.player.get("bgm_enabled", True)
-                    and game.player.get("sfx_enabled", True)
-                    and game.player.get("vfx_enabled", True)
+                    game.player_model.bgm_enabled
+                    and game.player_model.sfx_enabled
+                    and game.player_model.vfx_enabled
                 ) else "OFF"
             else:
-                value = "ON" if game.player.get(key, True) else "OFF"
+                value = "ON" if getattr(game.player_model, key, True) else "OFF"
             row = f"{marker} {label}"
             if value:
                 row = f"{row}: {value}"

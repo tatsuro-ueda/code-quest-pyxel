@@ -84,8 +84,9 @@ from src.shared.services.input_bindings import InputStateTracker
 
 class GameSettingsTest(unittest.TestCase):
     def _make_game(self):
+        from src.shared.state.player_model import PlayerModel
         g = object.__new__(M.Game)
-        g.player = M.create_initial_player()
+        g.player_model = PlayerModel.new_game()
         g.has_jp_font = True
         g.sfx = MagicMock()
         g.audio = MagicMock()
@@ -123,7 +124,7 @@ class GameSettingsTest(unittest.TestCase):
 
         g.settings_scene.update()
 
-        self.assertFalse(g.player["bgm_enabled"])
+        self.assertFalse(g.player_model.bgm_enabled)
         g.audio.set_enabled.assert_called_once_with(False)
 
     def test_settings_toggle_all_updates_all_flags(self):
@@ -134,9 +135,9 @@ class GameSettingsTest(unittest.TestCase):
 
         g.settings_scene.update()
 
-        self.assertFalse(g.player["bgm_enabled"])
-        self.assertFalse(g.player["sfx_enabled"])
-        self.assertFalse(g.player["vfx_enabled"])
+        self.assertFalse(g.player_model.bgm_enabled)
+        self.assertFalse(g.player_model.sfx_enabled)
+        self.assertFalse(g.player_model.vfx_enabled)
 
     def test_settings_cancel_returns_to_origin(self):
         g = self._make_game()
