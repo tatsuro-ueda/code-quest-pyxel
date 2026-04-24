@@ -28,7 +28,7 @@ def _install_pyxel_stub() -> None:
 
     # ---- 関数・メソッド（描画 / 入力 / 音）----
     for fn_name in (
-        "init", "run", "load", "quit", "cls", "rect", "rectb", "circ", "circb",
+        "init", "run", "load", "save", "quit", "cls", "rect", "rectb", "circ", "circb",
         "line", "pset", "blt", "bltm", "text", "play", "playm", "stop",
         "btn", "btnp",
     ):
