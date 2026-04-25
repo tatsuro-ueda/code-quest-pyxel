@@ -107,25 +107,31 @@ class ItemUseServiceTest(unittest.TestCase):
 class MenuUsesServiceNotGameShimTest(unittest.TestCase):
     """menu/scene.py が `game.use_item(` のような存在しない shim を呼んでいないこと。"""
 
-    def test_menu_scene_does_not_call_game_use_item(self):
-        menu_scene_path = ROOT / "src" / "scenes" / "menu" / "scene.py"
-        text = menu_scene_path.read_text(encoding="utf-8")
+    def test_menu_does_not_call_game_use_item(self):
+        # menu/scene.py と presenter.py の両方で `game.use_item(` が呼ばれて
+        # いないことを確認する（M3-2 で update() ロジックは presenter に
+        # 移譲されたため presenter 側もチェック対象）。
+        for filename in ("scene.py", "presenter.py"):
+            path = ROOT / "src" / "scenes" / "menu" / filename
+            if not path.exists():
+                continue
+            text = path.read_text(encoding="utf-8")
+            self.assertIsNone(
+                re.search(r"\bgame\.use_item\(", text),
+                f"menu/{filename} は item_use サービスを直接呼ぶ形でなければならない。"
+                " `game.use_item(` は存在しない shim で、呼ぶと AttributeError で落ちる。",
+            )
 
-        # コメント・docstring 中の偶然の一致を許容するため 「関数呼び出し形」に限定する
-        self.assertIsNone(
-            re.search(r"\bgame\.use_item\(", text),
-            "menu/scene.py は item_use サービスを直接呼ぶ形（item_use.use_item）でなければならない。"
-            " `game.use_item(` は存在しない shim で、呼ぶと AttributeError で落ちる。",
-        )
-
-    def test_menu_scene_imports_item_use_service(self):
-        menu_scene_path = ROOT / "src" / "scenes" / "menu" / "scene.py"
-        text = menu_scene_path.read_text(encoding="utf-8")
-
-        self.assertRegex(
-            text,
-            r"from\s+src\.shared\.services\.item_use\s+import\s+use_item",
-            "menu/scene.py は item_use サービスを import する形で書く。",
+    def test_menu_imports_item_use_service(self):
+        # M3-2 で update() ロジックが presenter に集約されたため、
+        # `from src.shared.services.item_use import use_item` の
+        # import は presenter.py または scene.py のどちらかに存在すれば OK。
+        scene_text = (ROOT / "src" / "scenes" / "menu" / "scene.py").read_text(encoding="utf-8")
+        presenter_text = (ROOT / "src" / "scenes" / "menu" / "presenter.py").read_text(encoding="utf-8")
+        pattern = r"from\s+src\.shared\.services\.item_use\s+import\s+use_item"
+        self.assertTrue(
+            re.search(pattern, scene_text) or re.search(pattern, presenter_text),
+            "menu/scene.py または menu/presenter.py は item_use サービスを import する形で書く。",
         )
 
 
