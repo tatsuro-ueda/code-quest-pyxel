@@ -709,6 +709,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦公開できるが PC ブラウザ前提でスマホでの友達体験が弱い（Scratch サイト）]
+        C1 --> C2[（Roblox）💦広く届くが DL・課金・社会圧で「ちょっと見てよ」が成立しない（Roblox アプリ）]
+        C2 --> C3[（自前配信）💦zip / .exe は信頼とアクセスの壁で友達に届かない（メッセンジャー）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「友達に見せたい！」（対面）]
         B1 --> B2[（親）💦ビルドして zip を渡す（コードエディタ）]
@@ -723,6 +728,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：④子（社会・共有・反応）, ⑨友達（気軽な体験） → `customer-jobs.md` 参照
+
 ### CJ43: 実公開で遊ばれた記録が見える
 
 親が「このVMで実際に公開しているURL」で遊ばれた記録を見て、共有が届いているかを事実で確認できる。内部テスト用の記録ではなく、友達が本当に開いた導線の記録が見えることで、「遊ばれている」「届いていない」「公開経路が壊れている」を勘ではなくログで判断できる。
@@ -731,6 +738,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦View 数は見えるが誰がどう遊んだかは追えない（Scratch サイト）]
+        C1 --> C2[（Roblox）💦データはあるが Roblox 指標体系に縛られ家庭の判断には使えない（Roblox Studio）]
+        C2 --> C3[（教育系SaaS）💦詳細に見えるが関係が「監視」に変質する（教育系SaaS管理画面）]
+    end
     subgraph Before["Before"]
         B1[（親）💡URL を送る（LINE）]
         B1 --> B2[（友達）👆遊んでいる（スマホブラウザ）]
@@ -745,6 +757,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：⑦親（理解・手応え）, ④子（社会・共有・反応） → `customer-jobs.md` 参照
+
 ### CJ22: 友達のフィードバックを反映する
 
 友達がスマホで遊んで「ここ難しすぎ」→ 子どもが「直して！」と判断 → 親がAIで直す → URLを再送信 → 友達がすぐ確認。スマホで即プレイできるから、フィードバック→修正→再確認のサイクルがその場で何周も回る。ただし、友達のフィードバックをどう扱うか（直すか・無視するか・後回しにするか）を決めるのは子ども。親が勝手にトリアージしない。
@@ -753,6 +767,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦コメント機能はあるが反映までの往復が遅く熱が冷める（Scratch サイト）]
+        C1 --> C2[（Roblox）💦反映に Lua 修正と再パブリッシュが必要で家族の即応に向かない（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦親が直接 AI に投げて子の judge が省略される（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（友達）💡「ここ難しい」（スマホブラウザ）]
         B1 --> B2[（親）💦メモしておいて後で直す（メモ）]
@@ -766,6 +785,8 @@ flowchart LR
         A3 --> A4[（子ども）❤️友達「お、いい感じ！」得意顔（スマホブラウザ）]
     end
 ```
+
+> 該当カテゴリ：④子（社会・共有・反応）, ③子（批評家・自己判断）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
 
 ---
 
