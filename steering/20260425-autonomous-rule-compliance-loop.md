@@ -284,7 +284,29 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `runtime/main_runtime.py` × M1-1 — 2026-04-25, **1 件 (`import pyxel` 再エクスポート shim) は許容判定**（7a50e8a）
 - `ui/status_bar` × M1-1 — 2026-04-25, **判断待ちに退避（5 件、shared/ui/ レイヤーが M1-1 で views/ と同等扱いか未定義）**
 
-**🎉 全 17 領域処理完了。M1-1 ループ終了。**
+**🎉 Phase 1 (M1-1) 全 17 領域処理完了。**
+
+### Phase 2: M1-2（入力規約）— 即完走
+
+事前 grep スキャン結果：
+- Presenter 内 `pyxel.btnp/btn` 直呼び: **0 件**（全 scenes）
+- View 内 `pyxel.btnp/btn` または `input_state.btn`: **0 件**
+- Model 内 `pyxel.btnp/btn` または `input_state.btn`: **0 件**
+- Scene/services/ui 内 `pyxel.btnp/btn`: **0 件**
+- 唯一の `pyxel.btnp` 残存箇所は `src/runtime/app.py:139`（F1 緊急脱出 dispatcher）→ Game.update は Presenter/View/Model いずれでもない最外殻、M1-2 禁止リスト非該当
+
+→ **Phase 2 (M1-2) は全領域で違反 0 件、ループなしで即完走**
+
+### Phase 3-6 計画（次回 /loop 以降）
+
+| Phase | メタルール | 対象ファイル数 | 想定難度 |
+|---|---|---|---|
+| 3 | M2 (View / ViewModel 規約) | 12 | 中 |
+| 4 | M3 (Presenter / Scene / Command 規約) | 21 | 大 |
+| 5 | M4 (Model / Service / GameState / PlayerModel 規約) | 27 | 大 |
+| 6 | M5 (命名・テスト規約) | src 全体 + test 99 | 最大 |
+
+各 Phase で同じ Design パターン（領域選択 → 違反列挙 → docs/ 根拠確認 → 修正 or 判断待ち → commit）を適用。Phase 4-6 は判断分岐が多発する見込み（Presenter/Service/Model の境界は M1-1 のような明快な「Pyxel API」ガードと違って解釈余地が広い）。
 
 ---
 
@@ -712,6 +734,27 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 **status: in-progress → ループ駆動部分は終了。判断待ち 4 件のレビューが残るため status: done にはまだしない。**
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 ✅ / シナリオ4 ✅
+
+### 2026年4月25日 16:15（Phase 2 即完走: M1-2 入力規約 / 全領域 0 件）
+
+**Observe**：
+- ユーザー指示「M1-2 / M2 / M3 / M4 / M5 の各メタルールに同じ自律ループを適用」
+- 事前 grep スキャンで M1-2 は scenes/services/ui 全領域で違反 0 件と判明
+- 唯一の `pyxel.btnp` 残存は `runtime/app.py:139` の F1 緊急脱出（最外殻 dispatcher）
+
+**Think**：
+- docs/framework-rule.md M1-2 の禁止リスト = (1) Presenter 内 pyxel.btnp (2) View で入力 (3) Model で入力
+- runtime/app.py の Game.update は Presenter/View/Model いずれでもない最外殻 → M1-2 禁止リスト**非該当**
+- 入力の合法経路 `input_state.btnp` 利用箇所は scenes/runtime に分散（合計約 50 箇所）— すべて入力スナップショット規約に沿った使用
+- → **Phase 2 (M1-2) は判定 1 ループ未満で完走**
+
+**Act**：
+- 完了領域リストに「M1-2 即完走」を追記
+- Phase 3-6 計画（M2/M3/M4/M5）を Tasklist と完了領域リスト両方に明記
+- pytest 702 passed
+- commit: `compliance(framework): M1-2 (入力規約) は全領域で違反 0 件、Phase 2 即完走`
+
+**CoVe**：シナリオ1 ✅（領域選択不要、grep 1 発で完走判定）/ シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅（修正範囲ゼロ）
 
 ### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
 
