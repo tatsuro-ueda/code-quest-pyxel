@@ -156,24 +156,21 @@ class ImageBanks:
             game.dungeon_spawn = (1, 1)
 
         if self.pyxres_loaded:
+            # pyxres の tilemap がユーザー編集も含めた source of truth。
+            # 過去仕様：image bank が TILE_DATA とズレていると tilemap ごと
+            # 手続き的に焼き直していたが、それだとユーザーの道路修整等の
+            # tilemap 編集が無言で破棄される（CJ 破壊）。
+            # 修正後：image bank 不一致のときは image bank だけ修復し、
+            # tilemap には触らない。
             if not self.tile_bank_layout_valid():
-                print("[tilemap] tile bank layout changed — regenerating image banks")
+                print("[tilemap] tile bank layout changed — repainting image bank only")
                 self.paint_tile_bank()
                 self.paint_sprite_bank()
                 self.paint_jp_font_bank()
-                self.bake_world_to_tilemap()
-                self.bake_dungeon_to_tilemap()
-                if self.pyxres_path is not None and sys.platform != "emscripten":
-                    try:
-                        pyxel.save(str(self.pyxres_path))
-                        print(f"[tilemap] updated {self.pyxres_path}")
-                    except Exception as exc:
-                        print(f"[tilemap] could not save .pyxres: {exc}")
-            else:
-                self.derive_world_from_tilemap()
-                self.derive_dungeon_from_tilemap()
-                self.bake_world_to_tilemap()
-                self.bake_dungeon_to_tilemap()
+            self.derive_world_from_tilemap()
+            self.derive_dungeon_from_tilemap()
+            self.bake_world_to_tilemap()
+            self.bake_dungeon_to_tilemap()
         else:
             self.bake_world_to_tilemap()
             self.bake_dungeon_to_tilemap()
