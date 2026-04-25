@@ -22,6 +22,31 @@ from src.shared.assets.jp_font_data import (
 DUNGEON_TM_OFFSET_Y = 110
 
 
+def resolve_pyxres_path(main_runtime_file: Path | str) -> Path:
+    """`my_resource.pyxres` / `assets/blockquest.pyxres` の探索先を決める。
+
+    探索順:
+      1. `main_runtime_file.parent / my_resource.pyxres`
+         （Code Maker bundle: `block-quest/main.py` の隣）
+      2. `main_runtime_file.parent.parent.parent / my_resource.pyxres`
+         （dev project root 直下のオーバーライド）
+      3. `main_runtime_file.parent.parent.parent / assets / blockquest.pyxres`
+         （dev / production の正準パス、ここがフォールバックの最終）
+
+    存在チェックはこの関数では行わず、最初に見つかったものを返す。
+    全候補が存在しない場合は最後の候補（assets パス）を返す。
+    """
+    m_file = Path(main_runtime_file).resolve()
+    project_root = m_file.parent.parent.parent
+    bundle_dir = m_file.parent
+    candidates = [
+        bundle_dir / "my_resource.pyxres",
+        project_root / "my_resource.pyxres",
+        project_root / "assets" / "blockquest.pyxres",
+    ]
+    return next((p for p in candidates if p.exists()), candidates[-1])
+
+
 @dataclass
 class ImageBanks:
     """tile / sprite / font バンク管理（P1-G13 で Game から 17 メソッドを取り込み）。"""
@@ -50,22 +75,10 @@ class ImageBanks:
         self.pyxres_path = None
 
         import src.runtime.main_runtime as M
-        # main_runtime.py は src/runtime/ に居るので、プロジェクトルートは 2 階層上。
-        # bundled pyxapp でも app/src/runtime/main_runtime.py の 2 階層上 = app/ が root。
         # P3-E: browser_resource_override 削除済み。import された resource は
-        # web_runtime_server が assets/blockquest.pyxres に直接書き戻すため、
-        # ここでは my_resource.pyxres / assets/blockquest.pyxres のどちらかを選ぶだけ
-        m_file = Path(M.__file__).resolve()
-        project_root = m_file.parent.parent.parent
-        # Code Maker bundle では main.py と my_resource.pyxres が同一ディレクトリ
-        # （block-quest/）に置かれるため、`m_file.parent` 直下も候補にする。
-        bundle_dir = m_file.parent
-        candidates = [
-            bundle_dir / "my_resource.pyxres",
-            project_root / "my_resource.pyxres",
-            project_root / "assets" / "blockquest.pyxres",
-        ]
-        pyxres_path = next((p for p in candidates if p.exists()), candidates[-1])
+        # web_runtime_server が assets/blockquest.pyxres に直接書き戻す。
+        # 探索ロジックは resolve_pyxres_path() に切り出し、ユニットテスト可能にした。
+        pyxres_path = resolve_pyxres_path(M.__file__)
         self.pyxres_path = pyxres_path
         if pyxres_path.exists():
             try:
