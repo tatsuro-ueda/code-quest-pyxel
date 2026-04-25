@@ -291,7 +291,18 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/shop` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（45e18ab、ShopRow 中間 dataclass）
 - `scenes/menu` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（a8f3950、MenuSubPanel + MenuRow で 3 sub-state 統一）
 - `scenes/professor` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（b1ff629、3 phase を ProfessorViewModel 1 形式に統一）
-- `scenes/explore` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（commit 自動 fill-in、image_banks を VM 経由で渡す M2-1 例外パターン）
+- `scenes/explore` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（8697e0f、image_banks を VM 経由で渡す M2-1 例外パターン）
+- `scenes/battle` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（commit 自動 fill-in、BattleSubPanel + BattleRow + image_banks/vfx VM 経由）
+
+**🎉 Phase 3 (M2 ViewModel 規約) 全 10 scenes 完走**
+
+scenes/*/view.py がすべて：
+- Model/Game を直接受けない（ViewModel 経由）
+- 色判定・i18n・条件分岐は presenter に集約
+- pyxel.frame_count による animation のみ view 内で参照
+- image_banks / vfx 等の描画専用アセットは VM 経由 (M2-1 例外)
+
+10 ループ × 平均 90 行追加（VM dataclass + presenter build メソッド）= 計 900 行追加。pytest 702 passed 終始維持。
 
 **🎉 Phase 1 (M1-1) 全 17 領域処理完了。**
 

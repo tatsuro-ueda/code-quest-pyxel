@@ -419,12 +419,15 @@ class BattleScene:
         return M.VICTORY_SCENES_BY_ZONE.get(zone, "battle.normal.victory.early")
 
     def draw(self) -> dict | None:
-        """バトル画面を描画する。描画本体は View に委譲（M1-1 準拠）。
+        """バトル画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。
 
         テスト用に game 未設定なら phase snapshot を返す。
         """
         game = self.game
         if game is None:
             return self.view.render(phase=self.model.phase)
-        self.view.draw(self.model, game)
+        vm = self.presenter.build_view_model(game)
+        text_writer = getattr(game, "messages", None)
+        vfx = getattr(game, "vfx", None)
+        self.view.draw(vm, text_writer, vfx)
         return None
