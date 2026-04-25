@@ -275,7 +275,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/menu` × M1-1 — 2026-04-25, 8 件解消（877073c、中領域）
 - `scenes/professor` × M1-1 — 2026-04-25, 6 件解消（bb78ce5、中領域）
 - `scenes/explore` × M1-1 — 2026-04-25, 11 件解消（3e47eaf、大領域・1 commit）
-- `scenes/battle` × M1-1 — 2026-04-25, 17 件解消（commit 自動 fill-in、大領域・1 commit）
+- `scenes/battle` × M1-1 — 2026-04-25, 17 件解消（19557e2、大領域・1 commit）
+- `services/audio_system` × M1-1 — 2026-04-25, **24 件は M1-1 例外規定（Audio ラッパ）により許容判定**（commit 自動 fill-in）
 
 **🎉 マイルストーン達成: scenes/*/scene.py 全 11 領域 (town 含む) で M1-1 違反ゼロ**
 
@@ -479,6 +480,30 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
+
+### 2026年4月25日 15:10（第 11 ループ：services/audio_system × M1-1 / 例外規定判定）
+
+**Observe**：
+- 第 11 ループ対象：`src/shared/services/audio_system.py`（24 件 grep ヒット）
+- 内訳精査：
+  - 23 件は `self.pyxel.X`（`AudioManager.__init__(pyxel_module)` で DI された pyxel への参照）
+  - 1 件は line 287 のコメント `# pyxel.load() 済み slot...`（コード参照なし）
+- `class AudioManager: """Pyxel 音声 API をラップし、シーンごとの BGM 再生と ON/OFF を管理する。"""`
+- ファイル全体に `import pyxel` なし、直接モジュール呼び出しなし
+
+**Think**：
+- docs/framework-rule.md M1-1: 「services は Pyxel 呼び出し禁止。**ただし Audio/Save の Pyxel 依存ラッパは別**」
+- AudioManager / SfxSystem は明示的に Audio wrapper → 例外規定該当
+- DI パターン（`self.pyxel`）採用で「直接 import せず、外部から pyxel module を受け取る」設計 → 例外規定の精神（pyxel への依存を局所化）にも合致
+- 4 自問: ① audio_system のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 修正不要（許容判定）✓
+- **コード変更なし**。tasknote の例外規定該当領域リスト更新のみ
+
+**Act**：
+- 完了領域リストに「**24 件は M1-1 例外規定により許容**」と記載
+- pytest 確認: 修正前後で同じ → 702 passed ✓
+- commit 形式: `compliance(services/audio_system): M1-1 例外規定（Audio ラッパ）により 24 件は許容と判定`
+
+**CoVe**：シナリオ1 ✅（領域選択→違反列挙→docs/ 根拠確認→判定→commit）/ シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅（修正範囲ゼロ＝scope creep の余地なし）
 
 ### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
 
