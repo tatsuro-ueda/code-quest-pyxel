@@ -304,7 +304,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/explore` × M3-2 — 2026-04-25, 大規模 update + helpers (_check_tile_events, _check_landmark_events, _resolve_landmark_scene, _dungeon_exit_callback) を Presenter に集約、scene は test 互換ラッパのみ（8c48213）
 - `scenes/battle` × M3-2 — 2026-04-25, update() の 5 phase 状態遷移を Presenter に移譲（戦闘ルール本体 do_player_attack/do_enemy_attack/victory/defeat/apply_spell_effect 等は scene に残置；presenter が phase 切替時にコールバック）（5deeda3）
 - `scenes/explore` × M4-1 — 2026-04-25, 他 scene からの `game.explore_scene.model.a_cooldown = True` 直代入 5 件を `start_a_cooldown()` メソッド経由に統一（caller: title / ending / professor x2 / town presenter；fake test も追従）（10ef4e7）
-- `scenes/menu` × M4-1 — 2026-04-25, settings/scene.py から `game.menu_scene.model.sub = None` 直代入 1 件を `clear_sub()` メソッド経由に統一（fake test も追従）→ **M4-1「他 Scene Model 直代入禁止」違反 0 件達成**
+- `scenes/menu` × M4-1 — 2026-04-25, settings/scene.py から `game.menu_scene.model.sub = None` 直代入 1 件を `clear_sub()` メソッド経由に統一（fake test も追従）→ **M4-1「他 Scene Model 直代入禁止」違反 0 件達成**（cea5e62）
+- `shared/state + shared/services/player_state` × M4-4 検証目安 1 — 2026-04-25, **2 件は migration 互換 shim 内部の dict 操作で許容判定**（player_model.py:159 は `from_snapshot` 内部変換、player_state.py:84 は `restore_snapshot` 旧 API 互換 shim で test_player_snapshot / test_architecture_layout が依存）。旧 API shim 群の最終削除と test 移行は判断待りリストへ。
 
 **🎉 Phase 4 (M3 Scene 規約) 全 10 scenes 完走**
 
@@ -351,6 +352,22 @@ scenes/*/view.py がすべて：
 ---
 
 ## 判断待ちリスト
+
+### 2026-04-25 17:55 — `src/shared/services/player_state.py` 旧 API shim 群（M4-4 段階移行未完）
+
+- **適用候補ルール**: docs/framework-rule.md M4-4 (PlayerModel と GameState 圧縮) Level 2「`item_use.py` は消滅し、`player_state.py` の `exp_for_level / stats_for_level` も PlayerModel のメソッドへ移動する」
+- **現状**: `player_state.py` に旧 API 互換 shim が 5 関数残存：
+  - `stats_for_level(lv)` — PlayerModel 内部から利用
+  - `create_initial_player(start_x, start_y)` — `player_model_to_dict(PlayerModel.new_game(...))` shim
+  - `dump_snapshot(player: dict, town_pos)` — dict 引数の旧 API
+  - `restore_snapshot(snapshot)` — src/ 内未使用、test_player_snapshot で 5 ケース利用、test_architecture_layout で `hasattr` assert
+  - `player_model_to_dict(pm)` — PlayerModel → dict 変換 shim
+- **想定選択肢**:
+  1. **(A) test を PlayerModel.from_snapshot ベースに書換 → restore_snapshot を削除** — test_player_snapshot 5 ケース + architecture_layout 1 件の修正、scope 中
+  2. **(B) `stats_for_level` 等の純粋関数群を PlayerModel メソッド化 → player_state.py を縮退** — M4-4 Level 2 の本筋、scope 大
+  3. **(C) 現状維持で「旧 API 互換 shim」明記** — 段階移行未完を docstring に記録、scope 0
+- **なぜ迷うか**: M4-4 は「漸進改善」と明記されており、単発ループで完結しない。テスト移行の整合性確保（save 互換、bundle で `M.restore_snapshot` 参照しているか等）も検証要
+- **足し材料**: `tools/test_save_compat.py` は別物（独自再現関数）。bundle で `main_runtime` が `restore_snapshot` を再エクスポートしているか確認すれば (A) の影響範囲が確定
 
 ### 2026-04-25 16:05 — `src/shared/ui/status_bar.py` 全体（5 pyxel 違反）
 
@@ -451,6 +468,53 @@ scenes/*/view.py がすべて：
 ---
 
 ## 6) Discussion（記録・反省）
+
+### 2026年4月25日 18:05（Phase 5 第 3 ループ：M4-4 検証目安 1（player[...] 残存）許容判定）
+
+**Observe**：
+- M4-1 完走後、Phase 5 の次サブルール選定。M4-2 (Service 分類明文化) は 11 service 一括で scope 大、判断分岐ありで回避
+- M4-4 検証目安 1「`grep -rnE 'player\[.?["\']' src/` が 0 件」を実行 → 2 件残存
+  - `src/shared/state/player_model.py:159` (`PlayerModel.from_snapshot` 内部、`raw_player[...] = ...`)
+  - `src/shared/services/player_state.py:84` (`restore_snapshot` 旧 API 互換 shim 内部)
+- `restore_snapshot` の利用範囲を grep:
+  - `src/` では呼び出し 0 件（dead-in-prod）
+  - `test/test_player_snapshot.py` で 5 テストケースが利用
+  - `test/test_architecture_layout.py:86` で `hasattr(player_state, 'restore_snapshot')` を assert（API として保持要請）
+  - `tools/test_save_compat.py` は独立再現で player_state には依存せず
+
+**Think**：
+- player_model.py:159 は `from_snapshot` 内の **dict→PlayerModel 変換**専用ローカル変数操作。PlayerModel 化された後は捨てる一時 dict。M4-4 の趣旨「player[...] アクセスを PlayerModel 経由に置き換える」精神に**準拠**（外部からの読み書きは PlayerModel 経由、内部の serialization 変換だけ dict）
+- player_state.py:84 は旧 API 互換 shim の内部。test 5 ケース + architecture_layout の hasattr が依存しており削除 = test 移行が必要 = scope 大
+- M4-4 は docs/ で「漸進改善候補」と明記、単発ループで完結しない
+- 4 自問: ① M4-4 検証目安 1 のみ ✓ ② M4-4 のみ ✓ ③ docs/ 検証目安 ✓ ④ 修正なし＝最小 ✓
+
+**Act**：
+- 両件とも **許容判定**（migration 互換 shim 内部の dict 操作）
+- 旧 API shim 群の最終削除（test 移行を含む）は **判断待ちリスト 2 件目** として記録
+- pytest 702 passed（修正前後同じ）
+- commit: `compliance(shared): M4-4 検証目安 1 (player[...] 残存) migration 互換 shim 2 件は許容と判定`
+
+**M4-4 進捗整理**:
+
+| 検証目安 | 結果 | 残課題 |
+|---|---|---|
+| 1. `grep player[...]` 0 件 | 2 件残るが migration shim 内部で**許容判定** | shim 群の test 移行＋削除が**判断待ち**（scope 大） |
+| 2. `pyxel.* in scenes/*/model.py + shared/state/*.py` 0 件 | **0 件達成** | — |
+| 3. 他 scene の model 直触り 0 件 | **0 件達成**（第 1+2 ループ完了） | — |
+
+**CoVe**：
+- シナリオ1: 領域選択（M4-4）→違反列挙→docs/ 根拠確認→許容判定 + 判断待ち記録→commit ✅
+- シナリオ2: 完了領域リストに `shared/state + player_state × M4-4 検証目安 1` 追加 ✅
+- シナリオ3: 旧 API shim 群削除を判断待ちに倒した ✅
+- シナリオ4: 修正範囲ゼロ、test 移行は判断待りに ✅
+
+**次ループ案**:
+- M4-2 (Service 規約 A/B/C 分類): 11 service 一括 docstring 整備は scope 大、判断待ち候補
+- M4-2 状態保持基準: 各 service の field を docs/「外部資源キャッシュ / UI 演出進行 / 入力履歴 / 補助情報」に照合 → judgment 必要
+- M4-3 (GameState 規約): Game クラスの field 棚卸し、docs/「GameState に入れないもの」(一時 UI / 画面アニメ途中値 / VFX タイマー等) との照合 → grep ベース判定可能
+- M4-4 検証目安 2/3 は既達成、検証目安 1 残課題は判断待り
+
+→ 次ループは **M4-3 Game クラスの field 棚卸し** が候補。grep で `class Game` field を抽出し、docs/「入れないもの」リストと照合する。
 
 ### 2026年4月25日 17:50（Phase 5 第 2 ループ：M4-1 menu_scene 直代入 1 件解消 → M4-1 完走）
 
