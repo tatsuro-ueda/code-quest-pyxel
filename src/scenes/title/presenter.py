@@ -5,17 +5,82 @@ from typing import Any
 
 from src.scenes.title.model import TitleModel
 from src.scenes.title.view_model import TitleMenuRow, TitleViewModel
+from src.shared.services.input_bindings import (
+    CONFIRM_BUTTONS,
+    DOWN_BUTTONS,
+    TITLE_START_BUTTONS,
+    UP_BUTTONS,
+)
+from src.shared.state.player_model import PlayerModel
+
+
+LOAD_OK_MSG = "きろくをよみかえした。りかいがもどってくる。"
+NO_RECORD_MSG = "まだなにもかきとめていない…"
 
 
 @dataclass
 class TitlePresenter:
-    """title シーンの入力解釈・カーソル移動・ViewModel 組立て（M3-1 / M2-2）。"""
+    """title シーンの入力解釈・遷移決定・ViewModel 組立て（M3-1 / M2-2）。"""
 
     model: TitleModel
 
     def move(self, delta: int, item_count: int) -> None:
         """カーソルを相対移動し、項目数で wrap する。"""
         self.model.cursor = (self.model.cursor + delta) % item_count
+
+    def update(self, game: Any) -> None:
+        """タイトル画面の入力処理と state 遷移。"""
+        if game.input_state.btnp(UP_BUTTONS):
+            self.move(-1, 3)
+            game.sfx.play("cursor")
+            return
+        if game.input_state.btnp(DOWN_BUTTONS):
+            self.move(1, 3)
+            game.sfx.play("cursor")
+            return
+        if game.input_state.btnp(CONFIRM_BUTTONS) or game.input_state.btnp(TITLE_START_BUTTONS):
+            game.sfx.play("select")
+            if self.model.cursor == 0:
+                # はじめから: プレイヤー状態をクリーンに作り直す（AV設定は引き継ぐ）
+                prev = game.player_model
+                fresh = PlayerModel.new_game()
+                fresh.bgm_enabled = prev.bgm_enabled
+                fresh.sfx_enabled = prev.sfx_enabled
+                fresh.vfx_enabled = prev.vfx_enabled
+                game.player_model = fresh
+                game.settings_scene.apply_av()
+                game.state = "map"
+                return
+            if self.model.cursor == 2:
+                game.settings_scene.open("title")
+                return
+            # つづきから — has_save が False ならグレーアウト
+            if not game._has_save:
+                return
+            self.do_load(game)
+
+    def do_load(self, game: Any) -> None:
+        """セーブデータを読み出して player / state を復元する。"""
+        snap = game.save_store.load()
+        if snap is None:
+            # 破損やバージョン未来のセーフティネット
+            game._has_save = False
+            game.messages.show([NO_RECORD_MSG])
+            game.prev_state = "title"
+            game.state = "message"
+            return
+        restored_player, (tx, ty) = PlayerModel.from_snapshot(snap)
+        game.player_model = restored_player
+        game.settings_scene.apply_av()
+        game.player_model.x = tx
+        game.player_model.y = ty
+        game.player_model.in_dungeon = False
+        game.dungeon_map = None
+        # ロード直後の暴発を防ぐため A クールダウンを立てる
+        game.explore_scene.model.a_cooldown = True
+        game.messages.show([LOAD_OK_MSG])
+        game.prev_state = "map"
+        game.state = "message"
 
     def build_view_model(self, game: Any) -> TitleViewModel:
         """Model + i18n + has_save を解釈してタイトル画面 VM を組み立てる。"""
