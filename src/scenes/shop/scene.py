@@ -6,12 +6,6 @@ from typing import Any
 from src.scenes.shop.model import ShopModel
 from src.scenes.shop.presenter import ShopPresenter
 from src.scenes.shop.view import ShopView
-from src.shared.services.input_bindings import (
-    UP_BUTTONS,
-    DOWN_BUTTONS,
-    CONFIRM_BUTTONS,
-    CANCEL_BUTTONS,
-)
 
 
 @dataclass
@@ -48,62 +42,18 @@ class ShopScene:
         game.state = "shop"
 
     def update(self) -> None:
-        """ショップのカーソル操作と購入処理。"""
+        """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        if not self.model.inventory:
-            if game.input_state.btnp(CANCEL_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS):
-                game.sfx.play("cancel")
-                game.state = "town_menu"
-            return
-        if game.input_state.btnp(UP_BUTTONS):
-            self.model.cursor = (self.model.cursor - 1) % len(self.model.inventory)
-            game.sfx.play("cursor")
-            return
-        if game.input_state.btnp(DOWN_BUTTONS):
-            self.model.cursor = (self.model.cursor + 1) % len(self.model.inventory)
-            game.sfx.play("cursor")
-            return
-        if game.input_state.btnp(CANCEL_BUTTONS):
-            game.sfx.play("cancel")
-            game.state = "town_menu"
-            return
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            game.sfx.play("select")
-            self._try_purchase()
+        self.presenter.update(game)
 
     def _try_purchase(self) -> None:
+        """既存テスト互換：購入処理を Presenter に委譲。"""
         game = self.game
-        import src.runtime.main_runtime as M
-        idx = self.model.inventory[self.model.cursor]
-        kind = self.model.kind
-        if kind == "weapons":
-            entry = M.WEAPONS[idx]
-        elif kind == "armors":
-            entry = M.ARMORS[idx]
-        else:
-            entry = M.ITEMS[idx]
-        price = entry.get("price", 0)
-        pm = game.player_model
-        if kind == "weapons" and pm.weapon == idx:
-            self.model.message = "すでに もっています"
+        if game is None:
             return
-        if kind == "armors" and pm.armor == idx:
-            self.model.message = "すでに もっています"
-            return
-        if not pm.can_afford(price):
-            self.model.message = "コインが たりません"
-            return
-        if kind == "weapons":
-            pm.buy_weapon(idx, price)
-            self.model.message = entry.get("buy_msg") or f"{entry['name']}を てにいれた！"
-        elif kind == "armors":
-            pm.buy_armor(idx, price)
-            self.model.message = entry.get("buy_msg") or f"{entry['name']}を てにいれた！"
-        else:
-            pm.buy_item(idx, price)
-            self.model.message = f"{entry['name']}を てにいれた！"
+        self.presenter.try_purchase(game)
 
     def draw(self) -> None:
         """ショップ画面を描画する。描画本体は View に委譲（M1-1 準拠）。"""
