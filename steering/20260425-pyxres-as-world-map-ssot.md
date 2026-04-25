@@ -188,7 +188,90 @@ flowchart TD
 
 ## 3) Design（どうやるか）
 
-> （Gherkin 承認後、CC が素案を記入）
+### 関連スキル・MCP
+
+- `manage-pyxel`（**タイルマップ SSoT 検証**セクション：xvfb-run + SDL_AUDIODRIVER=dummy で headless probe / pytest 化の指針）
+- `manage-tasknotes`（本ノートの Discussion 更新と判断待りリスト管理）
+- 標準ツール：Bash / Read / Edit / Grep / pytest（追加 MCP 不要）
+
+### 構成図（TDD ループ）
+
+```mermaid
+flowchart LR
+    subgraph INPUT[インプット]
+        I1[assets/blockquest.pyxres<br>ユーザー編集ずみ]
+        I2[src/shared/services/image_banks.py]
+        I3[本ノート Gherkin シナリオ1〜4]
+    end
+    subgraph PROCESS[TDD 処理]
+        P1[① probe スクリプト作成<br>tools/probe_tilemap_ssot.py]
+        P2[② 失敗する test 作成<br>test/test_world_map_ssot.py]
+        P3[③ bake_world_to_tilemap 修正<br>T_PATH 上書きを止める]
+        P4[④ derive_world_from_tilemap 強化<br>path variant 情報も復元]
+        P5[⑤ pytest + probe 両方 green]
+        P6[⑥ bundle 再ビルド + Code Maker 検証]
+    end
+    subgraph OUTPUT[アウトプット]
+        O1[1〜N commit<br>compliance ssot で閉じる]
+        O2[Discussion 追記<br>影響範囲・残課題・実測ピクセル差分]
+        O3[判断待りリスト<br>dungeon と get_path_variant 同型問題]
+    end
+    INPUT --> PROCESS --> OUTPUT
+    classDef io fill:#e2e3f1,stroke:#3949ab,color:#000000;
+    classDef proc fill:#fff3cd,stroke:#856404,color:#000000;
+    classDef out fill:#d4edda,stroke:#155724,color:#000000;
+    class I1,I2,I3 io;
+    class P1,P2,P3,P4,P5,P6 proc;
+    class O1,O2,O3 out;
+```
+
+### 手順フロー
+
+```mermaid
+flowchart TD
+    S1[① 影響範囲調査<br>bake_world_to_tilemap の呼び出し全箇所] --> S2[② probe 実行で BEFORE/AFTER 差分の現状記録]
+    S2 --> S3[③ 失敗する test を tools/test_world_map_ssot.py に作成<br>pyxres pget = 起動後 pget を assert]
+    S3 --> S4[④ bake_world_to_tilemap で T_PATH 上書きを止める]
+    S4 --> S5[⑤ derive_world_from_tilemap で path variant も復元]
+    S5 --> S6{⑥ pytest + probe<br>両方 green?}
+    S6 -->|NG| S4
+    S6 -->|OK| S7[⑦ bundle 再ビルド web + codemaker]
+    S7 --> S8[⑧ Code Maker zip を probe で検証<br>同じピクセル位置で同じ値]
+    S8 --> S9[⑨ commit + Discussion 追記]
+    S9 --> SDONE[✅ Gherkin 全シナリオ満たし完了]
+
+    classDef done fill:#d4edda,stroke:#155724,color:#000000;
+    classDef gate fill:#fff3cd,stroke:#856404,color:#000000;
+    class SDONE done;
+    class S6 gate;
+```
+
+### 決定事項
+
+1. **TDD 順序**: probe → 失敗 test → 修正 → green の順。「test を pass させる」=「procedural 上書きが消えた」と機械的に等価
+2. **修正範囲（最小）**:
+   - `image_banks.bake_world_to_tilemap`: `tile == T_PATH` 分岐の `get_path_variant` 呼び出しを削除し、derive で読んだピクセルをそのまま書き戻す（または bake 自体をスキップ）
+   - `image_banks.derive_world_from_tilemap`: ピクセル → タイル ID だけでなく、**読んだ pixel 位置自体を保存**する dict を別途持ち、bake で再利用
+   - `T_WATER` の shore variant 同型問題は **本ループ外**（dungeon / shore は別ノート分離）
+3. **fallback 維持**: pyxres 不在時の初回生成 + `pyxel.save` は既存挙動のまま
+4. **scope creep 防止**: dungeon の `bake_dungeon_to_tilemap` と `get_path_variant` は触らない（やらないこと宣言ずみ）。気になりは Discussion に記録のみ
+5. **ロールバック単位**: 1 commit で revert 可能。test 追加 commit と修正 commit を分ける
+6. **検証ハードル**:
+   - pytest 全 green（既存 703 件）
+   - 新規 test_world_map_ssot.py が green
+   - probe で `(30,21)` と `(28,20)` の BEFORE = AFTER（pyxres と起動後 tilemap が完全一致）
+   - bundle 再ビルド成功 + Code Maker zip でも同じ probe 結果
+
+### 委任度（Design 完了後）
+
+- **🟢 高**（自走可能）
+  - 検証手段が確立（manage-pyxel スキルに記録ずみ）
+  - 修正範囲が `image_banks.py` 2 メソッドに限定
+  - test 駆動で「成功」「失敗」が機械判定可能
+  - 失敗しても commit 単位で revert 可能
+  - Code Maker 実機の人による目視は最終確認のみ
+
+---
 
 ---
 
@@ -210,7 +293,29 @@ flowchart TD
 
 ## 6) Discussion（反省）
 
+### 2026年4月25日 18:10（夜間委任設定）
+
+**Observe**:
+- Journey / Gherkin / Design 全て承認ずみ（CC 素案）。委任度 🟢
+- 検証手段（headless probe）が技術的に確立し、`manage-pyxel` スキルにも登録ずみ
+- 委任先 AI の使えるツール: Bash / Read / Write / Edit / Glob / Grep（GCal MCP は不可）
+
+**Think**:
+- TDD 順序（probe → 失敗 test → 修正 → green → bundle → 再 probe）が機械検証に向いている
+- bundle 再ビルド時に view_model.py manifest 漏れの再発がないか、新規追加 test (`test_codemaker_manifest_matches_scene_files`) が自動でカバー
+- 失敗時は revert + Discussion に失敗記録、status は `open` のまま残す方針を委任プロンプトに明記
+
+**Act**:
+- プロンプトファイル: `~/.claude/prompts/pyxres-as-world-map-ssot.txt`（雛形は manage-tasknotes 準拠 + 本ノート Design セクションを参照）
+- crontab: `0 18 25 4 * ...` = **2026-04-26 03:00 JST 一回限り** で発火、終了後に自動でエントリ削除
+- 結果ログ: `/tmp/pyxres-ssot-result.log`
+- GCal 記録は **翌朝のデイスタで結果ログを確認後に手動記録**（cron からは MCP 認証通らないため）
+
 ### 反省とルール化
 
 - 記入先：observe-situation / manage-tasknotes / CLAUDE.md
 - 次にやること：
+  - **2026-04-26 朝**: `tail -200 /tmp/pyxres-ssot-result.log` と `git log refactor/town-framework-rule-align --oneline -10` を確認
+  - 成功なら status を `done` に更新、GCal に実績記録
+  - 失敗なら Discussion の「失敗記録」を読んで原因対処、再委任 or 手動修正
+  - dungeon の bake と get_path_variant の同型問題（やらないこと宣言ずみ）は別タスクノート起票候補
