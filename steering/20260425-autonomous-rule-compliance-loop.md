@@ -273,7 +273,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/title` × M1-1 — 2026-04-25, 1 件解消（64e7ce9）
 - `scenes/shop` × M1-1 — 2026-04-25, 1 件解消（fc569bd）
 - `scenes/menu` × M1-1 — 2026-04-25, 8 件解消（877073c、中領域）
-- `scenes/professor` × M1-1 — 2026-04-25, 6 件解消（commit 自動 fill-in、中領域）
+- `scenes/professor` × M1-1 — 2026-04-25, 6 件解消（bb78ce5、中領域）
+- `scenes/explore` × M1-1 — 2026-04-25, 11 件解消（commit 自動 fill-in、大領域・1 commit で完走）
 
 ### 第 1 ループ計画（splash × M1-1）
 
@@ -451,6 +452,25 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 **Act**：
 - `src/scenes/settings/view.py`: `SettingsView.render(*, rows, cursor, game)` 追加、2 pyxel + 設定行ループを移動
 - `src/scenes/settings/scene.py`: `import pyxel` 削除、`draw()` を 1 行に
+- 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
+
+### 2026年4月25日 15:00（第 9 ループ実行：scenes/explore × M1-1 / 大領域）
+
+**Observe**：
+- 第 9 ループ対象：`src/scenes/explore/scene.py`（395 行 / 11 pyxel 違反）
+- 違反は `draw()` (8) + `_draw_dungeon_glitch_lord_marker()` (1) + `_draw_landmark_highlights()` (2)
+- explore/view.py は既に snapshot 用 `render(mode)` あり
+
+**Think**：
+- 大領域だが pyxel.* は全て描画系メソッドに集中。1 commit で完了可能
+- `_draw_*` private helpers は draw() からのみ呼ばれるので view 側に同名 private メソッドとして移植
+- 4 自問: ① explore のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲（draw + 2 helper のみ、update / move ロジックには触れず）✓
+
+**Act**：
+- `src/scenes/explore/view.py`: `draw(model, game)` + `_draw_dungeon_glitch_lord_marker(current_map, game)` + `_draw_landmark_highlights(game)` 追加、11 pyxel + 描画ロジック移動
+- `src/scenes/explore/scene.py`: `import pyxel` 削除、`draw()` を 5 行に縮退、2 つの `_draw_*` 削除
 - 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
