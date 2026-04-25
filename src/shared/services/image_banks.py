@@ -55,8 +55,13 @@ class ImageBanks:
         # P3-E: browser_resource_override 削除済み。import された resource は
         # web_runtime_server が assets/blockquest.pyxres に直接書き戻すため、
         # ここでは my_resource.pyxres / assets/blockquest.pyxres のどちらかを選ぶだけ
-        project_root = Path(M.__file__).resolve().parent.parent.parent
+        m_file = Path(M.__file__).resolve()
+        project_root = m_file.parent.parent.parent
+        # Code Maker bundle では main.py と my_resource.pyxres が同一ディレクトリ
+        # （block-quest/）に置かれるため、`m_file.parent` 直下も候補にする。
+        bundle_dir = m_file.parent
         candidates = [
+            bundle_dir / "my_resource.pyxres",
             project_root / "my_resource.pyxres",
             project_root / "assets" / "blockquest.pyxres",
         ]
