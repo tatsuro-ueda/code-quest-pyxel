@@ -206,6 +206,21 @@ class BundledSourceLoadsTest(unittest.TestCase):
         self.assertIn("def", result)
         self.assertIn("max_hp", result)
 
+    def test_player_model_new_game_succeeds_in_bundle(self):
+        """過去バグ #3: bundle 内では player_state.py の shim ``stats_for_level``
+        が ``def`` キーを返す。`PlayerModel.new_game()` が ``base["defense"]``
+        を読むので、shadow されると KeyError: 'defense' になっていた。
+        """
+        mod = self._exec_bundle()
+        try:
+            pm = mod.__dict__["PlayerModel"].new_game()
+        except KeyError as exc:  # pragma: no cover - 失敗時のメッセージを明示
+            self.fail(f"PlayerModel.new_game() raised KeyError: {exc}")
+        # 主要 stat 属性が読み取れること
+        self.assertEqual(pm.lv, 1)
+        self.assertGreater(pm.max_hp, 0)
+        self.assertGreaterEqual(pm.defense, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

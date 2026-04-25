@@ -59,6 +59,14 @@ def stats_for_level(lv: int) -> dict[str, int]:
     }
 
 
+# Code Maker bundle 対策（shadow 耐性）：
+# bundle ではこの後 player_state.py の shim ``stats_for_level`` が同じ
+# 名前を上書きし、shim は ``def`` キーを返すため `PlayerModel.new_game`
+# 内の ``base["defense"]`` が KeyError になる。内部参照は shadow されない
+# 別名経由で行う（通常 import 環境では別 module なので影響なし）。
+_stats_for_level_internal = stats_for_level
+
+
 @dataclass
 class PlayerItem:
     """所持アイテム一件（id とスタック数）。"""
@@ -106,7 +114,7 @@ class PlayerModel:
     @classmethod
     def new_game(cls, start_x: int = 25, start_y: int = 6) -> "PlayerModel":
         """ニューゲーム用の Level 1 プレイヤーを作る。"""
-        base = stats_for_level(1)
+        base = _stats_for_level_internal(1)
         return cls(
             x=start_x,
             y=start_y,
@@ -186,7 +194,7 @@ class PlayerModel:
         leveled = False
         while self.lv < MAX_LEVEL and self.exp >= exp_for_level(self.lv + 1):
             self.lv += 1
-            next_stats = stats_for_level(self.lv)
+            next_stats = _stats_for_level_internal(self.lv)
             self.max_hp = next_stats["max_hp"]
             self.max_mp = next_stats["max_mp"]
             self.atk = next_stats["atk"]
