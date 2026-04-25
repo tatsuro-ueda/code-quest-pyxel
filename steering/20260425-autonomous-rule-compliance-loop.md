@@ -305,7 +305,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/battle` × M3-2 — 2026-04-25, update() の 5 phase 状態遷移を Presenter に移譲（戦闘ルール本体 do_player_attack/do_enemy_attack/victory/defeat/apply_spell_effect 等は scene に残置；presenter が phase 切替時にコールバック）（5deeda3）
 - `scenes/explore` × M4-1 — 2026-04-25, 他 scene からの `game.explore_scene.model.a_cooldown = True` 直代入 5 件を `start_a_cooldown()` メソッド経由に統一（caller: title / ending / professor x2 / town presenter；fake test も追従）（10ef4e7）
 - `scenes/menu` × M4-1 — 2026-04-25, settings/scene.py から `game.menu_scene.model.sub = None` 直代入 1 件を `clear_sub()` メソッド経由に統一（fake test も追従）→ **M4-1「他 Scene Model 直代入禁止」違反 0 件達成**（cea5e62）
-- `shared/state + shared/services/player_state` × M4-4 検証目安 1 — 2026-04-25, **2 件は migration 互換 shim 内部の dict 操作で許容判定**（player_model.py:159 は `from_snapshot` 内部変換、player_state.py:84 は `restore_snapshot` 旧 API 互換 shim で test_player_snapshot / test_architecture_layout が依存）。旧 API shim 群の最終削除と test 移行は判断待りリストへ。
+- `shared/state + shared/services/player_state` × M4-4 検証目安 1 — 2026-04-25, **2 件は migration 互換 shim 内部の dict 操作で許容判定**（player_model.py:159 は `from_snapshot` 内部変換、player_state.py:84 は `restore_snapshot` 旧 API 互換 shim で test_player_snapshot / test_architecture_layout が依存）。旧 API shim 群の最終削除と test 移行は判断待ちリストへ。（0d3b5da）
+- `runtime/app` × M4-3 — 2026-04-25, Game クラス state 棚卸し完了。**7 件は段階移行候補で判断待ち**（`state/prev_state` → SceneManager / `debug_mode/debug_seq` → DebugService / `cam_x/cam_y` → ExploreModel か ViewportService / `dungeon_rooms` → WorldGenerationService cache / `current_town` → 一時 UI 状態）。OK 群（player_model / world_map / dungeon_map / last_town_pos / world_return_x,y）は M4-4 圧縮目標形通り。
 
 **🎉 Phase 4 (M3 Scene 規約) 全 10 scenes 完走**
 
@@ -352,6 +353,24 @@ scenes/*/view.py がすべて：
 ---
 
 ## 判断待ちリスト
+
+### 2026-04-25 18:25 — `src/runtime/app.py` Game クラス state 7 件（M4-3 段階移行未完）
+
+- **適用候補ルール**: docs/framework-rule.md M4-3「GameState に入れないもの」「Game は最終的にランタイム殻にする」+ M4-4「GameState から出すもの」表
+- **対象 field と移し先**:
+  | Field | M4-4 表での移し先 | 性質 |
+  |---|---|---|
+  | `state`, `prev_state` | `SceneManager` | scene 切替メタ |
+  | `debug_mode`, `debug_seq` | 新 `DebugService` | 保存対象でない補助情報 |
+  | `cam_x`, `cam_y` | `ExploreModel` か新 `ViewportService` | 画面アニメ途中値 |
+  | `dungeon_rooms` | `WorldGenerationService` 結果 cache | 生成時の中間物（保存しない） |
+  | `current_town` | `game_state.current_town` (コメントで自覚あり) | 一時 UI 状態 |
+- **想定選択肢**:
+  1. **(A) 7 件すべてを 1 commit で移動** — 新規 SceneManager / DebugService / ViewportService / WorldGenerationService 設計 + 全参照書換 = scope 過大
+  2. **(B) 1 グループずつ 5 ループに分割** — 各ループで 1 service 新設 + 該当 field 移動 + 影響箇所書換、cadence vs work が成立する
+  3. **(C) コメントで「M4-3 段階移行候補」を Game クラスに明記して現状維持** — scope 0、進捗 0、漸進改善の宣言のみ
+- **なぜ迷うか**: M4-3 は「Game クラスを最終的にランタイム殻に」を明文化しているが、新規 service 設計は単発ループでは収まらない。M4-4 は明示的に「漸進改善候補」と注記。各 field の参照箇所数（state は src/ 全体に散在）が修正影響の上限を決める
+- **足し材料**: 各 field の参照箇所数を正確に数えれば、(B) のグループ別 scope が確定する。例: `grep -rn 'game\.cam_x\|self\.cam_x' src/` で cam_x 移動の影響範囲を測れる
 
 ### 2026-04-25 17:55 — `src/shared/services/player_state.py` 旧 API shim 群（M4-4 段階移行未完）
 
@@ -468,6 +487,46 @@ scenes/*/view.py がすべて：
 ---
 
 ## 6) Discussion（記録・反省）
+
+### 2026年4月25日 18:25（Phase 5 第 4 ループ：M4-3 Game クラス state 棚卸し）
+
+**Observe**：
+- `/loop` 入力は M4-2 (Service 規約 A/B/C 分類) を指していたが、M4-2 の検証は 11 service 一括 docstring 整備で scope 大、**判断待ちのまま**。代わりに M4-3 (GameState 規約) の Game クラス field 棚卸しを実施
+- src/runtime/app.py の `class Game.__init__` から `self.X = ...` を全列挙
+
+**Think**：
+- Game クラスの field を 4 種に分類:
+  - **A. Service / Resource**: messages / font / has_jp_font / audio / sfx / dialog / image_banks / vfx / text_fmt / save_store / input_state（M4-2 規約、Game 保持 OK）
+  - **B. Scene 構成**: 各 scene + town_model / town_view / town_presenter / status_bar（Game = ランタイム殻として scene dispatcher 役、当然許容）
+  - **C. Game state OK 群**: player_model / world_map / dungeon_map / last_town_pos / world_return_x,y（M4-4 圧縮目標形に明記 = 入れる）
+  - **D. Game state 違反候補 7 件**: state / prev_state / debug_mode / debug_seq / cam_x / cam_y / dungeon_rooms / current_town（M4-4 表「GameState から出すもの」に明記）
+- M4-3 違反 7 件はすべて新規 service 設計 + 全参照書換が必要 → 単発ループに収まらない（漸進改善）
+- 4 自問: ① M4-3 棚卸し ✓ ② M4-3 のみ ✓ ③ docs/ M4-3 / M4-4 表で「移し先」明示 ✓ ④ 修正なし＝最小 ✓
+
+**Act**：
+- 棚卸し結果を Discussion に記録
+- 判断待ちリスト 3 件目「M4-3 Game クラス state 7 件」を追加（3 想定選択肢: 一括 / グループ別ループ分割 / コメント宣言のみ）
+- 修正なし、pytest 702 passed
+- commit: `compliance(runtime/app): M4-3 Game クラス state 棚卸し — 7 件は段階移行候補で判断待ち`
+
+**M4-3 進捗整理**:
+
+| 検証ポイント | 結果 |
+|---|---|
+| Game クラスの field 棚卸し | **完了**（25 件、うち state 12 件で OK 5 件 / 違反 7 件） |
+| 7 件の段階移行 | **判断待り**（漸進改善、新規 service 設計を要す） |
+
+**CoVe**：
+- シナリオ1: 棚卸し→docs/ 照合→判定→判断待ち登録→commit ✅
+- シナリオ2: 完了領域リストに `runtime/app × M4-3` 追加、7 件残課題明記 ✅
+- シナリオ3: 7 件すべて漸進改善で判断待ち（無断修正なし） ✅
+- シナリオ4: 修正範囲ゼロ、scope creep の余地なし ✅
+
+**次ループ案**:
+- M4-2 (Service 規約 A/B/C 分類): 依然として 11 service docstring 整備で scope 大、判断待ち候補
+- M4-2 状態保持基準の grep 検査: 各 service の field を「外部資源キャッシュ / UI 演出進行 / 入力履歴 / 補助情報」に照合 → judgment 多発予想
+- M4-4 検証目安 2/3 は既達成
+- → Phase 5 で「明確違反 + 最小修正」可能なサブルールは概ね処理済み。**M4-2 / M4-3 の段階移行 + M3-3 Command 化を判断待ちにまとめて**、Phase 6 (M5) へ進むのが効率的
 
 ### 2026年4月25日 18:05（Phase 5 第 3 ループ：M4-4 検証目安 1（player[...] 残存）許容判定）
 
