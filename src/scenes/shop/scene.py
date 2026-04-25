@@ -110,4 +110,5 @@ class ShopScene:
         game = self.game
         if game is None:
             return self.view.render()
-        self.view.draw(self.model, game)
+        vm = self.presenter.build_view_model(game)
+        self.view.draw(vm, game.messages)
