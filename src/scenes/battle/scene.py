@@ -510,7 +510,7 @@ class BattleScene:
                     idata = ITEMS[item.id]
                     cy = 196 + i * 12
                     col = 10 if i == m.item_select else 6
-                    game.messages.text(30, cy, f"{game.text_fmt.name(idata['name'])} x{item['qty']}", col)
+                    game.messages.text(30, cy, f"{game.text_fmt.name(idata['name'])} x{item.qty}", col)
                     if i == m.item_select:
                         game.messages.text(18, cy, ">", 10)
 

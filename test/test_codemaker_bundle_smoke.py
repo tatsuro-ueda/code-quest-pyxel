@@ -206,6 +206,24 @@ class BundledSourceLoadsTest(unittest.TestCase):
         self.assertIn("def", result)
         self.assertIn("max_hp", result)
 
+    def test_player_item_attribute_access_consistent(self):
+        """過去バグ: PlayerItem dataclass を `item['qty']` のように
+        dict 風アクセスする箇所が残っていて TypeError: 'PlayerItem' object
+        is not subscriptable で落ちていた。
+
+        bundle 内に PlayerItem の dict-style 添字参照（`item['qty']` /
+        `item['id']` / `inv['qty']` 等）が混在していないことを確認する。
+        """
+        import re
+
+        forbidden = re.compile(r"\b(item|inv|player_item)\[['\"](?:id|qty)['\"]\]")
+        offenders = [
+            f"line {i}: {line.strip()}"
+            for i, line in enumerate(self._source.splitlines(), start=1)
+            if forbidden.search(line)
+        ]
+        self.assertEqual(offenders, [], f"PlayerItem dict access remains:\n" + "\n".join(offenders))
+
     def test_player_model_new_game_succeeds_in_bundle(self):
         """過去バグ #3: bundle 内では player_state.py の shim ``stats_for_level``
         が ``def`` キーを返す。`PlayerModel.new_game()` が ``base["defense"]``
