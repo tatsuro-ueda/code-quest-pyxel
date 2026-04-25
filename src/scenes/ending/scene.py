@@ -40,10 +40,11 @@ class EndingScene:
             game.state = "map"
 
     def draw(self) -> None:
-        """エンディング画面を描画する。描画本体は View に委譲（M1-1 準拠）。"""
+        """エンディング画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。"""
         game = self.game
         if game is None:
             return
         if not self.model.lines:
             self.model.lines = game.messages.dialog_lines("ending.main.line01")
-        self.view.render(self.model, game)
+        vm = self.presenter.build_view_model(game)
+        self.view.render(vm, game.messages)

@@ -5,20 +5,21 @@ from typing import Any
 
 import pyxel
 
-from src.scenes.ending.model import EndingModel
+from src.scenes.ending.view_model import EndingViewModel
 
 
 @dataclass
 class EndingView:
-    """ending シーンの描画担当（M1-1：Pyxel API は View のみ）。"""
+    """ending シーンの描画担当（M1-1 / M2-2：解釈済み ViewModel を受け取って描画のみ）。"""
 
-    def render(self, model: EndingModel, game: Any) -> None:
-        """エンディング画面を描画する。"""
+    def render(self, vm: EndingViewModel, text_writer: Any) -> None:
+        """EndingViewModel を画面に描く。``text_writer`` は描画専用文字列出力。"""
         pyxel.cls(1)
-        if model.lines:
-            game.messages.text(60, 60, model.lines[0], 10)
-        for index, line in enumerate(model.lines[1:]):
-            game.messages.text(20, 90 + index * 15, line, 7)
-        game.messages.text(40, 180, "PRESS Z TO TITLE", 6)
-        p = game.player_model
-        game.messages.text(30, 200, f"レベル{p.lv} Time:{pyxel.frame_count//30//60}m", 6)
+        if vm.head_line is not None:
+            text_writer.text(60, 60, vm.head_line, 10)
+        for index, line in enumerate(vm.body_lines):
+            text_writer.text(20, 90 + index * 15, line, 7)
+        text_writer.text(40, 180, vm.prompt_text, 6)
+        # 経過時間は frame_count から view 側で計算（presenter で pyxel 参照は M1-1 違反）
+        elapsed_min = pyxel.frame_count // 30 // 60
+        text_writer.text(30, 200, f"レベル{vm.level_value} Time:{elapsed_min}m", 6)
