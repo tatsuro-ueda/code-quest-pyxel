@@ -263,7 +263,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 > 各領域 × 各 M ルールについて、ループが完了したら追記。
 
 - `scenes/splash` × M1-1 — 2026-04-25, 3 件解消（a8d0f24）
-- `scenes/ending` × M1-1 — 2026-04-25, 2 件解消（commit 自動 fill-in）
+- `scenes/ending` × M1-1 — 2026-04-25, 2 件解消（9eba8ac）
+- `scenes/ai_help` × M1-1 — 2026-04-25, 2 件解消（commit 自動 fill-in）
 
 ### 第 1 ループ計画（splash × M1-1）
 
@@ -410,6 +411,23 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - シナリオ2（再試行系）: 完了リストに ending 追加 ✅
 - シナリオ3（異常系）: N/A
 - シナリオ4（リスク確認）: ending のみ・M1-1 のみ・update に触れず ✅
+
+### 2026年4月25日 14:05（第 3 ループ実行：scenes/ai_help × M1-1）
+
+**Observe**：
+- 第 3 ループ対象：`src/scenes/ai_help/scene.py`（89 行 / 2 pyxel 違反：`rect` / `rectb`）
+- ai_help/view.py は空スケルトン
+
+**Think**：
+- 同パターン：scene.draw() の `game.explore_scene.draw()` + `game.status_bar.draw()` の重ね描き指揮は scene 側に残し、AI ヘルプ panel 本体の描画だけ view に移す
+- ループ前 4 自問: ① ai_help のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲 ✓
+
+**Act**：
+- `src/scenes/ai_help/view.py`: `AiHelpView.render(model, game)` 追加、2 pyxel + panel 文言ループを移動
+- `src/scenes/ai_help/scene.py`: `import pyxel` 削除、`draw()` は背景重ね＋view.render() に縮退
+- 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+
+**CoVe（Gherkin 合致確認）**：シナリオ1 ✅ / シナリオ2（リスト更新）✅ / シナリオ3 N/A / シナリオ4 ✅
 
 ## 参考資料
 

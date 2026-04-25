@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-import pyxel
-
 from src.scenes.ai_help.model import AiHelpModel
 from src.scenes.ai_help.presenter import AiHelpPresenter
 from src.scenes.ai_help.view import AiHelpView
@@ -59,31 +57,11 @@ class AiHelpScene:
             game.state = "menu"
 
     def draw(self) -> None:
-        """AI ヘルプ画面を描画する。"""
+        """AI ヘルプ画面を描画する。背景の重ね描きは scene が指揮し、
+        パネル本体の描画は View に委譲する（M1-1 準拠）。"""
         game = self.game
         if game is None:
             return
         game.explore_scene.draw()
         game.status_bar.draw()
-        x, y, w, h = 12, 36, 232, 196
-        pyxel.rect(x, y, w, h, 1)
-        pyxel.rectb(x, y, w, h, 7)
-        game.messages.text(x + 8, y + 8, "AIで このゲームを しゅうせい", 10)
-        lines = [
-            "",
-            "１ Code Maker の Save をおして",
-            "  main.py をダウンロード",
-            "",
-            "２ ブラウザで claude.ai か",
-            "  chatgpt.com をひらく",
-            "",
-            "３ main.py をはりつけて",
-            "  「ここを こう なおして」と たのむ",
-            "",
-            "４ かえってきた コードを",
-            "  Code Maker に はりつける",
-            "",
-            f"  -> {self.model.status}",
-        ]
-        for i, line in enumerate(lines):
-            game.messages.text(x + 8, y + 24 + i * 9, line, 7)
+        self.view.render(self.model, game)
