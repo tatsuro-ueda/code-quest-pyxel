@@ -274,12 +274,15 @@ class ExploreScene:
         return None
 
     def draw(self) -> dict[str, str] | None:
-        """フィールド地図を Pyxel に描画する。描画本体は View に委譲（M1-1 準拠）。
+        """フィールド地図を Pyxel に描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。
 
         game が未設定（単体テスト）時は既存 view.render dict を返して互換維持。
         """
         game = self.game
         if game is None:
             return self.view.render(mode=self.model.mode)
-        self.view.draw(self.model, game)
+        vm = self.presenter.build_view_model(game)
+        # explore view はテキストを描かないので text_writer は省略可
+        text_writer = getattr(game, "messages", None)
+        self.view.draw(vm, text_writer)
         return None

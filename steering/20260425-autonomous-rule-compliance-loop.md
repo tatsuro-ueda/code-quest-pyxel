@@ -290,7 +290,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/title` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（5e7f9c0、TitleMenuRow 中間 dataclass）
 - `scenes/shop` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（45e18ab、ShopRow 中間 dataclass）
 - `scenes/menu` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（a8f3950、MenuSubPanel + MenuRow で 3 sub-state 統一）
-- `scenes/professor` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（commit 自動 fill-in、3 phase を ProfessorViewModel 1 形式に統一）
+- `scenes/professor` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（b1ff629、3 phase を ProfessorViewModel 1 形式に統一）
+- `scenes/explore` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（commit 自動 fill-in、image_banks を VM 経由で渡す M2-1 例外パターン）
 
 **🎉 Phase 1 (M1-1) 全 17 領域処理完了。**
 
