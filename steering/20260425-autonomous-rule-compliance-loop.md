@@ -306,7 +306,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/explore` × M4-1 — 2026-04-25, 他 scene からの `game.explore_scene.model.a_cooldown = True` 直代入 5 件を `start_a_cooldown()` メソッド経由に統一（caller: title / ending / professor x2 / town presenter；fake test も追従）（10ef4e7）
 - `scenes/menu` × M4-1 — 2026-04-25, settings/scene.py から `game.menu_scene.model.sub = None` 直代入 1 件を `clear_sub()` メソッド経由に統一（fake test も追従）→ **M4-1「他 Scene Model 直代入禁止」違反 0 件達成**（cea5e62）
 - `shared/state + shared/services/player_state` × M4-4 検証目安 1 — 2026-04-25, **2 件は migration 互換 shim 内部の dict 操作で許容判定**（player_model.py:159 は `from_snapshot` 内部変換、player_state.py:84 は `restore_snapshot` 旧 API 互換 shim で test_player_snapshot / test_architecture_layout が依存）。旧 API shim 群の最終削除と test 移行は判断待ちリストへ。（0d3b5da）
-- `runtime/app` × M4-3 — 2026-04-25, Game クラス state 棚卸し完了。**7 件は段階移行候補で判断待ち**（`state/prev_state` → SceneManager / `debug_mode/debug_seq` → DebugService / `cam_x/cam_y` → ExploreModel か ViewportService / `dungeon_rooms` → WorldGenerationService cache / `current_town` → 一時 UI 状態）。OK 群（player_model / world_map / dungeon_map / last_town_pos / world_return_x,y）は M4-4 圧縮目標形通り。
+- `runtime/app` × M4-3 — 2026-04-25, Game クラス state 棚卸し完了。**7 件は段階移行候補で判断待ち**（`state/prev_state` → SceneManager / `debug_mode/debug_seq` → DebugService / `cam_x/cam_y` → ExploreModel か ViewportService / `dungeon_rooms` → WorldGenerationService cache / `current_town` → 一時 UI 状態）。OK 群（player_model / world_map / dungeon_map / last_town_pos / world_return_x,y）は M4-4 圧縮目標形通り。（0ea9495）
+- `framework` × M5-1 — 2026-04-25, **即完走**。検証目安 `find src/scenes -maxdepth 2 -type f -name '*.py' \| grep -vE '/(model\|presenter\|view\|view_model\|scene\|__init__)\.py$'` が 0 件。全 11 scene が `{model,presenter,view,view_model,scene,__init__}.py` 構造を満たし、クラス命名は `<Scene>{Model,Presenter,View,ViewModel,Scene}` の prefix 整合。Town は scene.py 縮退形で M3-2 例外規定に該当。補助クラス（XxxRow, XxxSubPanel, XxxLandmark, XxxChoiceRow）も同 prefix で整合。
 
 **🎉 Phase 4 (M3 Scene 規約) 全 10 scenes 完走**
 
@@ -487,6 +488,48 @@ scenes/*/view.py がすべて：
 ---
 
 ## 6) Discussion（記録・反省）
+
+### 2026年4月25日 18:45（Phase 6 第 1 ループ：M5-1 命名規約・即完走）
+
+**Observe**：
+- Phase 5 で「明確違反 + 最小修正」可能なサブルールは概ね処理済み。Phase 6 (M5 命名・テスト規約) に移行
+- M5 全体検証 grep / 構造チェックを並列実行：
+  - **M5-1 検証目安 1**（ファイル命名）: `find src/scenes -maxdepth 2 -type f -name '*.py' | grep -vE '/(model|presenter|view|view_model|scene|__init__)\.py$'` → **0 件** ✓
+  - **M5-1 クラス命名**: 全 scene で `<Scene>{Model,Presenter,View,ViewModel,Scene}` prefix 整合 ✓（補助クラス XxxRow / XxxSubPanel / XxxLandmark / XxxChoiceRow も同 prefix）
+  - **M5-2 検証目安**: `test/test_player_model.py` 存在 ✓ / Presenter テスト多数（`test_cjg_*_presenter*`）✓
+  - **M5-3 検証目安**: `ARCHITECTURE.md` 不在 ❌、`AGENTS.md` 存在するが M1〜M5 / framework-rule 参照 0 件 ❌
+
+**Think**：
+- M5-1 は「ファイル命名 + クラス命名」の構造規約で、Phase 1〜4 の MVP 化作業中に既に整備済み（Phase 3 で view_model.py 全 10 scene 導入、Phase 4 で scene 構造を維持）
+- → **Phase 2 (M1-2) と同型の「即完走」パターン**で commit
+- M5-2 は presenter テストが既に多数存在、規約満足
+- M5-3 は AGENTS.md 整備（M1〜M5 サマリ追記）が次ループ題材
+- 4 自問: ① M5-1 のみ ✓ ② M5-1 のみ ✓ ③ docs/ M5-1 検証目安明文 ✓ ④ 修正なし＝最小 ✓
+
+**Act**：
+- 検証 grep 結果を Discussion に記録
+- 完了領域リストに「`framework × M5-1` 即完走」を追記
+- M5-3 違反は次ループの題材として保留
+- 修正なし、pytest 702 passed
+- commit: `compliance(framework): M5-1 (命名規約) は全 scene で違反 0 件、即完走`
+
+**M5 進捗整理**:
+
+| サブルール | 検証結果 | 残課題 |
+|---|---|---|
+| M5-1 命名規約 | **即完走**（ファイル命名 0 件 / クラス命名整合） | — |
+| M5-2 テスト規約 | 検証 grep 充足（test_player_model + presenter テスト多数） | 各 presenter テストの「禁止パターン」(Pyxel 描画依存 / private 状態) 個別確認は別ループ |
+| M5-3 AI 向けガードレール | **違反**（ARCHITECTURE.md 不在、AGENTS.md に M1〜M5 サマリなし） | 次ループで AGENTS.md 整備 |
+
+**CoVe**：
+- シナリオ1: 検証 grep → 0 件確認 → 完了領域リスト追記 → commit ✅
+- シナリオ2: 完了領域リストに `framework × M5-1` 追加、M5-2/M5-3 状況も記録 ✅
+- シナリオ3: M5-3 違反を次ループ題材に保留（無断修正なし） ✅
+- シナリオ4: 修正範囲ゼロ、scope creep の余地なし ✅
+
+**次ループ案**:
+- M5-3 AGENTS.md に framework-rule M1〜M5 サマリ追加（最小修正）
+- ARCHITECTURE.md は repository-structure.md (15KB) が事実上の構造文書なのでリネームか別新設かで判断分岐 → **判断待ち候補**
 
 ### 2026年4月25日 18:25（Phase 5 第 4 ループ：M4-3 Game クラス state 棚卸し）
 
