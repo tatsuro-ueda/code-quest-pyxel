@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-import pyxel
-
 from src.scenes.splash.model import SplashModel
 from src.scenes.splash.presenter import SplashPresenter
 from src.scenes.splash.view import SplashView
@@ -34,21 +32,8 @@ class SplashScene:
             game.state = "title"
 
     def draw(self) -> None:
-        """スプラッシュ画面を描画する。"""
+        """スプラッシュ画面を描画する。描画本体は View に委譲（M1-1 準拠）。"""
         game = self.game
         if game is None:
             return
-        pyxel.cls(0)
-        f = self.model.frame
-        col = 1 if f < 15 else (5 if f < 30 else 12)
-        for i in range(8):
-            x = 16 + i * 28
-            pyxel.rect(x, 100, 12, 12, col)
-        title_color = 7 if f >= 20 else 5
-        game.messages.text(80, 80, "BLOCK QUEST", title_color)
-        if f >= 40:
-            game.messages.text(50, 130, game.text_fmt.t("コードのたびは、ここから", "Coding journey starts here"), 10)
-        if f >= 60:
-            game.messages.text(70, 160, game.text_fmt.t("presented by うえだたつろう", "by Tatsuro Ueda"), 6)
-        if f >= 75 and (pyxel.frame_count // 8) % 2:
-            game.messages.text(60, 220, "PRESS ANY KEY", 7)
+        self.view.render(frame=self.model.frame, game=game)

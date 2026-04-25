@@ -1,13 +1,14 @@
 ---
-status: open
+status: in-progress
 priority: high
 scheduled: 2026-04-25T03:30:00+00:00
 dateCreated: 2026-04-25T03:30:00+00:00
-dateModified: 2026-04-25T04:00:00+00:00
+dateModified: 2026-04-25T04:30:00+00:00
 status_changelog:
   - 2026-04-25 open（起票・Journey のみ）
   - 2026-04-25 Gherkin 起草（ユーザー Journey 修正を反映）
   - 2026-04-25 Design 起草（ループ駆動・領域選定・エスカレーション形式を確定）
+  - 2026-04-25 in-progress（Tasklist 起草・第 1 ループ実行開始）
 tags:
   - task
   - autonomous-loop
@@ -17,8 +18,8 @@ tags:
 
 # 2026年4月25日 既存コードを最新ルール群に自律的に準拠させる（サイクリックループ）
 
-> 状態：(3) Design（Tasklist 以降は未記入）
-> 次のゲート：（ユーザー）Design を確認して「実行」or「次」と指示
+> 状態：(4) Tasklist 実行中（第 1 ループ：scenes/splash × M1-1）
+> 次のゲート：第 1 ループ完了後、ユーザーレビュー
 
 ---
 
@@ -124,7 +125,7 @@ flowchart TD
 ### 構成図（ループ 1 周のデータフロー）
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph INPUT[インプット]
         I1[docs/ ルール群<br>framework-rule.md M1〜M5 + 各 PRD]
         I2[本 note の進捗・判断待ちリスト]
@@ -228,7 +229,54 @@ flowchart TD
 
 ## 4) Tasklist
 
-> 未記入（Design 承認後、`/superpowers:writing-plans` で正式計画に置き換える）
+### ループ 1 周の手順（雛形）
+
+各ループで CC が踏むステップ：
+1. **進捗確認**：本 note の「完了領域リスト」「判断待ちリスト」を読む
+2. **領域選択**：未着手かつ違反密度が高そうな領域を 1 つ選ぶ
+3. **違反列挙**：grep / pytest / architecture_layout test で違反を取り出す
+4. **docs/ 根拠確認**：各違反について docs/ に該当条文があるか確認
+5. **修正 or 判断待ち**：根拠ありなら最小修正、なし／曖昧なら判断待ちリストへ
+6. **テスト**：`pytest test/ -q` で全 green 確認
+7. **commit**：`compliance(<領域>): <M番号> 違反 N 件解消 — <一行サマリ>`
+8. **作業記録**：本 note の Discussion に追記、完了領域リストを更新
+
+### 領域選定の修正方針（Design 第 2 項目の再解釈）
+
+Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxel 違反) を 1 ループに詰め込むと 5〜30 分枠を超える。
+**修正**: **小さい順で mechanism を検証 → 大きいものは複数ループに分割**
+
+具体順：
+1. splash (54 行 / 4 pyxel) — **第 1 ループ：mechanism 検証用**
+2. ending (58 行 / 3 pyxel)
+3. ai_help (89 行 / 3 pyxel)
+4. settings (124 行 / 3 pyxel)
+5. title (132 行 / 2 pyxel)
+6. shop (147 行 / 2 pyxel)
+7. menu (179 行 / 9 pyxel)
+8. professor (202 行 / 7 pyxel)
+9. explore (395 行 / 12 pyxel) — 複数ループ想定
+10. battle (518 行 / 17 pyxel) — 複数ループ想定
+
+### 完了領域リスト
+
+> 各領域 × 各 M ルールについて、ループが完了したら追記。
+
+- `scenes/splash` × M1-1 — 2026-04-25, 3 件解消（commit TBD）
+
+### 第 1 ループ計画（splash × M1-1）
+
+- **対象**: `src/scenes/splash/scene.py` の `pyxel.*` 直呼び 4 箇所
+- **ルール**: framework-rule.md M1-1（Pyxel API は View のみ）
+- **根拠条文**: 「presenters / services は Pyxel 呼び出し禁止」「Scene は薄い配線（M3-2）なので scene.py 直下も views/ に寄せる」
+- **手順**:
+  1. `src/scenes/splash/scene.py` の pyxel.* 行を全て特定
+  2. `src/scenes/splash/view.py` に対応する描画メソッドを追加
+  3. scene.py の draw 系メソッドを view 経由呼び出しに置き換え
+  4. `pytest test/ -q` で全 green 確認
+  5. `M.X` 等 main_runtime からの定数参照は維持（M1-1 違反ではない）
+  6. commit: `compliance(scenes/splash): M1-1 (Pyxel API は View のみ) 違反 4 件解消`
+  7. Discussion 更新、完了領域リスト追加
 
 ---
 
@@ -312,6 +360,31 @@ flowchart TD
 - Design セクションを全面記入（構成図・手順フロー・決定事項 9 項目・判断待ちリスト雛形・自問チェック）
 - 委任度を 🟢 に格上げ条件と共に明示
 - 次ゲート：ユーザー Design 確認 → 「実行」指示で Phase 4 (Tasklist) へ
+
+### 2026年4月25日 13:45（第 1 ループ実行：scenes/splash × M1-1）
+
+**Observe**：
+- Tasklist 起草。Design の「行数降順」を「行数昇順で mechanism 検証 → 大きいものは複数ループ」に修正（battle 518 行 / 17 違反は 1 ループに収まらないため）
+- 第 1 ループ対象：`src/scenes/splash/scene.py`（54 行 / 3 pyxel 違反：`cls(0)` / `rect(...)` / `frame_count`）
+- splash の view.py は空スケルトン、test_cjg_splash_scene_behavior.py は `update()` テストのみで `draw()` は触らない
+
+**Think**：
+- M1-1 根拠：docs/framework-rule.md L154 「presenters / services / shared/state は Pyxel 呼び出し禁止」「View 以外での全 `pyxel.*` 原則禁止」
+- scene.py は M3-2 で「薄い配線」扱いなので scene.py 内の pyxel.* も view へ寄せるべき
+- 修正方針：`view.render(frame, game)` を新設し、scene.draw() は view.render() を呼ぶだけにする（town/view パターンと整合）
+- ループ前 4 自問: ① splash のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲（draw 移動のみ、update には触らない）✓
+
+**Act**：
+- `src/scenes/splash/view.py`: `SplashView.render(frame, game)` 追加、3 pyxel 呼び出しを移動
+- `src/scenes/splash/scene.py`: `import pyxel` 削除、`draw()` は `self.view.render(...)` 1 行に縮退
+- 検証：`grep pyxel\\. src/scenes/splash/scene.py` → 0 件 ✓ / pytest 702 passed ✓
+- 次：commit → Discussion 更新 → CoVe（Gherkin シナリオ全合致確認）→ 第 2 ループ判断
+
+**CoVe（Gherkin 合致確認）**：
+- シナリオ1（正常系）: 領域選択→違反列挙→最小修正→緑→commit→Discussion 追記 → ✅
+- シナリオ2（再試行系）: 完了領域リストに `scenes/splash × M1-1` 追加済み、再選択時は 0 件で飛ぶ → ✅
+- シナリオ3（異常系）: 曖昧違反なし、該当しない → N/A
+- シナリオ4（リスク確認）: splash のみ・M1-1 のみ・update には触れていない → ✅
 
 ## 参考資料
 
