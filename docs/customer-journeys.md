@@ -917,6 +917,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦そもそも親の介入がないので承認体験自体がない（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦評価は「いいね」中心で他人軸／自分の体感判断は弱い（Roblox プラットフォーム）]
+        C2 --> C3[（vibe coding 単体）💦親の修正がそのまま反映され子の体感判断が省略される（コードエディタ）]
+    end
     subgraph Before["Before"]
         B1[（子ども）❓承認画面に「スライムのHP: 50→30」（承認画面）]
         B1 --> B2[（子ども）❓「30 ってどのくらい？よくわかんない」（対面）]
@@ -931,6 +936,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：③子（批評家・自己判断）, ⑥親（成長支援・主体性） → `customer-jobs.md` 参照
+
 ### CJ32: 子どもが変更を却下する
 
 子どもが両方遊んだ結果「まえのがいい」と自信を持って却下する。親の理屈に言い返せなくても、遊んだ体感が根拠になる。ここでは親が明示的な却下コマンドを実行し、`本番` をそのまま保ち、`開発版` を取り下げる。
@@ -939,6 +946,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦親の修正という概念がなく却下体験そのものがない（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦親が直接編集→却下する仕組みがなく親が支配しがち（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦親の理屈が AI 経由で反映され子は受け手になる（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（親）💡「バランス的に HP 下げたほうがいい」（対面）]
         B1 --> B2[（親）👆修正して反映（コードエディタ）]
@@ -952,6 +964,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：③子（批評家・自己判断）, ⑥親（成長支援・主体性） → `customer-jobs.md` 参照
+
 ### CJ33: 子どもが変更を選んで適用する
 
 親がAIに複数の修正を頼んだとき、子どもがどれを採用するか・どの順で入れるかを選ぶ。優先順位を決めるのは子ども。選択ページの変更一覧は、親があとから別に手で説明を書くものではなく、その時点の `開発版` に入っている変更から自動生成され、実際に遊べる変更と一対一に対応している必要がある。ここでいう一覧は「いま存在する `開発版`」だけを説明するもので、前の候補が残っていても自動で `本番` に混ぜてはいけない。新しい候補を試したいときは、親が `本番` を土台に新しい `開発版` を作り直す。
@@ -960,6 +974,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦親が複数案を整理して子に選ばせる仕組みがない（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦パブリッシュは一括反映で子の優先順位判断が省略される（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦親が一括で AI に頼み子は何が変わったかわからない（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（友達）💡3 つフィードバック（スマホブラウザ）]
         B1 --> B2[（親）💦全部まとめて AI に頼む → 一括反映（AI入力画面）]
@@ -975,6 +994,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：③子（批評家・自己判断）, ⑥親（成長支援・主体性）, ④子（社会・共有・反応） → `customer-jobs.md` 参照
+
 ### CJ34: 承認したあとに「やっぱり」となる
 
 一度承認した変更で遊んでみたら「やっぱり前のほうがよかった」。巻き戻しも同じ承認キューで回る。
@@ -983,6 +1004,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦元に戻すは undo はあるが「採否を再判断する」体験がない（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦バージョン管理はあるが子の自己判断ベースで戻す UX ではない（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦戻し依頼も親が代行になり「自分で戻す」が育たない（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）👆承認して反映してしばらく遊ぶ（ゲーム中）]
         B1 --> B2[（子ども）❓「やっぱり前のほうがよかったかも…」（対面）]
@@ -997,6 +1023,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：③子（批評家・自己判断）, ⑥親（成長支援・主体性） → `customer-jobs.md` 参照
+
 ### CJ25: 親子で役割を交代する
 
 親がマップを描き、子どもがテストプレイヤーになる。ただし「何を作るか」「何を直すか」の判断は常に子ども側にある。役割が交代しても、ハンドルは子どもが握っている。
@@ -1005,6 +1033,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦親子の役割交代という構造がなく見守りに徹する（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦親がコードを書き続けるパターンに固定されがち（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI が代行する側に立ち親子の役割交代が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（親）💦親がコードを書く（コードエディタ）]
         B1 --> B2[（子ども）❓横で見ているだけ（対面）]
@@ -1019,6 +1052,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：⑤親（関係・コミュニケーション）, ⑥親（成長支援・主体性） → `customer-jobs.md` 参照
+
 ### CJ26: 「自分たちのゲーム」と言えるようになる
 
 親子が `開発版` を Pyxel Code Maker に持ち出して、見た目や音も含めて「自分たちのゲーム」を触れる。選択ページからそのまま `開発版` 用 zip を落とし、公式 Pyxel Code Maker を開けることで、ブラウザ版で遊ぶだけで終わらず、「ここも自分たちで変えられる」という実感までつながる。さらに、Code Maker で保存した `code-maker.zip` を selector に戻すと、今の code は勝手に巻き戻さず、親子が作った見た目や音が development 候補へ反映される。特に `Sound / Music` は code 側の audio asset として取り込まれ、実ゲームの BGM / SFX として鳴る。音や見た目の原案を作るのは親子であり、AI は `.pyxres` を手で直すのではなく import / build / verify を担当する。教材版の `main.py` では `STUDENT AREA` が明示され、そこだけ触ればよいと分かる。もしコア領域を壊したら起動前に案内して止まるため、単一ファイル環境でも事故で全部を壊しにくい。
@@ -1029,6 +1064,11 @@ gherkin は [`product-requirements-platform.md`](./product-requirements-platform
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦見た目はスクラッチ感が抜けず「自分たちの色」が出ない（Scratch エディタ）]
+        C1 --> C2[（マリオメーカー）💦見た目はマリオに固定／オリジナル感が出ない（SMM2）]
+        C2 --> C3[（vibe coding 単体）💦親と AI が作った印象になり「ぼくたちが作った」感が薄い（コードエディタ）]
+    end
     subgraph Before["Before"]
         B1[（親子）💡「これを Code Maker でさわりたい」（選択ページ）]
         B1 --> B2[（親子）❓index.html には play しかない（index.html）]
@@ -1043,6 +1083,8 @@ flowchart LR
         A3 --> A4[（子ども）❤️「ここもぼくたちでかえた！」続きを作りたくなる（対面）]
     end
 ```
+
+> 該当カテゴリ：②子（クリエイター・表現）, ⑤親（関係・コミュニケーション）, ⑥親（成長支援・主体性） → `customer-jobs.md` 参照
 
 ---
 
