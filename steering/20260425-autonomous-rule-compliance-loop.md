@@ -280,7 +280,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `services/image_banks` × M1-1 — 2026-04-25, **判断待ちに退避（13 件、リソース ラッパが M1-1 例外に該当するか docs/ で未定義）**
 - `services/message_display` × M1-1 — 2026-04-25, **判断待ちに退避（7 件、テキスト描画ラッパで多数の views/scenes から `game.messages.text()` 呼び出し、構造変更要）**
 - `services/vfx` × M1-1 — 2026-04-25, **判断待ちに退避（1 件、message_display と同型の services 内描画問題）**
-- `runtime/app.py` × M1-1 — 2026-04-25, **7 件は M1-1 例外規定（最外殻）により許容判定**（commit 自動 fill-in）。ただし line 139 の F1 緊急脱出 `pyxel.btnp` は M1-2 観点で別途要検討（M1-2 ループ対象）
+- `runtime/app.py` × M1-1 — 2026-04-25, **7 件は M1-1 例外規定（最外殻）により許容判定**（4d8d8f8）。ただし line 139 の F1 緊急脱出 `pyxel.btnp` は M1-2 観点で別途要検討（M1-2 ループ対象）
+- `runtime/main_runtime.py` × M1-1 — 2026-04-25, **1 件 (`import pyxel` 再エクスポート shim) は許容判定**（commit 自動 fill-in）
 
 ---
 
@@ -644,6 +645,25 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - commit 形式：`compliance(runtime/app): M1-1 例外規定（最外殻）により 7 件は許容と判定`
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅（修正範囲ゼロ）
+
+### 2026年4月25日 16:00（第 16 ループ：runtime/main_runtime × M1-1 / 最外殻 shim 許容判定）
+
+**Observe**：
+- 第 16 ループ対象：`src/runtime/main_runtime.py`（1 grep ヒット = `import pyxel`、+ docstring の `pyxel.run` 言及）
+- ファイル冒頭コメント `"""Block Quest runtime shim (P1.5-E で <50 行に圧縮)。真の entry point は src/runtime/app.py::run。tests / Code Maker bundler / 旧 import src.runtime.main_runtime as M の互換のため、module-level 名前を ここで再エクスポートする。"""`
+
+**Think**：
+- `import pyxel` は tests が `M.pyxel` 経由で pyxel をモジュール参照するための再エクスポート（line 8 のコメント明記）
+- ファイル全体が再エクスポート shim、新規コードを書く場所ではない
+- runtime/ 配下なので app.py と同じ最外殻系として扱える
+- 4 自問: ① main_runtime のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり（最外殻例外）✓ ④ 修正不要 ✓
+
+**Act**：
+- 1 件は許容判定（最外殻 shim）
+- pytest 702 passed
+- commit 形式：`compliance(runtime/main_runtime): M1-1 例外規定（最外殻 shim）により 1 件は許容と判定`
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
 
 ### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
 
