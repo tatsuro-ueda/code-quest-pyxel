@@ -179,10 +179,10 @@ flowchart TD
 
 ### 決定事項
 
-1. **ループ駆動方式**: `/loop` で自動実行を基本とする。インターバルは **領域サイズに応じて可変**（2026-04-25 ユーザー判断 D）：
-   - 小領域（違反 1〜3 件 / 単一パターン置換）: **270 秒**（5 分 cache TTL を切らさず連続実行）
-   - 中領域（違反 4〜9 件 / 複数 sub-state あり）: **1200 秒（20 分）**
-   - 大領域（違反 10 件以上 / 複数 commit に分割想定）: **1800 秒（30 分）**
+1. **ループ駆動方式**: `/loop` で自動実行。インターバルは **全領域一律 270 秒**
+   （2026-04-25 ユーザー判断 D' で可変規約を撤廃して速度優先に統一）：
+   - 270 秒 = プロンプト cache の 5 分 TTL を切らさない最大値、最小コストで最速進行
+   - 大領域は単に複数 commit / 複数ループに分割（1 ループに詰め込まず、領域継続でも 270s で次に進む）
    - ユーザーは任意のタイミングで `/loop` を停止／一時停止できる
 2. **対象領域の選び方**:
    - 第 1 優先：`src/scenes/*` の **scene.py 行数が大きい順** に巡回（battle 518 → explore 395 → professor 202 → menu 179 → shop 147 → title 132 → settings 124 → ai_help 89 → ending 58 → splash 54）。town は完了済み除外
@@ -272,7 +272,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/settings` × M1-1 — 2026-04-25, 2 件解消（5d0231c）
 - `scenes/title` × M1-1 — 2026-04-25, 1 件解消（64e7ce9）
 - `scenes/shop` × M1-1 — 2026-04-25, 1 件解消（fc569bd）
-- `scenes/menu` × M1-1 — 2026-04-25, 8 件解消（commit 自動 fill-in、中領域）
+- `scenes/menu` × M1-1 — 2026-04-25, 8 件解消（877073c、中領域）
+- `scenes/professor` × M1-1 — 2026-04-25, 6 件解消（commit 自動 fill-in、中領域）
 
 ### 第 1 ループ計画（splash × M1-1）
 
@@ -450,6 +451,25 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 **Act**：
 - `src/scenes/settings/view.py`: `SettingsView.render(*, rows, cursor, game)` 追加、2 pyxel + 設定行ループを移動
 - `src/scenes/settings/scene.py`: `import pyxel` 削除、`draw()` を 1 行に
+- 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
+
+### 2026年4月25日 14:55（規約 D' / 第 8 ループ：scenes/professor × M1-1）
+
+**Observe**：
+- ユーザー「もっと速くまわして」→ 可変間隔規約 (D) を撤廃、**全領域一律 270s** に統一
+- 既存 1219s wakeup を待たず、professor を即実行（中領域でも 270s 規約適用）
+- professor は draw_intro / draw_ending_main / draw_ending_accepted の 3 メソッド × pyxel.cls + frame_count = 計 6 違反
+
+**Think**：
+- view.draw_intro / draw_ending_main / draw_ending_accepted の 3 メソッドを 1:1 で新設
+- scene 側はそれぞれ view 委譲のみに縮退
+- 4 自問: ① professor のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲 ✓
+
+**Act**：
+- `src/scenes/professor/view.py`: 3 メソッド追加、6 pyxel + 描画ロジック移動
+- `src/scenes/professor/scene.py`: `import pyxel` 削除、3 つの draw_* を委譲のみに縮退
 - 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
