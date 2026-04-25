@@ -87,11 +87,12 @@ class ProfessorScene:
                 game.battle_scene.start(M.PROFESSOR_DATA, is_professor=True)
 
     def draw_intro(self) -> None:
-        """Professor intro 画面を描画する。描画本体は View に委譲（M1-1 準拠）。"""
+        """Professor intro 画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        self.view.draw_intro(self.model, game)
+        vm = self.presenter.build_intro_view_model(game)
+        self.view.draw(vm, game.messages)
 
     def enter_ending_main(self) -> None:
         """Professor ending（撃破後）に入る。"""
@@ -119,11 +120,12 @@ class ProfessorScene:
                 game.state = "map"
 
     def draw_ending_main(self) -> None:
-        """Professor ending main 画面を描画する。描画本体は View に委譲。"""
+        """Professor ending main 画面を描画する。Presenter が VM 組立て、View に委譲。"""
         game = self.game
         if game is None:
             return
-        self.view.draw_ending_main(self.model, game)
+        vm = self.presenter.build_ending_main_view_model(game)
+        self.view.draw(vm, game.messages)
 
     def enter_ending_accepted(self) -> None:
         """Professor 受諾エンドに入る。"""
@@ -145,11 +147,12 @@ class ProfessorScene:
                 game.explore_scene.model.a_cooldown = True
 
     def draw_ending_accepted(self) -> None:
-        """Professor 受諾エンド画面を描画する。描画本体は View に委譲。"""
+        """Professor 受諾エンド画面を描画する。Presenter が VM 組立て、View に委譲。"""
         game = self.game
         if game is None:
             return
-        self.view.draw_ending_accepted(self.model, game)
+        vm = self.presenter.build_ending_accepted_view_model(game)
+        self.view.draw(vm, game.messages)
 
     def update(self) -> None:
         """Scene Protocol 互換。P1-G10 では個別 update_* を Game dispatcher が呼ぶ。"""
