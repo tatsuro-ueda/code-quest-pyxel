@@ -278,10 +278,27 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/battle` × M1-1 — 2026-04-25, 17 件解消（19557e2、大領域・1 commit）
 - `services/audio_system` × M1-1 — 2026-04-25, **24 件は M1-1 例外規定（Audio ラッパ）により許容判定**（c255516）
 - `services/image_banks` × M1-1 — 2026-04-25, **判断待ちに退避（13 件、リソース ラッパが M1-1 例外に該当するか docs/ で未定義）**
+- `services/message_display` × M1-1 — 2026-04-25, **判断待ちに退避（7 件、テキスト描画ラッパで多数の views/scenes から `game.messages.text()` 呼び出し、構造変更要）**
 
 ---
 
 ## 判断待ちリスト
+
+### 2026-04-25 15:20 — `src/shared/services/message_display.py` 全体（7 pyxel 違反）
+
+- **適用候補ルール**: docs/framework-rule.md M1-1「services は Pyxel 呼び出し禁止」
+- **違反内訳**:
+  - `text(x, y, s, col)` メソッド (lines 125-144): `pyxel.pal` ×2 + `pyxel.blt` ×1 = 3 件。日本語フォント (misaki_gothic) を image bank からタイル blt で描画
+  - `draw_say_overlay()` メソッド (line 152): `pyxel.rect` ×1。デバッグ overlay 背景
+  - `draw_window()` メソッド (lines 160, 161, 171): `pyxel.rect` + `pyxel.rectb` + `pyxel.frame_count` ×3。メッセージウィンドウ枠 + 点滅プロンプト
+- **使用状況**: `game.messages.text(...)` の呼び出しは **src/ 全体で 61 箇所**、scenes だけで 10 ファイルが利用。テキスト描画プリミティブとして広範に依存
+- **想定選択肢**:
+  1. **(A) `shared/ui/text_renderer.py` 等を新設**して `text()` を移し、MessageDisplay は state 管理だけに縮退（`game.messages.text` の 61 箇所書き換えが必要）
+  2. **(B) M1-1 例外規定を「Audio/Save/Text-rendering ラッパ」に拡張**して docs/ 改訂、現状コードは許容
+  3. **(C) MessageDisplay を `shared/ui/message_display.py` に物理移動** — services/ から ui/ へ移すだけで例外規定議論を回避（ui = view 層と解釈できれば違反でなくなる）
+  4. **(D) game.messages 経由の呼び出しを全て view に置き換え** + MessageDisplay を分割（巨大スコープ）
+- **なぜ迷うか**: テキスト描画は本来 view の責務だが、61 箇所の呼び出し変更は scope 大。services/ にあるべきでないのは確かだが、移動先が ui/ か views/ か新規モジュールかで設計判断が必要
+- **足し材料**: docs/framework-rule.md に「ui/ ディレクトリの位置付け（views と同等／別レイヤー）」を明記すると、(C) の物理移動だけで済むかどうか確定できる
 
 ### 2026-04-25 15:15 — `src/shared/services/image_banks.py` 全体（13 pyxel 違反）
 
@@ -549,6 +566,28 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - シナリオ2: 完了領域リストに「判断待ち退避」と明記、再選択時には判断済か確認 ✅
 - **シナリオ3: 初発動 ✅** — 曖昧時に手を出さず判断待ちリストに記録、ループは停止せず次ループに進む（「ループ全停止しない」Design 第 4 項目通り）
 - シナリオ4: 修正範囲ゼロ ✅
+
+### 2026年4月25日 15:20（第 13 ループ：services/message_display × M1-1 / 判断待ち 2 件目）
+
+**Observe**：
+- 第 13 ループ対象：`src/shared/services/message_display.py`（7 pyxel 違反）
+- `import pyxel` 直 import あり、3 メソッドが pyxel.* を使う：
+  - `text(x, y, s, col)`: 日本語フォント描画（pal + blt）3 件
+  - `draw_say_overlay()`: デバッグ overlay 1 件
+  - `draw_window()`: メッセージウィンドウ枠 + 点滅 3 件
+- **`game.messages.text(...)` の呼び出しは src/ 全体で 61 箇所、scenes 10 ファイル**
+
+**Think**：
+- 4 自問: ① message_display のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠は M1-1 だが「テキスト描画ラッパ」は例外列挙にない ④ 最小修正の閾値超え（61 箇所書き換え必要）
+- image_banks と同型の判断分岐：services/ にあるが機能はビュー層。物理移動 vs 構造分割 vs 例外規定拡張の 3 つの方針判断が必要
+- ユーザー指示「迷ったら docs/、根拠不在なら手を出さず」+ シナリオ3 → 判断待ちへ
+
+**Act**：
+- 判断待ちリスト 2 件目を追加（4 つの想定選択肢：text_renderer 新設／例外規定拡張／物理移動／全面再設計）
+- コード変更なし、pytest 702 passed
+- commit: `compliance(services/message_display): M1-1 判定保留 — 判断待ちリストに退避（7 件、構造変更要）`
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 ✅（連続発動） / シナリオ4 ✅
 
 ### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
 
