@@ -70,51 +70,61 @@ src/app.py
 
 # --- 9. scenes: M/V/P を先に、Scene を最後に
 src/scenes/ai_help/model.py
+src/scenes/ai_help/view_model.py
 src/scenes/ai_help/view.py
 src/scenes/ai_help/presenter.py
 src/scenes/ai_help/scene.py
 
 src/scenes/battle/model.py
+src/scenes/battle/view_model.py
 src/scenes/battle/view.py
 src/scenes/battle/presenter.py
 src/scenes/battle/scene.py
 
 src/scenes/ending/model.py
+src/scenes/ending/view_model.py
 src/scenes/ending/view.py
 src/scenes/ending/presenter.py
 src/scenes/ending/scene.py
 
 src/scenes/explore/model.py
+src/scenes/explore/view_model.py
 src/scenes/explore/view.py
 src/scenes/explore/presenter.py
 src/scenes/explore/scene.py
 
 src/scenes/menu/model.py
+src/scenes/menu/view_model.py
 src/scenes/menu/view.py
 src/scenes/menu/presenter.py
 src/scenes/menu/scene.py
 
 src/scenes/professor/model.py
+src/scenes/professor/view_model.py
 src/scenes/professor/view.py
 src/scenes/professor/presenter.py
 src/scenes/professor/scene.py
 
 src/scenes/settings/model.py
+src/scenes/settings/view_model.py
 src/scenes/settings/view.py
 src/scenes/settings/presenter.py
 src/scenes/settings/scene.py
 
 src/scenes/shop/model.py
+src/scenes/shop/view_model.py
 src/scenes/shop/view.py
 src/scenes/shop/presenter.py
 src/scenes/shop/scene.py
 
 src/scenes/splash/model.py
+src/scenes/splash/view_model.py
 src/scenes/splash/view.py
 src/scenes/splash/presenter.py
 src/scenes/splash/scene.py
 
 src/scenes/title/model.py
+src/scenes/title/view_model.py
 src/scenes/title/view.py
 src/scenes/title/presenter.py
 src/scenes/title/scene.py

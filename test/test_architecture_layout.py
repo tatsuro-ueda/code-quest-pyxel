@@ -141,6 +141,47 @@ class TestArchitectureLayout(unittest.TestCase):
                     offenders.append(f'{path}: {forbidden}')
         self.assertEqual(offenders, [])
 
+    def test_codemaker_manifest_matches_scene_files(self):
+        """src/scenes/*/{model,view,view_model,presenter,scene}.py と
+        tools/codemaker_manifest.txt の整合を双方向で検証する。
+
+        Phase 3 で view_model.py を追加した際に manifest 追記を忘れ、
+        Code Maker bundle で NameError を起こした再発防止。manifest
+        漏れは bundle 起動まで検出できないため、ここで機械的に止める。
+        """
+        manifest_path = ROOT / 'tools' / 'codemaker_manifest.txt'
+        scene_root = ROOT / 'src' / 'scenes'
+        allowed_names = {'model.py', 'view.py', 'view_model.py', 'presenter.py', 'scene.py'}
+
+        manifest_entries = set()
+        for raw in manifest_path.read_text(encoding='utf-8').splitlines():
+            line = raw.strip()
+            if not line or line.startswith('#'):
+                continue
+            manifest_entries.add(line)
+
+        manifest_scene_paths = {entry for entry in manifest_entries if entry.startswith('src/scenes/')}
+        actual_scene_paths = {
+            f'src/scenes/{p.parent.name}/{p.name}'
+            for p in scene_root.glob('*/*.py')
+            if p.name in allowed_names
+        }
+
+        missing_in_manifest = sorted(actual_scene_paths - manifest_scene_paths)
+        self.assertEqual(
+            missing_in_manifest,
+            [],
+            f'src/scenes/ にあるが tools/codemaker_manifest.txt に未登録: '
+            f'{missing_in_manifest}。bundle に含まれず Code Maker で NameError になります。',
+        )
+
+        missing_on_disk = sorted(manifest_scene_paths - actual_scene_paths)
+        self.assertEqual(
+            missing_on_disk,
+            [],
+            f'manifest に列挙されているが実在しないパス: {missing_on_disk}',
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
