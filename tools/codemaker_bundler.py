@@ -81,9 +81,13 @@ def _strip_local_imports(source: str) -> str:
                 if i >= len(lines):
                     break
                 buf += "\n" + lines[i]
-            # buf 内の `Y as Z` を全て抽出して alias 行を出す
-            for am in re.finditer(r"\b(\w+)\s+as\s+(\w+)\b", buf):
-                out_lines.append(f"{indent}{am.group(2)} = {am.group(1)}")
+            # `from src.X import (..., Y as Z, ...)` の Y as Z だけ alias 行に
+            # する。`import src.X.Y as Z`（モジュール import）の方は Y が
+            # bundle 内で定義された名前ではないので alias 行を出してはいけない。
+            if re.match(r"\s*from\s+src\.", buf):
+                inner = buf.split("import", 1)[1] if "import" in buf else ""
+                for am in re.finditer(r"\b(\w+)\s+as\s+(\w+)\b", inner):
+                    out_lines.append(f"{indent}{am.group(2)} = {am.group(1)}")
             i += 1
             continue
         out_lines.append(line)

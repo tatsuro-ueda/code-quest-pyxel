@@ -84,6 +84,25 @@ class StripLocalImportsAsAliasTest(unittest.TestCase):
         # B は as がないので alias 行は出ない
         self.assertNotIn("B = B", out)
 
+    def test_module_import_as_alias_is_not_rewritten(self):
+        """過去バグ: `import src.runtime.main_runtime as M` から
+        `M = main_runtime` という不正な alias 行を生成していた。
+
+        モジュール import の右辺 `main_runtime` は bundle 内の名前ではない
+        ので alias 行を出してはいけない。bundler 上部の M = sys.modules[__name__]
+        が module-level に存在するので、関数本体の M.X は module-level の M に
+        フォールスルーする。
+        """
+        source = "        import src.runtime.main_runtime as M\n"
+        out = _strip_local_imports(source)
+        self.assertNotIn("M = main_runtime", out)
+        self.assertNotIn("import src.", out)
+
+    def test_module_import_without_as_is_dropped(self):
+        source = "import src.runtime.main_runtime\n"
+        out = _strip_local_imports(source).strip()
+        self.assertEqual(out, "")
+
 
 def _install_pyxel_stub() -> object:
     """pyxel を吸収する stub を sys.modules に挿入し、元の値を返す。"""
