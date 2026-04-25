@@ -279,10 +279,20 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `services/audio_system` × M1-1 — 2026-04-25, **24 件は M1-1 例外規定（Audio ラッパ）により許容判定**（c255516）
 - `services/image_banks` × M1-1 — 2026-04-25, **判断待ちに退避（13 件、リソース ラッパが M1-1 例外に該当するか docs/ で未定義）**
 - `services/message_display` × M1-1 — 2026-04-25, **判断待ちに退避（7 件、テキスト描画ラッパで多数の views/scenes から `game.messages.text()` 呼び出し、構造変更要）**
+- `services/vfx` × M1-1 — 2026-04-25, **判断待ちに退避（1 件、message_display と同型の services 内描画問題）**
 
 ---
 
 ## 判断待ちリスト
+
+### 2026-04-25 15:25 — `src/shared/services/vfx.py` 全体（1 pyxel 違反）
+
+- **適用候補ルール**: docs/framework-rule.md M1-1
+- **違反内訳**: `draw_overlay()` line 42: `pyxel.rect(0, 0, 256, 256, cfg["color"])` 全画面フラッシュ
+- **使用状況**: `game.vfx.draw_overlay()` を battle/view.py から呼ぶ。state 変更系 (`game.vfx.start(...)`) は battle/scene.py から
+- **想定選択肢**: image_banks / message_display と同型。**まとめて判断するのが効率的**。個別判断より方針合意（「services にあるが描画する」群の処遇 = 物理移動 / 例外規定拡張 / 構造分割）を先に決めるのが筋
+- **なぜ迷うか**: 同上（services 内ビュー機能の M1-1 例外該当性）
+- **足し材料**: 同上（ui/ レイヤー位置付けの明文化、または例外列挙の拡張）
 
 ### 2026-04-25 15:20 — `src/shared/services/message_display.py` 全体（7 pyxel 違反）
 
@@ -588,6 +598,25 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - commit: `compliance(services/message_display): M1-1 判定保留 — 判断待ちリストに退避（7 件、構造変更要）`
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 ✅（連続発動） / シナリオ4 ✅
+
+### 2026年4月25日 15:25（第 14 ループ：services/vfx × M1-1 / 判断待ち 3 件目）
+
+**Observe**：
+- 第 14 ループ対象：`src/shared/services/vfx.py`（1 pyxel 違反、`draw_overlay()` の `pyxel.rect`）
+- 使用：`game.vfx.draw_overlay()` を battle/view.py から、state 変更を battle/scene.py から
+- image_banks (#1) / message_display (#2) と完全同型のパターン
+
+**Think**：
+- 個別判断より「services 内描画ファイル群を一括方針決定」が効率的
+- 4 自問: ① vfx のみ ✓ ② M1-1 のみ ✓ ③ 根拠不在（services 内ビュー機能の例外規定なし）④ 修正不可（方針未確定）
+- 判断待ちリストに追加（同型と明記、まとめて判断するよう促す）
+
+**Act**：
+- 判断待ちリスト 3 件目を追加（image_banks/message_display と同型と明記）
+- コード変更なし、pytest 702 passed
+- commit: `compliance(services/vfx): M1-1 判定保留 — image_banks/message_display と同型、まとめて判断要`
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 ✅ / シナリオ4 ✅
 
 ### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
 
