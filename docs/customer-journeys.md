@@ -354,6 +354,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦敵パラメータの概念がなく自作 RPG にバランス調整の場がない（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦Lua でデータを書き換えられるが子の集中時間内に完了しない（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦速いが壊れた版が届くと集中が中断される（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「この敵強すぎ！」（ゲーム中）]
         B1 --> B2[（親）💦ENEMIES データを探して HP を手動変更（コードエディタ）]
@@ -368,6 +373,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：①子（プレイヤー・没入）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
+
 ### CJ09: セリフを変えたい
 
 子どもが「この人のセリフつまんない」→ 親がAIに面白いセリフを考えてもらう。
@@ -376,6 +383,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦セリフは say ブロックだが選択肢提示の文化がない（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦イベント編集は深いが親が代行になりがち（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI の 1 案が押し付けられて子が選ぶ余地がない（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「このセリフつまんない」（ゲーム中）]
         B1 --> B2[（親）💦ダイアログデータを探して Python 辞書を編集（コードエディタ）]
@@ -390,6 +402,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現）, ③子（批評家・自己判断）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
+
 ### CJ10: 新しい敵を追加したい
 
 子どもが「ドラゴン出したい！」→ 親がAIに敵データの追加を頼む。
@@ -398,6 +412,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦敵キャラの追加はできるが RPG エンカウント機構がない（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦自由度は高いが 80% が未完成で「会いに行ける」段階に届かない（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦AI 任せのドラゴンで「自分の絵」が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「ドラゴン出したい！」（ゲーム中）]
         B1 --> B2[（親）💦ENEMIES を理解し HP/ATK/DEF/EXP/GOLD を設計（コードエディタ）]
@@ -412,6 +431,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
+
 ### CJ12: 歩いたら壁にハマった
 
 子どもがテストプレイ中にバグを発見 → 親がAIで修正。
@@ -420,6 +441,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦バグ報告と修正の往復が「親に頼む」プロセスになる（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦深く触れるが修正が遅く子の集中時間内に届かない（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦速いが壊れた版が再度届くリスクで信頼が揺らぐ（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「壁にハマって動けない！」（ゲーム中）]
         B1 --> B2[（親）💦当たり判定コードと passable 関数を読む（コードエディタ）]
@@ -434,6 +460,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：①子（プレイヤー・没入）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
+
 ### CJ13: 新しい呪文がほしい
 
 子どもが「かっこいい技出したい」→ 親がAIに呪文追加を頼む。
@@ -442,6 +470,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦呪文・スキルの構造化された追加機構がない（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦スキルツリーは深いが半日仕事になり子の関心と合わない（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI 任せで「子が決めた技」感が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「新しい技ほしい！」（ゲーム中）]
         B1 --> B2[（親）💦SPELLS 構造とダメージ計算式の整合を確認（コードエディタ）]
@@ -456,6 +489,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
+
 ### CJ14: マップが広すぎて迷う
 
 子どもがテストプレイで迷子になる → 親がAIにガイド機能を追加してもらう。
@@ -464,6 +499,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦UI のガイド表示は say で擬似的にしか作れない（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦GUI 実装はあるが Lua の壁で子の発案が反映されにくい（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦AI 実装で見た目調整の往復が起きにくい（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「どこ行けばいいかわからない！」（ゲーム中）]
         B1 --> B2[（親）💦UI にヒント追加を試みる（コードエディタ）]
@@ -477,6 +517,8 @@ flowchart LR
         A3 --> A4[（子ども）❤️「矢印の色変えたい」見た目調整の好循環へ（ゲーム中）]
     end
 ```
+
+> 該当カテゴリ：①子（プレイヤー・没入）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
 
 ---
 
