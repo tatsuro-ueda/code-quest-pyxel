@@ -228,7 +228,15 @@ class ImageBanks:
                     return
 
     def bake_world_to_tilemap(self):
-        """game.world_map を tilemap[0] に焼き込む。"""
+        """game.world_map を tilemap[0] に焼き込む。
+
+        pyxres が読み込み済みのときは tilemap が SSoT なのでスキップする。
+        bake は道バリアント (V/H/T_NES 等) を procedural に再計算してしまうため、
+        Code Maker でユーザーが編集した道形状を黙って上書きしてしまう。
+        pyxres 不在時 (初回起動) は従来通り procedural 生成して pyxel.save する。
+        """
+        if self.pyxres_loaded:
+            return
         import src.runtime.main_runtime as M
         game = self.game
         tilemap = pyxel.tilemaps[0]
