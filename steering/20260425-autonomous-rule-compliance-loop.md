@@ -262,7 +262,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 
 > 各領域 × 各 M ルールについて、ループが完了したら追記。
 
-- `scenes/splash` × M1-1 — 2026-04-25, 3 件解消（commit TBD）
+- `scenes/splash` × M1-1 — 2026-04-25, 3 件解消（a8d0f24）
+- `scenes/ending` × M1-1 — 2026-04-25, 2 件解消（commit 自動 fill-in）
 
 ### 第 1 ループ計画（splash × M1-1）
 
@@ -385,6 +386,30 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - シナリオ2（再試行系）: 完了領域リストに `scenes/splash × M1-1` 追加済み、再選択時は 0 件で飛ぶ → ✅
 - シナリオ3（異常系）: 曖昧違反なし、該当しない → N/A
 - シナリオ4（リスク確認）: splash のみ・M1-1 のみ・update には触れていない → ✅
+
+### 2026年4月25日 14:00（第 2 ループ実行：scenes/ending × M1-1）
+
+**Observe**：
+- `/loop` 自走モードへ切替（ユーザー「完全自走 /loop」）
+- 第 2 ループ対象：`src/scenes/ending/scene.py`（58 行 / 2 pyxel 違反：`cls(1)` / `frame_count`）
+- ending の view.py は空スケルトン、テストは update/enter 系のみで draw は触らない
+
+**Think**：
+- M1-1 根拠は前回と同じ（docs/framework-rule.md M1-1）
+- 修正方針：splash と同じ pattern。`view.render(model, game)` を新設、scene.draw() は 1 行に縮退
+- 1 つだけ差分：scene.draw() で `self.model.lines = ...` のデータ取得が混在していたので、それは scene 側に残し、純粋描画だけ view に移す（scope を M1-1 に絞る）
+- ループ前 4 自問: ① ending のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲 ✓
+
+**Act**：
+- `src/scenes/ending/view.py`: `EndingView.render(model, game)` 追加、2 pyxel 呼び出しを移動
+- `src/scenes/ending/scene.py`: `import pyxel` 削除、`draw()` は dialog_lines 取得 + view.render() に縮退
+- 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+
+**CoVe（Gherkin 合致確認）**：
+- シナリオ1（正常系）: ✅
+- シナリオ2（再試行系）: 完了リストに ending 追加 ✅
+- シナリオ3（異常系）: N/A
+- シナリオ4（リスク確認）: ending のみ・M1-1 のみ・update に触れず ✅
 
 ## 参考資料
 

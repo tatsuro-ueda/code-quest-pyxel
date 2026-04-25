@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-import pyxel
-
 from src.scenes.ending.model import EndingModel
 from src.scenes.ending.presenter import EndingPresenter
 from src.scenes.ending.view import EndingView
@@ -42,17 +40,10 @@ class EndingScene:
             game.state = "map"
 
     def draw(self) -> None:
-        """エンディング画面を描画する。"""
+        """エンディング画面を描画する。描画本体は View に委譲（M1-1 準拠）。"""
         game = self.game
         if game is None:
             return
-        pyxel.cls(1)
         if not self.model.lines:
             self.model.lines = game.messages.dialog_lines("ending.main.line01")
-        if self.model.lines:
-            game.messages.text(60, 60, self.model.lines[0], 10)
-        for index, line in enumerate(self.model.lines[1:]):
-            game.messages.text(20, 90 + index * 15, line, 7)
-        game.messages.text(40, 180, "PRESS Z TO TITLE", 6)
-        p = game.player_model
-        game.messages.text(30, 200, f"レベル{p.lv} Time:{pyxel.frame_count//30//60}m", 6)
+        self.view.render(self.model, game)
