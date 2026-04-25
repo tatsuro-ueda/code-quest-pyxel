@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-04-25T20:00:00+09:00
 dateCreated: 2026-04-25T20:00:00+09:00
-dateModified: 2026-04-25T20:00:00+09:00
+dateModified: 2026-04-25T22:00:00+09:00
 tags:
   - task
   - ssot
@@ -319,3 +319,42 @@ flowchart TD
   - 成功なら status を `done` に更新、GCal に実績記録
   - 失敗なら Discussion の「失敗記録」を読んで原因対処、再委任 or 手動修正
   - dungeon の bake と get_path_variant の同型問題（やらないこと宣言ずみ）は別タスクノート起票候補
+
+### 2026年4月25日 22:00（夜間委任の自走実施結果）
+
+**Observe**:
+- 委任プロンプトに沿って S1〜S9 を自走で完走、Gherkin シナリオ1〜4 すべて満足、status を `done` に更新済。
+- 関連コミット 3 本 (refactor/town-framework-rule-align)：
+  - `5bffd21` test(ssot): probe + failing test を追加（SKIP_TESTS=1 で TDD red を履歴に残す）
+  - `66e90a3` fix(ssot): bake_world_to_tilemap の T_PATH 上書きを停止
+  - `9e57930` build: bundle 再ビルド (web + code-maker.zip)
+- 結果ログ: `/tmp/pyxres-ssot-result.log`（probe / pytest / bundle / git status / git log を集約）
+
+**Think**:
+- 修正は最小（image_banks.py に 1 ガード行 + docstring）。`bake_world_to_tilemap` の冒頭で `if self.pyxres_loaded: return`。
+  derive 強化は不要（bake をスキップするので pyxres pixel 位置はそのまま tilemap に残る）。
+- TDD ループのつまずき：失敗 test を pre-commit hook が止めるため `SKIP_TESTS=1 git commit` で red commit を残した。手で revert しなくても fix commit (`66e90a3`) で green に転換。
+- pytest 全体 (705 passed, 2 skipped) green。`test_setup_world_tilemap_preserves_user_edits.py` の AST 不変性テストも継続 pass（derive 呼び出しは setup_world_tilemap 内で残しているため）。
+- bundle 内 `main.py` を grep で確認 → `if self.pyxres_loaded:` が含まれる。bundle 内 `my_resource.pyxres` は `assets/blockquest.pyxres` とバイト一致。
+
+**Act**:
+- probe 結果（`/tmp/probe_tilemap.log` 最終）：(30,21) と (28,20) の BEFORE = AFTER 完全一致（差分なし、SSoT OK）。
+- pytest: 705 passed, 2 skipped, 14460 subtests passed（test_game_data の yaml import エラーは pre-existing で本タスク範囲外）。
+- scenario 3 検証：pyxres を一時退避して `setup_image_banks` → `[image_bank] generated /home/exedev/code-quest-pyxel/assets/blockquest.pyxres` ログ出力 → pyxres 再生成 → 退避していた元 pyxres を mv で復元。
+
+**CoVe（自己検証）**:
+- [x] Gherkin シナリオ1: probe で (30,21) と (28,20) の BEFORE = AFTER 完全一致
+- [x] Gherkin シナリオ2: probe を 2 回連続実行しても結果が安定（フィックス前 BEFORE!=AFTER → フィックス後 BEFORE==AFTER）
+- [x] Gherkin シナリオ3: pyxres 退避時に `[image_bank] generated` ログ出力 + pyxres 再生成、復元後も assets パスに pyxres 存在
+- [x] Gherkin シナリオ4: dungeon の `bake_dungeon_to_tilemap` と `get_path_variant` には触らず（`git diff src/shared/services/image_banks.py` が `bake_world_to_tilemap` のみ変更）
+- [x] pytest 全 green (705 passed)
+- [x] bundle 再ビルド成功 + bundle 内 main.py に `if self.pyxres_loaded: return` 含有
+- [x] commit ログ 3 本：1 ルール 1 commit で分離（test red / fix / build）
+
+**次回検討（scope creep 抑制で記録のみ、今回手をつけず）**:
+- `bake_dungeon_to_tilemap` の同型問題：dungeon は Code Maker 編集対象外なので優先度低だが、将来 dungeon もユーザー編集可能にするなら同様の SSoT 化が必要
+- `get_path_variant` の町判定バグ：`is_path()` が町タイルを「道扱いしない」ため (30,21) のような町隣接マスで PATH_H 固定にフォールバックしていた（procedural 生成時のみの問題で、今回の修正で起動時の上書きはなくなったため緊急度低）
+- `derive_world_from_tilemap` のタイル ID 復元 fallback `T_GRASS` がユーザーの未知タイル編集を grass に潰すリスク（今回触らず）
+
+**残タスク（ユーザー手動確認）**:
+- Code Maker でゲーム起動 (pyxel.html or pyxel.pyxapp) して (30,21) や (28,20) の道形状が編集どおり表示されることを目視確認
