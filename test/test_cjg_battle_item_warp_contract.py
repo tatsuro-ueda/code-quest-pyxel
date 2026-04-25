@@ -64,26 +64,33 @@ class ItemsContractTest(unittest.TestCase):
 
 
 class BattleSceneWarpBranchExistsTest(unittest.TestCase):
-    """battle/scene.py のソースに warp 拒否の文字列と分岐が残っていること。"""
+    """battle のソースに warp 拒否の文字列と分岐が残っていること。
 
-    def test_battle_scene_contains_warp_refusal_message(self):
-        path = ROOT / "src" / "scenes" / "battle" / "scene.py"
-        text = path.read_text(encoding="utf-8")
+    Phase 4 (M3-2) で update() ロジックは Presenter に移譲されたため、
+    検査対象は scene.py または presenter.py のどちらかでよい。
+    """
+
+    def _battle_source(self) -> str:
+        scene = (ROOT / "src" / "scenes" / "battle" / "scene.py").read_text(encoding="utf-8")
+        presenter = (ROOT / "src" / "scenes" / "battle" / "presenter.py").read_text(encoding="utf-8")
+        return scene + "\n" + presenter
+
+    def test_battle_contains_warp_refusal_message(self):
+        text = self._battle_source()
 
         self.assertIn(
             "せんとうちゅうはつかえない",
             text,
-            "戦闘中 warp 拒否メッセージが battle/scene.py から消えている",
+            "戦闘中 warp 拒否メッセージが battle (scene.py / presenter.py) から消えている",
         )
 
-    def test_battle_scene_checks_item_type_warp(self):
-        path = ROOT / "src" / "scenes" / "battle" / "scene.py"
-        text = path.read_text(encoding="utf-8")
+    def test_battle_checks_item_type_warp(self):
+        text = self._battle_source()
 
         self.assertRegex(
             text,
             r'item_data\[["\']type["\']\]\s*==\s*["\']warp["\']',
-            "battle/scene.py で item_data['type'] == 'warp' の分岐が無い",
+            "battle (scene.py / presenter.py) で item_data['type'] == 'warp' の分岐が無い",
         )
 
 

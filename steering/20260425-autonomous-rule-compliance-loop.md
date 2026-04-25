@@ -301,7 +301,16 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/shop` × M3-2 — 2026-04-25, update / _try_purchase を Presenter に集約（8ce9e8c）
 - `scenes/menu` × M3-2 — 2026-04-25, update / labels を Presenter に集約、関連 test を scene/presenter 両許容に更新（a9d8a11）
 - `scenes/professor` × M3-2 — 2026-04-25, update_intro / update_ending_main / update_ending_accepted を Presenter に集約（715260a）
-- `scenes/explore` × M3-2 — 2026-04-25, 大規模 update + helpers (_check_tile_events, _check_landmark_events, _resolve_landmark_scene, _dungeon_exit_callback) を Presenter に集約、scene は test 互換ラッパのみ（commit 自動 fill-in）
+- `scenes/explore` × M3-2 — 2026-04-25, 大規模 update + helpers (_check_tile_events, _check_landmark_events, _resolve_landmark_scene, _dungeon_exit_callback) を Presenter に集約、scene は test 互換ラッパのみ（8c48213）
+- `scenes/battle` × M3-2 — 2026-04-25, update() の 5 phase 状態遷移を Presenter に移譲（戦闘ルール本体 do_player_attack/do_enemy_attack/victory/defeat/apply_spell_effect 等は scene に残置；presenter が phase 切替時にコールバック）（commit 自動 fill-in）
+
+**🎉 Phase 4 (M3 Scene 規約) 全 10 scenes 完走**
+
+scenes/*/scene.py の update() に「ルール本体」が混在していた状態から、
+すべての scene が **Presenter に input/transition logic を委譲し、scene は配線**
+の MVP 構造へ。pytest 702 passed 終始維持。
+
+**未実施**: M3-3 (副作用 Command 化)。判断待ちで Phase 4 終了。
 
 **🎉 Phase 3 (M2 ViewModel 規約) 全 10 scenes 完走**
 

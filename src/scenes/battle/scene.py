@@ -16,12 +16,6 @@ from src.game_data import (
 from src.scenes.battle.model import BattleModel
 from src.scenes.battle.presenter import BattlePresenter
 from src.scenes.battle.view import BattleView
-from src.shared.services.input_bindings import (
-    CANCEL_BUTTONS,
-    CONFIRM_BUTTONS,
-    DOWN_BUTTONS,
-    UP_BUTTONS,
-)
 from src.shared.services.player_state import (
     MAX_LEVEL,
     exp_for_level,
@@ -98,159 +92,16 @@ class BattleScene:
                 m.text = (m.text + " " + msg).strip()
 
     def update(self):
-        """バトルフェーズに応じて入力処理と状態遷移を行う。"""
+        """配線：phase 遷移・入力解釈は Presenter に委譲（M3-2 準拠）。
+
+        Presenter は phase 切り替え時にルール本体（do_player_attack /
+        do_enemy_attack / victory / defeat / apply_spell_effect /
+        on_noise_guardian_defeated）を呼び戻す必要があるため、self を渡す。
+        """
         game = self.game
         if game is None:
             return
-        import src.runtime.main_runtime as M
-        m = self.model
-        if game.vfx.timer > 0:
-            game.vfx.timer -= 1
-        if m.phase == "menu":
-            if game.input_state.btnp(UP_BUTTONS):
-                m.menu = (m.menu - 1) % 4
-                game.sfx.play("cursor")
-            if game.input_state.btnp(DOWN_BUTTONS):
-                m.menu = (m.menu + 1) % 4
-                game.sfx.play("cursor")
-            if game.input_state.btnp(CONFIRM_BUTTONS):
-                game.sfx.play("select")
-                if m.menu == 0:  # Attack
-                    self.do_player_attack()
-                elif m.menu == 1:  # じゅもん
-                    if game.player_model.spells:
-                        m.phase = "spell_select"
-                        m.spell_select = 0
-                    else:
-                        m.text = "まだ じゅもんを おぼえていない"
-                elif m.menu == 2:  # Item
-                    m.phase = "item_select"
-                    m.item_select = 0
-                elif m.menu == 3:  # Run
-                    if not m.is_glitch_lord and random.random() < 0.5:
-                        m.text = game.messages.dialog_text("battle.normal.run.success")
-                        m.phase = "result"
-                        m.text_timer = 60
-                    else:
-                        scene_name = (
-                            "boss.glitch.run.fail"
-                            if m.is_glitch_lord
-                            else "battle.normal.run.fail"
-                        )
-                        m.text = game.messages.dialog_text(scene_name)
-                        m.phase = "player_attack"
-                        m.text_timer = 30
-
-        elif m.phase == "spell_select":
-            spells = game.player_model.spells
-            if not spells:
-                m.phase = "menu"
-                return
-            if game.input_state.btnp(UP_BUTTONS):
-                m.spell_select = max(0, m.spell_select - 1)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(DOWN_BUTTONS):
-                m.spell_select = min(len(spells) - 1, m.spell_select + 1)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(CANCEL_BUTTONS):
-                game.sfx.play("cancel")
-                m.phase = "menu"
-            if game.input_state.btnp(CONFIRM_BUTTONS):
-                game.sfx.play("select")
-                spell_name = spells[m.spell_select]
-                spell = SPELL_BY_NAME.get(spell_name)
-                if spell is None:
-                    m.phase = "menu"
-                    return
-                if game.player_model.mp < spell["mp"]:
-                    m.text = "MPが たりない！"
-                    return
-                game.player_model.mp -= spell["mp"]
-                game.sfx.play("magic")
-                game.vfx.start("flash_white")
-                m.text = self.apply_spell_effect(spell)
-                m.phase = "player_attack"
-                m.text_timer = 30
-
-        elif m.phase == "item_select":
-            items = game.player_model.items
-            if not items:
-                m.phase = "menu"
-                return
-            if game.input_state.btnp(UP_BUTTONS):
-                m.item_select = max(0, m.item_select - 1)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(DOWN_BUTTONS):
-                m.item_select = min(len(items) - 1, m.item_select + 1)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(CANCEL_BUTTONS):
-                game.sfx.play("cancel")
-                m.phase = "menu"
-            if game.input_state.btnp(CONFIRM_BUTTONS):
-                game.sfx.play("select")
-                item = items[m.item_select]
-                item_data = ITEMS[item.id]
-                if item_data["type"] == "warp":
-                    m.text = "せんとうちゅうはつかえない…"
-                    m.phase = "enemy_attack"
-                    m.text_timer = 30
-                else:
-                    from src.shared.services.item_use import use_item as _use_item_fn
-                    msg = _use_item_fn(game, item_data)
-                    if not msg:
-                        m.text = "HPがまんたんで つかえない"
-                        m.text_timer = 30
-                    else:
-                        m.text = msg
-                        item.qty -= 1
-                        if item.qty <= 0:
-                            items.pop(m.item_select)
-                        m.phase = "enemy_attack"
-                        m.text_timer = 30
-
-        elif m.phase == "player_attack":
-            if game.input_state.btn(CONFIRM_BUTTONS) and m.text_timer > 12:
-                m.text_timer = 12
-            m.text_timer -= 1
-            if m.text_timer <= 0:
-                if m.enemy_hp <= 0:
-                    self.victory()
-                else:
-                    self.do_enemy_attack()
-
-        elif m.phase == "enemy_attack":
-            if game.input_state.btn(CONFIRM_BUTTONS) and m.text_timer > 12:
-                m.text_timer = 12
-            m.text_timer -= 1
-            if m.text_timer <= 0:
-                if game.player_model.hp <= 0:
-                    self.defeat()
-                else:
-                    m.phase = "menu"
-
-        elif m.phase == "result":
-            if game.input_state.btn(CONFIRM_BUTTONS) and m.text_timer > 12:
-                m.text_timer = 12
-            m.text_timer -= 1
-            if m.text_timer <= 0:
-                if game.input_state.btn(CONFIRM_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS) or m.text_timer < -30:
-                    if game.player_model.hp <= 0:
-                        game.player_model.gold = game.player_model.gold // 2
-                        game.player_model.hp = game.player_model.max_hp
-                        game.player_model.x, game.player_model.y = M.CASTLE_POS
-                        game.player_model.in_dungeon = False
-                        game.state = "map"
-                    elif m.is_professor and m.enemy_hp <= 0:
-                        game.player_model.professor_defeated = True
-                        game.professor_scene.enter_ending_main()
-                    else:
-                        if m.is_glitch_lord and m.enemy_hp <= 0:
-                            game.sfx.play("boss_defeat")
-                            game.player_model.glitch_lord_defeated = True
-                        if m.noise_guardian and m.enemy_hp <= 0:
-                            self.on_noise_guardian_defeated()
-                            return
-                        game.state = "map"
+        self.presenter.update(game, self)
 
     def do_player_attack(self):
         """たたかう選択時のプレイヤー攻撃処理。"""
