@@ -303,7 +303,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/professor` × M3-2 — 2026-04-25, update_intro / update_ending_main / update_ending_accepted を Presenter に集約（715260a）
 - `scenes/explore` × M3-2 — 2026-04-25, 大規模 update + helpers (_check_tile_events, _check_landmark_events, _resolve_landmark_scene, _dungeon_exit_callback) を Presenter に集約、scene は test 互換ラッパのみ（8c48213）
 - `scenes/battle` × M3-2 — 2026-04-25, update() の 5 phase 状態遷移を Presenter に移譲（戦闘ルール本体 do_player_attack/do_enemy_attack/victory/defeat/apply_spell_effect 等は scene に残置；presenter が phase 切替時にコールバック）（5deeda3）
-- `scenes/explore` × M4-1 — 2026-04-25, 他 scene からの `game.explore_scene.model.a_cooldown = True` 直代入 5 件を `start_a_cooldown()` メソッド経由に統一（caller: title / ending / professor x2 / town presenter；fake test も追従）
+- `scenes/explore` × M4-1 — 2026-04-25, 他 scene からの `game.explore_scene.model.a_cooldown = True` 直代入 5 件を `start_a_cooldown()` メソッド経由に統一（caller: title / ending / professor x2 / town presenter；fake test も追従）（10ef4e7）
+- `scenes/menu` × M4-1 — 2026-04-25, settings/scene.py から `game.menu_scene.model.sub = None` 直代入 1 件を `clear_sub()` メソッド経由に統一（fake test も追従）→ **M4-1「他 Scene Model 直代入禁止」違反 0 件達成**
 
 **🎉 Phase 4 (M3 Scene 規約) 全 10 scenes 完走**
 
@@ -450,6 +451,45 @@ scenes/*/view.py がすべて：
 ---
 
 ## 6) Discussion（記録・反省）
+
+### 2026年4月25日 17:50（Phase 5 第 2 ループ：M4-1 menu_scene 直代入 1 件解消 → M4-1 完走）
+
+**Observe**：
+- 第 1 ループの残違反 1 件 (`game.menu_scene.model.sub = None` in settings/scene.py:29) を処理
+- caller は `SettingsScene.open(origin)` 内で「メニューから設定を開く時にサブパネル状態をリセット」する目的
+- テスト `test_open_from_menu_resets_menu_sub_to_none` (test_cjg_settings_scene_navigation.py:99) が `game.menu_scene.model.sub` を **読み取り** で確認しているのみ（setter 化の影響なし）
+
+**Think**：
+- 第 1 ループと同型 pattern。MenuModel に `clear_sub()` メソッド追加 + caller を method 経由に書換
+- 4 自問: ① settings caller + menu setter ✓ ② M4-1 のみ ✓ ③ docs/ 根拠（M4-1 明文）✓ ④ 最小範囲 ✓
+
+**Act**：
+- `src/scenes/menu/model.py`: `clear_sub()` メソッド追加（docstring に M4-1 根拠明記）
+- `src/scenes/settings/scene.py:29`: `game.menu_scene.model.sub = None` → `game.menu_scene.model.clear_sub()`
+- `test/test_cjg_settings_scene_navigation.py` の `_FakeMenuModel` に `clear_sub()` を追加（fake は実装側 contract に追従）
+- 検証 grep `[a-z_]+_scene\.model\.[a-z_]+\s*=` → **0 件** ✓
+- pytest 702 passed ✓
+- commit: `compliance(scenes): M4-1 (他 Scene Model 直代入禁止) menu_scene 経路 1 件解消、M4-1 完走`
+
+**🎉 M4-1「他 Scene Model 直代入禁止」違反 全領域 0 件達成**
+
+| サブルール | 違反検出 | 解消 | 残違反 |
+|---|---|---|---|
+| M4-1 (a) Model 内 pyxel/sfx/messages/save 直呼び | 0 件 | — | 0 件 |
+| M4-1 (b) Model 内 import pyxel | 0 件 | — | 0 件 |
+| M4-1 (c) 他 Scene Model 直代入 | 6 件 | 6 件 | 0 件 |
+| M4-1 (d) Model にルールを引き上げる (M4-4 Level 1 と重複) | scene-local model 10 個が薄い dataclass | — | **判断待ち**（漸進改善・scope 大） |
+
+**CoVe**：
+- シナリオ1: 領域選択→違反列挙→docs/ 根拠確認→最小修正→pytest green→commit ✅
+- シナリオ2: 完了領域リストに `scenes/menu × M4-1` 追加、M4-1 完走を明記 ✅
+- シナリオ3: M4-1 (d) 積極面（ルール引き上げ）は判断待ちに倒した ✅
+- シナリオ4: settings caller 1 行 + menu setter 1 個のみ、Model のロジックは触らず ✅
+
+**次ループ案**：
+- M4-2 (Service 規約 A/B/C 分類) を grep で検証 — `services/` 配下の各ファイルが A (Infrastructure) / B (Domain Support) / C (UI Support) のどれかに分類可能か、または分類が明文化されているか
+- M4-3 (GameState 規約) — `Game` クラスが scene 横断・保存価値のあるものだけ持っているか。「一時 UI 状態」「画面アニメ途中値」「フレーム単位の VFX タイマー」などが Game に入っていないか
+- M4-4 (PlayerModel と GameState 圧縮) — `player[...]` 残存（既に確認: 2 件は migration 互換コードで OK）/ GameState 構造の現状
 
 ### 2026年4月25日 17:30（Phase 5 第 1 ループ：M4-1 他 Scene Model 直触り 5 件解消）
 

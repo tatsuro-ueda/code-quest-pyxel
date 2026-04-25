@@ -26,7 +26,7 @@ class SettingsScene:
         game = self.game
         self.model.origin = origin
         self.model.cursor = 0
-        game.menu_scene.model.sub = None
+        game.menu_scene.model.clear_sub()
         game.state = "settings"
 
     def apply_av(self) -> None:

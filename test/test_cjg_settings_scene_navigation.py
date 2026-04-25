@@ -67,6 +67,9 @@ class _FakeTextFormat:
 class _FakeMenuModel:
     sub: str | None = "items"
 
+    def clear_sub(self) -> None:
+        self.sub = None
+
 
 @dataclass
 class _FakeMenuScene:
