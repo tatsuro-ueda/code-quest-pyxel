@@ -281,11 +281,26 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `services/message_display` × M1-1 — 2026-04-25, **判断待ちに退避（7 件、テキスト描画ラッパで多数の views/scenes から `game.messages.text()` 呼び出し、構造変更要）**
 - `services/vfx` × M1-1 — 2026-04-25, **判断待ちに退避（1 件、message_display と同型の services 内描画問題）**
 - `runtime/app.py` × M1-1 — 2026-04-25, **7 件は M1-1 例外規定（最外殻）により許容判定**（4d8d8f8）。ただし line 139 の F1 緊急脱出 `pyxel.btnp` は M1-2 観点で別途要検討（M1-2 ループ対象）
-- `runtime/main_runtime.py` × M1-1 — 2026-04-25, **1 件 (`import pyxel` 再エクスポート shim) は許容判定**（commit 自動 fill-in）
+- `runtime/main_runtime.py` × M1-1 — 2026-04-25, **1 件 (`import pyxel` 再エクスポート shim) は許容判定**（7a50e8a）
+- `ui/status_bar` × M1-1 — 2026-04-25, **判断待ちに退避（5 件、shared/ui/ レイヤーが M1-1 で views/ と同等扱いか未定義）**
+
+**🎉 全 17 領域処理完了。M1-1 ループ終了。**
 
 ---
 
 ## 判断待ちリスト
+
+### 2026-04-25 16:05 — `src/shared/ui/status_bar.py` 全体（5 pyxel 違反）
+
+- **適用候補ルール**: docs/framework-rule.md M1-1
+- **違反内訳**: `StatusBar.draw()` 内の `pyxel.rect` 5 件（背景バー / HP/MP バー）
+- **位置**: `src/shared/ui/` — services でも views でもない第 3 のレイヤー
+- **想定選択肢**:
+  1. **(A) `shared/ui/` を views/ と同等扱いとして許容**（docstring「Q6 決定：bar は UI 寄り」も裏付け）
+  2. **(B) `shared/ui/` の各ファイルを scenes/views/ に物理移動**して全 view と同列に
+  3. **(C) docs/framework-rule.md M1-1 に「ui/ ディレクトリは views と同等」を明記**してから判定
+- **なぜ迷うか**: M1-1 の「許可」リストは `src/.../views/*.py` と最外殻のみ列挙、`ui/` は未掲載。一方で機能的にはまさに view（描画＋ユーザー入力なし）
+- **足し材料**: image_banks / message_display / vfx の判断と同一テーマ。「services/ui で描画する 4 ファイル群」をまとめて方針判断するのが効率的
 
 ### 2026-04-25 15:25 — `src/shared/services/vfx.py` 全体（1 pyxel 違反）
 
@@ -664,6 +679,39 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - commit 形式：`compliance(runtime/main_runtime): M1-1 例外規定（最外殻 shim）により 1 件は許容と判定`
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
+
+### 2026年4月25日 16:05（第 17 ループ：ui/status_bar × M1-1 / **M1-1 ループ完走** 🎉）
+
+**Observe**：
+- 第 17 ループ対象（最終）：`src/shared/ui/status_bar.py`（5 pyxel 違反）
+- `StatusBar.draw()` の `pyxel.rect` ×5（背景バー＋HP/MP バー）
+- 位置：`shared/ui/` で services でも views でもない第 3 レイヤー
+- docstring: 「Q6 決定：bar は UI 寄りのため `shared/ui/` に置く」
+
+**Think**：
+- 4 自問: ① status_bar のみ ✓ ② M1-1 のみ ✓ ③ docs/ で ui/ レイヤー位置付け未定義 ④ 修正不可（方針未確定）
+- image_banks / message_display / vfx と同型「services/ui 内描画」問題の 4 件目
+- ユーザー指示「迷ったら docs/、根拠不在なら手を出さず」+ シナリオ3 → 判断待ちに
+
+**Act**：
+- 判断待ちリストに 4 件目を追加（同型問題と明記、まとめて判断要）
+- pytest 702 passed
+- commit: `compliance(ui/status_bar): M1-1 判定保留 — services/ui 内描画 4 件目（同型）`
+
+**🎉 全 17 領域処理完了 → M1-1 ループ完走**
+
+| ステータス | 領域数 | 累計違反 |
+|---|---|---|
+| 修正完了 (scenes) | 10 | 53 件解消 |
+| 例外規定で許容 (audio_system, runtime/app, main_runtime) | 3 | 32 件 |
+| 判断待ちに退避 (image_banks, message_display, vfx, status_bar) | 4 | 26 件 |
+| **合計** | **17** | **111 grep ヒット** |
+
+判断待ち 4 件はすべて **同型（services/ui 内描画）** で、共通解（ui/ レイヤー位置付け明文化 or 例外規定拡張 or 物理移動）で 1 度に判定可能。
+
+**status: in-progress → ループ駆動部分は終了。判断待ち 4 件のレビューが残るため status: done にはまだしない。**
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 ✅ / シナリオ4 ✅
 
 ### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
 
