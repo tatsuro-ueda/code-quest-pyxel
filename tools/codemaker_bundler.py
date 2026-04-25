@@ -54,10 +54,11 @@ _IMPORT_AS_RE = re.compile(
 def _strip_local_imports(source: str) -> str:
     """`from src.X import ...` / `import src.X` 行を除去する。
 
-    ただし `from src.X import Y as Z` は `Z = Y` の alias 行に書き換える
-    （bundler 環境では import は不要だが、別名参照は保持する必要がある）。
+    ただし `from src.X import Y as Z`（単行・多行どちらも）は `Z = Y` の
+    alias 行に書き換える（bundler 環境では import は不要だが、別名参照は保持する必要がある）。
 
-    複数行 import（`from src.X import (\\n  A,\\n  B,\\n)`）も閉じ括弧まで消す。
+    複数行 import（`from src.X import (\\n  A,\\n  B as C,\\n)`）も閉じ括弧まで
+    消すが、内部の `as` エイリアスだけは抽出して alias 行を残す。
     """
     out_lines: list[str] = []
     lines = source.splitlines()
@@ -74,11 +75,15 @@ def _strip_local_imports(source: str) -> str:
         if _LOCAL_IMPORT_RE.match(line):
             # 複数行 import かチェック：開き括弧が閉じているか
             buf = line
+            indent = line[: len(line) - len(line.lstrip())]
             while buf.count("(") > buf.count(")"):
                 i += 1
                 if i >= len(lines):
                     break
                 buf += "\n" + lines[i]
+            # buf 内の `Y as Z` を全て抽出して alias 行を出す
+            for am in re.finditer(r"\b(\w+)\s+as\s+(\w+)\b", buf):
+                out_lines.append(f"{indent}{am.group(2)} = {am.group(1)}")
             i += 1
             continue
         out_lines.append(line)
