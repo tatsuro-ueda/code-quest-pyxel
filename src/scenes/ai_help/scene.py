@@ -6,7 +6,6 @@ from typing import Any
 from src.scenes.ai_help.model import AiHelpModel
 from src.scenes.ai_help.presenter import AiHelpPresenter
 from src.scenes.ai_help.view import AiHelpView
-from src.shared.services.input_bindings import CONFIRM_BUTTONS, CANCEL_BUTTONS
 
 
 @dataclass
@@ -48,13 +47,11 @@ class AiHelpScene:
         return "Claude.ai を てでひらいてください"
 
     def update(self) -> None:
-        """AI ヘルプの入力を処理する。"""
+        """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        if game.input_state.btnp(CANCEL_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS):
-            game.sfx.play("cancel")
-            game.state = "menu"
+        self.presenter.update(game)
 
     def draw(self) -> None:
         """AI ヘルプ画面を描画する。背景の重ね描きは scene が指揮し、
