@@ -283,6 +283,7 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `runtime/app.py` × M1-1 — 2026-04-25, **7 件は M1-1 例外規定（最外殻）により許容判定**（4d8d8f8）。ただし line 139 の F1 緊急脱出 `pyxel.btnp` は M1-2 観点で別途要検討（M1-2 ループ対象）
 - `runtime/main_runtime.py` × M1-1 — 2026-04-25, **1 件 (`import pyxel` 再エクスポート shim) は許容判定**（7a50e8a）
 - `ui/status_bar` × M1-1 — 2026-04-25, **判断待ちに退避（5 件、shared/ui/ レイヤーが M1-1 で views/ と同等扱いか未定義）**
+- `scenes/splash` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（commit 自動 fill-in）
 
 **🎉 Phase 1 (M1-1) 全 17 領域処理完了。**
 
@@ -755,6 +756,35 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - commit: `compliance(framework): M1-2 (入力規約) は全領域で違反 0 件、Phase 2 即完走`
 
 **CoVe**：シナリオ1 ✅（領域選択不要、grep 1 発で完走判定）/ シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅（修正範囲ゼロ）
+
+### 2026年4月25日 16:25（Phase 3 第 1 ループ：scenes/splash × M2-2）
+
+**Observe**：
+- ユーザー指示「begin」で Phase 3 (M2 View 規約) 開始
+- docs/framework-rule.md M2-1 (View 責務) と M2-2 (ViewModel 規約) を確認
+- splash/view.py は `render(*, frame: int, game: Any)` で Model/Game を直接受けて view 内で色判定 + i18n 解釈 → M2-2 違反
+
+**Think**：
+- M2-2 「View に GameState/Model を直接渡さず ViewModel/RenderData を渡す」「悪い例: enemy_hp_ratio / is_poisoned。良い例: hp_gauge_width / name_color」「見た目の判断は Presenter で済ませる」
+- splash の現状：色判定（block_color/title_color）と表示判定（subtitle/presenter/prompt の可視性）が view 内で frame から計算 → 「解釈前」フィールド渡し相当
+- 4 自問: ① splash のみ ✓ ② M2-2 のみ ✓ ③ docs/ M2-2 根拠あり ✓ ④ 最小範囲（view_model 新設 + presenter に build_view_model + view signature 変更）✓
+
+**Act（初回トライ）**：
+- view_model.py 新設（SplashViewModel：block_color/title_color/subtitle_text/presenter_text/prompt_visible）
+- presenter.build_view_model(game) で Model + i18n 解釈
+- view.render(vm, text_writer) に signature 変更
+- pytest → **失敗**：`test_no_pyxel_calls_in_scene_presenters`（presenter で `pyxel.frame_count` 参照は M1-1 違反）
+
+**Act（修正後）**：
+- ViewModel フィールドを `prompt_visible` (bool) → `prompt_eligible` (bool, 表示候補時間帯か) に変更
+- 実際の点滅判定（`pyxel.frame_count // 8`）は view 側で実施（pyxel API は view OK）
+- pytest 702 passed ✓
+
+**ViewModel 設計の学び**：
+- 時間ベース animation toggle（点滅・フレーム位相）は view 内で pyxel.frame_count 参照する方が正しい
+- VM には「いつ表示候補か」という解釈済み情報だけ渡し、「今この瞬間表示するか」という animation 状態は view が判断
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅（test 失敗→ scope 内で正しく修正）
 
 ### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
 

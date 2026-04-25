@@ -32,8 +32,9 @@ class SplashScene:
             game.state = "title"
 
     def draw(self) -> None:
-        """スプラッシュ画面を描画する。描画本体は View に委譲（M1-1 準拠）。"""
+        """スプラッシュ画面を描画する。Presenter が ViewModel を組み立て、View に委譲（M1-1 / M2-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        self.view.render(frame=self.model.frame, game=game)
+        vm = self.presenter.build_view_model(game)
+        self.view.render(vm, game.messages)
