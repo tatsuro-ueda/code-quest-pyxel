@@ -83,7 +83,8 @@ class TitleScene:
                 cursor=self.model.cursor,
                 settings_open=self.model.settings_open,
             )
-        self.view.draw(model=self.model, game=game)
+        vm = self.presenter.build_view_model(game)
+        self.view.draw(vm, game.messages)
         return None
 
     def _do_load(self) -> None:
