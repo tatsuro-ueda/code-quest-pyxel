@@ -58,10 +58,11 @@ class AiHelpScene:
 
     def draw(self) -> None:
         """AI ヘルプ画面を描画する。背景の重ね描きは scene が指揮し、
-        パネル本体の描画は View に委譲する（M1-1 準拠）。"""
+        パネル本体は Presenter→View で描画（M1-1 / M2-2 準拠）。"""
         game = self.game
         if game is None:
             return
         game.explore_scene.draw()
         game.status_bar.draw()
-        self.view.render(self.model, game)
+        vm = self.presenter.build_view_model(game)
+        self.view.render(vm, game.messages)

@@ -284,7 +284,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `runtime/main_runtime.py` × M1-1 — 2026-04-25, **1 件 (`import pyxel` 再エクスポート shim) は許容判定**（7a50e8a）
 - `ui/status_bar` × M1-1 — 2026-04-25, **判断待ちに退避（5 件、shared/ui/ レイヤーが M1-1 で views/ と同等扱いか未定義）**
 - `scenes/splash` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（54722ab）
-- `scenes/ending` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（commit 自動 fill-in）
+- `scenes/ending` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（4dfc950）
+- `scenes/ai_help` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（commit 自動 fill-in）
 
 **🎉 Phase 1 (M1-1) 全 17 領域処理完了。**
 
@@ -803,6 +804,24 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - view_model.py 新設（EndingViewModel）
 - presenter.build_view_model(game) で head/body/level 解釈
 - view.render(vm, text_writer) に signature 変更、time は view 内で frame_count 参照
+- pytest 702 passed ✓
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
+
+### 2026年4月25日 16:42（Phase 3 第 3 ループ：scenes/ai_help × M2-2）
+
+**Observe**：
+- ai_help/view.py が `render(model, game)` で Model/Game 直接受け
+- 13 行のリスト文字列を view 内に hard-code
+
+**Think**：
+- VM 設計：title + body_lines（13 行 + status 末尾）
+- presenter で文字列構築、view は描画のみ
+
+**Act**：
+- view_model.py 新設（AiHelpViewModel(title, body_lines)）
+- presenter.build_view_model で 13 行リスト + status を構築
+- view.render(vm, text_writer) に signature 変更
 - pytest 702 passed ✓
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
