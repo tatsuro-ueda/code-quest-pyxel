@@ -295,7 +295,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/battle` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（1e16b6c、BattleSubPanel + BattleRow + image_banks/vfx VM 経由）
 - `scenes/splash` × M3-2 — 2026-04-25, scene.update() のロジックを Presenter に移譲（0e4bd51）
 - `scenes/ending` × M3-2 — 2026-04-25, scene.update() のロジックを Presenter に移譲（a5fc7f2）
-- `scenes/ai_help` × M3-2 — 2026-04-25, scene.update() のロジックを Presenter に移譲（commit 自動 fill-in）
+- `scenes/ai_help` × M3-2 — 2026-04-25, scene.update() のロジックを Presenter に移譲（6ed00c2）
+- `scenes/settings` × M3-2 — 2026-04-25, update / apply_av / _toggle / _return_state / _rows を Presenter に集約（commit 自動 fill-in）
 
 **🎉 Phase 3 (M2 ViewModel 規約) 全 10 scenes 完走**
 

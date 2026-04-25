@@ -6,14 +6,6 @@ from typing import Any
 from src.scenes.settings.model import SettingsModel
 from src.scenes.settings.presenter import SettingsPresenter
 from src.scenes.settings.view import SettingsView
-from src.shared.services.input_bindings import (
-    UP_BUTTONS,
-    DOWN_BUTTONS,
-    LEFT_BUTTONS,
-    RIGHT_BUTTONS,
-    CONFIRM_BUTTONS,
-    CANCEL_BUTTONS,
-)
 
 
 @dataclass
@@ -37,66 +29,31 @@ class SettingsScene:
         game.menu_scene.model.sub = None
         game.state = "settings"
 
-    def _rows(self) -> list[tuple[str, str]]:
-        game = self.game
-        return [
-            ("all_av", game.text_fmt.t("ぜんぶ", "ALL")),
-            ("bgm_enabled", game.text_fmt.t("BGM", "BGM")),
-            ("sfx_enabled", game.text_fmt.t("こうかおん", "SFX")),
-            ("vfx_enabled", game.text_fmt.t("ひかり", "FLASH")),
-            ("back", game.text_fmt.t("もどる", "BACK")),
-        ]
-
-    def _return_state(self) -> str:
-        return "menu" if self.model.origin == "menu" else "title"
-
     def apply_av(self) -> None:
-        """player の AV 設定を audio / sfx に反映する。"""
-        game = self.game
-        game.audio.set_enabled(game.player_model.bgm_enabled)
-        game.sfx.set_enabled(game.player_model.sfx_enabled)
-
-    def _toggle(self, key: str) -> None:
-        game = self.game
-        p = game.player_model
-        if key == "all_av":
-            next_value = not (p.bgm_enabled and p.sfx_enabled and p.vfx_enabled)
-            p.bgm_enabled = next_value
-            p.sfx_enabled = next_value
-            p.vfx_enabled = next_value
-            self.apply_av()
-            return
-        setattr(p, key, not getattr(p, key, True))
-        self.apply_av()
-
-    def update(self) -> None:
-        """設定画面の入力処理。"""
+        """player の AV 設定を audio / sfx に反映する（外部 API 互換）。"""
         game = self.game
         if game is None:
             return
-        rows = self._rows()
-        if game.input_state.btnp(UP_BUTTONS):
-            self.model.cursor = (self.model.cursor - 1) % len(rows)
-            game.sfx.play("cursor")
+        self.presenter.apply_av(game)
+
+    def _toggle(self, key: str) -> None:
+        """既存テスト互換：トグル処理を Presenter に委譲。"""
+        game = self.game
+        if game is None:
             return
-        if game.input_state.btnp(DOWN_BUTTONS):
-            self.model.cursor = (self.model.cursor + 1) % len(rows)
-            game.sfx.play("cursor")
+        self.presenter._toggle(game, key)
+
+    def update(self) -> None:
+        """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。"""
+        game = self.game
+        if game is None:
             return
-        if game.input_state.btnp(CANCEL_BUTTONS):
-            game.state = self._return_state()
-            return
-        if game.input_state.btnp(LEFT_BUTTONS) or game.input_state.btnp(RIGHT_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS):
-            key, _label = rows[self.model.cursor]
-            if key == "back":
-                game.state = self._return_state()
-                return
-            self._toggle(key)
+        self.presenter.update(game)
 
     def draw(self) -> None:
         """設定画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        vm = self.presenter.build_view_model(self._rows(), game)
+        vm = self.presenter.build_view_model(game)
         self.view.render(vm, game.messages)
