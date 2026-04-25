@@ -6,11 +6,6 @@ from typing import Any
 from src.scenes.professor.model import ProfessorModel
 from src.scenes.professor.presenter import ProfessorPresenter
 from src.scenes.professor.view import ProfessorView
-from src.shared.services.input_bindings import (
-    UP_BUTTONS,
-    DOWN_BUTTONS,
-    CONFIRM_BUTTONS,
-)
 
 
 @dataclass
@@ -62,29 +57,11 @@ class ProfessorScene:
         game.state = "professor_intro"
 
     def update_intro(self) -> None:
-        """intro のページ送りと選択肢。"""
+        """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        import src.runtime.main_runtime as M
-        m = self.model
-        if not m.choice_active:
-            if game.input_state.btnp(CONFIRM_BUTTONS):
-                m.intro_idx, done = game.messages.advance_page(m.intro_idx, m.intro_lines)
-                if done:
-                    m.choice_active = True
-            return
-        # choice mode
-        if game.input_state.btnp(UP_BUTTONS) or game.input_state.btnp(DOWN_BUTTONS):
-            m.choice_cursor = 1 - m.choice_cursor
-            game.sfx.play("cursor")
-            return
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            game.sfx.play("select")
-            if m.choice_cursor == 0:
-                self.enter_ending_accepted()
-            else:
-                game.battle_scene.start(M.PROFESSOR_DATA, is_professor=True)
+        self.presenter.update_intro(game, self)
 
     def draw_intro(self) -> None:
         """Professor intro 画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。"""
@@ -108,16 +85,11 @@ class ProfessorScene:
         game.state = "professor_ending_main"
 
     def update_ending_main(self) -> None:
-        """Professor ending main のページ送り。"""
+        """配線：Presenter に委譲（M3-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        m = self.model
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            m.ending_idx, done = game.messages.advance_page(m.ending_idx, m.ending_lines)
-            if done:
-                game.explore_scene.model.a_cooldown = True
-                game.state = "map"
+        self.presenter.update_ending_main(game)
 
     def draw_ending_main(self) -> None:
         """Professor ending main 画面を描画する。Presenter が VM 組立て、View に委譲。"""
@@ -135,16 +107,11 @@ class ProfessorScene:
         game.state = "professor_ending_accepted"
 
     def update_ending_accepted(self) -> None:
-        """Professor 受諾エンドのページ送り。"""
+        """配線：Presenter に委譲（M3-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        m = self.model
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            m.ending_idx, done = game.messages.advance_page(m.ending_idx, m.ending_lines)
-            if done:
-                game.state = "title"
-                game.explore_scene.model.a_cooldown = True
+        self.presenter.update_ending_accepted(game)
 
     def draw_ending_accepted(self) -> None:
         """Professor 受諾エンド画面を描画する。Presenter が VM 組立て、View に委譲。"""
