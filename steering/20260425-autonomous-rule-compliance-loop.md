@@ -270,6 +270,7 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/ending` × M1-1 — 2026-04-25, 2 件解消（9eba8ac）
 - `scenes/ai_help` × M1-1 — 2026-04-25, 2 件解消（5808c32）
 - `scenes/settings` × M1-1 — 2026-04-25, 2 件解消（5d0231c）
+- `scenes/title` × M1-1 — 2026-04-25, 1 件解消（commit 自動 fill-in）
 
 ### 第 1 ループ計画（splash × M1-1）
 
@@ -469,6 +470,25 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - Design 第 1 項目を「領域サイズで可変」に書き換え
 - 完了領域リストの settings 行に commit hash を fill-in
 - 次ループ以降は新規約に従う
+
+### 2026年4月25日 14:20（第 5 ループ実行：scenes/title × M1-1）
+
+**Observe**：
+- 第 5 ループ対象：`src/scenes/title/scene.py`（132 行 / 1 pyxel 違反：`cls(1)`）
+- title/view.py には既に `render(cursor, settings_open)` snapshot メソッドあり（テスト用）
+- pyxel 直呼びは 1 箇所だけだが、その後ろの全描画ロジック（labels / save 状態表示）が scene.draw() に居る
+
+**Think**：
+- view に `draw(model, game)` を新設し snapshot 用 `render` と並置（既存テスト互換）
+- scene.draw() は `if game is None: return view.render(...)` 経路を維持し、game 設定時は `view.draw(...)` に委譲
+- ループ前 4 自問: ① title のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲 ✓
+
+**Act**：
+- `src/scenes/title/view.py`: `TitleView.draw(*, model, game)` 追加、pyxel.cls + 全描画ロジックを移動
+- `src/scenes/title/scene.py`: `import pyxel` 削除、`draw()` の game 設定分岐は view.draw() 1 行に縮退
+- 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
 
 ## 参考資料
 
