@@ -276,7 +276,28 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/professor` × M1-1 — 2026-04-25, 6 件解消（bb78ce5、中領域）
 - `scenes/explore` × M1-1 — 2026-04-25, 11 件解消（3e47eaf、大領域・1 commit）
 - `scenes/battle` × M1-1 — 2026-04-25, 17 件解消（19557e2、大領域・1 commit）
-- `services/audio_system` × M1-1 — 2026-04-25, **24 件は M1-1 例外規定（Audio ラッパ）により許容判定**（commit 自動 fill-in）
+- `services/audio_system` × M1-1 — 2026-04-25, **24 件は M1-1 例外規定（Audio ラッパ）により許容判定**（c255516）
+- `services/image_banks` × M1-1 — 2026-04-25, **判断待ちに退避（13 件、リソース ラッパが M1-1 例外に該当するか docs/ で未定義）**
+
+---
+
+## 判断待ちリスト
+
+### 2026-04-25 15:15 — `src/shared/services/image_banks.py` 全体（13 pyxel 違反）
+
+- **適用候補ルール**: docs/framework-rule.md M1-1「services は Pyxel 呼び出し禁止。ただし Audio/Save の Pyxel 依存ラッパは別」
+- **違反内訳**:
+  - `pyxel.load(pyxres_path)` (line 85) — リソース読込
+  - `pyxel.save(pyxres_path)` (line 180) — リソース保存
+  - `pyxel.images[N]` 参照 (lines 97, 127, 324, 360) — 画像バンクの読み書き
+  - `pyxel.tilemaps[0]` 参照 (lines 142, 146, 189, 206, 234, 266) — タイルマップの読み書き
+- **想定選択肢**:
+  1. **(A) 例外規定の拡大解釈で許容**: `class ImageBanks` を「Image/Resource ラッパ」と認定し、AudioManager と同列に M1-1 exception 入り
+  2. **(B) DI 化のみ準拠**: AudioManager と同様に `__init__(pyxel_module)` で DI、`self.pyxel.X` に書き換え（直接 import を消す）→ パターン整合
+  3. **(C) View 層へ移動**: pyxres ロード／タイルバンク描画を View 系統に移し、ImageBanks は data 構造体に縮退
+  4. **(D) M1-1 例外規定を docs/ 側で「Audio/Save/Resource ラッパ」と明文化**してから判定
+- **なぜ迷うか**: docs/framework-rule.md M1-1 の例外規定は文字通りには「Audio/Save」のみ。リソースローダ／画像バンクラッパは明示されていない。一方、機能的には pyxel への局所的な依存ラッパで AudioManager と同型（pyxres 読込書込・バンクアクセス）。スコープ外で勝手に判定すべきでない
+- **足し材料**: docs/framework-rule.md M1-1 の例外列挙を「Audio/Save/Resource Pyxel 依存ラッパ」に拡張するか、ImageBanks を AudioManager パターン（DI）にリファクタするかの方針判断が必要
 
 **🎉 マイルストーン達成: scenes/*/scene.py 全 11 領域 (town 含む) で M1-1 違反ゼロ**
 
@@ -504,6 +525,30 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - commit 形式: `compliance(services/audio_system): M1-1 例外規定（Audio ラッパ）により 24 件は許容と判定`
 
 **CoVe**：シナリオ1 ✅（領域選択→違反列挙→docs/ 根拠確認→判定→commit）/ シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅（修正範囲ゼロ＝scope creep の余地なし）
+
+### 2026年4月25日 15:15（第 12 ループ：services/image_banks × M1-1 / **判断待ち初発生**）
+
+**Observe**：
+- 第 12 ループ対象：`src/shared/services/image_banks.py`（13 pyxel 違反）
+- `import pyxel` 直 import あり、`pyxel.load` / `pyxel.save` / `pyxel.images[N]` / `pyxel.tilemaps[N]` を全て直接呼ぶ
+- `class ImageBanks: """tile / sprite / font バンク管理"""` — 画像／タイルマップの初期化と読み書き
+
+**Think**：
+- 4 自問: ① image_banks のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠は M1-1「Audio/Save の Pyxel 依存ラッパは別」だが ImageBanks は **Image/Resource ラッパ**で例外列挙に明示されていない
+- 4 つめ「最小修正」を考える前に、③で根拠が **曖昧**（example regulation の文言通りなら違反、機能的同型性で考えれば許容）
+- ユーザー指示「判断に迷ったら docs/ を参考に。docs/ は抽象度が高い箇所もある」+ シナリオ3「曖昧時は判断待ちリストに記録して次の違反へ」→ **修正せず判断待ち**
+
+**Act**：
+- 上記「判断待ちリスト」セクションに 4 つの想定選択肢（拡大解釈／DI 化／View 移動／docs/ 加筆）を記録
+- コード変更なし、tasknote 更新のみ
+- pytest: 修正前後同じ 702 passed
+- commit 形式は許容判定でも違反解消でもないので `compliance(services/image_banks): M1-1 判定保留 — 判断待ちリストに退避（13 件、リソースラッパ例外規定の解釈が必要）` とする
+
+**CoVe**：
+- シナリオ1: 領域選択→違反列挙→docs/ 根拠確認→（判定不能→判断待ち）→ commit ✅
+- シナリオ2: 完了領域リストに「判断待ち退避」と明記、再選択時には判断済か確認 ✅
+- **シナリオ3: 初発動 ✅** — 曖昧時に手を出さず判断待ちリストに記録、ループは停止せず次ループに進む（「ループ全停止しない」Design 第 4 項目通り）
+- シナリオ4: 修正範囲ゼロ ✅
 
 ### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
 
