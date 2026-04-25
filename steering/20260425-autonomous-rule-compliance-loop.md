@@ -300,7 +300,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/title` × M3-2 — 2026-04-25, update / _do_load を Presenter に集約（f364e63）
 - `scenes/shop` × M3-2 — 2026-04-25, update / _try_purchase を Presenter に集約（8ce9e8c）
 - `scenes/menu` × M3-2 — 2026-04-25, update / labels を Presenter に集約、関連 test を scene/presenter 両許容に更新（a9d8a11）
-- `scenes/professor` × M3-2 — 2026-04-25, update_intro / update_ending_main / update_ending_accepted を Presenter に集約（commit 自動 fill-in）
+- `scenes/professor` × M3-2 — 2026-04-25, update_intro / update_ending_main / update_ending_accepted を Presenter に集約（715260a）
+- `scenes/explore` × M3-2 — 2026-04-25, 大規模 update + helpers (_check_tile_events, _check_landmark_events, _resolve_landmark_scene, _dungeon_exit_callback) を Presenter に集約、scene は test 互換ラッパのみ（commit 自動 fill-in）
 
 **🎉 Phase 3 (M2 ViewModel 規約) 全 10 scenes 完走**
 
