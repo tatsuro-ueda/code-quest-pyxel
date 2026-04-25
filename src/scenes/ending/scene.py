@@ -6,7 +6,6 @@ from typing import Any
 from src.scenes.ending.model import EndingModel
 from src.scenes.ending.presenter import EndingPresenter
 from src.scenes.ending.view import EndingView
-from src.shared.services.input_bindings import CONFIRM_BUTTONS
 
 
 @dataclass
@@ -29,15 +28,11 @@ class EndingScene:
         game.state = "ending"
 
     def update(self) -> None:
-        """エンディング入力を処理する。"""
+        """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            game.player_model.in_dungeon = False
-            game.dungeon_map = None
-            game.explore_scene.model.a_cooldown = True
-            game.state = "map"
+        self.presenter.update(game)
 
     def draw(self) -> None:
         """エンディング画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。"""
