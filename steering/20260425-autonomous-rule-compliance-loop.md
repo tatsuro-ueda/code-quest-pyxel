@@ -7,6 +7,7 @@ dateModified: 2026-04-25T04:00:00+00:00
 status_changelog:
   - 2026-04-25 open（起票・Journey のみ）
   - 2026-04-25 Gherkin 起草（ユーザー Journey 修正を反映）
+  - 2026-04-25 Design 起草（ループ駆動・領域選定・エスカレーション形式を確定）
 tags:
   - task
   - autonomous-loop
@@ -16,8 +17,8 @@ tags:
 
 # 2026年4月25日 既存コードを最新ルール群に自律的に準拠させる（サイクリックループ）
 
-> 状態：(2) Gherkin（Design 以降は未記入）
-> 次のゲート：（ユーザー）Gherkin を確認して「Design」or「次」と指示
+> 状態：(3) Design（Tasklist 以降は未記入）
+> 次のゲート：（ユーザー）Design を確認して「実行」or「次」と指示
 
 ---
 
@@ -52,8 +53,10 @@ flowchart LR
 
 ### 委任度
 
-- 🟡（方針の骨格はユーザー承認が必要：**対象領域の選び方**と**1 ループの粒度**を Design で決めてから 🟢 に上げる）
-- ループの中身自体（grep → fix → commit）は CC 単独で回せる想定。ただし **新しい種類の違反を見つけた時の判断**はユーザーに上げる必要がある
+- **Design 起草後**：🟢（ユーザー Design 承認後はループ全体を CC 単独で回せる）
+- ループ内の 4 自問（1 領域・1 ルール・docs/ 根拠・最小修正）が **scope creep を機械的に止める**
+- **新種の違反**や**docs/ 不在**は判断待ちリスト経由でユーザーに上がる仕組みなので、無断判断のリスクはない
+- **夜間委任可否**：シナリオ全てローカルツール（Bash/Read/Edit/Grep/pytest）で完結。`claude -p` ヘッドレスでも動く想定（GCal/Gmail 等の MCP 不要）
 
 ---
 
@@ -112,13 +115,114 @@ flowchart TD
 
 ## 3) Design（どうやるか）
 
-> 未記入（ユーザー Gherkin 承認後に起草する）。
->
-> 現時点の案：
-> - 1 ループの構造：**対象領域を決める → ルール上問題がないか調べる → あれば修正する**
-> - 対象領域の選び方：`src/scenes/*` / `src/shared/services/*` / `tools/*` など粗粒度の単位から 1 つ。同じ領域を重複選択しないよう進捗を本 note に記録
-> - 修正の粒度：1 ルール × 1 領域の違反を 1 commit で閉じる。framework-rule.md の M1〜M5 単位で分ける
-> - ループ駆動：`/loop` 等で自動起動するか、手動で CC に「次のループを回して」と言うか。Design で決定
+- **関連スキル・MCP**：
+  - `manage-tasknotes`（本 note の Discussion 更新と「判断待ちリスト」管理）
+  - `loop`（定期実行）
+  - 標準ツール：Bash / Read / Edit / grep / pytest（追加 MCP は不要）
+- **モデル想定**：1 ループ = 30〜60 分 / 1 commit / 1 ルール × 1 領域
+
+### 構成図（ループ 1 周のデータフロー）
+
+```mermaid
+flowchart LR
+    subgraph INPUT[インプット]
+        I1[docs/ ルール群<br>framework-rule.md M1〜M5 + 各 PRD]
+        I2[本 note の進捗・判断待ちリスト]
+        I3[対象領域候補プール]
+    end
+    subgraph PROCESS[処理]
+        P1[領域選択<br>未着手かつ違反密度が高そうなところ]
+        P2[ルール違反列挙<br>grep + pytest + architecture_layout test]
+        P3[各違反: docs/ で根拠条文を確認]
+        P4[根拠あり→最小修正・テスト green]
+        P5[根拠なし／曖昧→判断待ち記録]
+    end
+    subgraph OUTPUT[アウトプット]
+        O1[1 commit<br>1 ルール × 1 領域 × 修正 N 件]
+        O2[Discussion 追記<br>領域・適用ルール・修正内容・所要時間]
+        O3[判断待ちリスト<br>必要に応じて]
+    end
+    INPUT --> PROCESS --> OUTPUT
+    classDef io fill:#e2e3f1,stroke:#3949ab,color:#000000;
+    classDef proc fill:#fff3cd,stroke:#856404,color:#000000;
+    classDef out fill:#d4edda,stroke:#155724,color:#000000;
+    class I1,I2,I3 io;
+    class P1,P2,P3,P4,P5 proc;
+    class O1,O2,O3 out;
+```
+
+### 手順フロー（ループ 1 周の進行）
+
+```mermaid
+flowchart TD
+    S1[① 本 note の進捗を読む<br>前回到達点と次の候補] --> S2[② 対象領域を 1 つ選ぶ]
+    S2 --> S3[③ 領域内のルール違反を列挙<br>grep / pytest / architecture_layout test]
+    S3 --> S4{④ 違反は<br>0 件?}
+    S4 -->|Yes| SDONE[✅ Discussion に「完了領域」記録<br>ループ終了 / 次回別領域]
+    S4 -->|No| S5[⑤ 1 件目を取り上げ docs/ で根拠条文を確認]
+    S5 --> S6{⑥ 根拠が<br>明確?}
+    S6 -->|No / 曖昧| S7[⑦ 判断待ちリストに追記<br>ファイル・行・選択肢・なぜ迷うか]
+    S7 --> S4
+    S6 -->|Yes| S8[⑧ 最小範囲で修正]
+    S8 --> S9[⑨ pytest 全 green 確認]
+    S9 --> S4
+    S4 -->|時間枠経過 or 違反処理済| SCOMMIT[⑩ 1 commit<br>1 ルール × 1 領域 で閉じる]
+    SCOMMIT --> SLOG[⑪ Discussion に作業記録<br>領域・適用ルール・修正件数・判断待ち件数・所要]
+    SLOG --> SDONE
+
+    classDef done fill:#d4edda,stroke:#155724,color:#000000;
+    classDef gate fill:#fff3cd,stroke:#856404,color:#000000;
+    class SDONE done;
+    class S4,S6 gate;
+```
+
+### 決定事項
+
+1. **ループ駆動方式**: `/loop` で自動実行を基本とする。インターバルは初期 **45 分**（1 ループの実時間は 5〜30 分想定だが、commit 後は次まで間を空けてユーザーが介入できる余白を残す）。ユーザーは任意のタイミングで `/loop` を停止／一時停止できる
+2. **対象領域の選び方**:
+   - 第 1 優先：`src/scenes/*` の **scene.py 行数が大きい順** に巡回（battle 518 → explore 395 → professor 202 → menu 179 → shop 147 → title 132 → settings 124 → ai_help 89 → ending 58 → splash 54）。town は完了済み除外
+   - 第 2 優先：`src/shared/services/*` を 1 ファイル単位で（`audio_system.py` から）
+   - 第 3 優先：`src/shared/ui/*` / `src/runtime/*` / `tools/*`
+   - 進捗は本 note の Discussion 末尾に「完了領域リスト」で管理（重複選択防止）
+3. **修正の粒度**: 1 commit = 1 領域 × 1 ルール（M1〜M5 のうち 1 つ）。複数ルールが同領域に混ざる場合は commit を分ける
+4. **判断保留時の動き**:
+   - docs/ で根拠条文が見つからない／解釈分岐 → **修正せず**「判断待ちリスト」に追記してその違反は飛ばす
+   - 領域内の他の違反は処理を継続（1 件の判断待ちでループ全停止はしない）
+   - リスト形式：`ファイル:行 / ルール候補 / 想定選択肢 1〜N / なぜ迷うか / 判定基準を docs/ のどこに足せばよさそうか`
+5. **判断待ちリストの置き場所**: 本 note の `## 判断待ちリスト` セクション（Discussion の上）に追記。1 ループに 1 件以上溜まったら **ユーザー戻り時のレビュー対象** とする
+6. **テスト方針**:
+   - 修正前後で `pytest test/ -q` を必ず通す
+   - 新たに追加したルール grep があれば、`test/test_architecture_layout.py` または専用テストファイルに固着させる（次回ループから自動検出）
+7. **Commit 規則**: `compliance(<領域>): <M番号> 違反を N 件解消 — <一行サマリ>` の形式。例: `compliance(scenes/battle): M1 (Pyxel API は View のみ) 違反 7 件解消`
+8. **ループ停止条件**:
+   - 全領域で違反 0 件 → 本 note を `status: done` に
+   - ユーザーが明示的に停止
+   - pytest が落ちたまま回復不能 → 即停止して Discussion に状況記録
+9. **ロールバック**: 各 commit は単独で revert 可能。複数 commit にまたがる修正は禁止（`#3` の粒度規則と整合）
+
+### 判断待ちリスト（雛形）
+
+```markdown
+## 判断待ちリスト
+
+### YYYY-MM-DD HH:MM — <ファイル:行>
+
+- **適用候補ルール**: framework-rule.md M3-2「Scene は薄い配線」
+- **想定選択肢**:
+  1. 現行のまま許容（薄い配線として OK と解釈）
+  2. presenter にロジックを移してさらに薄くする
+  3. scene.py 自体を削除し、dispatcher を直呼びにする
+- **なぜ迷うか**: M3-2 は「Scene を持たない縮退形まで OK」と書いてあるが、行数の上限は明記されていない。current 47 行
+- **足し材料**: docs/framework-rule.md M3-2 に「scene.py の上限行数」を追記すれば判定可能
+```
+
+### ループ運用の合言葉（自分に向けたチェック）
+
+各ループ開始前に CC が自問する 4 項目：
+1. **領域は 1 つだけか？** → No なら絞る
+2. **適用ルールは 1 つだけか？** → No なら別ループに分割
+3. **docs/ に根拠があるか？** → No なら判断待ち
+4. **修正範囲はその違反を直す最小範囲か？** → No なら scope を狭める
 
 ---
 
@@ -187,6 +291,27 @@ flowchart TD
 - 「見るべき現物」を docs/ 配下全ファイルに拡張、ユーザー指示の文を冒頭注釈に追加
 - `feedback_loop_doubt_consult_docs.md` を memory に作成、MEMORY.md にもエントリ
 - 次ゲート：ユーザー Gherkin 最終確認 → 「Design」指示
+
+### 2026年4月25日 13:30（Design 起草）
+
+**Observe**：
+- ユーザー「ok designへ」で Gherkin 承認、Design 起草フェーズへ
+- 委任度を 🟢 に上げる前提を満たすため、scope creep を機械的に止める仕組みが必要
+
+**Think**：
+- Design の核は **判断ロジックの言語化** とその ガード：
+  - **ループ駆動方式**: `/loop` 自動 45 分間隔（手動切替も可）
+  - **領域選定**: scene.py 行数降順 → services → ui/runtime/tools の優先順
+  - **粒度**: 1 commit = 1 領域 × 1 ルール
+  - **判断待ち形式**: 専用セクション「判断待ちリスト」に追記、形式は ファイル:行 / ルール候補 / 選択肢 / 迷う理由 / docs/ への加筆案
+  - **scope creep 防止**: ループ前 4 自問（1 領域・1 ルール・docs/ 根拠・最小修正）
+- ループ停止条件と commit 規則を明文化することで、「途中で止まっても次回再開可能」「revert 単位が明確」を担保
+- 夜間委任の可否も整理：標準ツールのみで完結するので claude -p ヘッドレスでも動く
+
+**Act**：
+- Design セクションを全面記入（構成図・手順フロー・決定事項 9 項目・判断待ちリスト雛形・自問チェック）
+- 委任度を 🟢 に格上げ条件と共に明示
+- 次ゲート：ユーザー Design 確認 → 「実行」指示で Phase 4 (Tasklist) へ
 
 ## 参考資料
 
