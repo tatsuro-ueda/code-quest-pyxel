@@ -271,7 +271,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/ai_help` × M1-1 — 2026-04-25, 2 件解消（5808c32）
 - `scenes/settings` × M1-1 — 2026-04-25, 2 件解消（5d0231c）
 - `scenes/title` × M1-1 — 2026-04-25, 1 件解消（64e7ce9）
-- `scenes/shop` × M1-1 — 2026-04-25, 1 件解消（commit 自動 fill-in）
+- `scenes/shop` × M1-1 — 2026-04-25, 1 件解消（fc569bd）
+- `scenes/menu` × M1-1 — 2026-04-25, 8 件解消（commit 自動 fill-in、中領域）
 
 ### 第 1 ループ計画（splash × M1-1）
 
@@ -449,6 +450,25 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 **Act**：
 - `src/scenes/settings/view.py`: `SettingsView.render(*, rows, cursor, game)` 追加、2 pyxel + 設定行ループを移動
 - `src/scenes/settings/scene.py`: `import pyxel` 削除、`draw()` を 1 行に
+- 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
+
+### 2026年4月25日 14:50（第 7 ループ実行：scenes/menu × M1-1 / 中領域初回）
+
+**Observe**：
+- 第 7 ループ対象：`src/scenes/menu/scene.py`（179 行 / 8 pyxel 違反：`rect`/`rectb` 4 ペア）
+- 初の中領域。サブパネル 3 種類（status / items / equip）が draw() 内で分岐
+- menu/view.py は空スケルトン
+
+**Think**：
+- 同パターンで `view.draw(*, labels, model, game)` 新設、scene.draw() を委譲のみに
+- `_labels()` は scene のメソッドなので呼び出し側で評価して labels を渡す
+- 4 自問: ① menu のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲（draw 移動のみ、update / sub 切替ロジックには触れず）✓
+
+**Act**：
+- `src/scenes/menu/view.py`: `MenuView.draw(*, labels, model, game)` 追加、8 pyxel + 60 行の描画ロジックを移動
+- `src/scenes/menu/scene.py`: `import pyxel` 削除、`draw()` を 5 行に縮退
 - 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
