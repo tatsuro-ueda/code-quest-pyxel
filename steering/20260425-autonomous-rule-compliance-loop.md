@@ -280,6 +280,7 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `services/image_banks` × M1-1 — 2026-04-25, **判断待ちに退避（13 件、リソース ラッパが M1-1 例外に該当するか docs/ で未定義）**
 - `services/message_display` × M1-1 — 2026-04-25, **判断待ちに退避（7 件、テキスト描画ラッパで多数の views/scenes から `game.messages.text()` 呼び出し、構造変更要）**
 - `services/vfx` × M1-1 — 2026-04-25, **判断待ちに退避（1 件、message_display と同型の services 内描画問題）**
+- `runtime/app.py` × M1-1 — 2026-04-25, **7 件は M1-1 例外規定（最外殻）により許容判定**（commit 自動 fill-in）。ただし line 139 の F1 緊急脱出 `pyxel.btnp` は M1-2 観点で別途要検討（M1-2 ループ対象）
 
 ---
 
@@ -617,6 +618,32 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - commit: `compliance(services/vfx): M1-1 判定保留 — image_banks/message_display と同型、まとめて判断要`
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 ✅ / シナリオ4 ✅
+
+### 2026年4月25日 15:50（第 15 ループ：runtime/app.py × M1-1 / 最外殻例外判定）
+
+**Observe**：
+- 第 15 ループ対象：`src/runtime/app.py`（7 grep 件）
+- 内訳：
+  - `pyxel.init(256, 256, ...)` line 57 — Pyxel runtime 初期化
+  - `pyxel.Font(...)` line 61 — フォント読込
+  - `pyxel.run(...)` line 133 — メインループ起動
+  - `self.input_state.update(pyxel)` line 136 — pyxel module を DI
+  - `pyxel.btnp(pyxel.KEY_F1)` line 139 — F1 緊急脱出
+  - `pyxel.cls(0)` line 203 — フレーム描画開始 clear
+  - `pyxel.run` line 264 — docstring コメント
+
+**Think**：
+- docs/framework-rule.md M1-1: 「許可: src/.../views/*.py, **src/platform/pyxel_runtime.py のような最外殻**」
+- `class Game` は最外殻の典型（pyxel.init / pyxel.run / フォント load / フレーム cls）
+- 4 自問: ① runtime/app のみ ✓ ② M1-1 のみ ✓ ③ docs/ 例外規定該当 ✓ ④ 修正不要 ✓
+- ただし line 139 の F1 入力は M1-2「Presenter 内で直接 pyxel.btnp 禁止」観点で疑義あり。ただし Game.update は presenter ではなく dispatcher のため、別ループ（M1-2 専門）で再考
+
+**Act**：
+- 完了領域リストに「7 件は M1-1 最外殻例外で許容、line 139 は M1-2 別途検討」と記載
+- pytest 702 passed
+- commit 形式：`compliance(runtime/app): M1-1 例外規定（最外殻）により 7 件は許容と判定`
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅（修正範囲ゼロ）
 
 ### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
 
