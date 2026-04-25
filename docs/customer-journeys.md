@@ -534,6 +534,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦音は鳴らせるがゾーン切替の構造化された仕組みがない（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦BGM 切替は深いが親が代行になり子の発案が反映されにくい（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI 生成 BGM で「親子で雰囲気を整えた」感が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（親子）❓マップはできたけど無音（ゲーム中）]
         B1 --> B2[（親）💦チップチューンの作曲知識がない（コードエディタ）]
@@ -548,6 +553,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
+
 ### CJ16: 戦闘BGMを付ける
 
 戦闘に入ったときにBGMが切り替わるだけで、緊張感がまったく変わる。
@@ -556,6 +563,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦戦闘モードという概念がない／プロジェクト跨ぎになる（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦戦闘 BGM の差し替えはあるが親代行になりがち（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI 生成だと「子が緊張感を選んだ」感が出ない（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（親子）❓戦闘が始まっても音楽が変わらない（ゲーム中）]
         B1 --> B2[（子ども）❌フィールドと同じ曲で緊迫感ゼロ（ゲーム中）]
@@ -569,6 +581,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現）, ①子（プレイヤー・没入） → `customer-jobs.md` 参照
+
 ### CJ17: 効果音をイベントに紐づける
 
 攻撃、回復、レベルアップ、扉を開けるなど、操作に音がつくと「手ごたえ」が生まれる。
@@ -577,6 +591,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦SFX ライブラリ依存で子の好みの音作りが難しい（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦イベント紐付けは深いが親が代行になりがち（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI 生成 SFX で「自分で作った気持ちよさ」が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）❓攻撃しても無音（ゲーム中）]
         B1 --> B2[（子ども）❌ダメージを与えた実感がない（ゲーム中）]
@@ -590,6 +609,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
+
 ### CJ18: ダメージ演出を付ける
 
 画面フラッシュや点滅など、最低限のVFXでゲームの「手ざわり」が激変する。
@@ -598,6 +619,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦VFX 演出の仕組みがなく数字の引き算に見える（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦パーティクル系は強力だが操作の壁で実装に届かない（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦AI 任せの演出で「親子で議論する」機会が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）❓攻撃しても HP の数字が変わるだけ（ゲーム中）]
         B1 --> B2[（子ども）❌当たった感じがしない（ゲーム中）]
@@ -611,6 +637,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：①子（プレイヤー・没入）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
+
 ### CJ19: 場面転換の演出
 
 町に入る、戦闘が始まる、セーブする。場面が変わるときのフェードが「それっぽさ」を一気に上げる。
@@ -619,6 +647,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦シーン遷移は瞬時切替が基本／フェード演出の文化がない（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦標準フェードはあるがカスタムは敷居が高い（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI 任せの演出で「作品感」を子が判定する機会が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）❓町に入ると画面がパッと切り替わる（ゲーム中）]
         B1 --> B2[（子ども）❌唐突で安っぽい（ゲーム中）]
@@ -632,6 +665,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：①子（プレイヤー・没入）, ⑤親（関係・コミュニケーション） → `customer-jobs.md` 参照
+
 ### CJ20: 演出の有無でゲームの印象が変わることを体験する
 
 親が演出を一括でON/OFFして、子どもと一緒に違いを確認する。
@@ -640,6 +675,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦演出 ON/OFF を一括切替する仕組みがない（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦親が「演出は大事」と教える構図になり先生化する（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI 効率化で子が体感する機会が省略される（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（親）💦演出の価値を言葉で説明しようとする（対面）]
         B1 --> B2[（子ども）❓「別にいいじゃん」（対面）]
@@ -652,6 +692,8 @@ flowchart LR
         A3 --> A4[（親子）❤️演出の大事さを体感 → 何を足すか一緒に考える（対面）]
     end
 ```
+
+> 該当カテゴリ：⑤親（関係・コミュニケーション）, ③子（批評家・自己判断） → `customer-jobs.md` 参照
 
 ---
 
