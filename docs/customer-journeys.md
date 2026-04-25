@@ -95,6 +95,11 @@ Buy 4 つと Make 3 つ、合わせて 7 要素が揃って初めて好循環が
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦背景差し替えだけで RPG マップにはならない（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦Lua とパーツの両方を覚えないと作れない（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦AI 任せで「自分で配置した」感が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「マップ変えたい」（ゲーム中）]
         B1 --> B2[（親）💦ソースコードを書き換える（コードエディタ）]
@@ -108,6 +113,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現） → `customer-jobs.md` 参照
+
 ### CJ02: 道を作る
 
 子どもが草タイルを並べて、町と町をつなぐ道を作る。
@@ -116,6 +123,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦ドラッグでパス描画する UI がない（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦親が設計者になり子は見学になりがち（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI が引いた道で「自分で引いた」感が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「町と町を道でつなぎたい」（ゲーム中）]
         B1 --> B2[（親）💦PATHの座標を計算して配列に書き込む（コードエディタ）]
@@ -128,6 +140,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現） → `customer-jobs.md` 参照
+
 ### CJ03: 森を作る
 
 子どもが木タイルを密集させて、「ロジックのもり」を自分で拡張する。
@@ -136,6 +150,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦タイル密集で森の雰囲気を作る術が薄い（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦3D 木の配置はあるが操作が複雑（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦AI 生成で「ロジックの森」が自分の手で広がらない（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「森を広げたい」（ゲーム中）]
         B1 --> B2[（親）💦T_TREE の値を配列に並べる（コードエディタ）]
@@ -150,6 +169,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現） → `customer-jobs.md` 参照
+
 ### CJ04: 水辺を作る
 
 子どもが水タイルと岸タイルを組み合わせて湖や川を作る。
@@ -158,6 +179,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦水と岸の連結を「絵」で扱う仕組みがない（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦タイルセットの組み合わせは深いが時間がかかる（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI 任せの地形で「自分で作った」感が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「湖を作りたい」（ゲーム中）]
         B1 --> B2[（親）💦WATER/SHORE_N/SHORE_S… 角タイルを正しく並べる（コードエディタ）]
@@ -171,6 +197,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現） → `customer-jobs.md` 参照
+
 ### CJ05: 装飾で世界を彩る
 
 子どもが花・岩・キノコなどの装飾タイルを配置して、ゾーンに個性を持たせる。
@@ -179,6 +207,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦装飾の概念がスプライトの個別配置になり統一感が出ない（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦オブジェクト配置はあるが操作のハードルが高い（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦自動生成された装飾で「自分で散らした」感が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）❓草原がのっぺりで味気ない（ゲーム中）]
         B1 --> B2[（親）💦装飾はプロシージャル生成コードを書く（コードエディタ）]
@@ -192,6 +225,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現） → `customer-jobs.md` 参照
+
 ### CJ06: 迷路を作る
 
 子どもが壁と道を組み合わせて、洞窟の中に迷路を設計する。
@@ -200,6 +235,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦壁と道で迷路を「描く」UI がない（Scratch エディタ）]
+        C1 --> C2[（マリオメーカー）💦ステージは作れるが探索型の迷路にならない（SMM2）]
+        C2 --> C3[（vibe coding 単体）💦AI が生成した迷路で「自分の解きたい難易度」が出ない（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「迷路にしたい」（ゲーム中）]
         B1 --> B2[（親）💦2 次元配列に壁と道を交互に書く（コードエディタ）]
@@ -214,6 +254,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現） → `customer-jobs.md` 参照
+
 ### CJ07: ランドマークを配置する
 
 子どもがマルチタイルの世界樹や通信塔を好きな場所に配置する。
@@ -222,6 +264,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦マルチタイル概念がなく一つひとつのスプライトに分解される（Scratch エディタ）]
+        C1 --> C2[（RPG Maker）💦オブジェクト配置はあるが子は親の作業を見る側に（RPG Maker）]
+        C2 --> C3[（vibe coding 単体）💦AI 任せの大型オブジェクトで「自分で置いた」感が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「大きい建物を置きたい」（ゲーム中）]
         B1 --> B2[（親）💦2x2 タイルの 4 つの ID を正しい位置に配置（コードエディタ）]
@@ -235,6 +282,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現） → `customer-jobs.md` 参照
+
 ### CJ23: スプライトを自分で描く
 
 子どもがスプライトエディタで主人公の見た目を変える。
@@ -243,6 +292,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦コスチュームエディタはあるが解像度・色数が違う（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦アセット読み込み主体で自作ピクセルアートではない（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦AI 生成スプライトで「自分で描いた」感が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「主人公の見た目変えたい」（ゲーム中）]
         B1 --> B2[（親）💦16x16 ピクセルデータを数字で書く（コードエディタ）]
@@ -257,6 +311,8 @@ flowchart LR
     end
 ```
 
+> 該当カテゴリ：②子（クリエイター・表現） → `customer-jobs.md` 参照
+
 ### CJ24: 効果音を自分で作る
 
 子どもがSoundエディタで攻撃音や回復音を作る。
@@ -265,6 +321,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph Competitor["競合Before"]
+        C1[（Scratch）💦効果音ライブラリ依存／自作の音は作りにくい（Scratch エディタ）]
+        C1 --> C2[（Roblox）💦音アセット導入が必要、自作チップチューンには向かない（Roblox Studio）]
+        C2 --> C3[（vibe coding 単体）💦AI 生成音で「自分で作った」感が消える（AI入力画面）]
+    end
     subgraph Before["Before"]
         B1[（子ども）💡「攻撃音変えたい」（ゲーム中）]
         B1 --> B2[（親）💦音データの数値配列を編集（コードエディタ）]
@@ -278,6 +339,8 @@ flowchart LR
         A3 --> A4[（子ども）❤️Run → 戦闘で鳴る →「これこれ！」（ゲーム中）]
     end
 ```
+
+> 該当カテゴリ：②子（クリエイター・表現） → `customer-jobs.md` 参照
 
 ---
 
