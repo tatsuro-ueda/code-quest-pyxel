@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-import pyxel
-
 from src.scenes.settings.model import SettingsModel
 from src.scenes.settings.presenter import SettingsPresenter
 from src.scenes.settings.view import SettingsView
@@ -96,29 +94,8 @@ class SettingsScene:
             self._toggle(key)
 
     def draw(self) -> None:
-        """設定画面を描画する。"""
+        """設定画面を描画する。描画本体は View に委譲（M1-1 準拠）。"""
         game = self.game
         if game is None:
             return
-        pyxel.rect(28, 54, 200, 148, 1)
-        pyxel.rectb(28, 54, 200, 148, 7)
-        game.messages.text(92, 66, game.text_fmt.t("せってい", "SETTINGS"), 10)
-        for i, (key, label) in enumerate(self._rows()):
-            cy = 94 + i * 22
-            col = 10 if i == self.model.cursor else 6
-            marker = ">" if i == self.model.cursor else " "
-            if key == "back":
-                value = ""
-            elif key == "all_av":
-                value = "ON" if (
-                    game.player_model.bgm_enabled
-                    and game.player_model.sfx_enabled
-                    and game.player_model.vfx_enabled
-                ) else "OFF"
-            else:
-                value = "ON" if getattr(game.player_model, key, True) else "OFF"
-            row = f"{marker} {label}"
-            if value:
-                row = f"{row}: {value}"
-            game.messages.text(44, cy, row, col)
-        game.messages.text(44, 176, game.text_fmt.t("けっていで きりかえ", "Press confirm to toggle"), 7)
+        self.view.render(rows=self._rows(), cursor=self.model.cursor, game=game)

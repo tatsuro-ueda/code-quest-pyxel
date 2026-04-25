@@ -264,7 +264,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 
 - `scenes/splash` × M1-1 — 2026-04-25, 3 件解消（a8d0f24）
 - `scenes/ending` × M1-1 — 2026-04-25, 2 件解消（9eba8ac）
-- `scenes/ai_help` × M1-1 — 2026-04-25, 2 件解消（commit 自動 fill-in）
+- `scenes/ai_help` × M1-1 — 2026-04-25, 2 件解消（5808c32）
+- `scenes/settings` × M1-1 — 2026-04-25, 2 件解消（commit 自動 fill-in）
 
 ### 第 1 ループ計画（splash × M1-1）
 
@@ -428,6 +429,23 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
 
 **CoVe（Gherkin 合致確認）**：シナリオ1 ✅ / シナリオ2（リスト更新）✅ / シナリオ3 N/A / シナリオ4 ✅
+
+### 2026年4月25日 14:10（第 4 ループ実行：scenes/settings × M1-1）
+
+**Observe**：
+- 第 4 ループ対象：`src/scenes/settings/scene.py`（124 行 / 2 pyxel 違反：`rect` / `rectb`）
+- settings/view.py は空スケルトン
+
+**Think**：
+- 同パターン：`SettingsView.render(rows, cursor, game)` で枠と各行を描画。draw() は 1 行に縮退
+- ループ前 4 自問: ① settings のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲 ✓
+
+**Act**：
+- `src/scenes/settings/view.py`: `SettingsView.render(*, rows, cursor, game)` 追加、2 pyxel + 設定行ループを移動
+- `src/scenes/settings/scene.py`: `import pyxel` 削除、`draw()` を 1 行に
+- 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
 
 ## 参考資料
 
