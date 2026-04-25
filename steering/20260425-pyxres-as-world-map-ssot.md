@@ -32,16 +32,16 @@ tags:
 flowchart LR
     subgraph BEFORE[Before（現状）]
         direction TB
-        B1[😊 子どもが道のタイル形状を編集する<br>（Pyxel Code Maker タイルマップエディタ）]
-        B1 --> B2[😵 ゲームを起動するとその場所が別の形に戻っている<br>（pyxel.html 配信ゲーム画面）]
-        B2 --> B_END[😰 編集が消えたように感じて pyxres 編集の信頼を失う]
+        B1[💦 子どもが道のタイル形状を編集する<br>（Pyxel Code Maker タイルマップエディタ）]
+        B1 --> B2[❌ ゲームを起動するとその場所が別の形に戻っている<br>（pyxel.html 配信ゲーム画面）]
+        B2 --> B_END[❌ 編集が消えたように感じて pyxres 編集の信頼を失う]
     end
 
     subgraph AFTER[After（達成状態）]
         direction TB
-        A1[😊 子どもが道のタイル形状を編集する<br>（Pyxel Code Maker タイルマップエディタ）]
-        A1 --> A2[😌 ゲームを起動すると編集がそのまま見えている<br>（pyxel.html 配信ゲーム画面）]
-        A2 --> A_END[😄 子どもの「変えたものがそのままゲームに出る」約束が守られる]
+        A1[💦 子どもが道のタイル形状を編集する<br>（Pyxel Code Maker タイルマップエディタ）]
+        A1 --> A2[✅ ゲームを起動すると編集がそのまま見えている<br>（pyxel.html 配信ゲーム画面）]
+        A2 --> A_END[❤️ 子どもの「変えたものがそのままゲームに出る」約束が守られる]
     end
 
     BEFORE ~~~ AFTER
@@ -56,6 +56,36 @@ flowchart LR
     class B_END endOld;
     class A_END endNew;
 ```
+
+### 1-B. 作業スタイル（自律ループで楽できる）
+
+```mermaid
+flowchart LR
+    subgraph BEFORE[Before 現状]
+        direction TB
+        B1[❌ 競合カスタマージャーニーがない<br>（エディター）]
+        B1 --> B2[💦 AIと相談しながら1つ1つ追加<br>（ターミナル）]
+        B2 --> B_END[❌ 時間がかかる＋脳疲労]
+    end
+    subgraph AFTER[After 達成状態]
+        direction TB
+        A1[❌ 競合カスタマージャーニーがない<br>（エディター）]
+        A1 --> A2[🏠 自分は家事がはかどる（AIは自律ループで追加）<br>（PC離席）]
+        A2 --> A_END[❤️ デバッグ中に他のことができる→脳元気]
+    end
+    BEFORE ~~~ AFTER
+    classDef oldStyle fill:#f8d7da,stroke:#721c24,color:#000000;
+    classDef newStyle fill:#d4edda,stroke:#155724,color:#000000;
+    classDef endOld fill:#f5c6cb,stroke:#721c24,color:#000000,font-weight:bold;
+    classDef endNew fill:#c3e6cb,stroke:#155724,color:#000000,font-weight:bold;
+    class B1,B2 oldStyle;
+    class A1,A2 newStyle;
+    class B_END endOld;
+    class A_END endNew;
+```
+
+関連顧客ジョブ：JCR, JCT, JSC
+関連カスタマージャーニー：CJ01, CJ02
 
 ### 委任度
 
@@ -79,7 +109,80 @@ flowchart LR
 
 ## 2) Gherkin（完了条件）
 
-> （Journey 承認後、CC が素案を記入）
+> 検証観点：「子どもが Code Maker で編集したものが、起動後もそのまま見える」「もう一度編集しても安心」「pyxres が壊れた時に黙ってユーザー編集を捨てない」「scope を広げない」。
+> いずれも **ユーザーは PC から離れている前提**（自律ループで AI が自走、戻ってきたら git log と Discussion で進捗を追う）で書く。
+
+### シナリオ1：正常系（家事中に自律ループで SSoT 化が完了する）
+
+> 🧱 Given: ユーザーは家事中。タスクノートに Design まで承認した状態が記録されている。子どもは Code Maker で 2 番目の町の 1 つ上 (30,21) を別の道形状（例：縦パス PATH_V）に編集して保存ずみ。
+> 🎬 When: AI が影響範囲調査 → `bake_world_to_tilemap` の T_PATH 上書きを止める → `derive_world_from_tilemap` でバリアント情報も復元する → pyxres 初回不在時の自動生成パスは維持 → pytest 全 green → bundle 再ビルド → headless screenshot で (30,21) のピクセル値が編集どおりであることを確認 → commit → Discussion 追記、を自走で回す。
+> ✅ Then: 戻ってきたユーザーが git log と Discussion で進捗を 5 分以内に追える。Code Maker でゲーム起動すると (30,21) の道形状が編集どおり（縦パス）になっており、procedural な横一直線に戻っていない。
+
+```mermaid
+flowchart TD
+    A1[🧱 子どもが Code Maker で 30,21 を縦パスに編集<br>ユーザーは家事中・タスクノート Design 承認済] --> A2[🎬 AI が自走で影響範囲調査・bake 停止・derive 強化・pytest・bundle 再ビルド・screenshot 検証・commit]
+    A2 --> AOK[✅ ゲーム起動で 30,21 が縦パスのまま見える<br>git log と Discussion で 5 分以内に追える]
+
+    classDef ok fill:#d4edda,stroke:#155724,color:#000000;
+    class AOK ok;
+```
+
+---
+
+### シナリオ2：再試行系（pyxres を再編集しても消えない）
+
+> 🧱 Given: SSoT 化のリリース後、子どもが (30,21) を縦パスに編集して反映を確認ずみ。続けて (28,20) も別の道形状に編集して保存。
+> 🎬 When: 再度ゲーム起動。
+> ✅ Then: (28,20) の新しい編集も反映され、かつ前回の (30,21) 編集も残っている。「以前の編集が procedural 上書きで戻る」現象が再発していない。
+
+```mermaid
+flowchart TD
+    B1[🧱 30,21 編集ずみ・続けて 28,20 を編集] --> B2[🎬 ゲーム再起動]
+    B2 --> BOK[✅ 両方の編集が反映され前の編集も消えない]
+
+    classDef ok fill:#d4edda,stroke:#155724,color:#000000;
+    class BOK ok;
+```
+
+---
+
+### シナリオ3：異常系（pyxres が壊れている／不在のとき黙って初期化しない）
+
+> 🧱 Given: pyxres ファイルが破損している、または不在のままゲーム起動。
+> 🎬 When: `setup_world_tilemap()` が pyxres 読込を試みる。
+> ✅ Then: pyxres **不在**なら従来どおり `generate_world_map()` で procedural 生成して `pyxel.save` で初回 pyxres を作る（既存挙動・互換性維持）。pyxres **破損**ならログに警告を出して止める。**子どもの編集ずみ pyxres を黙ってデフォルトマップで上書きしない**（No Silent Failure）。
+
+```mermaid
+flowchart TD
+    C1[🧱 pyxres が破損 または 不在] --> C2[🎬 ゲーム起動 setup_world_tilemap]
+    C2 --> COK[✅ 不在=初回生成して保存・破損=警告ログで止める<br>編集ずみ pyxres を黙ってデフォルトで上書きしない]
+
+    classDef ok fill:#d4edda,stroke:#155724,color:#000000;
+    class COK ok;
+```
+
+---
+
+### シナリオ4：リスク確認（dungeon や get_path_variant への scope creep を起こさない）
+
+> 🧱 Given: 影響範囲調査で「dungeon の bake_dungeon_to_tilemap も同じ procedural 上書きパターンだ」「`get_path_variant` の町判定バグも気になる」と AI が気づく。
+> 🎬 When: AI が「ついで直し」で dungeon や get_path_variant にも手を入れようとする。
+> ✅ Then: 発動せず最小 commit で閉じる。dungeon 改修と get_path_variant 修正は **別タスクノートに分離記録**（やらないことに「dungeon マップの bake 変更」「get_path_variant のロジック修正」を明記ずみ）。
+
+```mermaid
+flowchart TD
+    D1[🧱 影響範囲調査で dungeon と get_path_variant の同型問題に気づく] --> D2[🎬 AI が ついで直し を発動しようとする]
+    D2 --> DOK[✅ 発動せず最小 commit・別タスクノートに分離記録]
+
+    classDef ok fill:#d4edda,stroke:#155724,color:#000000;
+    class DOK ok;
+```
+
+---
+
+### 委任度（Gherkin 段階）
+
+- **🟡 中**（Journey と同じ）。シナリオ1 の検証手段「headless screenshot で (30,21) のピクセル値確認」が技術的に可能か（既存 `tools/screenshot_test.py` 雛形と pyxres pixel 取得 API の組合せで成立するか）を Design で確定すれば 🟢 化する。
 
 ---
 
