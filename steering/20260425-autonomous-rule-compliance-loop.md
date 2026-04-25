@@ -356,6 +356,18 @@ scenes/*/view.py がすべて：
 
 ## 判断待ちリスト
 
+### 2026-04-25 19:05 — `ARCHITECTURE.md` 新設 vs `docs/repository-structure.md` リネーム（M5-3）
+
+- **適用候補ルール**: docs/framework-rule.md M5-3 検証目安「ARCHITECTURE.md / AGENTS.md に本規約のサマリが取り込まれている」
+- **現状**: ARCHITECTURE.md は不在、docs/repository-structure.md (15KB) が事実上の構造文書。AGENTS.md には M1〜M5 サマリ + 検証コマンドを追加済（ea04cdf）
+- **想定選択肢**:
+  1. **(A) ARCHITECTURE.md を新設し、framework-rule.md の M1〜M5 セクション要約をリポジトリ root に置く** — AGENTS.md と役割重複の懸念
+  2. **(B) docs/repository-structure.md を ARCHITECTURE.md にリネームし、root に置く** — 既存内容（ディレクトリ規約）と framework-rule の規約は別レイヤー、リネームだけで M5-3 検証目安を満たすかは解釈次第
+  3. **(C) docs/repository-structure.md を ARCHITECTURE.md と読み替える regulations を framework-rule.md に追記し、現状維持** — 文書整理のみ、scope 0
+  4. **(D) AGENTS.md に M1〜M5 サマリが入っていれば M5-3 検証目安「AGENTS.md か ARCHITECTURE.md のどちらか」と解釈し、ARCHITECTURE.md 不在は許容** — 本コミット (ea04cdf) でこの方針に近づいた
+- **なぜ迷うか**: M5-3 検証目安の文言「ARCHITECTURE.md / AGENTS.md」は AND/OR が曖昧（スラッシュ表記）。AGENTS.md だけで充足するか ARCHITECTURE.md も要るかは解釈分岐
+- **足し材料**: docs/framework-rule.md M5-3 の検証目安に「AGENTS.md がサマリを保持していれば ARCHITECTURE.md は省略可」と明記すれば判断確定
+
 ### 2026-04-25 18:25 — `src/runtime/app.py` Game クラス state 7 件（M4-3 段階移行未完）
 
 - **適用候補ルール**: docs/framework-rule.md M4-3「GameState に入れないもの」「Game は最終的にランタイム殻にする」+ M4-4「GameState から出すもの」表
