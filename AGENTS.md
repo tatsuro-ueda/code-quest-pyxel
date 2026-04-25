@@ -310,6 +310,49 @@ python tools/test_web_compat.py
 7. 変更後は `pytest` を回す
 8. セリフや世界観の言い回しは今の雰囲気にそろえる
 
+## コード階層規約（M1〜M5）
+
+このリポジトリのコードは `docs/framework-rule.md` の **M1〜M5 メタルール**に従います。リファクタや新規実装の前に、関連する M 番号を確認してください。
+
+### メタ 5 本
+
+1. **M1**: Pyxel API と入力は **View と最外殻**の 1 か所に閉じる
+2. **M2**: View は **ViewModel** しか見ない（Model / GameState を直接参照しない）
+3. **M3**: Presenter は **入力解釈・Scene 遷移・副作用指揮**のみ
+4. **M4**: Model は **dataclass** 中心、共有状態は GameState / SceneModel / ServiceState のどれかを明示する
+5. **M5**: 層規約は AI が自力で検証できる形で可視化する（命名・テスト・ガードレール）
+
+### AI 実装ルール（M5-3 抜粋）
+
+- View 以外で `pyxel.*` を呼ばない（M1-1）
+- Model で副作用を起こさない（M4-1）
+- Presenter で直接描画しない（M3-1）
+- View は Model を参照しない（M2-1 / M2-2）
+- 新しい共有状態を追加する前に `GameState / SceneModel / ServiceState` のどれかを明示する（M4-3）
+- `dict` を新規導入しない。新規状態は `dataclass`（M4-1）
+- 副作用は command / request として返す（M3-3）
+- 1 つの PR で Scene 構造とゲームルールを同時に大改造しない
+
+### 参照すべき文書
+
+- `docs/framework-rule.md`（M1〜M5 規約本体・SSoT）
+- `docs/repository-structure.md`（ディレクトリ構造の根拠）
+- `steering/20260425-autonomous-rule-compliance-loop.md`（既存コードの段階的準拠ループ・判断待ちリスト）
+
+### 検証コマンド
+
+```bash
+# M1-1: View 以外での pyxel.* 直呼び（許可: views/ + 最外殻）
+grep -nE 'pyxel\.' src/scenes/*/scene.py src/scenes/*/presenter.py src/scenes/*/model.py
+# M4-1: Model 内 pyxel/sfx 等の副作用・他 Scene Model 直触り
+grep -nE 'pyxel\.' src/scenes/*/model.py src/shared/state/*.py
+grep -nE '[a-z_]+_scene\.model\.[a-z_]+\s*=' src/scenes/
+# M5-1: scenes/ ファイル命名（許可: model/presenter/view/view_model/scene/__init__）
+find src/scenes -maxdepth 2 -type f -name '*.py' | grep -vE '/(model|presenter|view|view_model|scene|__init__)\.py$'
+```
+
+いずれも grep ヒット 0 件が期待値。例外規定（最外殻 / Audio・Save ラッパ等）は `docs/framework-rule.md` を参照。
+
 ## 作業前の短い確認
 
 - [ ] 今回の主語は何か。子どもが見ているものか、内部実装か

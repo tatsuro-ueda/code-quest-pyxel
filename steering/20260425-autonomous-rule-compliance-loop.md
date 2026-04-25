@@ -307,7 +307,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/menu` × M4-1 — 2026-04-25, settings/scene.py から `game.menu_scene.model.sub = None` 直代入 1 件を `clear_sub()` メソッド経由に統一（fake test も追従）→ **M4-1「他 Scene Model 直代入禁止」違反 0 件達成**（cea5e62）
 - `shared/state + shared/services/player_state` × M4-4 検証目安 1 — 2026-04-25, **2 件は migration 互換 shim 内部の dict 操作で許容判定**（player_model.py:159 は `from_snapshot` 内部変換、player_state.py:84 は `restore_snapshot` 旧 API 互換 shim で test_player_snapshot / test_architecture_layout が依存）。旧 API shim 群の最終削除と test 移行は判断待ちリストへ。（0d3b5da）
 - `runtime/app` × M4-3 — 2026-04-25, Game クラス state 棚卸し完了。**7 件は段階移行候補で判断待ち**（`state/prev_state` → SceneManager / `debug_mode/debug_seq` → DebugService / `cam_x/cam_y` → ExploreModel か ViewportService / `dungeon_rooms` → WorldGenerationService cache / `current_town` → 一時 UI 状態）。OK 群（player_model / world_map / dungeon_map / last_town_pos / world_return_x,y）は M4-4 圧縮目標形通り。（0ea9495）
-- `framework` × M5-1 — 2026-04-25, **即完走**。検証目安 `find src/scenes -maxdepth 2 -type f -name '*.py' \| grep -vE '/(model\|presenter\|view\|view_model\|scene\|__init__)\.py$'` が 0 件。全 11 scene が `{model,presenter,view,view_model,scene,__init__}.py` 構造を満たし、クラス命名は `<Scene>{Model,Presenter,View,ViewModel,Scene}` の prefix 整合。Town は scene.py 縮退形で M3-2 例外規定に該当。補助クラス（XxxRow, XxxSubPanel, XxxLandmark, XxxChoiceRow）も同 prefix で整合。
+- `framework` × M5-1 — 2026-04-25, **即完走**。検証目安 `find src/scenes -maxdepth 2 -type f -name '*.py' \| grep -vE '/(model\|presenter\|view\|view_model\|scene\|__init__)\.py$'` が 0 件。全 11 scene が `{model,presenter,view,view_model,scene,__init__}.py` 構造を満たし、クラス命名は `<Scene>{Model,Presenter,View,ViewModel,Scene}` の prefix 整合。Town は scene.py 縮退形で M3-2 例外規定に該当。補助クラス（XxxRow, XxxSubPanel, XxxLandmark, XxxChoiceRow）も同 prefix で整合。（b16f1e6）
+- `AGENTS.md` × M5-3 — 2026-04-25, M1〜M5 メタ 5 本サマリ + AI 実装ルール 8 項目（M5-3 抜粋）+ framework-rule.md / repository-structure.md / 本 note への参照 + 検証コマンド（M1-1 / M4-1 / M5-1 grep）を追加。検証 grep `M[1-5]-[0-9]\|framework-rule` で AGENTS.md の参照件数 0 → 14 件。ARCHITECTURE.md 新設 vs repository-structure.md リネームは判断待り。
 
 **🎉 Phase 4 (M3 Scene 規約) 全 10 scenes 完走**
 
@@ -488,6 +489,68 @@ scenes/*/view.py がすべて：
 ---
 
 ## 6) Discussion（記録・反省）
+
+### 2026年4月25日 19:05（Phase 6 第 2 ループ：M5-3 AGENTS.md に M1〜M5 サマリ追加）
+
+**Observe**：
+- AGENTS.md の現状（320 行）は「子ども編集」価値観中心で、framework-rule M1〜M5 への参照 0 件
+- `grep -nE "M[1-5]-[0-9]|framework-rule" AGENTS.md` → 0 件（M5-3 検証目安違反）
+- ARCHITECTURE.md は不在、docs/repository-structure.md (15KB) が事実上の構造文書
+
+**Think**：
+- M5-3「AI 実装ルール例」8 項目は docs/framework-rule.md にすでに明文化されているので、AGENTS.md にはサマリ + 参照リンクで十分
+- 既存「## この repo での基本ルール」と「## 作業前の短い確認」の間が挿入位置として自然（ルール → 詳細規約 → チェックリスト の流れ）
+- ARCHITECTURE.md 新設 vs repository-structure.md リネームは判断分岐 → 判断待ちに保留
+- 4 自問: ① AGENTS.md のみ ✓ ② M5-3 のみ ✓ ③ docs/ M5-3 検証目安 + 8 ルール例明文 ✓ ④ 1 セクション追記のみ＝最小 ✓
+
+**Act**：
+- AGENTS.md に新セクション「## コード階層規約（M1〜M5）」を追加：
+  - メタ 5 本（M1-M5）の 1 行サマリ
+  - AI 実装ルール 8 項目（M5-3 抜粋、各項目に M 番号タグ付き）
+  - 参照すべき文書（framework-rule.md / repository-structure.md / 本 note）
+  - 検証コマンド 3 本（M1-1 / M4-1 / M5-1 の grep）
+- 検証 grep 件数: 0 → 14 件
+- pytest 702 passed
+- commit: `compliance(AGENTS): M5-3 AI 向けガードレールに M1〜M5 サマリと検証コマンドを追加`
+
+**M5 進捗整理（更新）**:
+
+| サブルール | 検証結果 | 残課題 |
+|---|---|---|
+| M5-1 命名規約 | **即完走**（b16f1e6） | — |
+| M5-2 テスト規約 | 検証 grep 充足 | 各 presenter テストの「禁止パターン」個別確認は別ループ |
+| M5-3 AI 向けガードレール | **AGENTS.md 整備完了** | ARCHITECTURE.md 新設 vs repository-structure.md リネームは判断待り |
+
+**🎉 Phase 1 〜 Phase 6 全 6 Phase 完走（明確違反 + 最小修正可能なサブルールはすべて処理済み）**
+
+| Phase | サブルール | 結果 |
+|---|---|---|
+| 1 | M1-1 (Pyxel API は View のみ) | scenes 全 11 領域違反 0、services/ui 4 件は判断待ち |
+| 2 | M1-2 (入力規約) | 即完走、全領域違反 0 |
+| 3 | M2 (View / ViewModel) | scenes 全 10 領域 ViewModel 導入完了 |
+| 4 | M3-2 (Scene は配線) | scenes 全 10 scene Presenter 委譲完了、M3-3 Command 化は判断待り |
+| 5 | M4-1 / M4-3 棚卸し / M4-4 検証目安 1 | M4-1 違反 0 件、M4-3 / M4-4 残課題は判断待り、M4-2 Service 分類は判断待ち |
+| 6 | M5-1 / M5-3 | 即完走 + AGENTS.md 整備完了、M5-2 詳細確認は別ループ |
+
+**判断待ち項目集計（ユーザーレビュー候補）**:
+1. **M1-1 services/ui 内描画 4 件**（image_banks 13 / message_display 7 / vfx 1 / status_bar 5 = 26 grep ヒット）— ui/ レイヤー位置付け or 例外規定拡張
+2. **M3-3 Command 化** — Phase 4 完走時に保留、副作用 Command 設計
+3. **M4-2 Service A/B/C 分類明文化** — 11 service docstring 整備、scope 大
+4. **M4-3 Game クラス state 7 件** — state/prev_state, debug_mode/debug_seq, cam_x/cam_y, dungeon_rooms, current_town の段階移行
+5. **M4-4 旧 API shim 群** — restore_snapshot 等 5 関数、test 移行を含む
+6. **M5-3 ARCHITECTURE.md 新設 vs repository-structure.md リネーム** — 名前付けの判断
+
+合計 6 件の判断分岐 + 26 grep ヒット（M1-1 services/ui）+ 7 field（M4-3）。
+
+**CoVe**：
+- シナリオ1: AGENTS.md 内容確認 → docs/M5-3 と照合 → 最小追記 → 検証 grep → commit ✅
+- シナリオ2: 完了領域リストに `AGENTS.md × M5-3` 追加 ✅
+- シナリオ3: ARCHITECTURE.md 新設は判断待ちに倒す ✅
+- シナリオ4: 1 セクション追記のみ、既存セクションの編集なし ✅
+
+**次ループ案**:
+- 判断待ち 6 項目の 1 つを選んで処理 — どれも scope 中〜大
+- → **ループ自走を一旦停止し、ユーザーレビュー待ち**にするのが合理的
 
 ### 2026年4月25日 18:45（Phase 6 第 1 ループ：M5-1 命名規約・即完走）
 
