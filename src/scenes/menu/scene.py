@@ -118,4 +118,5 @@ class MenuScene:
         game = self.game
         if game is None:
             return self.view.render()
-        self.view.draw(labels=self._labels(), model=self.model, game=game)
+        vm = self.presenter.build_view_model(self._labels(), game)
+        self.view.draw(vm, game.messages)
