@@ -302,7 +302,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/menu` × M3-2 — 2026-04-25, update / labels を Presenter に集約、関連 test を scene/presenter 両許容に更新（a9d8a11）
 - `scenes/professor` × M3-2 — 2026-04-25, update_intro / update_ending_main / update_ending_accepted を Presenter に集約（715260a）
 - `scenes/explore` × M3-2 — 2026-04-25, 大規模 update + helpers (_check_tile_events, _check_landmark_events, _resolve_landmark_scene, _dungeon_exit_callback) を Presenter に集約、scene は test 互換ラッパのみ（8c48213）
-- `scenes/battle` × M3-2 — 2026-04-25, update() の 5 phase 状態遷移を Presenter に移譲（戦闘ルール本体 do_player_attack/do_enemy_attack/victory/defeat/apply_spell_effect 等は scene に残置；presenter が phase 切替時にコールバック）（commit 自動 fill-in）
+- `scenes/battle` × M3-2 — 2026-04-25, update() の 5 phase 状態遷移を Presenter に移譲（戦闘ルール本体 do_player_attack/do_enemy_attack/victory/defeat/apply_spell_effect 等は scene に残置；presenter が phase 切替時にコールバック）（5deeda3）
+- `scenes/explore` × M4-1 — 2026-04-25, 他 scene からの `game.explore_scene.model.a_cooldown = True` 直代入 5 件を `start_a_cooldown()` メソッド経由に統一（caller: title / ending / professor x2 / town presenter；fake test も追従）
 
 **🎉 Phase 4 (M3 Scene 規約) 全 10 scenes 完走**
 
@@ -449,6 +450,47 @@ scenes/*/view.py がすべて：
 ---
 
 ## 6) Discussion（記録・反省）
+
+### 2026年4月25日 17:30（Phase 5 第 1 ループ：M4-1 他 Scene Model 直触り 5 件解消）
+
+**Observe**：
+- Phase 4 (M3-2) 完走後の Phase 5 開始。M4 ルール本文（M4-1 Model 責務 / M4-2 Service / M4-3 GameState / M4-4 PlayerModel）と検証 grep 3 種を確認
+- M4-1 禁止リスト「pyxel.* / sfx / messages / save_store / 他 scene 内部状態の直触り / sleep」を全 model に grep
+  - `pyxel.*` in `src/scenes/*/model.py` + `src/shared/state/*.py`: **0 件** ✓
+  - `import pyxel / sfx. / game.messages / save_store / time.sleep` in models: **0 件** ✓
+  - `[a-z_]+_scene\.(model|_)` 直触り: **6 件** 検出（5 件は `game.explore_scene.model.a_cooldown = True`、1 件は `game.menu_scene.model.sub = None`）
+- scene-local Model の中身は全て薄い dataclass（メソッドなし）、`town/model.py` のみ M4-1 の正例として move_cursor / reset を持つ
+
+**Think**：
+- M4-1 違反の核心は **caller 側**（他 scene の Model フィールドに直接代入）。Model 自身ではなく caller を直す
+- 6 件のうち a_cooldown 5 件は同型（他 scene→map 遷移直前に A 暴発防止フラグを立てる）→ 1 ループにまとめる
+- 残る `game.menu_scene.model.sub = None` (settings/scene.py:29) は別パターンで次ループ送り
+- M4-1「直接触る」の解釈：field 直接代入は明確に違反、method 経由は OK（battle の rule body callback と同型）
+- 4 自問: ① 1 ルール (M4-1 a_cooldown 経路) ✓ ② M4-1 のみ ✓ ③ docs/ M4-1 明文 ✓ ④ 最小範囲（model に setter method 1 個 + caller 5 行書換）✓
+
+**Act**：
+- `src/scenes/explore/model.py`: `start_a_cooldown()` メソッド追加（docstring に M4-1 根拠を明記）
+- 5 caller を `model.a_cooldown = True` から `model.start_a_cooldown()` に書換：
+  - `src/scenes/title/presenter.py:80` (load 後)
+  - `src/scenes/ending/presenter.py:22` (ending 後 map 復帰)
+  - `src/scenes/professor/presenter.py:53, 63` (ending main / accepted 完了時)
+  - `src/scenes/town/presenter.py:170` (`_exit` で町を出る時)
+- 初回 pytest で 3 件失敗 → fake `_FakeExploreModel` が新 method を持たないため `AttributeError`
+- `test/test_cjg_ending_scene_behavior.py` / `test_cjg_title_scene_behavior.py` / `test_cjg_town_presenter_actions.py` の `_FakeExploreModel` に `start_a_cooldown()` を追加（fake は実装側 contract に追従）
+- 再実行: pytest 702 passed ✓
+- commit: `compliance(scenes): M4-1 (他 Scene Model 直触り禁止) a_cooldown 経路 5 件解消`
+
+**Phase 5 戦略**：
+- M4-1 の禁止リストは scene-local model 全 11 個で 0 件（pyxel/sfx/messages/save 直呼び等）
+- 検出された違反は「他 scene model の field 直触り」のみ（grep `[a-z_]+_scene\.(model|_)`）
+- 残り 1 件 (settings → menu_scene.model.sub) を次ループで処理して M4-1 完走予定
+- M4-1 の「Model にルールを引き上げる」積極面 (M4-4 Level 1: BattleModel.apply_damage 等) は **漸進改善**で scope 大→**判断待ち**に倒す（現状 scene-local model 10 個が薄い dataclass、town のみが正例）
+
+**CoVe（Gherkin 合致確認）**：
+- シナリオ1（正常系）: 領域選択（M4 grep）→違反列挙→根拠確認→method 経由に最小修正→pytest green→commit ✅
+- シナリオ2（再試行系）: 完了領域リストに `scenes/explore × M4-1` 追加、M4-1 残違反は 1 件と明記 ✅
+- シナリオ3（異常系）: 「Model にルールを引き上げる」漸進改善は判断待ちに倒した ✅
+- シナリオ4（リスク確認）: M4-1 a_cooldown 経路のみ、Model 内部ロジック（presenter.py:40-44）の自前 read/write には触らず ✅
 
 ### 2026年4月25日 12:30（起票）
 

@@ -50,7 +50,7 @@ class ProfessorPresenter:
         if game.input_state.btnp(CONFIRM_BUTTONS):
             m.ending_idx, done = game.messages.advance_page(m.ending_idx, m.ending_lines)
             if done:
-                game.explore_scene.model.a_cooldown = True
+                game.explore_scene.model.start_a_cooldown()
                 game.state = "map"
 
     def update_ending_accepted(self, game: Any) -> None:
@@ -60,7 +60,7 @@ class ProfessorPresenter:
             m.ending_idx, done = game.messages.advance_page(m.ending_idx, m.ending_lines)
             if done:
                 game.state = "title"
-                game.explore_scene.model.a_cooldown = True
+                game.explore_scene.model.start_a_cooldown()
 
     def build_intro_view_model(self, game: Any) -> ProfessorViewModel:
         """intro phase の VM を組み立てる。"""

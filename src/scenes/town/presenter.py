@@ -167,6 +167,6 @@ class TownPresenter:
         """町メニューから出る。"""
         game = self.game
         game.state = "map"
-        game.explore_scene.model.a_cooldown = True
+        game.explore_scene.model.start_a_cooldown()
         self.model.reset()
         game.current_town = None

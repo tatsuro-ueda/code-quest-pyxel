@@ -42,6 +42,9 @@ class _FakeInputState:
 class _FakeExploreModel:
     a_cooldown: bool = False
 
+    def start_a_cooldown(self) -> None:
+        self.a_cooldown = True
+
 
 @dataclass
 class _FakeExploreScene:

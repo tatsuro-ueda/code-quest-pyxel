@@ -19,7 +19,7 @@ class EndingPresenter:
         if game.input_state.btnp(CONFIRM_BUTTONS):
             game.player_model.in_dungeon = False
             game.dungeon_map = None
-            game.explore_scene.model.a_cooldown = True
+            game.explore_scene.model.start_a_cooldown()
             game.state = "map"
 
     def build_view_model(self, game: Any) -> EndingViewModel:

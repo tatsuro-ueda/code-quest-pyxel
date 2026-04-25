@@ -77,7 +77,7 @@ class TitlePresenter:
         game.player_model.in_dungeon = False
         game.dungeon_map = None
         # ロード直後の暴発を防ぐため A クールダウンを立てる
-        game.explore_scene.model.a_cooldown = True
+        game.explore_scene.model.start_a_cooldown()
         game.messages.show([LOAD_OK_MSG])
         game.prev_state = "map"
         game.state = "message"
