@@ -274,7 +274,31 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/shop` × M1-1 — 2026-04-25, 1 件解消（fc569bd）
 - `scenes/menu` × M1-1 — 2026-04-25, 8 件解消（877073c、中領域）
 - `scenes/professor` × M1-1 — 2026-04-25, 6 件解消（bb78ce5、中領域）
-- `scenes/explore` × M1-1 — 2026-04-25, 11 件解消（commit 自動 fill-in、大領域・1 commit で完走）
+- `scenes/explore` × M1-1 — 2026-04-25, 11 件解消（3e47eaf、大領域・1 commit）
+- `scenes/battle` × M1-1 — 2026-04-25, 17 件解消（commit 自動 fill-in、大領域・1 commit）
+
+**🎉 マイルストーン達成: scenes/*/scene.py 全 11 領域 (town 含む) で M1-1 違反ゼロ**
+
+### 次フェーズ：services / ui / runtime に残る M1-1 違反
+
+| ファイル | 違反 |
+|---|---|
+| src/shared/services/audio_system.py | 24 |
+| src/shared/services/image_banks.py | 13 |
+| src/shared/services/message_display.py | 7 |
+| src/shared/services/vfx.py | 1 |
+| src/shared/ui/status_bar.py | 5 |
+| src/runtime/app.py | 7 |
+| src/runtime/main_runtime.py | 1 |
+
+合計 58 件。services は M1-1 で「Pyxel 呼び出し禁止（Audio/Save の Pyxel 依存ラッパは別）」とあるため、判断分岐が必要：
+
+- **audio_system / image_banks**: Audio/Save 系ラッパ扱いで例外規定に該当する可能性が高い → 判断待ち候補
+- **message_display / vfx / status_bar**: View 機能だが services/ui に置かれている → リファクタ要検討
+- **runtime/app.py**: 最外殻に該当する可能性（M1-1 許可リスト「最外殻」） → 判断待ち候補
+- **runtime/main_runtime.py**: shim、整理対象
+
+これらは docs/framework-rule.md の根拠と慣行のすり合わせが必要なので、**次ループ以降は judgement 判断待ち多発の可能性**。
 
 ### 第 1 ループ計画（splash × M1-1）
 
@@ -453,6 +477,44 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `src/scenes/settings/view.py`: `SettingsView.render(*, rows, cursor, game)` 追加、2 pyxel + 設定行ループを移動
 - `src/scenes/settings/scene.py`: `import pyxel` 削除、`draw()` を 1 行に
 - 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
+
+### 2026年4月25日 15:05（第 10 ループ実行：scenes/battle × M1-1 / 最終）
+
+**Observe**：
+- 第 10 ループ対象：`src/scenes/battle/scene.py`（518 行 / 17 pyxel 違反）— 最大領域
+- 違反は全て `draw()` 内（425-518 行）
+- battle/view.py は既に snapshot 用 `render(phase)` あり
+
+**Think**：
+- 大領域だが draw 1 メソッドに集中。1 commit で完走可能
+- view では ITEMS / SPELL_BY_NAME (game_data) を import する必要あり
+- `pyxel.images[1].pget(...)` のような image bank 直読みも view 内に閉じる
+- 4 自問: ① battle のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲 ✓
+
+**Act**：
+- `src/scenes/battle/view.py`: `BattleView.draw(model, game)` 追加、17 pyxel + 90 行の描画ロジック移動。ITEMS/SPELL_BY_NAME を view 側で import
+- `src/scenes/battle/scene.py`: `import pyxel` 削除、`draw()` を 6 行に縮退
+- 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+- 全領域 sweep grep: scenes/*/scene.py 全 11 個（town 含む）で M1-1 違反ゼロ達成
+
+**🎉 マイルストーン: scenes 完走**
+
+| 領域 | 違反解消 | commit |
+|---|---|---|
+| splash | 3 | a8d0f24 |
+| ending | 2 | 9eba8ac |
+| ai_help | 2 | 5808c32 |
+| settings | 2 | 5d0231c |
+| title | 1 | 64e7ce9 |
+| shop | 1 | fc569bd |
+| menu | 8 | 877073c |
+| professor | 6 | bb78ce5 |
+| explore | 11 | 3e47eaf |
+| battle | 17 | (本コミット) |
+
+**累計 53 件解消** / pytest 702 passed 維持。
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
 
