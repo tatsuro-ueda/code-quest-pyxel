@@ -94,8 +94,9 @@ class SettingsScene:
             self._toggle(key)
 
     def draw(self) -> None:
-        """設定画面を描画する。描画本体は View に委譲（M1-1 準拠）。"""
+        """設定画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。"""
         game = self.game
         if game is None:
             return
-        self.view.render(rows=self._rows(), cursor=self.model.cursor, game=game)
+        vm = self.presenter.build_view_model(self._rows(), game)
+        self.view.render(vm, game.messages)

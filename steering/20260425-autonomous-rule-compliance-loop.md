@@ -285,7 +285,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `ui/status_bar` × M1-1 — 2026-04-25, **判断待ちに退避（5 件、shared/ui/ レイヤーが M1-1 で views/ と同等扱いか未定義）**
 - `scenes/splash` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（54722ab）
 - `scenes/ending` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（4dfc950）
-- `scenes/ai_help` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（commit 自動 fill-in）
+- `scenes/ai_help` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（1d6e902）
+- `scenes/settings` × M2-2 — 2026-04-25, ViewModel 導入で違反解消（commit 自動 fill-in、SettingsRow 中間 dataclass 追加）
 
 **🎉 Phase 1 (M1-1) 全 17 領域処理完了。**
 
