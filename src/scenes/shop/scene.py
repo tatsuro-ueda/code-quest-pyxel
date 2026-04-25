@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-import pyxel
-
 from src.scenes.shop.model import ShopModel
 from src.scenes.shop.presenter import ShopPresenter
 from src.scenes.shop.view import ShopView
@@ -108,40 +106,8 @@ class ShopScene:
             self.model.message = f"{entry['name']}を てにいれた！"
 
     def draw(self) -> None:
-        """ショップ画面を描画する。"""
+        """ショップ画面を描画する。描画本体は View に委譲（M1-1 準拠）。"""
         game = self.game
         if game is None:
             return self.view.render()
-        import src.runtime.main_runtime as M
-        pyxel.cls(0)
-        if game.has_jp_font:
-            title_map = {"weapons": "ぶきや", "armors": "ぼうぐや", "items": "どうぐや"}
-            title = title_map.get(self.model.kind, "ショップ")
-        else:
-            title_map = {"weapons": "WEAPONS", "armors": "ARMOR", "items": "ITEMS"}
-            title = title_map.get(self.model.kind, "SHOP")
-        game.messages.text(8, 6, title, 7)
-        game.messages.text(160, 6, f"G:{game.player_model.gold}", 10)
-        if not self.model.inventory:
-            game.messages.text(8, 40, game.text_fmt.t("(ざいこなし)", "(no stock)"), 6)
-            return
-        for i, idx in enumerate(self.model.inventory):
-            owned = False
-            if self.model.kind == "weapons":
-                e = M.WEAPONS[idx]
-                line = f"{game.text_fmt.name(e['name'])}  こうげき+{e['atk']}  {e['price']}G"
-                owned = game.player_model.weapon == idx
-            elif self.model.kind == "armors":
-                e = M.ARMORS[idx]
-                line = f"{game.text_fmt.name(e['name'])}  ぼうぎょ+{e['def']}  {e['price']}G"
-                owned = game.player_model.armor == idx
-            else:
-                e = M.ITEMS[idx]
-                line = f"{game.text_fmt.name(e['name'])}  {e['price']}G"
-            if owned:
-                line = f"{line}  [もっています]"
-            color = 10 if i == self.model.cursor else 7
-            marker = ">" if i == self.model.cursor else " "
-            game.messages.text(8, 30 + i * 14, f"{marker} {line}", color)
-        if self.model.message:
-            game.messages.text(8, 200, self.model.message, 11)
+        self.view.draw(self.model, game)

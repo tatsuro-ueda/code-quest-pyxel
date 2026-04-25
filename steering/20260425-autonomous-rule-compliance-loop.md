@@ -270,7 +270,8 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 - `scenes/ending` × M1-1 — 2026-04-25, 2 件解消（9eba8ac）
 - `scenes/ai_help` × M1-1 — 2026-04-25, 2 件解消（5808c32）
 - `scenes/settings` × M1-1 — 2026-04-25, 2 件解消（5d0231c）
-- `scenes/title` × M1-1 — 2026-04-25, 1 件解消（commit 自動 fill-in）
+- `scenes/title` × M1-1 — 2026-04-25, 1 件解消（64e7ce9）
+- `scenes/shop` × M1-1 — 2026-04-25, 1 件解消（commit 自動 fill-in）
 
 ### 第 1 ループ計画（splash × M1-1）
 
@@ -448,6 +449,25 @@ Design では「scene.py 行数降順」としたが、battle (518 行 / 17 pyxe
 **Act**：
 - `src/scenes/settings/view.py`: `SettingsView.render(*, rows, cursor, game)` 追加、2 pyxel + 設定行ループを移動
 - `src/scenes/settings/scene.py`: `import pyxel` 削除、`draw()` を 1 行に
+- 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
+
+**CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
+
+### 2026年4月25日 14:25（第 6 ループ実行：scenes/shop × M1-1）
+
+**Observe**：
+- 第 6 ループ対象：`src/scenes/shop/scene.py`（147 行 / 1 pyxel 違反：`cls(0)`）
+- 違反 1 件のみだが、その後ろに 30 行ぶんの描画ロジック（タイトル / 在庫リスト / メッセージ）があり全て移動対象
+- shop/view.py は空スケルトン
+
+**Think**：
+- title と同じ pattern：`view.draw(model, game)` を新設、scene.draw() は委譲のみ
+- 既存 `view.render()` は test 互換のため残す
+- ループ前 4 自問: ① shop のみ ✓ ② M1-1 のみ ✓ ③ docs/ 根拠あり ✓ ④ 最小範囲 ✓
+
+**Act**：
+- `src/scenes/shop/view.py`: `ShopView.draw(model, game)` 追加、pyxel.cls + 30 行の描画ロジックを移動
+- `src/scenes/shop/scene.py`: `import pyxel` 削除、`draw()` を 4 行に縮退
 - 検証：grep pyxel\. → 0 件 ✓ / pytest 702 passed ✓
 
 **CoVe**：シナリオ1 ✅ / シナリオ2 ✅ / シナリオ3 N/A / シナリオ4 ✅
