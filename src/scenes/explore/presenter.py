@@ -159,7 +159,6 @@ class ExplorePresenter:
             game.sfx.play("dungeon_in")
             game.world_return_x = nx
             game.world_return_y = ny
-            game.dungeon_rooms = game.dungeon_template_rooms
             p.in_dungeon = True
             sx, sy = game.dungeon_spawn
             p.x = sx

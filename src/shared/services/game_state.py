@@ -33,7 +33,6 @@ class GameState:
     has_save: bool = False
 
     # --- world / dungeon ---
-    dungeon_rooms: list = field(default_factory=list)
     dungeon_spawn: tuple[int, int] | None = None
     dungeon_template: "object | None" = None
     dungeon_template_rooms: list = field(default_factory=list)

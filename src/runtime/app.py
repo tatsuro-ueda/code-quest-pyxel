@@ -79,8 +79,6 @@ class Game:
         # current_town は本オブジェクト経由でアクセスする。
         self.game_state = GameState()
 
-        self.dungeon_rooms = None
-
         # PlayerModel が player 状態の唯一の正本（framework-rule.md M4-1 / M4-4）。
         self.player_model = PlayerModel.new_game()
 
