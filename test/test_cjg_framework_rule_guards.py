@@ -273,6 +273,22 @@ class M4SsotGuardTest(unittest.TestCase):
             f"test/ に world_map field 代入が侵入: {hits}",
         )
 
+    DUNGEON_MAP_PATTERN = re.compile(r"\b(?:game|self)\.dungeon_map\b")
+
+    def test_no_dungeon_map_field_in_src(self):
+        """src/ 配下に `(game|self).dungeon_map` の参照がない。
+
+        dungeon の入退出は player_model.in_dungeon フラグと
+        GameState.dungeon_spawn だけで完結する（2026-05-05）。snapshot
+        field を復活させると "in_dungeon と dungeon_map の両方を見る"
+        混乱が再発するため禁止。
+        """
+        hits = _grep(self.DUNGEON_MAP_PATTERN, _iter_py_files(SRC))
+        self.assertEqual(
+            hits, [],
+            f"src/ に `(game|self).dungeon_map` 参照が侵入: {hits}",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
