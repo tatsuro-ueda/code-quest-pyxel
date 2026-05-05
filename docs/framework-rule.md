@@ -1,5 +1,11 @@
 # コーディング原則
 
+> **この文書の役割**: M1〜M5 メタルールの規約本体（詳細根拠）。
+>
+> **上位文書（最優先・自動 load）**: [../AGENTS.md](../AGENTS.md)（≤100 行、AI 用エントリポイント）
+>
+> **人用詳細リファレンス**: [architecture.md](architecture.md)（リポジトリ構造 + ディレクトリ規約）
+
 ## 1. 正本を一つにする（SSoT / Single Source of Truth）
 
 データや状態の「正しい置き場所」を一つに決め、他は必ずそこを経由して参照する。
@@ -774,13 +780,23 @@ Presenter テストでは
 * 副作用は command / request として返す
 * 1 つの PR で Scene 構造とゲームルールを同時に大改造しない
 
-このへんは `ARCHITECTURE.md` / `AGENTS.md` に書くと効きます。
+このへんは `AGENTS.md` (≤100 行・自動 load) と `docs/architecture.md` (人用詳細) に書くと効きます。両者から本ファイル `docs/framework-rule.md` (規約本体) に到達できる 2 層構造を維持します。
+
+### 文書 2 層構造（2026-05-05 改訂）
+
+| 文書 | 役割 | サイズ |
+|---|---|---|
+| `AGENTS.md` | AI 用最優先・自動 load・エントリポイント | ≤100 行 |
+| `docs/architecture.md` | 人用詳細（補足リファレンス、AI も必要時参照） | 制限なし |
+| `docs/framework-rule.md` (本ファイル) | 規約本体（M1〜M5 詳細根拠） | 制限なし |
+
+AI / 人ともに `AGENTS.md` を最初に読み、必要に応じて `architecture.md`、最後に本ファイルへ降りる流れ。`AGENTS.md` が大きくなって自動 load の context を圧迫すると AI が起動時に読み切れなくなるため、100 行制限を `test_cjg_framework_rule_guards.py` の static guard で守る。
 
 ## 検証の目安
 
 - `find src/scenes -maxdepth 2 -type f -name '*.py' | grep -vE '/(model|presenter|view|view_model|scene|__init__)\.py$'` が 0 件（命名規約）
 - `test/test_player_model.py` / `test/test_*_presenter.py` 等の Model / Presenter 単体テストが存在している（または優先順位 1 位・2 位の項目として `未実装` と明示）
-- `ARCHITECTURE.md` / `AGENTS.md` に本規約のサマリが取り込まれている
+- AI 用 `AGENTS.md` が 100 行以内で自動 load される / 人用 `docs/architecture.md` が存在する 2 層構造で、両者から本ファイル `docs/framework-rule.md` に到達できる
 
 ---
 
