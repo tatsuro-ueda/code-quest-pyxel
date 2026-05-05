@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-06T00:00:00+09:00
 dateCreated: 2026-05-05T17:30:00+09:00
@@ -9,6 +9,7 @@ tags:
   - ssot
   - dungeon
   - cleanup
+  - archived
 ---
 
 # 2026年5月5日 game.dungeon_map / GameState.dungeon_map 撤去

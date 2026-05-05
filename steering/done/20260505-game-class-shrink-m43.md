@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-06T00:00:00+09:00
 dateCreated: 2026-05-05T17:45:00+09:00
@@ -11,6 +11,7 @@ tags:
   - m4-4
   - game-state
   - cleanup
+  - archived
 ---
 
 # 2026年5月5日 Game クラス state 7 件の段階移行（M4-3 圧縮）

@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 priority: low
 scheduled: 2026-05-06T00:00:00+09:00
 dateCreated: 2026-05-05T17:45:00+09:00
@@ -10,6 +10,7 @@ tags:
   - m5-3
   - docs
   - cleanup
+  - archived
 ---
 
 # 2026年5月5日 ARCHITECTURE.md 整備 vs AGENTS.md 単独運用の判定（M5-3）

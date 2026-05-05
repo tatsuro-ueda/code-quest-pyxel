@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-06T00:00:00+09:00
 dateCreated: 2026-05-05T17:45:00+09:00
@@ -10,6 +10,7 @@ tags:
   - m4-4
   - player-model
   - cleanup
+  - archived
 ---
 
 # 2026年5月5日 player_state.py 旧 API shim 群の撤去（M4-4 完成）
