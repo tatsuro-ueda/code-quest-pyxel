@@ -24,11 +24,21 @@ class ExploreScene:
         """model を共有する presenter を生成する。"""
         self.presenter = ExplorePresenter(self.model)
 
+    def _attach_image_banks(self) -> None:
+        """Model に game.image_banks を注入する（DB 読み取り用、M4-1 改訂）。"""
+        game = self.game
+        if game is None:
+            return
+        ib = getattr(game, "image_banks", None)
+        if ib is not None and self.model.image_banks is not ib:
+            self.model.image_banks = ib
+
     def update(self) -> None:
         """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。"""
         game = self.game
         if game is None:
             return
+        self._attach_image_banks()
         self.presenter.update(game)
 
     def draw(self) -> dict[str, str] | None:
@@ -39,6 +49,7 @@ class ExploreScene:
         game = self.game
         if game is None:
             return self.view.render(mode=self.model.mode)
+        self._attach_image_banks()
         vm = self.presenter.build_view_model(game)
         # explore view はテキストを描かないので text_writer は省略可
         text_writer = getattr(game, "messages", None)

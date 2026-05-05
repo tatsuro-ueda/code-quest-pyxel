@@ -22,16 +22,27 @@ class ExploreLandmark:
 
 @dataclass(frozen=True)
 class ExploreViewModel:
-    """explore シーン全体の解釈済みデータ。"""
+    """explore シーン全体の解釈済みデータ。
 
-    current_map: list[list[int]]
+    2026-05-05 改訂：bltm 1 回呼び用の引数 (tm, bltm_u, bltm_v, bltm_w,
+    bltm_h, bltm_x, bltm_y) を追加。View はこれをそのまま pyxel.bltm に
+    渡すだけ。タイル本体描画はこれで完了し、landmark / boss / hero は
+    引き続き個別 blt で重ね描きする。
+    """
+
     in_dungeon: bool
     cam_x: int
     cam_y: int
-    tx_start: int
-    ty_start: int
-    tx_end: int
-    ty_end: int
+    # bltm 引数（pyxel.bltm(bltm_x, bltm_y, tm, bltm_u, bltm_v, bltm_w, bltm_h, [colkey])）
+    tm: int
+    bltm_u: int
+    bltm_v: int
+    bltm_w: int
+    bltm_h: int
+    bltm_x: int
+    bltm_y: int
+    # ボスマーカー描画用：dungeon 内の T_GLITCH_LORD_TRIGGER の screen 座標
+    boss_marker_screen_xy: tuple[int, int] | None
     hero_screen_xy: tuple[int, int]
     hero_sprite_key: str  # "hero_walk" or "hero_down"
     landmarks: list[ExploreLandmark] = field(default_factory=list)

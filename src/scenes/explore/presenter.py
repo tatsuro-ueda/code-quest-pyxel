@@ -59,11 +59,13 @@ class ExplorePresenter:
 
         if dx != 0 or dy != 0:
             nx, ny = p.x + dx, p.y + dy
-            current_map = game.dungeon_map if p.in_dungeon else game.world_map
-            mw = len(current_map[0]); mh = len(current_map)
+            if p.in_dungeon:
+                mw, mh = M.DUNGEON_W, M.DUNGEON_H
+            else:
+                mw, mh = M.MAP_W, M.MAP_H
 
             if 0 <= nx < mw and 0 <= ny < mh:
-                tile = current_map[ny][nx]
+                tile = self.model.get_tile(nx, ny, in_dungeon=p.in_dungeon)
                 if tile not in M.IMPASSABLE:
                     old_zone = M.get_zone(p.y, p.in_dungeon)
                     p.x = nx; p.y = ny
@@ -262,24 +264,43 @@ class ExplorePresenter:
         return None
 
     def build_view_model(self, game: Any) -> ExploreViewModel:
-        """カメラ計算 + 表示範囲決定 + landmark 集約を行い VM を返す。
+        """カメラ計算 + bltm 引数組み立て + landmark / boss marker 解決を行い VM を返す。
 
         副作用として game.cam_x / game.cam_y を更新する（M3-1: presenter は
         GameState を更新してよい）。
+
+        2026-05-05 改訂：world_map / dungeon_map のリスト走査をやめ、必要な
+        マップ寸法・タイル ID 探索は ExploreModel.get_tile（pyxel.tilemaps
+        直読）に問い合わせる。bltm 1 回呼びの引数を ViewModel に詰める。
         """
+        import src.runtime.main_runtime as M
+        from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
+        from src.shared.constants.tile_data import T_GLITCH_LORD_TRIGGER
+
         p = game.player_model
-        current_map = game.dungeon_map if p.in_dungeon else game.world_map
-        mw = len(current_map[0]); mh = len(current_map)
+
+        # マップ寸法は constant から取る（world=50x50 / dungeon=20x20）。
+        if p.in_dungeon:
+            mw, mh = M.DUNGEON_W, M.DUNGEON_H
+        else:
+            mw, mh = M.MAP_W, M.MAP_H
         view_w = 256; view_h = 232
         game.cam_x = p.x * 16 - view_w // 2 + 8
         game.cam_y = p.y * 16 - view_h // 2 + 8
         game.cam_x = max(0, min(mw * 16 - view_w, game.cam_x))
         game.cam_y = max(0, min(mh * 16 - view_h, game.cam_y))
 
-        tx_start = max(0, game.cam_x // 16)
-        ty_start = max(0, game.cam_y // 16)
-        tx_end = min(mw, (game.cam_x + view_w) // 16 + 2)
-        ty_end = min(mh, (game.cam_y + view_h) // 16 + 2)
+        # bltm 引数（tilemap[0] からカメラ位置に対応するピクセル領域を切り出す）。
+        # 1 ゲームタイル (16x16 px) = 2x2 cells (8x8 px) なので、cam_x / cam_y は
+        # ピクセル単位そのままで bltm_u / bltm_v に渡せる。
+        # dungeon 領域は cell 単位で DUNGEON_TM_OFFSET_Y、ピクセルに直すと *8。
+        oy_px = DUNGEON_TM_OFFSET_Y * 8 if p.in_dungeon else 0
+        bltm_u = game.cam_x
+        bltm_v = oy_px + game.cam_y
+        bltm_w = view_w
+        bltm_h = view_h
+        bltm_x = 0
+        bltm_y = 24  # 上部 24px は HUD 領域
 
         hero_sx = p.x * 16 - game.cam_x
         hero_sy = p.y * 16 - game.cam_y + 24
@@ -295,18 +316,42 @@ class ExplorePresenter:
                 if enabled:
                     landmarks.append(ExploreLandmark(tx=tx, ty=ty, color=color))
 
+        # ボスマーカー：dungeon 内かつ未撃破のとき、画面内の
+        # T_GLITCH_LORD_TRIGGER タイルを探す（ExploreModel.get_tile 経由）。
+        boss_marker_active = p.in_dungeon and not p.glitch_lord_defeated
+        boss_marker_screen_xy: tuple[int, int] | None = None
+        if boss_marker_active:
+            tx_start = max(0, game.cam_x // 16)
+            ty_start = max(0, game.cam_y // 16)
+            tx_end = min(mw, (game.cam_x + view_w) // 16 + 2)
+            ty_end = min(mh, (game.cam_y + view_h) // 16 + 2)
+            for ty in range(ty_start, ty_end):
+                for tx in range(tx_start, tx_end):
+                    tile = self.model.get_tile(tx, ty, in_dungeon=True)
+                    if tile == T_GLITCH_LORD_TRIGGER:
+                        sx = tx * 16 - game.cam_x
+                        sy = ty * 16 - game.cam_y + 24
+                        if -16 < sx < 256 and 8 < sy < 256:
+                            boss_marker_screen_xy = (sx, sy)
+                        break
+                if boss_marker_screen_xy is not None:
+                    break
+
         return ExploreViewModel(
-            current_map=current_map,
             in_dungeon=p.in_dungeon,
             cam_x=game.cam_x,
             cam_y=game.cam_y,
-            tx_start=tx_start,
-            ty_start=ty_start,
-            tx_end=tx_end,
-            ty_end=ty_end,
+            tm=self.model.current_tilemap_id(in_dungeon=p.in_dungeon),
+            bltm_u=bltm_u,
+            bltm_v=bltm_v,
+            bltm_w=bltm_w,
+            bltm_h=bltm_h,
+            bltm_x=bltm_x,
+            bltm_y=bltm_y,
+            boss_marker_screen_xy=boss_marker_screen_xy,
             hero_screen_xy=(hero_sx, hero_sy),
             hero_sprite_key=sprite_key,
             landmarks=landmarks,
-            boss_marker_active=(p.in_dungeon and not p.glitch_lord_defeated),
+            boss_marker_active=boss_marker_active,
             image_banks=game.image_banks,
         )

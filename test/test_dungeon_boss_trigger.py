@@ -63,12 +63,28 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
             "x": 0,
             "y": 0,
         })
-        game.dungeon_map = [
-            [self.main.T_FLOOR, self.main.T_FLOOR, self.main.T_FLOOR],
-            [self.main.T_FLOOR, self.main.T_GLITCH_LORD_TRIGGER, self.main.T_FLOOR],
-            [self.main.T_FLOOR, self.main.T_FLOOR, self.main.T_FLOOR],
-        ]
-        game.world_map = [[self.main.T_GRASS]]
+        # 新仕様 (2026-05-05)：ExploreModel は pyxel.tilemaps[0].pget と
+        # image_banks.tile_id_by_pixel から直読する。dungeon (1,1) に
+        # T_GLITCH_LORD_TRIGGER が見えるよう、pyxel をモック。
+        import pyxel
+        from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
+        # cell 座標：1 ゲームタイル = 2 cells、dungeon は Y=DUNGEON_TM_OFFSET_Y から
+        floor_cell = (0, 0)            # pixel(0,0)   → T_FLOOR
+        trigger_cell = (16 // 8, 0)    # pixel(16,0)  → T_GLITCH_LORD_TRIGGER
+
+        def _pget(tu, tv):
+            if (tu, tv) == (2 * 1, DUNGEON_TM_OFFSET_Y + 2 * 1):
+                return trigger_cell
+            return floor_cell
+        pyxel.tilemaps[0].pget = MagicMock(side_effect=_pget)
+
+        game.image_banks.tile_id_by_pixel = {
+            (0, 0): self.main.T_FLOOR,
+            (16, 0): self.main.T_GLITCH_LORD_TRIGGER,
+            (32, 0): self.main.T_GRASS,
+            (48, 0): self.main.T_WATER,
+            (64, 0): self.main.T_PATH,
+        }
         game.image_banks.tile_bank = {
             self.main.T_FLOOR: (0, 0),
             self.main.T_GLITCH_LORD_TRIGGER: (16, 0),
