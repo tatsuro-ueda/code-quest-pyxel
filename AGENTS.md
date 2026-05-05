@@ -1,363 +1,97 @@
-# AGENTS.md — Block Quest Pyxel の作業ルール
+# AGENTS.md — Block Quest Pyxel の作業ルール（AI 用最優先・自動 load）
 
-## これは何のファイルか
-
-- このファイルは `/home/exedev/code-quest-pyxel` で作業する Codex への指示です。
-- これは「読むだけのメモ」ではありません。**守るためのルール**です。
-- この repo で迷ったら、まずこのファイルに戻ってください。
+> **役割**: AI がこの repo に入って最初に読む 100 行以内のエントリポイント。
+> **補足（人用詳細）**: [docs/architecture.md](docs/architecture.md)
+> **規約本体（M1〜M5）**: [docs/framework-rule.md](docs/framework-rule.md)
+>
+> 起動時は本ファイル → 必要なら architecture.md → 必要なら framework-rule.md の順に辿る。
 
 ## いちばん大事な約束
 
-この製品の根本価値は、**子どもでもゲームを編集できること**です。
+製品の根本価値は **子どもがゲームを編集できる** こと。`Pyxel Code Maker` は子どもの正式な編集面。Code Maker を不要 / 脇役 / 廃止する方向に勝手に話を進めない。tilemap / sprite / sound / .pyxres の編集面を内部都合で置き換えない。子どもが見ているものが主語の問題では、その実物を最初の正として扱う。
 
-ここでいう「編集できる」は、ただ技術的にファイルを開けることではありません。
+## docs と code が食い違ったら
 
-- 子どもが見ている編集画面が分かりやすい
-- 変えたものが、そのままゲームに出る
-- 親や AI が隠れた仕組みを長く説明しなくても進められる
-
-Codex は、この価値を弱くする提案を勝手にしてはいけません。
-
-特に次は**勝手に下げない**でください。
-
-- `Pyxel Code Maker`
-- `Tilemap / Resource Editor / Sprite / Sound / Music` の編集面
-- `子どもが自分で見た目や音を変えられる` という約束
-
-`Pyxel Code Maker` は、この製品で**子どもが見た目や音を編集する正式な場所**です。
-Codex は、ユーザーが明示的に頼んだ場合を除き、
-`Code Maker を不要にする`
-`Code Maker を脇役にする`
-`resource 編集をやめる`
-方向へ話を進めてはいけません。
-
-## docs の扱い方
-
-### docs は「参考資料」ではなく「要求」
-
-- `docs/customer-journeys.md` は、作りたい体験の要求です。
-- `docs/product-requirements-*.md` は、その体験について
-  `何を約束するか`
-  `何を壊してはいけないか`
-  `どう確かめるか`
-  を固定する要求です。
-
-つまり:
-
-- `CJ` は「どんな体験にしたいか」
-- `CJG` は「その体験をどう守るか」
-
-を表します。
-
-Codex は、これらを**読んで終わり**にしてはいけません。
-**従って実装と判断を合わせる**必要があります。
-
-### docs と code が食い違ったら
-
-- code は「いま実際に動いているもの」です。
-- docs は「この製品が守るべき約束」です。
-
-この2つが食い違ったら、
-`code があるから正しい`
-とは考えないでください。
-
-正しい考え方はこれです。
-
-- `code = 現在の実態`
-- `docs = 守るべき要求`
-- 食い違い = **未実装 / バグ / 仕様ずれ**
-
-このずれを見つけたら、
-言い訳せず、
-曖昧にせず、
-`どこがずれているか`
-を明記してください。
+- code = 現在の実態 / docs = 守るべき要求
+- ずれは **未実装 / バグ / 仕様ずれ**。「code があるから正しい」と考えない
+- ずれは言い訳せず、どこがずれているかを明記する
 
 ## ユーザーへの向き合い方
 
-- ユーザーに「どう指示すればいいか」を背負わせないでください。
-- ユーザーに「どの道具を先に使うべきか」を考えさせないでください。
-- ユーザーが「まだ違う」と言ったら、まず現物を確認してください。
-- 先に実装の理屈を守らないでください。先に体験のずれを見てください。
+- ユーザーに道具選びを押しつけない（道具選びは AI の責任）
+- ユーザーが「まだ違う」と言ったら、まず現物を確認する（先に defending しない）
+- AI の仕事は **ユーザー指示の技術翻訳**
 
-Codex の仕事は、
-`ユーザーの指示を技術的に翻訳すること`
-であって、
-`ユーザーに Codex の使い方を教育させること`
-ではありません。
-
-## まず何を正とするか
-
-### 人が見ているものを先に正とする
-
-子どもや親が見ているものが主語の問題では、
-その見えているものを最初の正として扱ってください。
-
-たとえば:
-
-- `Code Maker`
-- `Resource Editor`
-- `Tilemap`
-- `Sprite`
-- `Sound`
-- `Music`
-- `index.html`
-- 共有 URL
-- save/load の実際の見え方
-
-です。
-
-`runtime code を直した`
-`build script を直した`
-だけで終わりだと思ってはいけません。
-
-人が見ているものが
-
-- `zip`
-- `.pyxres`
-- selector page
-- 配信中の HTML
-- 実際の save data
-
-なら、**その実物**を見て確認してください。
-
-## 道具の選び方
-
-### Codex が自分で選ぶ
-
-道具選びは Codex の責任です。
-ユーザーに毎回言わせないでください。
-
-### 問題ごとの最初の確認先
+## まず何を正とするか（実物優先）
 
 | 問題の主語 | 最初に見るもの |
 |---|---|
-| `Pyxel Code Maker`, `Resource Editor`, `Tilemap`, `Sprite`, `Sound`, `.pyxres` | `pyxel` MCP |
-| Web ページ, selector, wrapper, 公開 URL | ブラウザ / 実 endpoint |
-| build 生成物, zip, 配布物 | できあがったファイルの中身 |
+| `Code Maker / Tilemap / Sprite / Sound / .pyxres` | `pyxel` MCP で resource 実体 |
+| Web ページ / 公開 URL | ブラウザ / 実 endpoint |
+| build 生成物 / zip / 配布物 | 出来上がったファイルの中身 |
 | save/load | 実際の save payload |
-| ゲーム画面の動き | 実際の画面 / 実行結果 |
+| ゲーム画面の動き | 実行画面 / 実機 |
 
-この repo では特に次を守ってください。
+`runtime code を直した` `build script を直した` だけで終わらない。zip / .pyxres / HTML / save data の **実物** を見る。
 
-- `Code Maker` や `.pyxres` が出てきたら、まず resource の実体を見る
-- `Tilemap` や `Resource Editor` の話なら、まず `pyxel` MCP を使う
-- build script の推測は、そのあとにする
+## `.pyxres` の扱い
 
-## Pyxel Code Maker と `.pyxres` の扱い
+- 子ども/親が `Code Maker` で編集する。AI は code/build/packaging/guardrail/test を整える
+- AI が `.pyxres` の中身をテキスト編集しない / 実体を直接いじる依頼を抱え込まない
+- `pyxel` MCP で調べる・Code Maker 互換 build を直すのは責務
+- `runtime が .pyxres を自動更新する設計` は特に慎重に（`CJ26` / `CJG23/24/26/37/41` 確認）
 
-### 役割の分担
+## 実装の事実
 
-- 子どもや親は `Pyxel Code Maker` で見た目や音を編集する
-- Codex は code, build, packaging, guardrail, test を整える
-- Codex は `.pyxres` の**実体を直接いじらない**
-- Codex は `.pyxres` の中身を変える依頼を、自分の実装タスクとして抱え込まない
+- runtime 入口は `main.py`、`production/pyxel.html / .pyxapp` が本番配布物
+- `index.html` は比較ページ、`production/play.html` / `development/play.html` が wrapper
+- 用語は `開発版` / `本番`、metadata は `development_meta.json`
 
-### Codex がやってよいこと
+## まず読む文書（順序）
 
-- `.pyxres` を `pyxel` MCP で調べる
-- `Code Maker` 互換 build を直す
-- `zip` に正しい `.pyxres` が入るようにする
-- `Code Maker` で見えるものと実ゲームの一致を確認する
-- `.pyxres` を触る必要がある依頼を、人の Code Maker 作業と Codex の build / verify 作業に切り分ける
+1. 本ファイル（AGENTS.md）
+2. 必要に応じ `docs/architecture.md`（人用詳細・ディレクトリ規約）
+3. 必要に応じ `docs/framework-rule.md`（M1〜M5 規約本体）
+4. `docs/customer-journeys.md` / `docs/product-requirements-*.md` / 関係 `steering/`
 
-### Codex が勝手にやってはいけないこと
+## コード階層規約（M1〜M5 サマリ）
 
-- `.pyxres` をテキストとして直接編集する
-- 子どもの編集面を内部都合で別のものに置き換える
-- `Code Maker` を不要と判断する
-- `resource は編集対象から外す方がよい` と、要求に逆らって勝手に結論づける
+詳細は `docs/framework-rule.md`。実装前に該当 M 番号を確認。
 
-### runtime が `.pyxres` を勝手に更新する設計について
+1. **M1**: Pyxel API と入力は **View と最外殻** の 1 か所に閉じる
+2. **M2**: View は **ViewModel** しか見ない（Model / GameState 直参照禁止）
+3. **M3**: Presenter は **入力解釈・Scene 遷移・副作用指揮** のみ
+4. **M4**: Model は **dataclass** 中心、共有状態は GameState / SceneModel / ServiceState を明示
+5. **M5**: 層規約は AI が自力で検証できる形（命名・テスト・ガードレール）
 
-これは**特に慎重に扱う**こと。
+### 実装ルール抜粋
 
-もし runtime が `.pyxres` を自動更新しているなら、
-Codex はそれを当然と思わず、
-次を必ず確認してください。
-
-- `CJ26`
-- `CJG23`
-- `CJG24`
-- `CJG26`
-- `CJG37`
-- `CJG41`
-
-つまり、
-`人が Code Maker で触るはずの実体を runtime が勝手に書き換えてよいのか`
-を、体験の約束から確かめてください。
-
-## いまの実装の事実
-
-- runtime の入口は `main.py`
-- `index.html` は比較ページ
-- `production/play.html` は `production/pyxel.html` を包む本番ラッパー
-- `development/play.html` は `development/pyxel.html` を包む開発版ラッパー
-- `production/pyxel.html` と `production/pyxel.pyxapp` は本番配布物
-- `development/pyxel.html` と `development/pyxel.pyxapp` は開発版配布物
-- 用語は `開発版` / `本番`
-- 関連 metadata は `development_meta.json`
-
-## まず読むべき文書
-
-常に重要:
-
-- `docs/customer-journeys.md`
-- `docs/product-requirements-platform.md`
-- 必要な分野の `docs/product-requirements-*.md`
-- 関係する `steering/`
-- 関係する `steering/done/`
-
-次の分野を触る前は、必ず関連 docs を先に読んでください。
-
-- build / release
-- `index.html`
-- `production/play.html`
-- `development/play.html`
-- 開発版 / 本番 / 承認フロー
-- `top_changes.json`, `development_meta.json`
-- runtime / deploy / logs / 公開 URL
-- `Code Maker` 連携
-
-最低限、実装とテストも確認してください。
-
-- `tools/build_web_release.py`
-- `test/test_build_web_release.py`
-
-## done の意味
-
-`done` は、
-`コードがある`
-`テストが通る`
-だけではありません。
-
-**人がタイトルを見て自然に期待する状態**です。
-
-たとえば:
-
-- ログが見える → 本当に公開アクセスが記録されている
-- URL が使える → 本当にその URL で見られる
-- Code Maker で編集できる → 本当に開いて編集して Run できる
-- 編集面が真実 → 編集画面で見えたものが、そのままゲームに出る
-
-ユーザーが「違う」と言ったときは、
-まず現物確認をしてください。
-先に defending しないでください。
-
-## steering note の書き方
-
-runtime / deploy / logs / 公開 URL / build pipeline / Code Maker 連携の note では、
-閉じる前に次をそろえてください。
-
-- 人間は `done` を見て何が本当だと思うか
-- それを証明する本物の path / process / file は何か
-- 何をどう live に確認したか
-
-新しい note は `steering/_template.md` を使ってください。
+- View 以外で `pyxel.*` 描画系を呼ばない（M1-1）。読み取り系 `tilemaps[n].pget` は Model から OK（imagebank=DB）
+- Model で副作用なし／Presenter で直接描画なし／View は Model 直参照なし
+- 新規 state は `dataclass`（dict 禁止）。共有 state は GameState / SceneModel / ServiceState を明示
+- 副作用は command / request として返す。1 PR で Scene 構造とゲームルールを同時大改造しない
 
 ## データの流れ
 
-生成ファイルは直接編集しません。
-
 ```text
-assets/*.yaml
-  -> tools/gen_data.py
-  -> src/generated/*.py
-  -> src/game_data.py
-  -> main.py
+assets/*.yaml -> tools/gen_data.py -> src/generated/*.py -> src/game_data.py -> main.py
 ```
 
-## 直接編集してはいけないもの
-
-| Path | 理由 | 代わりにやること |
+| Path | 理由 | 代わりに |
 |---|---|---|
-| `src/generated/*.py` | YAML から自動生成される | `assets/*.yaml` を直して `python tools/gen_data.py` |
-| `*.pyxres` | 人が Code Maker で触る resource 本体 | Pyxel Code Maker で編集し、Codex は build / verify で支える |
+| `src/generated/*.py` | YAML から自動生成 | `assets/*.yaml` を直して `python tools/gen_data.py` |
+| `*.pyxres` | Code Maker 編集物 | Code Maker で編集、AI は build/verify で支える |
+| `from src.generated.*` import | loader 経由前提 | `from src.game_data import ENEMIES` |
 
-## 直接 import してはいけないもの
-
-| Path | 理由 | 代わりにやること |
-|---|---|---|
-| `from src.generated.*` | loader を通す前提 | `from src.game_data import ENEMIES` など |
-
-## 変更したら毎回やること
+## 変更したら毎回
 
 ```bash
 python tools/gen_data.py    # YAML を変えたとき
 python -m pytest test/ -q
 ```
 
-- テストが落ちたら、そのままにしないでください
-- 失敗が既知なら、その理由をはっきり書いてください
-- 「今回は docs だけだからテスト不要」と決めつけないでください
+テストが落ちたらそのままにしない。「docs だけだからテスト不要」と決めつけない。
 
-## 追加の確認コマンド
+## done の意味
 
-```bash
-python tools/test_headless.py
-python tools/test_save_compat.py
-python tools/test_web_compat.py
-```
-
-## この repo での基本ルール
-
-1. 判断はこの repo の中で完結させる
-2. docs は読むだけでなく従う
-3. `customer-journeys` と `CJG` に逆らう方向へ勝手に最適化しない
-4. `Pyxel Code Maker` を子どもの正式な編集面として守る
-5. `*.pyxres` の実体は人が Code Maker で編集する
-6. Codex は build, test, packaging, guardrail を整えてその体験を支える
-7. 変更後は `pytest` を回す
-8. セリフや世界観の言い回しは今の雰囲気にそろえる
-
-## コード階層規約（M1〜M5）
-
-このリポジトリのコードは `docs/framework-rule.md` の **M1〜M5 メタルール**に従います。リファクタや新規実装の前に、関連する M 番号を確認してください。
-
-### メタ 5 本
-
-1. **M1**: Pyxel API と入力は **View と最外殻**の 1 か所に閉じる
-2. **M2**: View は **ViewModel** しか見ない（Model / GameState を直接参照しない）
-3. **M3**: Presenter は **入力解釈・Scene 遷移・副作用指揮**のみ
-4. **M4**: Model は **dataclass** 中心、共有状態は GameState / SceneModel / ServiceState のどれかを明示する
-5. **M5**: 層規約は AI が自力で検証できる形で可視化する（命名・テスト・ガードレール）
-
-### AI 実装ルール（M5-3 抜粋）
-
-- View 以外で `pyxel.*` を呼ばない（M1-1）
-- Model で副作用を起こさない（M4-1）
-- Presenter で直接描画しない（M3-1）
-- View は Model を参照しない（M2-1 / M2-2）
-- 新しい共有状態を追加する前に `GameState / SceneModel / ServiceState` のどれかを明示する（M4-3）
-- `dict` を新規導入しない。新規状態は `dataclass`（M4-1）
-- 副作用は command / request として返す（M3-3）
-- 1 つの PR で Scene 構造とゲームルールを同時に大改造しない
-
-### 参照すべき文書
-
-- `docs/framework-rule.md`（M1〜M5 規約本体・SSoT）
-- `docs/architecture.md`（ディレクトリ構造の根拠）
-- `steering/20260425-autonomous-rule-compliance-loop.md`（既存コードの段階的準拠ループ・判断待ちリスト）
-
-### 検証コマンド
-
-```bash
-# M1-1: View 以外での pyxel.* 直呼び（許可: views/ + 最外殻）
-grep -nE 'pyxel\.' src/scenes/*/scene.py src/scenes/*/presenter.py src/scenes/*/model.py
-# M4-1: Model 内 pyxel/sfx 等の副作用・他 Scene Model 直触り
-grep -nE 'pyxel\.' src/scenes/*/model.py src/shared/state/*.py
-grep -nE '[a-z_]+_scene\.model\.[a-z_]+\s*=' src/scenes/
-# M5-1: scenes/ ファイル命名（許可: model/presenter/view/view_model/scene/__init__）
-find src/scenes -maxdepth 2 -type f -name '*.py' | grep -vE '/(model|presenter|view|view_model|scene|__init__)\.py$'
-```
-
-いずれも grep ヒット 0 件が期待値。例外規定（最外殻 / Audio・Save ラッパ等）は `docs/framework-rule.md` を参照。
-
-## 作業前の短い確認
-
-- [ ] 今回の主語は何か。子どもが見ているものか、内部実装か
-- [ ] 関連する `CJ` / `CJG` を読んだか
-- [ ] docs と code のずれを把握したか
-- [ ] 最初に見るべき実物を見たか
-- [ ] ユーザーに道具選びを押しつけていないか
-- [ ] `pytest` まで含めて終えるつもりか
+`done` = コードがある + テストが通る + **人がタイトルを見て自然に期待する状態**。実物確認まで含む。
