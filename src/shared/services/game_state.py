@@ -47,10 +47,6 @@ class GameState:
     # --- current town context（shop→town 境界、framework-rule.md M4-3）---
     current_town: TownContext | None = None
 
-    # --- scene tracking ---
-    state: str = ""
-    prev_state: str = ""
-
     @classmethod
     def from_new_game(cls) -> "GameState":
         """ニューゲーム用の GameState（レベル1プレイヤー）を組み立てる。"""

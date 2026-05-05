@@ -25,6 +25,7 @@ from src.shared.services.input_bindings import (
 from src.shared.services.debug_service import DebugService
 from src.shared.services.message_display import MessageDisplay
 from src.shared.services.game_state import GameState, TownContext
+from src.shared.services.scene_manager import SceneManager
 from src.shared.services.save_store import make_save_store
 from src.shared.state.player_model import PlayerModel
 from src.shared.services.text_format import TextFormat
@@ -83,8 +84,9 @@ class Game:
         # PlayerModel が player 状態の唯一の正本（framework-rule.md M4-1 / M4-4）。
         self.player_model = PlayerModel.new_game()
 
-        self.state = "splash"
-        self.prev_state = "map"
+        # framework-rule.md M4-3: scene 切替メタは SceneManager に集約。
+        # game.state / game.prev_state は @property でフォワードする。
+        self.scene_manager = SceneManager()
 
         self.vfx = VfxSystem(game=self)
         self.text_fmt = TextFormat(game=self)
@@ -152,6 +154,30 @@ class Game:
         if not hasattr(self, "debug"):
             self.debug = DebugService()
         self.debug.mode = bool(value)
+
+    @property
+    def state(self) -> str:
+        """現在 scene を SceneManager から返す（M4-3 段階移行）。"""
+        sm = getattr(self, "scene_manager", None)
+        return sm.current if sm is not None else "splash"
+
+    @state.setter
+    def state(self, value: str) -> None:
+        if not hasattr(self, "scene_manager"):
+            self.scene_manager = SceneManager()
+        self.scene_manager.current = value
+
+    @property
+    def prev_state(self) -> str:
+        """直前 scene を SceneManager から返す（M4-3 段階移行）。"""
+        sm = getattr(self, "scene_manager", None)
+        return sm.previous if sm is not None else "map"
+
+    @prev_state.setter
+    def prev_state(self, value: str) -> None:
+        if not hasattr(self, "scene_manager"):
+            self.scene_manager = SceneManager()
+        self.scene_manager.previous = value
 
     @property
     def debug_seq(self) -> list:
