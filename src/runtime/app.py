@@ -28,7 +28,6 @@ from src.shared.services.save_store import make_save_store
 from src.shared.state.player_model import PlayerModel
 from src.shared.services.text_format import TextFormat
 from src.shared.services.vfx import VfxSystem
-from src.shared.services.world_generation import generate_world_map
 from src.shared.ui.status_bar import StatusBar
 
 from src.game_data import DIALOGUE_JA, DIALOGUE_EN
@@ -73,7 +72,6 @@ class Game:
         self.sfx = SfxSystem(pyxel)
         self.audio = AudioManager(pyxel)
 
-        self.world_map = generate_world_map()
         self.image_banks.setup_world_tilemap()
 
         self.dungeon_map = None

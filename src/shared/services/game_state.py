@@ -33,7 +33,6 @@ class GameState:
     has_save: bool = False
 
     # --- world / dungeon ---
-    world_map: list = field(default_factory=list)
     dungeon_map: list | None = None
     dungeon_rooms: list = field(default_factory=list)
     dungeon_spawn: tuple[int, int] | None = None

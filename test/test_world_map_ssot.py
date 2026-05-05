@@ -87,6 +87,14 @@ class WorldMapSsotTest(unittest.TestCase):
         import src.runtime.main_runtime as M  # noqa: F401
         cls.M = M
 
+    def setUp(self):
+        from src.shared.services import image_banks as ib_module
+        self._original_tilemaps = ib_module.pyxel.tilemaps
+
+    def tearDown(self):
+        from src.shared.services import image_banks as ib_module
+        ib_module.pyxel.tilemaps = self._original_tilemaps
+
     def _make_image_banks(self, pyxres_loaded: bool):
         from src.shared.services.image_banks import ImageBanks
         M = self.M
@@ -95,10 +103,6 @@ class WorldMapSsotTest(unittest.TestCase):
             pass
 
         game = _G()
-        game.world_map = [
-            [M.T_GRASS for _ in range(M.MAP_W)]
-            for _ in range(M.MAP_H)
-        ]
         ib = ImageBanks(game=game)
         ib.tile_bank = {
             M.T_GRASS: (0, 0),
@@ -114,6 +118,21 @@ class WorldMapSsotTest(unittest.TestCase):
         ib.pyxres_loaded = pyxres_loaded
         return game, ib
 
+    def _patch_generate_world_map(self, fake_wm):
+        """image_banks モジュールの generate_world_map を fake_wm 返す関数に差し替える。
+
+        新仕様 (2026-05-05)：regenerate_world_tilemap_fallback が直接
+        generate_world_map() を呼ぶため、test 側はモジュールトップの
+        参照を patch して固定 wm を注入する。"""
+        from src.shared.services import image_banks as ib_module
+        original = ib_module.generate_world_map
+        ib_module.generate_world_map = lambda: fake_wm
+        return original
+
+    def _restore_generate_world_map(self, original):
+        from src.shared.services import image_banks as ib_module
+        ib_module.generate_world_map = original
+
     def _install_fake_tilemap(self):
         # 注意: 他のテストが ``sys.modules["pyxel"]`` を別 stub に差し替える
         # 副作用があるため、image_banks がモジュールレベルで束縛している
@@ -123,8 +142,8 @@ class WorldMapSsotTest(unittest.TestCase):
         ib_module.pyxel.tilemaps = [tilemap for _ in range(8)]
         return tilemap
 
-    def test_bake_world_to_tilemap_preserves_pyxres_when_loaded(self):
-        """``pyxres_loaded`` のとき、bake は既存 tilemap ピクセルに触れない。"""
+    def test_regenerate_world_tilemap_fallback_preserves_pyxres_when_loaded(self):
+        """``pyxres_loaded`` のとき、fallback は既存 tilemap ピクセルに触れない。"""
         game, ib = self._make_image_banks(pyxres_loaded=True)
         tilemap = self._install_fake_tilemap()
 
@@ -138,35 +157,38 @@ class WorldMapSsotTest(unittest.TestCase):
                     tilemap.pset(px, py, val)
                     sentinels[(px, py)] = val
 
-        # procedural 上書きが起きうる条件：world_map[21][30] = T_PATH
-        game.world_map[21][30] = self.M.T_PATH
-        game.world_map[20][28] = self.M.T_PATH
-
         before = dict(tilemap.calls)
-        ib.bake_world_to_tilemap()
+        ib.regenerate_world_tilemap_fallback()
         after = dict(tilemap.calls)
 
         for pos, expected in sentinels.items():
             self.assertEqual(
                 after.get(pos),
                 expected,
-                f"pyxres pixel at {pos} was overwritten by bake (BEFORE={before.get(pos)} "
-                f"AFTER={after.get(pos)}); bake must skip when pyxres_loaded",
+                f"pyxres pixel at {pos} was overwritten by fallback (BEFORE={before.get(pos)} "
+                f"AFTER={after.get(pos)}); fallback must skip when pyxres_loaded",
             )
 
-    def test_bake_world_to_tilemap_still_runs_when_pyxres_not_loaded(self):
-        """``pyxres_loaded == False`` のとき、bake は従来通り procedural 描画を行う。
+    def test_regenerate_world_tilemap_fallback_runs_when_pyxres_not_loaded(self):
+        """``pyxres_loaded == False`` のとき、fallback は従来通り procedural 描画を行う。
 
         pyxres 不在時の初回生成 + ``pyxel.save`` フローを壊さないための回帰防止。
+        新仕様：``generate_world_map()`` を直呼びするため、test 側で monkeypatch
+        して固定 wm を注入する。
         """
         game, ib = self._make_image_banks(pyxres_loaded=False)
         tilemap = self._install_fake_tilemap()
 
-        game.world_map[10][10] = self.M.T_PATH
-        game.world_map[10][11] = self.M.T_PATH
-        game.world_map[10][12] = self.M.T_PATH
+        fake_wm = [[self.M.T_GRASS for _ in range(self.M.MAP_W)] for _ in range(self.M.MAP_H)]
+        fake_wm[10][10] = self.M.T_PATH
+        fake_wm[10][11] = self.M.T_PATH
+        fake_wm[10][12] = self.M.T_PATH
 
-        ib.bake_world_to_tilemap()
+        original = self._patch_generate_world_map(fake_wm)
+        try:
+            ib.regenerate_world_tilemap_fallback()
+        finally:
+            self._restore_generate_world_map(original)
 
         # 横並び 3 連続 → 中央は PATH_H、tile bank は (48, 0) → tu=6, tv=0
         self.assertEqual(tilemap.pget(2 * 11, 2 * 10), (6, 0))

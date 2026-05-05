@@ -19,6 +19,8 @@ from src.shared.assets.jp_font_data import (
     JP_FONT_IMAGE_BANK,
     JP_FONT_LAYOUT,
 )
+from src.shared.services.world_generation import generate_world_map
+
 DUNGEON_TM_OFFSET_Y = 110
 
 
@@ -167,12 +169,11 @@ class ImageBanks:
                 self.paint_tile_bank()
                 self.paint_sprite_bank()
                 self.paint_jp_font_bank()
-            self.derive_world_from_tilemap()
             self.derive_dungeon_from_tilemap()
-            self.bake_world_to_tilemap()
+            self.regenerate_world_tilemap_fallback()
             self.bake_dungeon_to_tilemap()
         else:
-            self.bake_world_to_tilemap()
+            self.regenerate_world_tilemap_fallback()
             self.bake_dungeon_to_tilemap()
             if self.pyxres_path is not None and sys.platform != "emscripten":
                 try:
@@ -227,20 +228,19 @@ class ImageBanks:
                     game.dungeon_spawn = (x, y)
                     return
 
-    def bake_world_to_tilemap(self):
-        """game.world_map を tilemap[0] に焼き込む。
+    def regenerate_world_tilemap_fallback(self):
+        """pyxres 不在/破損時の fallback：procedural に world を生成して tilemap[0] に焼く。
 
-        pyxres が読み込み済みのときは tilemap が SSoT なのでスキップする。
-        bake は道バリアント (V/H/T_NES 等) を procedural に再計算してしまうため、
-        Code Maker でユーザーが編集した道形状を黙って上書きしてしまう。
-        pyxres 不在時 (初回起動) は従来通り procedural 生成して pyxel.save する。
+        pyxres が読み込み済みのときは tilemap が SSoT なのでスキップする
+        （Code Maker で編集した道形状の保護）。pyxres 不在時 (初回起動) は
+        `generate_world_map()` を直呼びし、結果を tilemap に焼いて `pyxel.save`
+        で初回 pyxres を作る経路を維持する。
         """
         if self.pyxres_loaded:
             return
         import src.runtime.main_runtime as M
-        game = self.game
         tilemap = pyxel.tilemaps[0]
-        wm = game.world_map
+        wm = generate_world_map()
         for y in range(M.MAP_H):
             for x in range(M.MAP_W):
                 tile = wm[y][x]
@@ -266,27 +266,6 @@ class ImageBanks:
                 tilemap.pset(2 * x + 1, 2 * y,     (tu + 1, tv))
                 tilemap.pset(2 * x,     2 * y + 1, (tu,     tv + 1))
                 tilemap.pset(2 * x + 1, 2 * y + 1, (tu + 1, tv + 1))
-
-    def derive_world_from_tilemap(self):
-        """tilemap[0] から game.world_map を組み立てる。"""
-        import src.runtime.main_runtime as M
-        game = self.game
-        tilemap = pyxel.tilemaps[0]
-        derived = []
-        _miss = 0
-        for y in range(M.MAP_H):
-            row = []
-            for x in range(M.MAP_W):
-                tu, tv = tilemap.pget(2 * x, 2 * y)
-                key = (tu * 8, tv * 8)
-                tid = self.tile_id_by_pixel.get(key, M.T_GRASS)
-                if key not in self.tile_id_by_pixel:
-                    _miss += 1
-                row.append(tid)
-            derived.append(row)
-        if _miss:
-            print(f"[tilemap] world derive: {_miss} tiles fell back to T_GRASS")
-        game.world_map = derived
 
     def tile_iter(self):
         """タイルバンクに格納する順序を返す。"""

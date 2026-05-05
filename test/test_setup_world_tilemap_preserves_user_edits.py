@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-"""``ImageBanks.setup_world_tilemap`` がユーザーの tilemap 編集を破棄しないことを保証する。
+"""``ImageBanks.regenerate_world_tilemap_fallback`` がユーザーの tilemap 編集を破棄しないことを保証する。
 
 過去バグ（2026-04-25）：``tile_bank_layout_valid()`` が False の時、
 ``setup_world_tilemap`` は image bank を再描画したうえで
-``bake_world_to_tilemap()`` を ``derive_world_from_tilemap()`` 抜きで呼び、
+``bake_world_to_tilemap()`` を呼び、
 tilemap を **手続き的に再生成された ``game.world_map`` で上書き**していた。
 その結果、Pyxel Code Maker でユーザーが pyxres の tilemap を編集（道の修整等）しても、
 ゲーム実行時に tilemap が procedural 版で焼き戻されて編集が消えていた。
 
-修正後の不変性：``pyxres_loaded`` が True のすべての分岐で
-``derive_world_from_tilemap()`` が呼ばれること（pyxres の tilemap が
-SoT として尊重されること）。
+修正後の不変性（2026-05-05）：``regenerate_world_tilemap_fallback`` 関数の
+冒頭が ``if self.pyxres_loaded: return`` で始まり、pyxres ロード済みなら
+tilemap に一切触らない。``setup_world_tilemap`` 内のどの分岐から呼ばれても
+この早期 return が pyxres 編集を保護する（world_map snapshot は撤去済み）。
 """
 
 import ast
@@ -57,23 +58,50 @@ def _branch_bodies(if_node: ast.If) -> list[list[ast.stmt]]:
     return bodies
 
 
-class SetupWorldTilemapStructureTest(unittest.TestCase):
+class RegenerateWorldTilemapFallbackEarlyReturnTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         path = ROOT / "src" / "shared" / "services" / "image_banks.py"
         cls.source = path.read_text(encoding="utf-8")
-        cls.func = _function_node(cls.source, "setup_world_tilemap")
+        cls.func = _function_node(cls.source, "regenerate_world_tilemap_fallback")
 
-    def test_pyxres_loaded_branch_always_derives_world_from_tilemap(self):
-        """``self.pyxres_loaded`` が True の分岐に入った時、tile bank 状態に
-        かかわらず ``derive_world_from_tilemap`` が呼ばれること。
+    def test_first_statement_is_early_return_on_pyxres_loaded(self):
+        """``regenerate_world_tilemap_fallback`` の冒頭は
+        ``if self.pyxres_loaded: return`` で始まること。
 
-        過去バグでは ``tile_bank_layout_valid()`` が False のサブ分岐で
-        derive をスキップして procedural bake のみ呼んでいた。本テストは
-        if 本体配下のすべての statement から derive 呼び出しが見つかれば
-        OK とする（途中のサブ if のどちら側に居ても外側で必ず通るため）。
+        過去バグでは pyxres ロード済みでも procedural bake が走り、
+        Code Maker でユーザーが編集した tilemap が procedural 値で
+        上書きされていた。修正後の不変性：fallback は **pyxres 不在/破損
+        専用** で、ロード済みなら早期 return して tilemap に一切触らない。
         """
-        for if_node in ast.walk(self.func):
+        # Skip docstring (Expr/Constant) at function head if present.
+        body = list(self.func.body)
+        if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant):
+            body = body[1:]
+        self.assertTrue(body, "regenerate_world_tilemap_fallback has empty body")
+        first = body[0]
+        self.assertIsInstance(first, ast.If, f"first stmt is {type(first).__name__}, expected If")
+        test = first.test
+        self.assertTrue(
+            isinstance(test, ast.Attribute)
+            and isinstance(test.value, ast.Name)
+            and test.value.id == "self"
+            and test.attr == "pyxres_loaded",
+            f"first if condition is not `self.pyxres_loaded`; got {ast.dump(test)}",
+        )
+        self.assertTrue(
+            any(isinstance(s, ast.Return) for s in first.body),
+            "first if body lacks Return; pyxres_loaded must early-return",
+        )
+
+    def test_setup_world_tilemap_calls_fallback_in_pyxres_loaded_branch(self):
+        """``setup_world_tilemap`` の pyxres_loaded 分岐でも fallback が
+        呼ばれてよい（ただし関数内の早期 return で no-op になる）。
+        逆に呼ばれない設計に戻すと、pyxres 不在経路だけ paint_tile_bank が
+        効かないなどの非対称な regression が起きやすいので、対称性を assert する。
+        """
+        setup_func = _function_node(self.source, "setup_world_tilemap")
+        for if_node in ast.walk(setup_func):
             if not isinstance(if_node, ast.If):
                 continue
             test = if_node.test
@@ -84,37 +112,17 @@ class SetupWorldTilemapStructureTest(unittest.TestCase):
                 and test.attr == "pyxres_loaded"
             ):
                 continue
-            outer_body_calls: set[str] = set()
-            for stmt in if_node.body:
-                outer_body_calls |= _calls_in(stmt)
-            self.assertIn(
-                "derive_world_from_tilemap",
-                outer_body_calls,
-                f"pyxres_loaded body lacks derive_world_from_tilemap; calls={sorted(outer_body_calls)}",
-            )
-            return
-
-        self.fail("`if self.pyxres_loaded:` branch not found in setup_world_tilemap")
-
-    def test_paint_tile_bank_no_longer_paired_with_procedural_bake(self):
-        """過去バグ：image bank repaint と一緒に procedural bake_world をしていた。
-        その組み合わせ（``paint_tile_bank`` を呼ぶ分岐で ``derive_world_from_tilemap`` を
-        呼ばない）が再混入していないことを確認する。
-        """
-        for branch in ast.walk(self.func):
-            if not isinstance(branch, ast.If):
-                continue
-            for body in _branch_bodies(branch):
+            for body in _branch_bodies(if_node):
                 flat_calls: set[str] = set()
                 for stmt in body:
                     flat_calls |= _calls_in(stmt)
-                if "paint_tile_bank" in flat_calls and "bake_world_to_tilemap" in flat_calls:
-                    self.assertIn(
-                        "derive_world_from_tilemap",
-                        flat_calls,
-                        f"branch repaints image bank and bakes world without "
-                        f"derive_world_from_tilemap (regression); calls={sorted(flat_calls)}",
-                    )
+                self.assertIn(
+                    "regenerate_world_tilemap_fallback",
+                    flat_calls,
+                    f"pyxres_loaded branch lacks regenerate_world_tilemap_fallback; calls={sorted(flat_calls)}",
+                )
+            return
+        self.fail("`if self.pyxres_loaded:` branch not found in setup_world_tilemap")
 
 
 if __name__ == "__main__":

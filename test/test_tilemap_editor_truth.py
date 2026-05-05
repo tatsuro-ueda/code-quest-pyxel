@@ -85,15 +85,19 @@ class TilemapEditorTruthTest(unittest.TestCase):
     def setUpClass(cls):
         cls.main = load_main_module()
 
+    def setUp(self):
+        from src.shared.services import image_banks as ib_module
+        self._original_tilemaps = ib_module.pyxel.tilemaps
+
+    def tearDown(self):
+        from src.shared.services import image_banks as ib_module
+        ib_module.pyxel.tilemaps = self._original_tilemaps
+
     def make_game(self):
         import src.runtime.main_runtime as M
         from src.shared.services.image_banks import ImageBanks
         game = self.main.Game.__new__(self.main.Game)
         game.image_banks = ImageBanks(game=game)
-        game.world_map = [
-            [M.T_GRASS for _ in range(M.MAP_W)]
-            for _ in range(M.MAP_H)
-        ]
         game.image_banks.tile_bank = {
             M.T_GRASS: (0, 0),
             M.T_PATH: (16, 0),
@@ -112,27 +116,60 @@ class TilemapEditorTruthTest(unittest.TestCase):
         game.image_banks.tile_bank_water2 = None
         return game
 
-    def test_bake_world_tilemap_writes_path_variant_tiles_for_editor(self):
+    def _patch_wm(self, fake_wm):
+        """新仕様 (2026-05-05): regenerate_world_tilemap_fallback が
+        generate_world_map() を直呼びするため、image_banks モジュールの
+        関数参照を差し替えて固定 wm を注入する。"""
+        from src.shared.services import image_banks as ib_module
+        original = ib_module.generate_world_map
+        ib_module.generate_world_map = lambda: fake_wm
+        return original
+
+    def _restore_wm(self, original):
+        from src.shared.services import image_banks as ib_module
+        ib_module.generate_world_map = original
+
+    def test_regenerate_world_tilemap_fallback_writes_path_variant_tiles_for_editor(self):
+        import src.runtime.main_runtime as M
         game = self.make_game()
         tilemap = _FakeTilemap()
-        self.main.pyxel.tilemaps = [tilemap for _ in range(8)]
+        # 他テストの副作用 (pyxel.tilemaps[0].pget の MagicMock 化) を上書きする
+        # ため、image_banks がモジュールレベルで束縛している pyxel 参照に直接
+        # 差し込む。
+        from src.shared.services import image_banks as ib_module
+        ib_module.pyxel.tilemaps = [tilemap for _ in range(8)]
 
-        game.world_map[10][10] = self.main.T_PATH
-        game.world_map[10][11] = self.main.T_PATH
-        game.world_map[10][12] = self.main.T_PATH
+        fake_wm = [[M.T_GRASS for _ in range(M.MAP_W)] for _ in range(M.MAP_H)]
+        fake_wm[10][10] = M.T_PATH
+        fake_wm[10][11] = M.T_PATH
+        fake_wm[10][12] = M.T_PATH
 
-        game.image_banks.bake_world_to_tilemap()
+        original = self._patch_wm(fake_wm)
+        try:
+            game.image_banks.regenerate_world_tilemap_fallback()
+        finally:
+            self._restore_wm(original)
 
         self.assertEqual(tilemap.pget(2 * 11, 2 * 10), (6, 0))
 
-    def test_bake_world_tilemap_writes_shore_variant_tiles_for_editor(self):
+    def test_regenerate_world_tilemap_fallback_writes_shore_variant_tiles_for_editor(self):
+        import src.runtime.main_runtime as M
         game = self.make_game()
         tilemap = _FakeTilemap()
-        self.main.pyxel.tilemaps = [tilemap for _ in range(8)]
+        # 他テストの副作用 (pyxel.tilemaps[0].pget の MagicMock 化) を上書きする
+        # ため、image_banks がモジュールレベルで束縛している pyxel 参照に直接
+        # 差し込む。
+        from src.shared.services import image_banks as ib_module
+        ib_module.pyxel.tilemaps = [tilemap for _ in range(8)]
 
-        game.world_map[20][20] = self.main.T_WATER
+        fake_wm = [[M.T_GRASS for _ in range(M.MAP_W)] for _ in range(M.MAP_H)]
+        fake_wm[20][20] = M.T_WATER
 
-        game.image_banks.bake_world_to_tilemap()
+        original = self._patch_wm(fake_wm)
+        try:
+            game.image_banks.regenerate_world_tilemap_fallback()
+        finally:
+            self._restore_wm(original)
 
         self.assertEqual(tilemap.pget(2 * 20, 2 * 20), (10, 0))
 

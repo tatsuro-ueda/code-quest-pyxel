@@ -134,7 +134,6 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
             "max_zone_reached": 0,
         })
         game.dungeon_map = [[self.main.T_FLOOR]]
-        game.world_map = [[self.main.T_GRASS]]
         game.world_return_x = 40
         game.world_return_y = 32
         game.explore_scene.model.move_cooldown = 0
