@@ -21,10 +21,18 @@ tags:
 
 ## 1) Journey
 
-- **深層的目的**：`PlayerModel` 化（framework-rule.md M4-4 Level 2）の最終段として、`player_state.py` 残存 shim 5 関数を撤去 or PlayerModel メソッド化する
-- **やらないこと**：
-  - bundle / セーブ互換性の破壊（`from_snapshot` の互換は維持）
-  - `tools/test_save_compat.py` の独自再現関数の書き換え（別物）
+- **深層的目的**：状況をシンプルにして好循環を起こしたい
+
+1. 💦 （開発者・AI）機能を追加したりバグ修正したい（コードエディタ）
+2. 💦 （開発者・AI）リポジトリを眺める（コードエディタ）
+3. Before
+  1. ❌ もう使っていないファイルや関数が残っている（コードエディタ）
+  2. ❌ （開発者・AI）わかりにくい
+4. After
+  1. `PlayerModel` 化（framework-rule.md M4-4 Level 2）の最終段として、`player_state.py` 残存 shim 5 関数を撤去 or PlayerModel メソッド化する
+  2. ✅ もう使っていないファイルや関数が残っていない（コードエディタ）
+  3. ✅ 状況がシンプル（コードエディタ）
+  4. ♥️ （開発者・AI）嬉しい
 
 ## 2) Gherkin
 
