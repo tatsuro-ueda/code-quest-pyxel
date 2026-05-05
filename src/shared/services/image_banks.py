@@ -171,10 +171,10 @@ class ImageBanks:
                 self.paint_jp_font_bank()
             self.derive_dungeon_from_tilemap()
             self.regenerate_world_tilemap_fallback()
-            self.bake_dungeon_to_tilemap()
+            self.regenerate_dungeon_tilemap_fallback()
         else:
             self.regenerate_world_tilemap_fallback()
-            self.bake_dungeon_to_tilemap()
+            self.regenerate_dungeon_tilemap_fallback()
             if self.pyxres_path is not None and sys.platform != "emscripten":
                 try:
                     self.pyxres_path.parent.mkdir(parents=True, exist_ok=True)
@@ -183,8 +183,15 @@ class ImageBanks:
                 except Exception as exc:
                     print(f"[image_bank] could not save .pyxres: {exc}")
 
-    def bake_dungeon_to_tilemap(self):
-        """共有ダンジョン (game.dungeon_template) を tilemap[0] のオフセット領域に焼き込む。"""
+    def regenerate_dungeon_tilemap_fallback(self):
+        """pyxres 不在/破損時の fallback：dungeon_template を tilemap[0] の dungeon 領域に焼く。
+
+        pyxres が読み込み済みのときは tilemap が SSoT なのでスキップする
+        （Code Maker で編集した dungeon タイルの保護）。world_map 側
+        ``regenerate_world_tilemap_fallback`` と対称な命名・挙動。
+        """
+        if self.pyxres_loaded:
+            return
         import src.runtime.main_runtime as M
         game = self.game
         tilemap = pyxel.tilemaps[0]
