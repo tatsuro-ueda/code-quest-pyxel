@@ -2,7 +2,7 @@
 
 根拠:
 - docs/framework-rule.md M5-1（scene は model/presenter/view 構造を持つ）
-- docs/repository-structure.md
+- docs/architecture.md
 
 各 scene ディレクトリに model.py / presenter.py / view.py が揃う。
 town は例外的に scene.py を持たないが、他は scene.py（薄い配線）を持つ。

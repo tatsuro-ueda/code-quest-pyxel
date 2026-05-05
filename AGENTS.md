@@ -336,7 +336,7 @@ python tools/test_web_compat.py
 ### 参照すべき文書
 
 - `docs/framework-rule.md`（M1〜M5 規約本体・SSoT）
-- `docs/repository-structure.md`（ディレクトリ構造の根拠）
+- `docs/architecture.md`（ディレクトリ構造の根拠）
 - `steering/20260425-autonomous-rule-compliance-loop.md`（既存コードの段階的準拠ループ・判断待ちリスト）
 
 ### 検証コマンド
