@@ -289,6 +289,24 @@ class M4SsotGuardTest(unittest.TestCase):
             f"src/ に `(game|self).dungeon_map` 参照が侵入: {hits}",
         )
 
+    def test_no_dungeon_map_field_assignment_in_tests(self):
+        """test/ 配下に dungeon_map field 代入がない。
+
+        ExploreModel が pyxel.tilemaps[0].pget を直読する新仕様
+        （2026-05-05）に対し、game の dungeon_map field 仕込みは
+        無効（dead code）になる。混乱の元なので test 内でも禁止する。
+        新規 test は `test/_helpers/imagebank_stub.py::stub_explore_tilemap_read`
+        を使うこと。
+        """
+        test_dir = ROOT / "test"
+        pattern = re.compile(r"\b(?:game|self)\.dungeon_map\s*=")
+        files = [p for p in _iter_py_files(test_dir) if p != Path(__file__)]
+        hits = _grep(pattern, files)
+        self.assertEqual(
+            hits, [],
+            f"test/ に dungeon_map field 代入が侵入: {hits}",
+        )
+
     DEPRECATED_GAME_FIELDS = frozenset({
         "current_town", "cam_x", "cam_y", "dungeon_rooms", "dungeon_map",
         "debug_mode", "debug_seq", "state", "prev_state", "world_map",

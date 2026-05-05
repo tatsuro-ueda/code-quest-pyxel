@@ -14,7 +14,14 @@ from __future__ import annotations
 
 import sys
 import types
+from pathlib import Path
 from unittest.mock import MagicMock
+
+# test/ 配下を sys.path に入れる。test/_helpers/imagebank_stub.py を
+# `from _helpers.imagebank_stub import ...` で読めるようにする。
+_TEST_DIR = Path(__file__).resolve().parent
+if str(_TEST_DIR) not in sys.path:
+    sys.path.insert(0, str(_TEST_DIR))
 
 
 def _install_pyxel_stub() -> None:

@@ -9,6 +9,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from _helpers.imagebank_stub import (  # noqa: E402
+    FakeTilemap as _FakeTilemap,
+    snapshot_tilemaps,
+    restore_tilemaps,
+)
+
 
 def _install_pyxel_stub() -> None:
     if "pyxel" in sys.modules:
@@ -69,29 +75,16 @@ def load_main_module():
     return module
 
 
-class _FakeTilemap:
-    def __init__(self):
-        self.calls: dict[tuple[int, int], tuple[int, int]] = {}
-
-    def pset(self, x: int, y: int, value: tuple[int, int]) -> None:
-        self.calls[(x, y)] = value
-
-    def pget(self, x: int, y: int) -> tuple[int, int]:
-        return self.calls.get((x, y), (0, 0))
-
-
 class TilemapEditorTruthTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.main = load_main_module()
 
     def setUp(self):
-        from src.shared.services import image_banks as ib_module
-        self._original_tilemaps = ib_module.pyxel.tilemaps
+        self._original_tilemaps = snapshot_tilemaps()
 
     def tearDown(self):
-        from src.shared.services import image_banks as ib_module
-        ib_module.pyxel.tilemaps = self._original_tilemaps
+        restore_tilemaps(self._original_tilemaps)
 
     def make_game(self):
         import src.runtime.main_runtime as M

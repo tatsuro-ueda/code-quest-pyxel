@@ -11,6 +11,7 @@ from src.scenes.battle.scene import BattleScene
 from src.shared.services.message_display import MessageDisplay
 from src.shared.services.image_banks import ImageBanks
 from src.shared.services.input_bindings import InputStateTracker
+from _helpers.imagebank_stub import stub_explore_tilemap_read
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -65,33 +66,19 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         })
         # 新仕様 (2026-05-05)：ExploreModel は pyxel.tilemaps[0].pget と
         # image_banks.tile_id_by_pixel から直読する。dungeon (1,1) に
-        # T_GLITCH_LORD_TRIGGER が見えるよう、pyxel をモック。
-        import pyxel
-        from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
-        # cell 座標：1 ゲームタイル = 2 cells、dungeon は Y=DUNGEON_TM_OFFSET_Y から
-        floor_cell = (0, 0)            # pixel(0,0)   → T_FLOOR
-        trigger_cell = (16 // 8, 0)    # pixel(16,0)  → T_GLITCH_LORD_TRIGGER
-
-        def _pget(tu, tv):
-            if (tu, tv) == (2 * 1, DUNGEON_TM_OFFSET_Y + 2 * 1):
-                return trigger_cell
-            return floor_cell
-        pyxel.tilemaps[0].pget = MagicMock(side_effect=_pget)
-
-        game.image_banks.tile_id_by_pixel = {
-            (0, 0): self.main.T_FLOOR,
-            (16, 0): self.main.T_GLITCH_LORD_TRIGGER,
-            (32, 0): self.main.T_GRASS,
-            (48, 0): self.main.T_WATER,
-            (64, 0): self.main.T_PATH,
-        }
-        game.image_banks.tile_bank = {
-            self.main.T_FLOOR: (0, 0),
-            self.main.T_GLITCH_LORD_TRIGGER: (16, 0),
-            self.main.T_GRASS: (32, 0),
-            self.main.T_WATER: (48, 0),
-            self.main.T_PATH: (64, 0),
-        }
+        # T_GLITCH_LORD_TRIGGER が見えるよう helper でモック。
+        stub_explore_tilemap_read(
+            game.image_banks,
+            tile_ids=[
+                self.main.T_FLOOR,
+                self.main.T_GLITCH_LORD_TRIGGER,
+                self.main.T_GRASS,
+                self.main.T_WATER,
+                self.main.T_PATH,
+            ],
+            default_tile_id=self.main.T_FLOOR,
+            dungeon_overrides={(1, 1): self.main.T_GLITCH_LORD_TRIGGER},
+        )
         game.image_banks.sprite_bank = {
             "hero_down": (0, 0),
             "hero_walk": (16, 0),

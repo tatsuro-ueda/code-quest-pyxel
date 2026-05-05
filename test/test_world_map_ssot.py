@@ -19,6 +19,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from _helpers.imagebank_stub import (  # noqa: E402
+    FakeTilemap as _FakeTilemap,
+    install_fake_tilemap,
+    snapshot_tilemaps,
+    restore_tilemaps,
+)
+
 
 def _install_pyxel_stub() -> None:
     if "pyxel" in sys.modules and not getattr(sys.modules["pyxel"], "__IS_TEST_STUB__", False):
@@ -69,17 +76,6 @@ def _install_pyxel_stub() -> None:
     sys.modules["pyxel"] = stub
 
 
-class _FakeTilemap:
-    def __init__(self):
-        self.calls: dict[tuple[int, int], tuple[int, int]] = {}
-
-    def pset(self, x: int, y: int, value: tuple[int, int]) -> None:
-        self.calls[(x, y)] = value
-
-    def pget(self, x: int, y: int) -> tuple[int, int]:
-        return self.calls.get((x, y), (0, 0))
-
-
 class WorldMapSsotTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -88,12 +84,10 @@ class WorldMapSsotTest(unittest.TestCase):
         cls.M = M
 
     def setUp(self):
-        from src.shared.services import image_banks as ib_module
-        self._original_tilemaps = ib_module.pyxel.tilemaps
+        self._original_tilemaps = snapshot_tilemaps()
 
     def tearDown(self):
-        from src.shared.services import image_banks as ib_module
-        ib_module.pyxel.tilemaps = self._original_tilemaps
+        restore_tilemaps(self._original_tilemaps)
 
     def _make_image_banks(self, pyxres_loaded: bool):
         from src.shared.services.image_banks import ImageBanks
@@ -134,13 +128,10 @@ class WorldMapSsotTest(unittest.TestCase):
         ib_module.generate_world_map = original
 
     def _install_fake_tilemap(self):
-        # 注意: 他のテストが ``sys.modules["pyxel"]`` を別 stub に差し替える
-        # 副作用があるため、image_banks がモジュールレベルで束縛している
-        # ``pyxel`` 参照そのものに対して tilemaps を差し込む。
-        from src.shared.services import image_banks as ib_module
-        tilemap = _FakeTilemap()
-        ib_module.pyxel.tilemaps = [tilemap for _ in range(8)]
-        return tilemap
+        # 他のテストが ``sys.modules["pyxel"]`` を差し替える副作用に強くするため、
+        # image_banks がモジュールレベルで束縛している pyxel 参照に直接差し込む
+        # (helper 経由)。
+        return install_fake_tilemap()
 
     def test_regenerate_world_tilemap_fallback_preserves_pyxres_when_loaded(self):
         """``pyxres_loaded`` のとき、fallback は既存 tilemap ピクセルに触れない。"""
