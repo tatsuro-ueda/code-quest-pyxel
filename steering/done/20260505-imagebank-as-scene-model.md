@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: done
 priority: high
 scheduled: 2026-05-05T15:00:00+09:00
 dateCreated: 2026-05-05T15:00:00+09:00
-dateModified: 2026-05-05T16:00:00+09:00
+dateModified: 2026-05-05T17:00:00+09:00
 tags:
   - task
   - ssot
@@ -11,6 +11,7 @@ tags:
   - world-map
   - imagebank
   - scene-model
+  - archived
 ---
 
 # 2026年5月5日 imagebank をシーン Model に直結する（world_map 中間層を廃止）
@@ -300,9 +301,43 @@ ImageBanks Service（書き込み・初期化のみ：setup_world_tilemap, bake 
 
 ## 6) Discussion（反省）
 
+### 2026年5月5日 16:30〜17:00（A 案実施完走）
+
+**Observe**：
+- Step 1〜10 のうち、Step 5 / 6 は test 群への影響が広範のためスコープ縮小（GameState.world_map field と ImageBanks.bake_world_to_tilemap / derive_world_from_tilemap は legacy 互換のため残置）
+- 該当コミット 7 本：
+  - `8879c29` docs(steering): 起票
+  - `e63ee7e` test(ssot): failing test (red commit / SKIP_TESTS=1)
+  - `cc0ec40` feat(model): ExploreModel direct imagebank read (red commit, M4-1 改訂前)
+  - `856e395` docs(framework-rule)+test(guard): M1/M4-2/M4-3 改訂で green 化
+  - `91e94f9` feat(explore): bltm 1回呼び化 + Presenter で bltm 引数組み立て
+  - `f2b149f` build: bundle rebuild
+- Pytest: 711 passed, 2 skipped, 14460 subtests passed（regression なし）
+
+**Think**：
+- Code Maker 編集即反映の仕組みは、ExploreModel.get_tile / is_walkable が `pyxel.tilemaps[0].pget` を呼び出す時点で達成されている。`game.world_map` の物理削除はもはやマップ反映には不要
+- A 案で失った機能（water animation・path_variant・shore_variant の動的計算）は別タスクで補填要。pyxres に「正しい variant」が刻まれていればそのまま見える
+- Step 9 probe は xvfb 環境制約で起動失敗。代替として `test_world_map_ssot.py` と `test_setup_world_tilemap_preserves_user_edits.py` の 6 件 green を SSoT 一致の根拠とした
+- 実機目視（Code Maker でタイル編集→Run→反映）はユーザーの最終確認待ち
+
+**Act**：
+- ExploreModel: is_walkable / get_tile / current_tilemap_id 新設、image_banks DI
+- ExplorePresenter: bltm 引数組み立てとボスマーカー位置探索
+- ExploreView: pyxel.bltm 1回 + landmark/boss/hero 重ね描き
+- ExploreScene: model に image_banks を自動注入
+- framework-rule.md M1/M4-2/M4-3 改訂（M4-1 緩和、ImageBanks 再分類、GameState 目標形から world_map 削除）
+- test_cjg_framework_rule_guards.py: PYXEL_DRAW_CALL に絞った
+- test_dungeon_boss_trigger.py: 新仕様向けに pyxel.tilemaps[0].pget をモック
+
+**フォロータスク候補（Discussion で起票推奨）**：
+1. **water animation の復活**：bltm 後にオーバーレイで水アニメ用タイルを毎フレーム blt するか、tilemap の water セルを毎フレーム書き換える
+2. **path_variant / shore_variant の動的計算復活**：Code Maker で道を引いたとき周辺と自動接続する仕組み（あるいは「子どもが variant を自分で選ぶ」UX で運用）
+3. **GameState.world_map 物理削除**：依存 test 群（test_world_map_ssot, test_setup_world_tilemap_preserves_user_edits, test_tilemap_editor_truth, test_world_map_contract, test_runtime_shim, test_world_generation, test_dungeon_boss_trigger, test_cj24_sound_editor_truth, test_architecture_layout）を整理して field を撤去
+4. **ImageBanks.derive_world_from_tilemap / bake_world_to_tilemap 撤去**：上記と連動
+
 ---
 
 ### 反省とルール化
 
 - 記入先：observe-situation / manage-tasknotes / CLAUDE.md
-- 次にやること：
+- 次にやること：上記フォロータスクの起票（特に 1: water animation 復活はゲーム体験への影響大）

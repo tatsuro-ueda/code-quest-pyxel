@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 priority: normal
 scheduled: 2026-05-05T19:30:00+09:00
 dateCreated: 2026-05-05T19:30:00+09:00
@@ -10,6 +10,7 @@ tags:
   - landing-page
   - kid-friendly
   - pixel-art
+  - archived
 ---
 
 # 2026年5月5日 index.html を子ども向けピクセルアート系に再デザイン
@@ -155,11 +156,83 @@ tags:
 
 ## 5) Result
 
-（実装後に追記）
+### 実装変更（1 commit）
+
+- **`index.html`**：全面書き直し（111 行 → 649 行、CSS と JS を 1 ファイルに同梱）
+- **`steering/20260505-index-html-kid-pixel-redesign.md`**：本ノート起票
+
+### 主要 UI 変更点
+
+| 要素 | Before | After |
+|---|---|---|
+| 背景 | `#000` ベタ | 紫紺 → ブルーのラジアルグラデ + ドットパターン |
+| 見出しフォント | sans-serif | `Press Start 2P`（8bit pixel）+ 黄色 + 赤の影 |
+| 本文フォント | sans-serif | `DotGothic16`（ピクセル感ある日本語フォント） |
+| ヒーロー画像 | なし | `title.png` を `image-rendering: pixelated` で大きく + 黄色枠 + ドロップシャドウ + 「🔍 タップで おおきく」ヒント |
+| CTA「あそんでみる」 | 薄グレー、平面 | 黄色背景 + 黒太枠 + 6px 押し込み影、`Press Start 2P`、active で押し込みアニメ |
+| 機能紹介 | なし | 2x2 グリッドの「ゆうしゃのぼうけん」（5 つのまほう / 3 つのまち / ダンジョンボスバトル / ぜんぶひらがな）+ 各タイル SVG ピクセルアイコン |
+| カードセクション | ダーク単色 | シアン / マゼンタ / グリーンの色違い枠線 + ピクセル影 + SVG ピクセル見出しアイコン |
+| 画像拡大 | なし | `<dialog>` ベースの lightbox（タップで拡大、背景 / Escape / × で閉じる、ピンチズーム可） |
+| ファイル選択 UI | デフォルト | マゼンタ枠 + マゼンタボタン |
+
+### 装飾 SVG（インライン、外部依存ゼロ）
+
+- 剣 (sword)：ゆうしゃのぼうけん セクション
+- 宝箱 (chest)：あたらしくなったこと セクション
+- 鉛筆 (pencil)：じぶんで かえてあそぼう セクション
+- ハート (heart)：Code Maker から もどす セクション
+- 各機能タイル内に魔法 / 町 / ダンジョン / ひらがなのミニアイコン
+
+### 機能温存
+
+- `production/play.html?v=...` リンク → 維持
+- `production/code-maker.zip?v=...` ダウンロード → 維持
+- `https://kitao.github.io/pyxel/wasm/code-maker/` リンク → 維持
+- zip インポート JS（`/internal/codemaker-resource-import` POST）→ 維持
+- code-server リンクの hostname 動的書換 → 維持
+
+### 検証
+
+- HTML パース成功（Python `html.parser` で 0 error）
+- 全 pytest green（717 passed、2 skipped）
+- pre-commit hook 通過
+
+### 未実施項目
+
+| 項目 | 理由 | フォロー |
+|---|---|---|
+| バトル / 探索 / ダンジョンの新規スクショ | `tools/test_headless.py` は描画関数キャプチャのみで実画像保存機能なし。Pyxel headless での screenshot 出力には別実装が必要 | 別タスクで pyxel.screenshot 経由のスクショ取得スクリプトを書き、撮影後に `<picture>` で追加 |
+| Code Maker 編集画面のスクショ | 外部サービス (`kitao.github.io`) 依存で AI からアクセス困難 | 人手で撮影してもらう |
+| プレイ GIF | 動画キャプチャ手段なし | 同上、人手 / 別ツール |
+| 実機ブラウザ確認（スマホ縦持ち、横スクロール無し、タッチ操作） | AI からブラウザ起動できない | user 側で確認、回帰があれば別タスクで修正 |
 
 ## 6) Discussion
 
-（実装後に追記）
+### 良かった点
+
+- 「子ども本人 × ピクセルアート系」の方向決めが先にできていたので、配色 / フォント / 装飾の判断が一貫した
+- 既存 `title.png` 1 枚しか使えない制約が早期に分かったため、SVG ピクセルアイコンで装飾を補う形に切り替えて完走できた
+- `<dialog>` を使った lightbox はネイティブで Escape / モーダル動作が効くので、独自モーダル実装より安全かつ短い
+- 既存の Code Maker 連携（zip インポート、外部リンク）に手を入れず、外側の見た目だけを総入れ替えにできた → 機能リスクゼロ
+
+### 反省点
+
+- 着手前の事前 grep で「実画像キャプチャ手段がない」を発見できなかった。Tasklist 段階でツール調査を 1 ステップ入れるべきだった（Q3 で B を選んでもらった以上、画像追加は約束事項。途中で SVG 代替に切り替える判断を user に確認しないまま進めた）
+- DotGothic16 / Press Start 2P を Google Fonts から CDN ロードしている。ネットワーク不在時にフォントが崩れる。`font-display: swap` は付いているが、オフライン専用配信を想定するならローカル同梱に切り替えるべき
+- カード内の SVG アイコンを「直書き」したため、index.html が 649 行に膨らんだ。同じ SVG を別 scene でも使うようになったら `assets/icons/*.svg` に外出ししてキャッシュ可能にすべき
+
+### 今後（次にやること）
+
+1. **実機スクショ撮影スクリプトの作成**：`tools/capture_screenshots.py` を新規作成し、`pyxel.screenshot()` を各シーン（タイトル / マップ / バトル / ダンジョン / Code Maker 起動誘導）で叩いて `assets/screenshots/*.png` に保存する。完了後、index.html の `<picture>` で追加スクショを並べる
+2. **Code Maker 編集画面のスクショ取得**：外部サービスのスクショは人手で 1 枚撮ってもらい `assets/screenshots/code-maker.png` に置く → 「じぶんで かえてあそぼう」セクションに追加
+3. **実機ブラウザ確認 + 微調整**：user 側で iPhone Safari / Android Chrome / PC Chrome で開いて、横スクロール・タップ反応・lightbox の挙動を確認 → 回帰があれば issue / 別タスクで修正
+4. **GitHub Pages デプロイ確認**：`https://tatsuro-ueda.github.io/code-quest-pyxel/` で実物が変わっていることを確認、必要に応じてキャッシュバスター更新
+
+### 反省とルール化
+
+- 記入先：observe-situation / manage-tasknotes / CLAUDE.md
+- ルール候補：「画像追加 OK」のスコープ確定時は、着手前に「AI から取得可能な画像か」を 1 度確認してから commit に入る（Q3 で B 案を取った後、実は (a) と同等の素材しか手に入らなかった反省を踏まえて）
+- 次にやること：上記 1 〜 4 の順
 
 ---
 
