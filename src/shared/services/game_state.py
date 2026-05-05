@@ -51,10 +51,6 @@ class GameState:
     state: str = ""
     prev_state: str = ""
 
-    # --- debug ---
-    debug_mode: bool = False
-    debug_seq: list = field(default_factory=list)
-
     @classmethod
     def from_new_game(cls) -> "GameState":
         """ニューゲーム用の GameState（レベル1プレイヤー）を組み立てる。"""

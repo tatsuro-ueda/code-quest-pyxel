@@ -22,6 +22,7 @@ from src.shared.services.input_bindings import (
     CANCEL_BUTTONS,
     InputStateTracker,
 )
+from src.shared.services.debug_service import DebugService
 from src.shared.services.message_display import MessageDisplay
 from src.shared.services.game_state import GameState, TownContext
 from src.shared.services.save_store import make_save_store
@@ -97,8 +98,9 @@ class Game:
         self.save_store = make_save_store(save_path)
         self._has_save = self.save_store.exists()
 
-        self.debug_mode = False
-        self.debug_seq = []
+        # framework-rule.md M4-3: デバッグ state は DebugService に集約。
+        # game.debug_mode / game.debug_seq は @property でフォワードする。
+        self.debug = DebugService()
         self.input_state = InputStateTracker()
 
         self.world_return_x = 0
@@ -139,6 +141,29 @@ class Game:
             self.game_state = GameState()
         self.game_state.current_town = value
 
+    @property
+    def debug_mode(self) -> bool:
+        """デバッグモード state を DebugService から返す（M4-3 段階移行）。"""
+        dbg = getattr(self, "debug", None)
+        return dbg.mode if dbg is not None else False
+
+    @debug_mode.setter
+    def debug_mode(self, value: bool) -> None:
+        if not hasattr(self, "debug"):
+            self.debug = DebugService()
+        self.debug.mode = bool(value)
+
+    @property
+    def debug_seq(self) -> list:
+        dbg = getattr(self, "debug", None)
+        return dbg.seq if dbg is not None else []
+
+    @debug_seq.setter
+    def debug_seq(self, value) -> None:
+        if not hasattr(self, "debug"):
+            self.debug = DebugService()
+        self.debug.seq = list(value)
+
     def start(self):
         """ゲームループに入る。`Game()` 後の `disp()` 呼び出しを有効にするため
         `__init__` から `pyxel.run` を分離してある。"""
@@ -156,27 +181,18 @@ class Game:
             self.messages.index = 0
             self.messages.callback = None
 
-        # Debug code: up up down down
+        # Debug code: up up down down → DebugService に状態集約済み
         if self.input_state.btnp(UP_BUTTONS):
-            self.debug_seq.append("U")
+            self.debug.record_up()
         elif self.input_state.btnp(DOWN_BUTTONS):
-            self.debug_seq.append("D")
-        else:
-            if (
-                self.input_state.btnp(LEFT_BUTTONS)
-                or self.input_state.btnp(RIGHT_BUTTONS)
-                or self.input_state.btnp(CONFIRM_BUTTONS)
-                or self.input_state.btnp(CANCEL_BUTTONS)
-            ):
-                self.debug_seq = []
-
-        if len(self.debug_seq) > 8:
-            self.debug_seq = self.debug_seq[-4:]
-
-        if len(self.debug_seq) >= 4:
-            if self.debug_seq[-4:] == ["U", "U", "D", "D"]:
-                self.debug_mode = not self.debug_mode
-                self.debug_seq = []
+            self.debug.record_down()
+        elif (
+            self.input_state.btnp(LEFT_BUTTONS)
+            or self.input_state.btnp(RIGHT_BUTTONS)
+            or self.input_state.btnp(CONFIRM_BUTTONS)
+            or self.input_state.btnp(CANCEL_BUTTONS)
+        ):
+            self.debug.reset_seq()
 
         if self.state == "splash":
             self.splash_scene.update()
