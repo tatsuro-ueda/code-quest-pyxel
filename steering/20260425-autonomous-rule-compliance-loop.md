@@ -358,6 +358,8 @@ scenes/*/view.py がすべて：
 
 ### 2026-04-25 19:05 — `ARCHITECTURE.md` 新設 vs `docs/repository-structure.md` リネーム（M5-3）
 
+> **2026-05-05 分離**：`steering/20260505-architecture-md-decision.md` に独立タスクノート起票済
+
 - **適用候補ルール**: docs/framework-rule.md M5-3 検証目安「ARCHITECTURE.md / AGENTS.md に本規約のサマリが取り込まれている」
 - **現状**: ARCHITECTURE.md は不在、docs/repository-structure.md (15KB) が事実上の構造文書。AGENTS.md には M1〜M5 サマリ + 検証コマンドを追加済（ea04cdf）
 - **想定選択肢**:
@@ -369,6 +371,8 @@ scenes/*/view.py がすべて：
 - **足し材料**: docs/framework-rule.md M5-3 の検証目安に「AGENTS.md がサマリを保持していれば ARCHITECTURE.md は省略可」と明記すれば判断確定
 
 ### 2026-04-25 18:25 — `src/runtime/app.py` Game クラス state 7 件（M4-3 段階移行未完）
+
+> **2026-05-05 分離**：`steering/20260505-game-class-shrink-m43.md` に独立タスクノート起票済
 
 - **適用候補ルール**: docs/framework-rule.md M4-3「GameState に入れないもの」「Game は最終的にランタイム殻にする」+ M4-4「GameState から出すもの」表
 - **対象 field と移し先**:
@@ -388,6 +392,8 @@ scenes/*/view.py がすべて：
 
 ### 2026-04-25 17:55 — `src/shared/services/player_state.py` 旧 API shim 群（M4-4 段階移行未完）
 
+> **2026-05-05 分離**：`steering/20260505-player-state-shim-removal.md` に独立タスクノート起票済
+
 - **適用候補ルール**: docs/framework-rule.md M4-4 (PlayerModel と GameState 圧縮) Level 2「`item_use.py` は消滅し、`player_state.py` の `exp_for_level / stats_for_level` も PlayerModel のメソッドへ移動する」
 - **現状**: `player_state.py` に旧 API 互換 shim が 5 関数残存：
   - `stats_for_level(lv)` — PlayerModel 内部から利用
@@ -404,6 +410,8 @@ scenes/*/view.py がすべて：
 
 ### 2026-04-25 16:05 — `src/shared/ui/status_bar.py` 全体（5 pyxel 違反）
 
+> **2026-05-05 分離**：`steering/20260505-services-ui-pyxel-policy.md` に統合（services/ui の Pyxel 描画ポリシー 4 件 を一括）
+
 - **適用候補ルール**: docs/framework-rule.md M1-1
 - **違反内訳**: `StatusBar.draw()` 内の `pyxel.rect` 5 件（背景バー / HP/MP バー）
 - **位置**: `src/shared/ui/` — services でも views でもない第 3 のレイヤー
@@ -416,6 +424,8 @@ scenes/*/view.py がすべて：
 
 ### 2026-04-25 15:25 — `src/shared/services/vfx.py` 全体（1 pyxel 違反）
 
+> **2026-05-05 分離**：`steering/20260505-services-ui-pyxel-policy.md` に統合
+
 - **適用候補ルール**: docs/framework-rule.md M1-1
 - **違反内訳**: `draw_overlay()` line 42: `pyxel.rect(0, 0, 256, 256, cfg["color"])` 全画面フラッシュ
 - **使用状況**: `game.vfx.draw_overlay()` を battle/view.py から呼ぶ。state 変更系 (`game.vfx.start(...)`) は battle/scene.py から
@@ -424,6 +434,8 @@ scenes/*/view.py がすべて：
 - **足し材料**: 同上（ui/ レイヤー位置付けの明文化、または例外列挙の拡張）
 
 ### 2026-04-25 15:20 — `src/shared/services/message_display.py` 全体（7 pyxel 違反）
+
+> **2026-05-05 分離**：`steering/20260505-services-ui-pyxel-policy.md` に統合
 
 - **適用候補ルール**: docs/framework-rule.md M1-1「services は Pyxel 呼び出し禁止」
 - **違反内訳**:
@@ -440,6 +452,8 @@ scenes/*/view.py がすべて：
 - **足し材料**: docs/framework-rule.md に「ui/ ディレクトリの位置付け（views と同等／別レイヤー）」を明記すると、(C) の物理移動だけで済むかどうか確定できる
 
 ### 2026-04-25 15:15 — `src/shared/services/image_banks.py` 全体（13 pyxel 違反）
+
+> **2026-05-05 分離**：`steering/20260505-services-ui-pyxel-policy.md` に統合（本日 framework-rule.md M4-2 改訂で「ImageBanks は書き込み・初期化のみ」と明文化済、残対応は M1-1 例外規定への追記）
 
 - **適用候補ルール**: docs/framework-rule.md M1-1「services は Pyxel 呼び出し禁止。ただし Audio/Save の Pyxel 依存ラッパは別」
 - **違反内訳**:
