@@ -53,41 +53,51 @@ def _grep(pattern: re.Pattern, files) -> list[tuple[Path, int, str]]:
 
 
 class M1PyxelBoundaryTest(unittest.TestCase):
-    """M1-1: Pyxel API を直接呼んでよいのは View 層だけ。"""
+    """M1-1: Pyxel **描画系 API** を直接呼んでよいのは View 層だけ。
 
-    PYXEL_CALL = re.compile(r"(?:^|[^_a-zA-Z])pyxel\.")
+    2026-05-05 改訂：読み取り系 API（pyxel.tilemaps[n].pget /
+    pyxel.images[n].pget）は Model から直呼び OK（ImageBank=DB として）。
+    禁止対象は描画系のみに絞る。
+    """
 
-    def test_no_pyxel_calls_in_scene_models(self):
-        """src/scenes/*/model.py に pyxel.* 直呼びが無い。"""
+    # 描画系 API（blt / bltm / text / line / rect / circ / cls / pset 等）。
+    # 読み取り系（pget）と入力系（btn / btnp）は別ルールで管理する。
+    PYXEL_DRAW_CALL = re.compile(
+        r"(?:^|[^_a-zA-Z])pyxel\."
+        r"(blt|bltm|text|line|rect|rectb|circ|circb|cls|pset|tri|trib|clip|camera)\b"
+    )
+
+    def test_no_pyxel_draw_calls_in_scene_models(self):
+        """src/scenes/*/model.py に pyxel.* 描画系直呼びが無い。読み取り系 pget は許可。"""
         target_files = [
             d / "model.py" for d in SCENE_DIRS
             if d.is_dir() and (d / "model.py").exists()
         ]
-        hits = _grep(self.PYXEL_CALL, target_files)
+        hits = _grep(self.PYXEL_DRAW_CALL, target_files)
         self.assertEqual(
             hits, [],
-            f"scenes/*/model.py に pyxel.* 直呼び: {hits}",
+            f"scenes/*/model.py に pyxel.* 描画系直呼び: {hits}",
         )
 
-    def test_no_pyxel_calls_in_scene_presenters(self):
-        """src/scenes/*/presenter.py に pyxel.* 直呼びが無い。"""
+    def test_no_pyxel_draw_calls_in_scene_presenters(self):
+        """src/scenes/*/presenter.py に pyxel.* 描画系直呼びが無い。"""
         target_files = [
             d / "presenter.py" for d in SCENE_DIRS
             if d.is_dir() and (d / "presenter.py").exists()
         ]
-        hits = _grep(self.PYXEL_CALL, target_files)
+        hits = _grep(self.PYXEL_DRAW_CALL, target_files)
         self.assertEqual(
             hits, [],
-            f"scenes/*/presenter.py に pyxel.* 直呼び: {hits}",
+            f"scenes/*/presenter.py に pyxel.* 描画系直呼び: {hits}",
         )
 
-    def test_no_pyxel_calls_in_player_model(self):
-        """PlayerModel は Pyxel を知らない（M4-1 + M1-1）。"""
+    def test_no_pyxel_draw_calls_in_player_model(self):
+        """PlayerModel は Pyxel 描画系を知らない（M4-1 + M1-1）。"""
         path = SRC / "shared" / "state" / "player_model.py"
         if not path.exists():
             self.skipTest("player_model.py が未整備")
-        hits = _grep(self.PYXEL_CALL, [path])
-        self.assertEqual(hits, [], f"player_model.py に pyxel.* 直呼び: {hits}")
+        hits = _grep(self.PYXEL_DRAW_CALL, [path])
+        self.assertEqual(hits, [], f"player_model.py に pyxel.* 描画系直呼び: {hits}")
 
 
 class M2ViewInputTest(unittest.TestCase):
