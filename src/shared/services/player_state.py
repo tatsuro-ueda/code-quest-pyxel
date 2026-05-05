@@ -3,7 +3,17 @@ from __future__ import annotations
 """PlayerModel 移行のための互換 shim（framework-rule.md M4-4 Level 2）。
 
 新規コードは ``src.shared.state.player_model.PlayerModel`` を直接使うこと。
-このモジュールは Scene 内の段階的移行が完了するまで残し、完了後に削除する。
+
+2026-05-05 改訂：
+- ``scenes/`` 側からの shim 利用は撤去済（``scenes/battle/scene.py`` の
+  ``stats_for_level`` を ``player_model.stats_for_level`` 直呼びに統合、
+  ``s["def"]`` → ``s["defense"]``）。
+- 残存 shim (``stats_for_level`` / ``create_initial_player`` /
+  ``dump_snapshot`` / ``restore_snapshot`` / ``player_model_to_dict``) は
+  test 群 (``test_player_factory`` / ``test_spell_logic`` /
+  ``test_player_snapshot`` 他) と bundle wildcard import との互換のため
+  残置する。test 群を ``PlayerModel.from_snapshot`` / ``new_game`` /
+  ``to_snapshot`` 直呼びに書き換えるタスクは別途切り出し。
 """
 
 from typing import Any

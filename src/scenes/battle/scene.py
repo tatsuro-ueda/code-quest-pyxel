@@ -16,7 +16,7 @@ from src.game_data import (
 from src.scenes.battle.model import BattleModel
 from src.scenes.battle.presenter import BattlePresenter
 from src.scenes.battle.view import BattleView
-from src.shared.services.player_state import (
+from src.shared.state.player_model import (
     MAX_LEVEL,
     exp_for_level,
     stats_for_level,
@@ -231,7 +231,7 @@ class BattleScene:
             p.max_hp = s["max_hp"]; p.hp = p.max_hp
             p.max_mp = s["max_mp"]; p.mp = p.max_mp
             p.atk = s["atk"]
-            p.defense = s["def"]
+            p.defense = s["defense"]
             p.agi = s["agi"]
             for spell in M.SPELLS:
                 if spell["learn_lv"] == p.lv and spell["name"] not in p.spells:
