@@ -589,6 +589,23 @@ Scene 横断で、かつ保存価値があるもの。
 
 つまり、`Game` は将来的に **`pyxel.run` につなぐだけの最外殻** にするのがよいです。
 
+### M4-3 段階移行ステータス（2026-05-05 改訂）
+
+5 ループの段階移行で以下の field が `Game` から移送済：
+
+| Field | 移送先 | 互換 |
+|---|---|---|
+| `current_town` | `GameState.current_town` | `Game.current_town` を `@property` でフォワード |
+| `cam_x` / `cam_y` | `ExploreModel` | 直接書換（Explore 専用） |
+| `dungeon_rooms` | 撤去（dead code） | — |
+| `dungeon_map` / `world_map` | 撤去（pyxres = SSoT、Model 直読） | static guard で復活防止 |
+| `debug_mode` / `debug_seq` | `DebugService` | `@property` フォワード |
+| `state` / `prev_state` | `SceneManager` | `@property` フォワード |
+
+ガード：`test_cjg_framework_rule_guards.py::test_game_init_does_not_directly_initialize_deprecated_fields`
+が `Game.__init__` の AST を解析し、上記 field が `self.X = ...` として
+直接初期化されたら fail させる（@property 経由のフォワードは許可）。
+
 ## M4-4. PlayerModel と GameState 圧縮（本プロジェクト適用）
 
 ルールは可能な限り Model に集める。ただし本プロジェクトでは Scene 横断の player state があるため、3 層で整理する。

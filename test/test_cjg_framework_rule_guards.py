@@ -289,6 +289,48 @@ class M4SsotGuardTest(unittest.TestCase):
             f"src/ に `(game|self).dungeon_map` 参照が侵入: {hits}",
         )
 
+    DEPRECATED_GAME_FIELDS = frozenset({
+        "current_town", "cam_x", "cam_y", "dungeon_rooms", "dungeon_map",
+        "debug_mode", "debug_seq", "state", "prev_state", "world_map",
+    })
+
+    def test_game_init_does_not_directly_initialize_deprecated_fields(self):
+        """Game.__init__ で M4-3 段階移行済みの field を直接初期化していないこと。
+
+        2026-05-05 改訂：current_town → GameState、cam_x/y → ExploreModel、
+        debug_mode/seq → DebugService、state/prev_state → SceneManager、
+        world_map / dungeon_map / dungeon_rooms は撤去済。
+        Game クラスを「ランタイム殻」に保つため、これらの直接初期化が
+        復活したら即 fail させる（@property フォワードは許可）。
+        """
+        import ast as _ast
+        path = SRC / "runtime" / "app.py"
+        source = path.read_text(encoding="utf-8")
+        tree = _ast.parse(source)
+        init_node = None
+        for node in _ast.walk(tree):
+            if isinstance(node, _ast.ClassDef) and node.name == "Game":
+                for item in node.body:
+                    if isinstance(item, _ast.FunctionDef) and item.name == "__init__":
+                        init_node = item
+                        break
+        self.assertIsNotNone(init_node, "Game.__init__ が見つからない")
+        direct_fields: set[str] = set()
+        for stmt in _ast.walk(init_node):
+            if isinstance(stmt, _ast.Assign):
+                for target in stmt.targets:
+                    if (
+                        isinstance(target, _ast.Attribute)
+                        and isinstance(target.value, _ast.Name)
+                        and target.value.id == "self"
+                    ):
+                        direct_fields.add(target.attr)
+        violations = direct_fields & self.DEPRECATED_GAME_FIELDS
+        self.assertEqual(
+            violations, set(),
+            f"Game.__init__ で deprecated field を直接初期化: {sorted(violations)}",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
