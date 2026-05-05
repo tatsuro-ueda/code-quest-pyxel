@@ -278,6 +278,49 @@ body::before {
   border-left: 3px solid var(--accent-cyan);
 }
 
+/* ========== Adult / Essay manga section ========== */
+.card.adult {
+  border-color: #b9c0ff;
+  background: rgba(10, 8, 40, 0.85);
+}
+.card.adult h2 {
+  color: #b9c0ff;
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 16px;
+}
+.card.adult p {
+  font-size: 13px;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+.essay-image-wrap {
+  position: relative;
+  display: block;
+  margin: 12px 0 4px;
+  cursor: zoom-in;
+}
+.essay-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 3px solid #b9c0ff;
+  box-shadow:
+    0 0 0 3px #000,
+    5px 5px 0 var(--bg-deep);
+}
+.essay-image-wrap::after {
+  content: "🔍 タップで おおきく";
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 11px;
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  padding: 4px 8px;
+  pointer-events: none;
+  font-family: 'DotGothic16', sans-serif;
+}
+
 /* ========== Footer ========== */
 .owner-link {
   text-align: center;
@@ -369,7 +412,7 @@ body::before {
       10ぷんで クリアできる RPG。
     </p>
     <div class="hero-image-wrap" data-lightbox>
-      <img class="hero-image" src="assets/screenshots/title.png" alt="ブロッククエストの タイトルがめん">
+      <img class="hero-image" src="assets/screenshots/game-screen-shot.png" alt="ブロッククエストの ゲームがめん">
     </div>
     <a class="cta-btn" href="production/play.html?v=1777048735">▶ あそんでみる</a>
   </header>
@@ -497,6 +540,19 @@ body::before {
       ▸ zip を とりこむ
     </button>
     <p class="import-status" id="codemaker-import-status">zip を えらんでください</p>
+  </section>
+
+  <!-- ========== Adult section: essay manga ========== -->
+  <section class="card adult">
+    <h2>おうちのかたへ</h2>
+    <p>
+      このゲームは、子どもが「コードを書き換えてゲームを育てる」体験を入口にした、Pyxel 製の小さな RPG です。
+      Pyxel Code Maker でタイル・スプライト・効果音を直接編集でき、編集した結果がそのままゲームに反映されます。
+      下の漫画は、開発の背景と「子どもが自分でゲームを作り変える」価値について 1 ページにまとめたものです。
+    </p>
+    <div class="essay-image-wrap" data-lightbox>
+      <img class="essay-image" src="assets/essay-manga.jpg" alt="開発背景の漫画資料">
+    </div>
   </section>
 
   <!-- ========== Footer ========== -->
