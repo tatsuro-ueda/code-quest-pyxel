@@ -23,6 +23,10 @@ class ExploreModel:
     move_cooldown: int = 0
     a_cooldown: bool = False
     image_banks: Any = None
+    # framework-rule.md M4-3: カメラ位置は Explore 専用なので Game ではなく
+    # ExploreModel に持つ。presenter が build_view_model のたびに更新する。
+    cam_x: int = 0
+    cam_y: int = 0
 
     def start_a_cooldown(self) -> None:
         """次フレームの A 押下を 1 回吸収するクールダウンを立てる。"""

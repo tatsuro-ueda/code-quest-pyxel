@@ -103,9 +103,6 @@ class Game:
         self.debug_seq = []
         self.input_state = InputStateTracker()
 
-        self.cam_x = 0
-        self.cam_y = 0
-
         self.world_return_x = 0
         self.world_return_y = 0
 
