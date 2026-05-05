@@ -74,7 +74,6 @@ class Game:
 
         self.image_banks.setup_world_tilemap()
 
-        self.dungeon_map = None
         self.dungeon_rooms = None
 
         # PlayerModel が player 状態の唯一の正本（framework-rule.md M4-1 / M4-4）。

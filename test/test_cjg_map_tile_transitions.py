@@ -167,7 +167,6 @@ class DungeonStairUpTileTest(unittest.TestCase):
         game.player_model.y = 8
         game.world_return_x = 20
         game.world_return_y = 25
-        game.dungeon_map = object()  # 何か入っていれば良い
         scene = ExploreScene(game=game)
 
         scene._check_tile_events(T_STAIR_UP, 5, 8)
@@ -175,7 +174,6 @@ class DungeonStairUpTileTest(unittest.TestCase):
         self.assertFalse(game.player_model.in_dungeon)
         self.assertEqual(game.player_model.x, 20)
         self.assertEqual(game.player_model.y, 25)
-        self.assertIsNone(game.dungeon_map)
         self.assertTrue(game.messages.entered, "ダンジョン退出時のメッセージが表示されていない")
 
     def test_stair_up_outside_dungeon_is_ignored(self):

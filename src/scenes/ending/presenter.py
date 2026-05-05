@@ -18,7 +18,6 @@ class EndingPresenter:
         """エンディング入力を処理する。CONFIRM で map に戻る（ダンジョン解除）。"""
         if game.input_state.btnp(CONFIRM_BUTTONS):
             game.player_model.in_dungeon = False
-            game.dungeon_map = None
             game.explore_scene.model.start_a_cooldown()
             game.state = "map"
 

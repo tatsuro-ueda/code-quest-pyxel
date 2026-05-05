@@ -115,7 +115,6 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         })
         game.world_return_x = 40
         game.world_return_y = 32
-        game.dungeon_map = [[self.main.T_FLOOR]]
         game.ending_scene.enter = MagicMock()
         return game
 
@@ -133,7 +132,6 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
             "y": 0,
             "max_zone_reached": 0,
         })
-        game.dungeon_map = [[self.main.T_FLOOR]]
         game.world_return_x = 40
         game.world_return_y = 32
         game.explore_scene.model.move_cooldown = 0

@@ -85,7 +85,6 @@ class EndingUpdateTest(unittest.TestCase):
 
         game = _FakeGame()
         game.player_model.in_dungeon = True
-        game.dungeon_map = object()
         game.input_state.press(CONFIRM_BUTTONS)
         scene = EndingScene(game=game)
 
@@ -93,7 +92,6 @@ class EndingUpdateTest(unittest.TestCase):
 
         self.assertEqual(game.state, "map")
         self.assertFalse(game.player_model.in_dungeon)
-        self.assertIsNone(game.dungeon_map)
         self.assertTrue(game.explore_scene.model.a_cooldown)
 
     def test_no_input_keeps_state_ending(self):

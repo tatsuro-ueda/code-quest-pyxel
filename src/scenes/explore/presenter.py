@@ -97,7 +97,6 @@ class ExplorePresenter:
                 p.in_dungeon = False
                 p.x = game.world_return_x
                 p.y = game.world_return_y
-                game.dungeon_map = None
                 game.messages.enter(
                     game.messages.dialog_lines("dungeon.glitch.exit"),
                     callback=self._dungeon_exit_callback(game),
@@ -113,7 +112,6 @@ class ExplorePresenter:
             p.in_dungeon = False
             p.x = game.world_return_x
             p.y = game.world_return_y
-            game.dungeon_map = None
             game.messages.enter(
                 game.messages.dialog_lines("dungeon.glitch.exit"),
                 callback=self._dungeon_exit_callback(game),
@@ -161,7 +159,6 @@ class ExplorePresenter:
             game.sfx.play("dungeon_in")
             game.world_return_x = nx
             game.world_return_y = ny
-            game.dungeon_map = [row[:] for row in game.dungeon_template]
             game.dungeon_rooms = game.dungeon_template_rooms
             p.in_dungeon = True
             sx, sy = game.dungeon_spawn
