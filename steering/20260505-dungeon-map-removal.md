@@ -17,15 +17,43 @@ tags:
 
 ## 1) Journey
 
-- **深層的目的**：`game.world_map` 撤去と対称に、`dungeon_map` も中間スナップショットを廃止する
+- **深層的目的**：状況をシンプルにして好循環を起こしたい
+
+1. 💦 （開発者・AI）ダンジョンに関する機能を追加したりバグ修正したい（コードエディタ）
+2. 💦 （開発者・AI）リポジトリを眺める（コードエディタ）
+3. Before
+  1. ❌ もう使っていないファイルや関数が残っている（コードエディタ）
+  2. ❌ （開発者・AI）わかりにくい
+4. After
+  1. ✅ もう使っていないファイルや関数が残っていない（コードエディタ）
+  1. ✅ すべてImageBankに移行済み（コードエディタ）
+  1. ✅ 状況がシンプル（コードエディタ）
+  2. ♥️ （開発者・AI）嬉しい
+
+## 2) Gherkin
+
 - **やらないこと**：dungeon の Code Maker 編集対応（dungeon は依然 procedural のみ）
 
-## 2) Gherkin（要素のみ）
+### シナリオ1：使っていない field の仕込みが src/ から消える
+> 🧱 Given: 改修後の src/。`runtime/app.py:79` の `self.dungeon_map = None` 初期化と、title / ending / explore 3 シーンの `game.dungeon_map = None / [...]` 代入が撤去されている。🎬 When: `grep -rnE 'game\.dungeon_map\|self\.dungeon_map' src/ --include='*.py'` を実行。✅ Then: マッチ 0 件。読んだ開発者・AI が「dungeon 状態は別の場所にある」と誤認しなくなる。
 
-- src 全域で `game.dungeon_map` がマッチ 0 件
-- `GameState.dungeon_map` フィールドが消える
-- dungeon の入退出ロジックは `in_dungeon` フラグ + `dungeon_template` 直読で代替されている
-- title / ending / explore の 3 シーンで `game.dungeon_map = None / [...]` を削除した結果、dungeon に入って戻る一連のフローが pytest で green
+### シナリオ2：GameState から dungeon_map フィールドが消える
+> 🧱 Given: 改修後の `src/shared/services/game_state.py`。🎬 When: `dungeon_map` を grep。✅ Then: マッチ 0 件。GameState 目標形（framework-rule.md M4-3 改訂版）に揃う。
+
+### シナリオ3：dungeon の tile 読み取りが ImageBank 直読に一本化される
+> 🧱 Given: 改修後の Explore シーン。🎬 When: 子どもがダンジョン内を移動して描画／衝突判定が走る。✅ Then: `ExploreModel.get_tile(x, y, in_dungeon=True)` が `pyxel.tilemaps[0].pget` の Y オフセット領域 (`DUNGEON_TM_OFFSET_Y`) を読み、`image_banks.tile_id_by_pixel` で tile id を解決する経路だけで完結する。`shared/state` や `game.*` から dungeon タイル配列を読み取る経路は存在しない（Journey After (2)「すべて ImageBank に移行済み」と整合）。
+
+### シナリオ4：dungeon の入退出フローが `in_dungeon` フラグだけで完結する
+> 🧱 Given: 改修後の repo。🎬 When: 子どもが洞窟に入る → ダンジョン内を歩く → 階段で脱出する → エンディング to dungeon 不在 になる、の一連を fake game で辿る。✅ Then: 各遷移で `player_model.in_dungeon` の True/False の切替と `dungeon_template` への直接アクセスだけで成立する。`game.dungeon_map` への代入が一度も発生しない。pytest が green。
+
+### シナリオ5：`bake_dungeon_to_tilemap` は残置されている（fallback 経路の保全）
+> 🧱 Given: 改修後の `src/shared/services/image_banks.py`。🎬 When: `setup_world_tilemap` 経由でゲーム起動。✅ Then: `bake_dungeon_to_tilemap` が tilemap[0] の dungeon 領域 (`DUNGEON_TM_OFFSET_Y` 以降) に `dungeon_template` を焼く処理は残っており、`ExploreModel.get_tile(in_dungeon=True)` が正しい tile を返せる。dungeon の Code Maker 編集対応は別タスク扱いだが、procedural 生成→tilemap 焼き付けの経路は壊さない。
+
+### シナリオ6：再侵入を防ぐ静的ガード
+> 🧱 Given: 改修完了後、将来的に新規コードで `game.dungeon_map` を復活させる懸念。🎬 When: `test_cjg_framework_rule_guards.py` に「src/ 配下に `game\.dungeon_map\|self\.dungeon_map` が侵入していないこと」を assert する grep ガードを 1 件追加する。✅ Then: 古いパターンの再侵入が pytest で即 fail。Journey After「状況がシンプル」が将来も保たれる。
+
+### シナリオ7：既存テストへの影響は別タスクで吸収
+> 🧱 Given: `test_dungeon_boss_trigger.py` 等が `game.dungeon_map = [[T_FLOOR]]` を仕込む箇所あり。🎬 When: 本タスク commit 直後の pytest。✅ Then: 動的属性として代入が通り pytest は green を維持する。test 群の物理書き換えは別タスク `20260505-rewrite-tests-for-imagebank-ssot.md` のスコープ。本タスクは「runtime が読まなくする」までを担当。
 
 ## 3) Design
 
