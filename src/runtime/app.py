@@ -23,7 +23,7 @@ from src.shared.services.input_bindings import (
     InputStateTracker,
 )
 from src.shared.services.message_display import MessageDisplay
-from src.shared.services.game_state import TownContext
+from src.shared.services.game_state import GameState, TownContext
 from src.shared.services.save_store import make_save_store
 from src.shared.state.player_model import PlayerModel
 from src.shared.services.text_format import TextFormat
@@ -74,6 +74,11 @@ class Game:
 
         self.image_banks.setup_world_tilemap()
 
+        # framework-rule.md M4-3: scene 跨ぎ共有 state は GameState に持つ。
+        # 段階移行中につき player_model 等の field は Game にも残るが、
+        # current_town は本オブジェクト経由でアクセスする。
+        self.game_state = GameState()
+
         self.dungeon_rooms = None
 
         # PlayerModel が player 状態の唯一の正本（framework-rule.md M4-1 / M4-4）。
@@ -86,9 +91,8 @@ class Game:
         self.text_fmt = TextFormat(game=self)
 
         self.last_town_pos: tuple[int, int] | None = None
-        # 現在入場中の町の情報。町タイル入場時に explore が set し、退場時に town が clear する。
-        # framework-rule.md M4-3。GameState 完全統合後は game_state.current_town に移す。
-        self.current_town: TownContext | None = None
+        # current_town は GameState に統合済み。Game クラス本体の @property
+        # (current_town) で self.game_state.current_town にフォワードする。
 
         # Save store (D1/D12/D17)
         save_path = Path(__file__).resolve().parent / "save.json"
@@ -123,6 +127,22 @@ class Game:
         self.settings_scene.apply_av()
 
         _sync_audio_fn(self)
+
+    @property
+    def current_town(self) -> "TownContext | None":
+        """現在入場中の町情報を GameState から返す（M4-3 段階移行）。
+
+        Game.__new__(Game) で作る test 経路でも動くよう、game_state が
+        まだ無ければ None を返す（lazy 防御）。
+        """
+        gs = getattr(self, "game_state", None)
+        return gs.current_town if gs is not None else None
+
+    @current_town.setter
+    def current_town(self, value: "TownContext | None") -> None:
+        if not hasattr(self, "game_state"):
+            self.game_state = GameState()
+        self.game_state.current_town = value
 
     def start(self):
         """ゲームループに入る。`Game()` 後の `disp()` 呼び出しを有効にするため
