@@ -118,11 +118,33 @@ tags:
 
 ## 4) Tasklist
 
-- [ ] commit A: test 3 ファイルを両対応で書き換え（旧/新 runtime どちらでも green）
-- [ ] commit B: image_banks.py リネーム + 内部 generate_world_map 直呼び + derive の代入撤去 + setup 呼び出し名更新 + runtime/app.py:76 撤去 + game_state.py world_map field 撤去
-- [ ] pytest 全 green 確認（pre-commit hook 通過）
-- [ ] commit C: 再侵入ガード追加
-- [ ] フォロータスク 1 本（`20260505-dungeon-map-removal.md` 起票確認）
+### commit A: test 3 ファイル書き換え（pyxel.tilemaps[0].pget モック方式）
+- [ ] `test/test_world_map_ssot.py`：`game.world_map = ...` 仕込みを `pyxel.tilemaps[0].pget` モック + `image_banks.tile_id_by_pixel` 仕込みに置換、assert 対象は「pyxres pget == 起動後 pget」を `pyxel.tilemaps[0].pget` 同士の比較に変更
+- [ ] `test/test_dungeon_boss_trigger.py`：残存する `game.world_map = ...` 行を撤去（`make_draw_game` は既に partial 改修済）
+- [ ] `test/test_tilemap_editor_truth.py`：同パターンで書き換え、Code Maker 編集面 = SSoT の観点を維持
+- [ ] `pytest -q test/test_world_map_ssot.py test/test_dungeon_boss_trigger.py test/test_tilemap_editor_truth.py` green
+- [ ] `pytest -q` 全 green
+- [ ] commit `test(ssot): world_map test 3 件を pyxres 直読パターンに書き換え`
+
+### commit B: runtime 撤去 + bake リネーム
+- [ ] `src/shared/services/image_banks.py:230` `def bake_world_to_tilemap` → `def regenerate_world_tilemap_fallback` リネーム
+- [ ] 同関数内 `wm = game.world_map` → `wm = generate_world_map()` 直呼び (import 追加)
+- [ ] `src/shared/services/image_banks.py:289` `game.world_map = derived` 行削除
+- [ ] `derive_world_from_tilemap` の戻り値・signature が呼び元未使用なら据え置き
+- [ ] `setup_world_tilemap` 内 `self.bake_world_to_tilemap()` 呼び出し 2 箇所を新名に置換
+- [ ] `src/runtime/app.py:76` `self.world_map = generate_world_map()` 削除（unused になった import も整理）
+- [ ] `src/shared/services/game_state.py:36` `world_map: list = field(default_factory=list)` 削除
+- [ ] `pytest -q` 全 green
+- [ ] commit `refactor(ssot): drop world_map snapshot, rename bake to fallback`
+
+### commit C: 再侵入ガード
+- [ ] `test/test_cjg_framework_rule_guards.py` に「`(game|self)\.world_map\s*=` が `src/` および `test/` 配下に侵入していないこと」を assert する 1 ケース追加
+- [ ] `pytest -q test/test_cjg_framework_rule_guards.py` green
+- [ ] commit `test(framework-rule): world_map 再侵入を防ぐ static guard 追加`
+
+### 仕上げ
+- [ ] tasknote status `done`、`archived` タグ追加、`steering/done/` へ移動
+- [ ] Discussion に test side `game.world_map` 読み取り箇所の grep 結果記録
 
 ### 作業記録
 

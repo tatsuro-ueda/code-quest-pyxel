@@ -127,7 +127,53 @@ tags:
 
 ## 4) Tasklist
 
-（着手時にループ別に詳細化）
+### ループ1: current_town を GameState に統合
+- [ ] `src/runtime/app.py:94` `self.current_town: TownContext | None = None` 削除
+- [ ] `Game.__getattr__` / `__setattr__` で `current_town` を `self.game_state.current_town` にフォワード（11 箇所書換を回避）。ただし dataclass の制約で困難なら、参照 11 箇所を直接書換に切替
+- [ ] `pytest -q` 全 green
+- [ ] commit `refactor(m4-3): current_town を GameState に統合 (Game field 撤去)`
+
+### ループ2: cam_x / cam_y を ExploreModel へ
+- [ ] `src/scenes/explore/model.py` に `cam_x: int = 0`、`cam_y: int = 0` field 追加
+- [ ] `src/runtime/app.py:105-106` `self.cam_x = 0` / `self.cam_y = 0` 削除
+- [ ] `src/scenes/explore/presenter.py:288-291` `game.cam_x` / `game.cam_y` 代入を `game.explore_model.cam_x` 等に書換
+- [ ] `src/scenes/explore/presenter.py:298-343` 参照を `model.cam_x` 経路に書換（VM 構築側）
+- [ ] `src/scenes/explore/view_model.py` のコメント更新
+- [ ] `pytest -q` 全 green
+- [ ] commit `refactor(m4-3): cam_x/cam_y を Game から ExploreModel に移送`
+
+### ループ3: dungeon_rooms を GameState に統合
+- [ ] `src/shared/services/game_state.py:38` `dungeon_rooms: list = field(default_factory=list)` は既存。Game 側 field を撤去
+- [ ] `src/runtime/app.py:80` `self.dungeon_rooms = None` 削除
+- [ ] `src/scenes/explore/presenter.py:165` `game.dungeon_rooms = game.dungeon_template_rooms` を `game.game_state.dungeon_rooms = ...` に書換（または `__getattr__` フォワード経路）
+- [ ] `src/shared/services/image_banks.py:151,154` `drooms` を game_state.dungeon_rooms に統一
+- [ ] `pytest -q` 全 green
+- [ ] commit `refactor(m4-3): dungeon_rooms を Game から GameState に統合`
+
+### ループ4: debug_mode / debug_seq を DebugService へ
+- [ ] `grep -rnE '(game|self)\.(debug_mode|debug_seq)' src/ --include='*.py'` で全箇所列挙
+- [ ] `src/shared/services/debug_service.py` 新設：`@dataclass class DebugService: mode: bool = False; seq: list[str] = field(default_factory=list)` + `toggle()` / `record(key)` / `reset()`
+- [ ] `Game.debug_service: DebugService = field(default_factory=DebugService)` 追加、`Game.debug_mode` / `Game.debug_seq` field 削除
+- [ ] 入力読み取り（`pyxel.btnp(...)`）は `app.py` に残し、Service の state を更新する形に書換
+- [ ] `pytest -q` 全 green
+- [ ] commit `refactor(m4-3): debug_mode/debug_seq を DebugService に集約`
+
+### ループ5: state / prev_state を SceneManager へ
+- [ ] `src/shared/services/scene_manager.py` 新設：`@dataclass class SceneManager: current: str = "splash"; previous: str = ""` + `set(next: str)` メソッド
+- [ ] `Game.scene_manager: SceneManager = field(default_factory=SceneManager)` 追加
+- [ ] **alias 戦略**：Game に `@property state` / `prev_state` を残し、scene_manager.current / previous にフォワード（66 + 6 = 72 箇所書換を回避し中間互換維持）
+- [ ] `Game._change_state(s)` 等の遷移メソッドを `self.scene_manager.set(s)` 経由に書換
+- [ ] 直接代入 `game.state = "..."` / `self.state = "..."` を `game.scene_manager.set("...")` に置換（property setter 経由でも可）
+- [ ] `Game.state` / `Game.prev_state` field を削除（property だけ残す or 完全撤去）
+- [ ] `pytest -q` 全 green
+- [ ] commit `refactor(m4-3): state/prev_state を SceneManager に集約`
+
+### 仕上げ
+- [ ] `Game` クラスの dataclass field 一覧を確認、許可リスト `ALLOWED_GAME_FIELDS` を `test_cjg_framework_rule_guards.py` に追加
+- [ ] ガード test：`set(f.name for f in dataclasses.fields(Game)) <= ALLOWED_GAME_FIELDS` を assert
+- [ ] `docs/framework-rule.md` M4-3 を「Game = ランタイム殻に到達」に更新
+- [ ] commit `test(framework-rule): Game クラス許可リストガード追加 + M4-3 達成記述`
+- [ ] tasknote status `done`、`archived` タグ追加、`steering/done/` へ移動
 
 ## 5) Result / 6) Discussion
 

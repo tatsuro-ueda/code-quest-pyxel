@@ -78,6 +78,39 @@ Design はこの方針に沿った実装手順だけを扱う。
 
 ## 4) Tasklist
 
+### 事前調査
+- [ ] 現 `AGENTS.md` の行数と内容構造を把握
+- [ ] 現 `docs/repository-structure.md` の行数と内容構造を把握
+- [ ] `docs/framework-rule.md` M5-3 セクションの現状文言を確認
+
+### commit A: docs/repository-structure.md → docs/architecture.md リネーム
+- [ ] `git mv docs/repository-structure.md docs/architecture.md`
+- [ ] 冒頭に「人用詳細・AI 用 AGENTS.md の補足・規約詳細は framework-rule.md」のリンクブロック追加
+- [ ] repo 内の `docs/repository-structure.md` 参照を `docs/architecture.md` に置換（grep で全件確認）
+- [ ] commit `docs(architecture): docs/repository-structure.md → docs/architecture.md リネーム`
+
+### commit B: AGENTS.md を ≤100 行に圧縮
+- [ ] 既存 AGENTS.md の必須情報を選別、100 行以内に収める
+- [ ] 冒頭に「AI 用最優先・自動 load」「補足は docs/architecture.md」「規約詳細は docs/framework-rule.md」リンクブロック追加
+- [ ] `wc -l AGENTS.md` ≤100 を確認
+- [ ] commit `docs(agents): AGENTS.md を ≤100 行に圧縮 + 2 層構造リンク追加`
+
+### commit C: framework-rule.md M5-3 改訂
+- [ ] M5-3「ARCHITECTURE.md / AGENTS.md に本規約のサマリが取り込まれている」を「AI 用 AGENTS.md（最優先・100 行以内）と人用 docs/architecture.md（補足）の 2 層構造で、両者から framework-rule.md（規約本体）に到達できる」に改訂
+- [ ] framework-rule.md 冒頭に「規約本体（M1〜M5 詳細）」「上位は AGENTS.md と docs/architecture.md」リンク追加
+- [ ] commit `docs(framework-rule): M5-3 を 2 層文書構造に整合させて改訂`
+
+### commit D: README.md 更新
+- [ ] README.md 冒頭に「規約に従って実装するには？」セクション追加：AGENTS.md（最優先）→ docs/architecture.md（人用詳細）→ docs/framework-rule.md（規約本体）の流れ明示
+- [ ] commit `docs(readme): 文書ナビゲーション (AGENTS → architecture → framework-rule) 追加`
+
+### commit E: 静的ガード追加
+- [ ] `test/test_cjg_framework_rule_guards.py` に：(a)`wc -l AGENTS.md` ≤100、(b)`docs/architecture.md` の存在、を assert する 2 ケース追加
+- [ ] `pytest -q test/test_cjg_framework_rule_guards.py` green
+- [ ] commit `test(framework-rule): AGENTS.md ≤100 行 / docs/architecture.md 存在の static guard`
+
+### 仕上げ
+- [ ] tasknote status `done`、`archived` タグ追加、`steering/done/` へ移動
 
 ## 5) Result 
 

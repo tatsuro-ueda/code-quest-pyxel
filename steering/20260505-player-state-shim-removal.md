@@ -66,7 +66,34 @@ tags:
 
 ## 4) Tasklist
 
-（着手時にループ別に詳細化）
+### 事前調査
+- [ ] `grep -rnE 'restore_snapshot|create_initial_player|dump_snapshot|player_model_to_dict|stats_for_level' src/ test/ --include='*.py'` で全参照箇所列挙
+- [ ] bundle 内 `main_runtime` の再エクスポート確認
+
+### ループ1: stats_for_level を PlayerModel.stats_for_level に移動
+- [ ] `src/shared/models/player_model.py`（または存在しない場合は `src/shared/services/player_state.py` 内 PlayerModel クラス）に `@classmethod stats_for_level(cls, lv)` を追加
+- [ ] `player_state.py` の `stats_for_level(lv)` モジュール関数を `PlayerModel.stats_for_level(lv)` への shim に変更
+- [ ] PlayerModel 内部の利用箇所を `cls.stats_for_level(lv)` に置換
+- [ ] `pytest -q` 全 green
+- [ ] commit `refactor(m4-4): stats_for_level を PlayerModel.stats_for_level に移動`
+
+### ループ2: restore_snapshot 経由 test 5 ケース書換
+- [ ] `test/test_player_snapshot.py` の `restore_snapshot(...)` 呼び出しを `PlayerModel.from_snapshot(...)` 直呼びに書換
+- [ ] `test/test_architecture_layout.py` の `hasattr(M, "restore_snapshot")` assert を「`PlayerModel.from_snapshot` の存在 assert」に更新
+- [ ] `pytest -q` 全 green
+- [ ] commit `test(m4-4): restore_snapshot 5 ケースを PlayerModel.from_snapshot 直呼びに書換`
+
+### ループ3: 残 shim 4 関数を削除
+- [ ] `src/shared/services/player_state.py` から `create_initial_player` / `dump_snapshot` / `restore_snapshot` / `player_model_to_dict` を削除
+- [ ] 呼び出し箇所が残っていれば `PlayerModel` メソッドに置換
+- [ ] `tools/test_save_compat.py` でセーブファイル互換性確認（実機 or `pytest -q`）
+- [ ] `pytest -q` 全 green
+- [ ] commit `refactor(m4-4): player_state.py 残 shim 4 関数を撤去 (M4-4 完成)`
+
+### 仕上げ
+- [ ] `docs/framework-rule.md` M4-4 を「PlayerModel 化完成」に更新
+- [ ] commit `docs(framework-rule): M4-4 PlayerModel 化完成を反映`
+- [ ] tasknote status `done`、`archived` タグ追加、`steering/done/` へ移動
 
 ## 5) Result / 6) Discussion
 

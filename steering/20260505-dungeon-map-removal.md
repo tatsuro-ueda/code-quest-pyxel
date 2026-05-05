@@ -125,7 +125,35 @@ tags:
 
 ## 4) Tasklist
 
-（着手時に作成）
+### commit A: bake_dungeon_to_tilemap を fallback 専用に改訂
+- [ ] `src/shared/services/image_banks.py:184` `def bake_dungeon_to_tilemap` → `def regenerate_dungeon_tilemap_fallback` リネーム
+- [ ] 同関数内 `dg = game.dungeon_template` → `dg = generate_dungeon()` 直呼びに置換（import 追加：`from src.shared.services.world_generation import generate_dungeon`）
+- [ ] 関数冒頭に防衛的早期 return：`if self.pyxres_loaded: return`
+- [ ] `setup_world_tilemap` 内 `self.bake_dungeon_to_tilemap()` 2 箇所を新名に置換
+- [ ] `pytest -q` 全 green
+- [ ] commit `feat(ssot): bake_dungeon_to_tilemap を fallback 専用に改訂（Code Maker 編集即反映）`
+
+### commit B: dungeon_map snapshot 撤去
+- [ ] `src/runtime/app.py:79` `self.dungeon_map = None` 削除
+- [ ] `src/scenes/title/presenter.py:78` `game.dungeon_map = None` 削除
+- [ ] `src/scenes/ending/presenter.py:21` `game.dungeon_map = None` 削除
+- [ ] `src/scenes/explore/presenter.py:100` `game.dungeon_map = None` 削除（messages.enter は残置）
+- [ ] `src/scenes/explore/presenter.py:116` `game.dungeon_map = None` 削除（同上）
+- [ ] `src/scenes/explore/presenter.py:164` `game.dungeon_map = [row[:] for row in game.dungeon_template]` 削除（in_dungeon フラグ + dungeon_spawn だけで完結）
+- [ ] `src/shared/services/game_state.py:37` `dungeon_map: list | None = None` 削除
+- [ ] `_dungeon_exit_callback` 内部に `game.dungeon_map` 読み取りが残っていないか grep
+- [ ] test 側 `game.dungeon_map` 読み取り箇所を grep して件数を Discussion に記録（書き換えは別タスク）
+- [ ] `pytest -q` 全 green（dataclass 外動的代入で test 仕込みは silent に通る前提）
+- [ ] commit `refactor(ssot): drop dungeon_map snapshot, in_dungeon フラグだけで完結`
+
+### commit C: 再侵入ガード
+- [ ] `test/test_cjg_framework_rule_guards.py` に「`src/` 配下に `(game|self)\.dungeon_map\b` が侵入していないこと」を assert する 1 ケース追加
+- [ ] `pytest -q test/test_cjg_framework_rule_guards.py` green
+- [ ] commit `test(framework-rule): dungeon_map 再侵入を防ぐ static guard 追加`
+
+### 仕上げ
+- [ ] tasknote status `done`、`archived` タグ追加、`steering/done/` へ移動
+- [ ] bundle 再ビルド（`pyxel package`）が必要かを判定、必要なら再ビルド commit
 
 ## 5) Result / 6) Discussion
 
