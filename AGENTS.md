@@ -43,9 +43,12 @@
 
 ## 実装の事実
 
-- runtime 入口は `main.py`、`production/pyxel.html / .pyxapp` が本番配布物
-- `index.html` は比較ページ、`production/play.html` / `development/play.html` が wrapper
-- 用語は `開発版` / `本番`、metadata は `development_meta.json`
+- runtime 入口：root `main.py` (8 行 wrapper) → `src/runtime/main_runtime.py` (47 行 shim) → **`src/runtime/app.py::Game`**（pyxel 初期化＋全 Scene/Service の組み立て＋update/draw dispatcher、326 行）
+- 共有 state：`GameState`（dataclass）／`SceneManager`（current/previous の 2 値 state holder、`shared/services/scene_manager.py`）／`DebugService`（mode/UUDD seq）／`PlayerModel`（`shared/state/player_model.py`）
+- M4-3 段階移行：`Game.current_town / debug_mode / state / prev_state` は @property forward。`Game.__init__` で `self.X = ...` 直接初期化すると static guard で fail
+- `src/app.py::BlockQuestApp` は Phase 1 由来の legacy shell（test/Code Maker bundler 互換のため残置）
+- pyxres = SSoT：`ImageBanks` は **書き込み・初期化・fallback のみ**（`regenerate_world_tilemap_fallback` 等）。Model は `pyxel.tilemaps[0]` / `pyxel.images[n]` を直読
+- 配布物：`production/pyxel.html / .pyxapp / code-maker.zip`、`index.html` は子ども向けトップ（Phase 3 で dev/prod 分離廃止、本番一本化）
 
 ## まず読む文書（順序）
 

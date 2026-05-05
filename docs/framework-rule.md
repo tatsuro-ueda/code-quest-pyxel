@@ -525,7 +525,7 @@ Service が便利すぎると何でも入って壊れます。なので種類を
 
 * SaveStore
 * AudioManager
-* ImageBanks（**書き込み・初期化のみ**：pyxres ロード / `setup_world_tilemap` / `bake_world_to_tilemap`（pyxres 不在時の fallback のみ）/ `pyxel.save`。**読み取りは Model 直読**へ移管、2026-05-05 改訂）
+* ImageBanks（**書き込み・初期化のみ**：pyxres ロード / `setup_world_tilemap` / `regenerate_world_tilemap_fallback` / `regenerate_dungeon_tilemap_fallback`（いずれも pyxres 不在時の fallback のみ）/ `pyxel.save`。**読み取りは Model 直読**（`pyxel.tilemaps[0]` / `pyxel.images[n]`）へ移管、2026-05-05 改訂。旧名 `bake_world_to_tilemap` / `bake_dungeon_to_tilemap` は同改訂でリネーム）
 
 #### B. Domain Support Service
 
@@ -590,10 +590,10 @@ Scene 横断で、かつ保存価値があるもの。
 方針は明快です。
 
 * `Game` は最終的に **ランタイム殻** にする
-* shared state は `BlockQuestApp` / `GameState` / Service のいずれかへ整理
+* shared state は `GameState` / `SceneManager`（state holder）/ `DebugService` / その他 Service のいずれかへ整理（`src/app.py::BlockQuestApp` は Phase 1 由来の legacy shell。本体は `src/runtime/app.py::Game`）
 * 「とりあえずここに置く」を禁止
 
-つまり、`Game` は将来的に **`pyxel.run` につなぐだけの最外殻** にするのがよいです。
+つまり、`Game` は将来的に **`pyxel.run` につなぐだけの最外殻** にするのがよいです（M4-3 段階移行で `current_town / debug_mode / state / prev_state` などは @property forward に変換済）。
 
 ### M4-3 段階移行ステータス（2026-05-05 改訂）
 
