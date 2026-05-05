@@ -1,17 +1,18 @@
 ---
-status: in-progress
+status: done
 priority: normal
 scheduled: 2026-05-05T20:00:00.000+09:00
 dateCreated: 2026-05-05T20:00:00.000+09:00
-dateModified: 2026-05-05T20:00:00.000+09:00
+dateModified: 2026-05-05T21:30:00.000+09:00
 tags:
   - task
+  - archived
 ---
 
 # 2026年5月5日 AGENTS.md / docs/ を最近の steering 改訂に追従させる
 
-> 状態：④ Tasklist 実行中
-> 次のゲート：（CC）architecture.md の stale 記述（L31/L57/L68/L103/L107/L120/L165/L211-216）を一括差し替え
+> 状態：⑥ Discussion 完了（done）
+> 次のゲート：なし
 
 ---
 
@@ -128,26 +129,26 @@ AGENTS.md             ┘    ↓ Edit で差分書き込み         └→ AGENT
 > 上から順に実施。CC が CoVe で自力検証しながら進める。
 
 - [x] （CC）stale 検出 grep（完了：本ノートの Journey で結果列挙）
-- [ ] （CC）`docs/architecture.md` を Edit で更新
-  - [ ] L31 / L57-59：`BlockQuestApp` 説明 → `Game クラス本体 (src/runtime/app.py)` に置換
-  - [ ] L33 / L68-71：`core/scene_manager.py` を Scene Protocol 専用と明記、`shared/services/scene_manager.py` を services 表へ追加
-  - [ ] L97-118：services 表に `debug_service.py` と新 SceneManager を追記、`image_banks.py` 責務更新、`player_state.py` を M4-4 後の状態に更新
-  - [ ] L103：GameState フィールド数を実態（`world_map / dungeon_map / dungeon_rooms` 撤去後）へ
-  - [ ] L120-121：DI list に DebugService / SceneManager を追加
-  - [ ] L162-166：`app.py` 行数（263 → 326）と property forward 4 種を追記
-  - [ ] L208-216：docs/ 表を `architecture.md`（自身）+ `AGENTS.md` 上位文書として再編
-  - [ ] L274-281：Phase 3 完了状態を反映、`main_development*.py` を削除済として記述
-- [ ] （CC）`docs/framework-rule.md` を Edit で微修正
-  - [ ] L528：`bake_world_to_tilemap` → `regenerate_world_tilemap_fallback`／dungeon 版併記
-  - [ ] L593：`BlockQuestApp` → `Game` クラス（M4-3 段階移行と整合）
-- [ ] （CC）`AGENTS.md` を Edit で微修正
-  - [ ] 「実装の事実」節に DebugService / SceneManager / Game クラス位置を追記、≤100 行を維持
-- [ ] （CC）`pytest test/test_cjg_framework_rule_guards.py -q` を実行
-- [ ] （CC）`pytest test/ -q` で全体 regression 確認
-- [ ] （CC）`git add docs/ AGENTS.md steering/...` → commit
-- [ ] （CC）Gherkin 6 シナリオを CoVe
-- [ ] （CC）Result セクションに作業ログ、Discussion に保留点・指針・要約を記入
-- [ ] （CC）steering/done/ へ移動
+- [x] （CC）`docs/architecture.md` を Edit で更新
+  - [x] L31 / L57-59：`BlockQuestApp` 説明 → `Game クラス本体 (src/runtime/app.py)` に置換
+  - [x] L33 / L68-71：`core/scene_manager.py` を Scene Protocol 専用と明記、`shared/services/scene_manager.py` を services 表へ追加
+  - [x] L97-118：services 表に `debug_service.py` と新 SceneManager を追記、`image_banks.py` 責務更新、`player_state.py` を M4-4 後の状態に更新
+  - [x] L103：GameState フィールド数を実態（13 フィールド、`world_map / dungeon_map / dungeon_rooms` 撤去後）へ
+  - [x] L120-121：DI list に DebugService / SceneManager を追加
+  - [x] L162-166：`app.py` 行数（263 → 326）と property forward 4 種を追記
+  - [x] L208-216：docs/ 表を `architecture.md`（自身）+ `AGENTS.md` 上位文書として再編
+  - [x] L274-281：Phase 3 完了状態を反映、`main_development*.py` を削除済として記述
+- [x] （CC）`docs/framework-rule.md` を Edit で微修正
+  - [x] L528：`bake_world_to_tilemap` → `regenerate_world_tilemap_fallback`／dungeon 版併記
+  - [x] L593：`BlockQuestApp` → `Game` クラス（M4-3 段階移行と整合）
+- [x] （CC）`AGENTS.md` を Edit で微修正
+  - [x] 「実装の事実」節に DebugService / SceneManager / Game クラス位置を追記、ちょうど 100 行を維持
+- [x] （CC）`pytest test/test_cjg_framework_rule_guards.py -q` を実行（17 passed）
+- [x] （CC）`pytest test/ -q` で全体 regression 確認（717 passed, 2 skipped）
+- [x] （CC）`git add docs/ AGENTS.md` → commit `c63eaca`
+- [x] （CC）Gherkin 6 シナリオを CoVe（下記 Result）
+- [x] （CC）Result セクションに作業ログ、Discussion に保留点・指針・要約を記入
+- [x] （CC）steering/done/ へ移動
 
 ### 作業記録
 
@@ -163,17 +164,81 @@ AGENTS.md             ┘    ↓ Edit で差分書き込み         └→ AGENT
 
 ## 5) Result（成果物）
 
-実装後に作業ログを書く。
+### 変更ファイル
+
+- `docs/architecture.md`（+78 / −53）
+- `docs/framework-rule.md`（+2 / −2）
+- `AGENTS.md`（+8 / −4）
+
+### 主な差分
+
+| ファイル | 内容 |
+|---|---|
+| architecture.md L17 | `main_development.py` の Phase 3 廃止を明記 |
+| architecture.md L26-50 | ツリー全体を更新（services 16→18、shared/state 追加、test 36→102 ファイル、main_development_runtime 行を削除） |
+| architecture.md L55-77 | 4.1 を `src/runtime/app.py::Game`（窓口）に格上げ、4.2 を `BlockQuestApp` legacy shell として再定義、4.4 を `core/scene_manager.py` test 互換のみと明記 |
+| architecture.md L97-126 | 4.6 services 表を 18 サービスに更新（debug_service / 新 scene_manager 追加、image_banks 責務を fallback 専用に書換、player_state を M4-4 後の legacy snapshot helper に更新、`browser_resource_override` を削除）。4.6.1 として `shared/state/` 節を新設し PlayerModel を記載 |
+| architecture.md L162-180 | 4.11 runtime/ から `main_development_runtime.py` 行を削除、`app.py` を 263→326 行・property forward 4 種を明記 |
+| architecture.md L196 | 5.3 test を `102 ファイル / 717 tests` に更新、`test_cjg_framework_rule_guards.py` の役割を追記 |
+| architecture.md L208-220 | 5.6 docs/ 表を 2 層文書ナビ前提に再編（AGENTS.md を上位文書として明記、self-reference を `architecture.md` に修正） |
+| architecture.md L221-244 | 6.1 レイヤー依存図を `runtime/app.py (Game)` 起点に変更、`shared/state` を追加、6.1 禁止項目に「`shared/services/scene_manager.py` が Scene オブジェクトを保持しない」を追加 |
+| architecture.md L248-266 | 7. 責務の線引きに M4-3 deprecated field 復活防止 / image_banks 読み取り禁止 / world_generation 結果の snapshot 禁止を追加 |
+| architecture.md L289-315 | 9. 現状と残タスクを M4-3 / M4-4 / M5-3 / Phase 2-3 の完了状況に更新、残タスクを再列挙 |
+| framework-rule.md L528 | ImageBanks 責務記述で `bake_world_to_tilemap` → `regenerate_world_tilemap_fallback` / dungeon 版併記、旧名を rename 履歴として残置 |
+| framework-rule.md L593 | M4-3 「Game クラス削除方針」に段階移行で property forward 化済の事実を追記 |
+| AGENTS.md 「実装の事実」節 | runtime 入口チェーン、共有 state 4 種、M4-3 property forward の static guard、`src/app.py::BlockQuestApp` の legacy 位置付け、pyxres = SSoT、配布物一本化を 1〜2 行ずつで明記 |
+
+### 検証ログ（CoVe）
+
+```
+$ python -m pytest test/test_cjg_framework_rule_guards.py -q
+17 passed, 22 subtests passed in 0.11s
+
+$ python -m pytest test/ -q
+717 passed, 2 skipped, 14460 subtests passed in 6.13s
+
+$ git commit ...
+pre-commit: All tests passed.
+[refactor/2026-05-05-m4-m5-cleanup c63eaca] docs(sync): AGENTS / architecture / framework-rule を最近の steering 改訂に追従
+ 3 files changed, 102 insertions(+), 67 deletions(-)
+```
+
+### Gherkin CoVe
+
+| シナリオ | 結果 | 根拠 |
+|---|---|---|
+| 1. Game クラスへの到達 | ✅ | architecture.md 4.1 が `src/runtime/app.py::Game` を窓口として明示、4.2 で `BlockQuestApp` を legacy shell と注記 |
+| 2. services 表の実態一致 | ✅ | `ls src/shared/services/*.py` = 18、表も 18 行（+ shared/state 節）、image_banks 責務に「pyxres ロード／fallback 焼き戻し／pyxres 保存」明記 |
+| 3. GameState 圧縮反映 | ✅ | architecture.md L103 の `GameState` 説明に `world_map / dungeon_map / dungeon_rooms` 撤去・`current_town` 追加・PlayerModel 経由を明記。具体数字 stale (19) を全削除 |
+| 4. 旧 API 名の文書消去 | ✅ | grep 結果は「rename した」「Phase 3 で削除済」の履歴記述のみ。stale な現状記述ゼロ |
+| 5. 2 層文書ナビ往復 | ✅ | architecture.md L208-220 が AGENTS.md を上位文書として明示、framework-rule.md L1-7 / L783 が両方への戻りリンクあり、`test_agents_md_is_within_100_lines` / `test_docs_architecture_md_exists` 緑 |
+| 6. テスト regression | ✅ | 717 passed (作業前と同数)、コード変更ゼロ |
 
 ---
 
 ## 6) Discussion（反省）
 
-実装後に保留点・指針・要約を書く。
+### 要約
 
----
+最近 1 日で進んだ 5 本のリファクタ（dungeon-map-removal / game-class-shrink-m43 / imagebank-direct-cleanup / player-state-shim-removal / index-html-kid-pixel-redesign）と、それに伴う `core/scene_manager.py` の役割縮退、`shared/services/scene_manager.py` / `debug_service.py` の新設、`bake_world_to_tilemap` → `regenerate_world_tilemap_fallback` rename、Phase 3 の dev/prod 分離廃止、AGENTS.md 100 行化、`docs/repository-structure.md` → `docs/architecture.md` リネーム、を 3 ファイル（AGENTS.md / docs/architecture.md / docs/framework-rule.md）に追従させた。差分は 102 insertions / 67 deletions。コード変更ゼロ、テスト 717 全緑。
+
+### 結論
+
+- **docs と code の同時改修ペア化**を意識しないと、リファクタ commit のたびに docs 負債が積み上がる。今回はまとめて 1 commit で追従できたが、次回からは「コード rename / 削除をする commit と同じ commit に docs 修正を入れる」運用に切り替えるべき。
+- AGENTS.md がちょうど 100 行に達した。`shared/state/` を加えたい・新しい実態を 1 行追記したい、という都度の追加圧力が効いており、今後 1 行入れるたびに古い行を 1 行削る zero-sum の編集を強制する閾値として機能している。
+
+### 保留点（今後の指針）
+
+| 保留 | 指針 |
+|---|---|
+| `src/app.py::BlockQuestApp` の最終整理 | M4-3 と M4-4 の進度を見て、test/Code Maker bundler 側を `Game` 直参照に切り替えてから削除する。Gherkin で「`BlockQuestApp` を import する箇所がゼロ」を完了条件にして別タスクで起票する |
+| `src/core/scene_manager.py` の削除 | 上記と同じく test 側書き換えとセットで進める。新 `SceneManager` (state holder) と旧 `SceneManager` (Scene オブジェクト保持) が同名で並ぶ状態は、grep して名前混乱の温床になりうる |
+| `item_use.py` / `player_state.py` 残存 | M4-4 後半タスクとして PlayerModel に吸収。`dump_snapshot / restore_snapshot` は save 互換のため最後まで残しても良い |
+| docs 自動 stale 検出 | 「architecture.md 内の `行数` 数字を Lint する」「services 表の数を `ls src/shared/services/*.py | wc -l` と突合する」ような pre-commit を入れる案あり。費用対効果は次の docs 編集で再検討 |
+| docs/customer-journeys.md の M4-3 反映 | CJ37 系の改訂で「責務が曖昧で直すほど別の所が壊れる」ガードレールに M4-3 / DebugService の事実が反映されていない可能性あり。次の CJ ブラッシュアップ時にチェック |
 
 ### 反省とルール化
 
-- 記入先：observe-situation / manage-tasknotes / CLAUDE.md
-- 次にやること：
+- 記入先：CLAUDE.md／feedback memory
+- ルール候補：「コード commit と docs commit を分けない（1 PR 1 機能 = 1 commit に docs 同梱）」を feedback memory に保存するか検討。今回はユーザー指示で文書のみ独立 commit したので、強制ルールにはしない。
+- 次にやること：M4-4 後半（`item_use` / `player_state` の PlayerModel 吸収）を別タスクで起票する判断はユーザーに委ねる。`src/app.py::BlockQuestApp` の整理タスクも同様。
