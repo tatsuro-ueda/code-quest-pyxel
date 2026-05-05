@@ -294,6 +294,29 @@ class M4SsotGuardTest(unittest.TestCase):
         "debug_mode", "debug_seq", "state", "prev_state", "world_map",
     })
 
+    def test_agents_md_is_within_100_lines(self):
+        """AGENTS.md は AI 用最優先・自動 load 文書として ≤100 行に保つ。
+
+        Code Maker / Claude Code 起動時に context として読み切れるサイズを
+        守るため、100 行を超えたら fail (M5-3 の 2 層文書構造を維持)。
+        """
+        agents_path = ROOT / "AGENTS.md"
+        self.assertTrue(agents_path.exists(), "AGENTS.md が存在しない")
+        line_count = sum(1 for _ in agents_path.read_text(encoding="utf-8").splitlines())
+        self.assertLessEqual(
+            line_count, 100,
+            f"AGENTS.md が {line_count} 行 (制限 100 行)。M5-3 文書 2 層構造に従い圧縮要",
+        )
+
+    def test_docs_architecture_md_exists(self):
+        """人用詳細リファレンス docs/architecture.md が存在する（M5-3）。
+
+        2026-05-05: docs/repository-structure.md からリネームして
+        AGENTS.md の補足として位置付けた。
+        """
+        arch_path = ROOT / "docs" / "architecture.md"
+        self.assertTrue(arch_path.exists(), "docs/architecture.md が存在しない")
+
     def test_game_init_does_not_directly_initialize_deprecated_fields(self):
         """Game.__init__ で M4-3 段階移行済みの field を直接初期化していないこと。
 
