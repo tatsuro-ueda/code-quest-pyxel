@@ -2,183 +2,554 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>Block Quest - えらんであそぼう</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ブロッククエスト - えらんで あそぼう</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
+:root {
+  --bg-deep: #1a1466;
+  --bg-mid: #2a1f8c;
+  --bg-light: #3a2fa8;
+  --accent-yellow: #ffd23f;
+  --accent-yellow-dark: #c89b1e;
+  --accent-cyan: #3df0ff;
+  --accent-magenta: #ff66cc;
+  --accent-red: #ff5e5b;
+  --accent-green: #66ff99;
+  --text: #ffffff;
+  --text-soft: #cfd6ff;
+  --pixel-border: 4px;
+}
+
+* { box-sizing: border-box; }
+
 html, body {
   margin: 0;
   padding: 0;
-  background: #000;
-  color: #fff;
-  font-family: sans-serif;
+  background:
+    radial-gradient(circle at 20% 10%, var(--bg-light) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, var(--accent-magenta) 0%, transparent 40%),
+    linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: 'DotGothic16', 'Hiragino Maru Gothic ProN', 'Yu Gothic', sans-serif;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
+
+/* dot pattern overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 8px 8px;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .container {
-  max-width: 400px;
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
   margin: 0 auto;
-  padding: 20px 16px;
+  padding: 20px 16px 60px;
 }
-h1 {
+
+/* ========== Hero ========== */
+.hero {
   text-align: center;
-  font-size: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
-.version-card {
-  background: #1a1a2e;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
+.hero h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 22px;
+  margin: 12px 0 14px;
+  color: var(--accent-yellow);
+  text-shadow:
+    2px 0 0 var(--accent-red),
+    0 2px 0 var(--accent-red),
+    2px 2px 0 var(--accent-red),
+    4px 4px 0 rgba(0,0,0,0.6);
+  letter-spacing: 1px;
+  line-height: 1.3;
 }
-.version-card h2 {
-  font-size: 18px;
-  margin: 0 0 8px 0;
+.hero .lead {
+  font-size: 16px;
+  margin: 0 0 16px;
+  color: var(--text);
+  line-height: 1.6;
 }
-.version-card .changes {
+.hero-image-wrap {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  margin: 8px 0 18px;
+  cursor: zoom-in;
+}
+.hero-image {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  display: block;
+  margin: 0 auto;
+  border: var(--pixel-border) solid var(--accent-yellow);
+  box-shadow:
+    0 0 0 var(--pixel-border) #000,
+    8px 8px 0 var(--bg-deep);
+}
+.hero-image-wrap::after {
+  content: "🔍 タップで おおきく";
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 11px;
+  background: rgba(0,0,0,0.7);
+  color: var(--accent-yellow);
+  padding: 4px 8px;
+  pointer-events: none;
+  font-family: 'DotGothic16', sans-serif;
+}
+
+/* ========== CTA Button ========== */
+.cta-btn {
+  display: inline-block;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  padding: 16px 24px;
+  background: var(--accent-yellow);
+  color: #2a1f00;
+  text-decoration: none;
+  border: var(--pixel-border) solid #000;
+  box-shadow:
+    0 0 0 var(--pixel-border) var(--accent-yellow-dark),
+    0 6px 0 0 #000;
+  transition: transform 0.05s, box-shadow 0.05s;
+  margin: 4px 0;
+  letter-spacing: 1px;
+}
+.cta-btn:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 0 0 var(--pixel-border) var(--accent-yellow-dark),
+    0 2px 0 0 #000;
+}
+
+/* ========== Section card ========== */
+.card {
+  background: rgba(20, 10, 80, 0.7);
+  border: var(--pixel-border) solid var(--accent-cyan);
+  box-shadow:
+    0 0 0 var(--pixel-border) #000,
+    6px 6px 0 rgba(0,0,0,0.4);
+  padding: 16px 14px;
+  margin: 22px 0;
+  position: relative;
+}
+.card.pink { border-color: var(--accent-magenta); }
+.card.green { border-color: var(--accent-green); }
+.card h2 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  margin: 0 0 10px 0;
+  color: var(--accent-yellow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+}
+.card h2 svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.card .desc,
+.card p {
   font-size: 14px;
-  color: #ccc;
-  margin: 0 0 12px 0;
+  line-height: 1.7;
+  color: var(--text);
+  margin: 6px 0;
+}
+.card ul.changes {
+  margin: 6px 0 12px;
   padding: 0;
   list-style: none;
-}
-.version-card .changes li::before {
-  content: "・";
-}
-.version-card .desc {
-  font-size: 14px;
-  color: #ccc;
-  margin: 0 0 12px 0;
-}
-.play-btn {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  font-family: sans-serif;
-  background: #e2e3f1;
-  color: #1a1a2e;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: center;
-  text-decoration: none;
-}
-.play-btn:active {
-  background: #c5c6d9;
-}
-.sub-link {
-  display: inline-block;
   font-size: 13px;
-  color: #b9c0ff;
-  text-decoration: none;
+  color: var(--text-soft);
 }
-.sub-link:hover,
-.sub-link:focus {
-  text-decoration: underline;
+.card ul.changes li {
+  padding: 3px 0 3px 14px;
+  position: relative;
 }
+.card ul.changes li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--accent-cyan);
+}
+
+/* ========== Sub link / Secondary button ========== */
 .sub-links {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 12px;
 }
-.secondary-btn {
-  display: inline-block;
-  width: 100%;
-  padding: 10px 12px;
+.sub-btn {
+  display: block;
+  text-align: center;
+  font-family: 'DotGothic16', sans-serif;
   font-size: 14px;
-  font-family: sans-serif;
-  background: #2f365f;
-  color: #f4f6ff;
-  border: 1px solid #6d79c7;
-  border-radius: 8px;
-  cursor: pointer;
+  padding: 10px 12px;
+  background: var(--bg-deep);
+  color: var(--accent-cyan);
+  border: 3px solid var(--accent-cyan);
+  text-decoration: none;
+  box-shadow: 4px 4px 0 #000;
+  transition: transform 0.05s, box-shadow 0.05s;
 }
-.secondary-btn:disabled {
-  opacity: 0.6;
-  cursor: wait;
+.sub-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #000;
 }
+.sub-btn.pink {
+  color: var(--accent-magenta);
+  border-color: var(--accent-magenta);
+}
+
+/* ========== Feature list ========== */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 8px 0;
+}
+.feature-tile {
+  background: var(--bg-deep);
+  border: 3px solid var(--accent-yellow);
+  padding: 10px 6px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text);
+  box-shadow: 3px 3px 0 #000;
+  line-height: 1.4;
+}
+.feature-tile svg {
+  display: block;
+  margin: 0 auto 4px;
+  width: 24px;
+  height: 24px;
+}
+
+/* ========== Import panel ========== */
 .import-input {
   width: 100%;
-  margin: 0 0 10px 0;
-  color: #ddd;
+  margin: 8px 0;
+  padding: 8px;
+  background: var(--bg-deep);
+  color: var(--accent-cyan);
+  border: 3px solid var(--accent-magenta);
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 14px;
+}
+.import-input::file-selector-button {
+  background: var(--accent-magenta);
+  color: #fff;
+  border: 2px solid #000;
+  padding: 6px 10px;
+  font-family: 'DotGothic16', sans-serif;
+  cursor: pointer;
+  margin-right: 8px;
 }
 .import-status {
   font-size: 13px;
-  color: #cfd6ff;
-  margin: 10px 0 0 0;
-  min-height: 1.2em;
+  color: var(--text-soft);
+  margin: 10px 0 0;
+  min-height: 1.4em;
+  background: rgba(0,0,0,0.3);
+  padding: 6px 8px;
+  border-left: 3px solid var(--accent-cyan);
 }
-.hint {
-  text-align: center;
-  font-size: 14px;
-  color: #aaa;
-  margin-top: 24px;
-  line-height: 1.8;
-}
+
+/* ========== Footer ========== */
 .owner-link {
   text-align: center;
   font-size: 11px;
-  color: #777;
-  margin-top: 16px;
+  color: var(--text-soft);
+  margin-top: 32px;
+  opacity: 0.6;
 }
 .owner-link a {
-  color: #8f95d8;
+  color: var(--accent-cyan);
   text-decoration: none;
 }
 .owner-link a:hover,
 .owner-link a:focus {
   text-decoration: underline;
 }
+
+/* ========== Lightbox dialog ========== */
+.lightbox {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: 100vw;
+  max-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
+.lightbox::backdrop {
+  background: rgba(0, 0, 0, 0.92);
+}
+.lightbox[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox img {
+  max-width: 96vw;
+  max-height: 88vh;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  border: var(--pixel-border) solid var(--accent-yellow);
+  box-shadow: 0 0 0 var(--pixel-border) #000;
+  touch-action: pinch-zoom;
+}
+.lightbox-close {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  background: var(--accent-red);
+  color: #fff;
+  border: 3px solid #000;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 #000;
+  z-index: 10;
+}
+.lightbox-close:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #000;
+}
+
+/* small phones */
+@media (max-width: 360px) {
+  .hero h1 { font-size: 18px; }
+  .cta-btn { font-size: 14px; padding: 14px 18px; }
+  .card h2 { font-size: 12px; }
+  .features-grid { grid-template-columns: 1fr; }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .cta-btn, .sub-btn, .lightbox-close { transition: none; }
+}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>ブロッククエスト</h1>
 
-
-
-  <div class="version-card">
-    <h2>本番</h2>
-    <ul class="changes">
-      <li>4/25 Pyxel Code Maker で PlayerModel エラーが でなくなった</li>
-      <li>4/25 メニューから せってい と AIでしゅうせい を えらんでも おちなくなった</li>
-      <li>4/25 ぶきや ぼうぐや どうぐや で かいものできるようになった</li>
-      <li>4/23 リソースエディタが使えるようになった</li>
-    </ul>
-    <a class="play-btn" href="production/play.html?v=1777048735">あそんでみる</a>
-    <div class="sub-links">
-      <a class="sub-link" id="codemaker-download-link" href="production/code-maker.zip?v=1777048735" download>リソースファイルをダウンロード</a>
-      <a class="sub-link" href="https://kitao.github.io/pyxel/wasm/code-maker/" target="_blank" rel="noopener noreferrer">リソースエディタを開く</a>
+  <!-- ========== Hero ========== -->
+  <header class="hero">
+    <h1>ブロック<br>クエスト</h1>
+    <p class="lead">
+      スクラッチからきた ゆうしゃのぼうけん。<br>
+      10ぷんで クリアできる RPG。
+    </p>
+    <div class="hero-image-wrap" data-lightbox>
+      <img class="hero-image" src="assets/screenshots/title.png" alt="ブロッククエストの タイトルがめん">
     </div>
-  </div>
+    <a class="cta-btn" href="production/play.html?v=1777048735">▶ あそんでみる</a>
+  </header>
 
-  <div class="version-card" id="codemaker-import-panel">
-    <h2>Code Maker から もどす</h2>
-    <p class="desc">code-maker.zip を このブラウザに ほぞんします<br>がぞう、マップ、こうかおん、おんがくだけを とりこみます<br>プログラムは とりこみません</p>
+  <!-- ========== Features ========== -->
+  <section class="card">
+    <h2>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <!-- sword pixel icon -->
+        <rect x="7" y="1" width="2" height="9" fill="#cfd6ff"/>
+        <rect x="6" y="2" width="1" height="7" fill="#9aa3d8"/>
+        <rect x="9" y="2" width="1" height="7" fill="#9aa3d8"/>
+        <rect x="5" y="10" width="6" height="1" fill="#ffd23f"/>
+        <rect x="7" y="11" width="2" height="3" fill="#8b5a2b"/>
+        <rect x="6" y="14" width="4" height="1" fill="#ffd23f"/>
+      </svg>
+      ゆうしゃの ぼうけん
+    </h2>
+    <div class="features-grid">
+      <div class="feature-tile">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="3" y="6" width="10" height="7" fill="#ff66cc"/>
+          <rect x="3" y="5" width="10" height="2" fill="#3df0ff"/>
+          <rect x="7" y="9" width="2" height="2" fill="#ffd23f"/>
+        </svg>
+        5つの<br>まほう
+      </div>
+      <div class="feature-tile">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="3" y="3" width="10" height="10" fill="#66ff99"/>
+          <rect x="6" y="6" width="4" height="4" fill="#1a1466"/>
+          <rect x="3" y="3" width="10" height="2" fill="#ff5e5b"/>
+        </svg>
+        3つの<br>まち
+      </div>
+      <div class="feature-tile">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="2" y="5" width="12" height="8" fill="#8b5a2b"/>
+          <rect x="2" y="4" width="12" height="2" fill="#ffd23f"/>
+          <rect x="7" y="8" width="2" height="2" fill="#000"/>
+        </svg>
+        ダンジョン<br>ボスバトル
+      </div>
+      <div class="feature-tile">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="3" y="3" width="2" height="2" fill="#ffd23f"/>
+          <rect x="7" y="3" width="2" height="2" fill="#3df0ff"/>
+          <rect x="11" y="3" width="2" height="2" fill="#ff66cc"/>
+          <rect x="3" y="7" width="10" height="2" fill="#fff"/>
+          <rect x="3" y="11" width="10" height="2" fill="#fff"/>
+        </svg>
+        ぜんぶ<br>ひらがな
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Version / Updates ========== -->
+  <section class="card pink">
+    <h2>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <!-- chest pixel icon -->
+        <rect x="3" y="6" width="10" height="7" fill="#8b5a2b"/>
+        <rect x="3" y="3" width="10" height="3" fill="#ffd23f"/>
+        <rect x="3" y="5" width="10" height="1" fill="#c89b1e"/>
+        <rect x="7" y="8" width="2" height="2" fill="#ffd23f"/>
+        <rect x="3" y="13" width="10" height="1" fill="#000"/>
+      </svg>
+      さいきん あたらしくなったこと
+    </h2>
+    <ul class="changes">
+      <li>4/25: Pyxel Code Maker で エラーが でなくなった</li>
+      <li>5/5: リソースエディタが つかえるようになった</li>
+    </ul>
+  </section>
+
+  <!-- ========== Code Maker invite ========== -->
+  <section class="card">
+    <h2>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <!-- pencil pixel icon -->
+        <rect x="9" y="2" width="3" height="3" fill="#ffd23f"/>
+        <rect x="6" y="5" width="6" height="6" fill="#3df0ff"/>
+        <rect x="3" y="8" width="6" height="6" fill="#ff66cc"/>
+        <rect x="2" y="13" width="2" height="2" fill="#fff"/>
+      </svg>
+      じぶんで かえて あそぼう
+    </h2>
+    <p class="desc">
+      Pyxel Code Maker で<br>
+      マップ・キャラ・おとを じぶんで かえられます。<br>
+      かえたら「あそんでみる」を おすだけ。
+    </p>
+    <div class="sub-links">
+      <a class="sub-btn" href="https://kitao.github.io/pyxel/wasm/code-maker/" target="_blank" rel="noopener noreferrer">
+        ▸ リソースエディタを ひらく
+      </a>
+      <a class="sub-btn pink" id="codemaker-download-link" href="production/code-maker.zip?v=1777048735" download>
+        ▸ リソースファイルを ダウンロード
+      </a>
+    </div>
+  </section>
+
+  <!-- ========== Code Maker import ========== -->
+  <section class="card green" id="codemaker-import-panel">
+    <h2>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <!-- heart pixel icon -->
+        <rect x="3" y="3" width="3" height="3" fill="#ff5e5b"/>
+        <rect x="10" y="3" width="3" height="3" fill="#ff5e5b"/>
+        <rect x="2" y="6" width="12" height="3" fill="#ff5e5b"/>
+        <rect x="3" y="9" width="10" height="2" fill="#ff5e5b"/>
+        <rect x="5" y="11" width="6" height="2" fill="#ff5e5b"/>
+        <rect x="7" y="13" width="2" height="1" fill="#ff5e5b"/>
+      </svg>
+      Code Maker から もどす
+    </h2>
+    <p class="desc">
+      code-maker.zip を このブラウザに ほぞんします。<br>
+      がぞう・マップ・こうかおん・おんがくだけを とりこみます。<br>
+      プログラムは とりこみません。<br>
+      みんなに ゆきわたります。こわれても かんりにんが なおせます。
+    </p>
     <input class="import-input" id="codemaker-import-input" type="file" accept=".zip,application/zip">
-    <button class="secondary-btn" id="codemaker-import-button" type="button">zip を とりこむ</button>
+    <button class="cta-btn" id="codemaker-import-button" type="button" style="width:100%;font-size:14px;padding:12px;">
+      ▸ zip を とりこむ
+    </button>
     <p class="import-status" id="codemaker-import-status">zip を えらんでください</p>
-  </div>
+  </section>
 
-  
+  <!-- ========== Footer ========== -->
   <p class="owner-link">
-    コード編集:
-    <a id="code-server-link" href="http://127.0.0.1:8081/" target="_blank" rel="noopener noreferrer">code-server :8081</a>
+    コード編集: <a id="code-server-link" href="http://127.0.0.1:8081/" target="_blank" rel="noopener noreferrer">code-server :8081</a>
   </p>
 </div>
+
+<!-- ========== Lightbox dialog ========== -->
+<dialog id="lightbox" class="lightbox" aria-label="拡大画像">
+  <button class="lightbox-close" id="lightbox-close" type="button" aria-label="とじる">×</button>
+  <img id="lightbox-img" src="" alt="">
+</dialog>
+
 <script>
-(async function () {
-  var link = document.getElementById("code-server-link");
-  if (!link || !window.location || !window.location.hostname) {
-    return;
-  }
-  var protocol = window.location.protocol;
-  if (protocol !== "http:" && protocol !== "https:") {
-    protocol = "http:";
-  }
-  link.href = protocol + "//" + window.location.hostname + ":8081/";
 (function () {
+  // ----- code-server link host fixup -----
+  var link = document.getElementById("code-server-link");
+  if (link && window.location && window.location.hostname) {
+    var protocol = window.location.protocol;
+    if (protocol !== "http:" && protocol !== "https:") {
+      protocol = "http:";
+    }
+    link.href = protocol + "//" + window.location.hostname + ":8081/";
+  }
+
+  // ----- Lightbox -----
+  var lightbox = document.getElementById("lightbox");
+  var lightboxImg = document.getElementById("lightbox-img");
+  var lightboxClose = document.getElementById("lightbox-close");
+  if (lightbox && lightboxImg && lightboxClose && typeof lightbox.showModal === "function") {
+    document.querySelectorAll("[data-lightbox] img, img[data-lightbox]").forEach(function (img) {
+      img.addEventListener("click", function () {
+        lightboxImg.src = img.currentSrc || img.src;
+        lightboxImg.alt = img.alt || "";
+        lightbox.showModal();
+      });
+    });
+    function closeLightbox() {
+      if (lightbox.open) lightbox.close();
+    }
+    lightboxClose.addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", function (event) {
+      // クリックが背景 (dialog 自身) のときだけ閉じる
+      if (event.target === lightbox) closeLightbox();
+    });
+    // Escape キーは <dialog> がデフォルトで close するが、念のため明示
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") closeLightbox();
+    });
+  }
+
+  // ----- Code Maker zip import -----
   var importInput = document.getElementById("codemaker-import-input");
   var importButton = document.getElementById("codemaker-import-button");
   var importStatus = document.getElementById("codemaker-import-status");
@@ -226,13 +597,11 @@ h1 {
       await importZipViaServer(file);
       setStatus("server に とりこみました。みんなに ゆきわたります");
     } catch (error) {
-      setStatus("server に とりこみできませんでした。しばらくたってから もういちど");
+      setStatus("server に とりこみできませんでした。しばらくしてから もういちど");
     } finally {
       importButton.disabled = false;
     }
   });
-})();
-
 })();
 </script>
 </body>
