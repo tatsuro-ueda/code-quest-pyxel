@@ -235,5 +235,44 @@ class M5SceneStructureTest(unittest.TestCase):
                 )
 
 
+class M4SsotGuardTest(unittest.TestCase):
+    """M4: snapshot field の再侵入を防ぐ静的ガード。
+
+    `game.world_map` / `self.world_map` 仕込みは 2026-05-05 に撤去済
+    （pyxres = SSoT に統一）。再侵入を pytest で即 fail させる。
+    """
+
+    WORLD_MAP_PATTERN = re.compile(r"\b(?:game|self)\.world_map\b")
+
+    def test_no_world_map_field_assignment_in_src(self):
+        """src/ 配下に `(game|self).world_map` の参照がない。
+
+        pyxres を SSoT 化し、`GameState.world_map` フィールドと
+        `self.world_map` 初期化を撤去した（2026-05-05）。動的属性として
+        復活させると "2 つの真実が並走" 状態に戻るため禁止。
+        """
+        hits = _grep(self.WORLD_MAP_PATTERN, _iter_py_files(SRC))
+        self.assertEqual(
+            hits, [],
+            f"src/ に `(game|self).world_map` 参照が侵入: {hits}",
+        )
+
+    def test_no_world_map_field_assignment_in_tests(self):
+        """test/ 配下に world_map field 代入がない。
+
+        ExploreModel が pyxel.tilemaps[0].pget を直読する新仕様
+        （2026-05-05）に対し、 game の world_map field 仕込みは
+        無効（dead code）になる。混乱の元なので test 内でも禁止する。
+        """
+        test_dir = ROOT / "test"
+        pattern = re.compile(r"\b(?:game|self)\.world_map\s*=")
+        files = [p for p in _iter_py_files(test_dir) if p != Path(__file__)]
+        hits = _grep(pattern, files)
+        self.assertEqual(
+            hits, [],
+            f"test/ に world_map field 代入が侵入: {hits}",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
