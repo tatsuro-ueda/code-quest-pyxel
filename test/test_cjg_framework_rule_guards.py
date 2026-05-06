@@ -397,5 +397,58 @@ class M4SsotGuardTest(unittest.TestCase):
         )
 
 
+class TopChangesAutoUpdateGuardTest(unittest.TestCase):
+    """commit log → top_changes.json → kid-pixel index.html のパイプラインを守る。
+
+    2026-05-06: index.html を build から切り離し、post-commit hook で
+    Anthropic API による解釈 → top_changes.json 自動追記 → render に変更。
+    将来「make build が index.html を上書きする」regression を構造的に防ぐ。
+    """
+
+    INDEX_HTML = ROOT / "index.html"
+    TOP_CHANGES_JSON = ROOT / "top_changes.json"
+    BUILD_WEB_RELEASE = ROOT / "tools" / "build_web_release.py"
+
+    def test_g1_build_web_release_does_not_write_index_html(self):
+        """G1: build_web_release.py に index.html を出力するコードが無い。
+
+        旧 regression：tools/build_web_release.py L123-130 が
+        `index_path = output_dir / "index.html"` + `shutil.copy2(selector_path, index_path)`
+        で kid-pixel index.html (645 行) を 111 行 selector で上書きしていた。
+        この commit で削除済。再侵入したら即 fail。
+        """
+        if not self.BUILD_WEB_RELEASE.exists():
+            self.skipTest("tools/build_web_release.py が無い")
+        text = self.BUILD_WEB_RELEASE.read_text(encoding="utf-8")
+        # `output_dir / "index.html"` の代入と shutil.copy2(... index_path) の組み合わせを検出
+        forbidden = re.compile(r'(output_dir|root)\s*/\s*[\'"]index\.html[\'"]')
+        hits = forbidden.findall(text)
+        self.assertEqual(
+            hits, [],
+            f"build_web_release.py に index.html 出力コードが残っている: {hits}",
+        )
+
+    def test_g2_index_html_has_top_changes_markers(self):
+        """G2: index.html に TOP_CHANGES_START / END マーカーがペアで存在する。"""
+        self.assertTrue(self.INDEX_HTML.exists(), "index.html が見つからない")
+        text = self.INDEX_HTML.read_text(encoding="utf-8")
+        self.assertIn("<!-- TOP_CHANGES_START -->", text, "TOP_CHANGES_START マーカー欠落")
+        self.assertIn("<!-- TOP_CHANGES_END -->", text, "TOP_CHANGES_END マーカー欠落")
+        # ペアの順序確認（START が END より前にある）
+        start_idx = text.index("<!-- TOP_CHANGES_START -->")
+        end_idx = text.index("<!-- TOP_CHANGES_END -->")
+        self.assertLess(start_idx, end_idx, "TOP_CHANGES マーカーの順序が逆転")
+
+    def test_g3_top_changes_json_is_valid(self):
+        """G3: top_changes.json が valid JSON で `changes` キーが list[str]。"""
+        import json
+        self.assertTrue(self.TOP_CHANGES_JSON.exists(), "top_changes.json が無い")
+        data = json.loads(self.TOP_CHANGES_JSON.read_text(encoding="utf-8"))
+        self.assertIn("changes", data, "top_changes.json に 'changes' キーが無い")
+        self.assertIsInstance(data["changes"], list, "'changes' が list ではない")
+        for entry in data["changes"]:
+            self.assertIsInstance(entry, str, f"changes エントリが str でない: {entry!r}")
+
+
 if __name__ == "__main__":
     unittest.main()

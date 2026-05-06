@@ -39,18 +39,23 @@
 # 1. 仮想環境を用意
 python -m venv .venv
 source .venv/bin/activate
-pip install pyxel
+pip install pyxel anthropic
 
-# 2. ゲームを起動
+# 2. post-commit hook を install（top_changes.json の自動更新）
+bash tools/install_hooks.sh
+
+# 3. ゲームを起動
 python main.py
 ```
 
+`tools/install_hooks.sh` を実行すると、git commit のたびに `tools/update_top_changes.py` が走り、Claude Haiku が「子どもに関係ある変更」を判定して `top_changes.json` の先頭に追記します。`ANTHROPIC_API_KEY` を環境変数に設定すると AI 判定が有効化されます。未設定でも commit は壊れず silent skip されます。手動で `top_changes.json` を編集 → `python tools/render_top_changes.py` で kid-pixel `index.html` のマーカー間に反映できます。
+
 ## Pyxel Code Maker で遊ぶ・改造する
 
-[Pyxel Code Maker](https://kitao.github.io/pyxel/wasm/code-maker.html) にアップロードする場合は、[`production/code-maker.zip`](production/code-maker.zip) を使ってください。コード全体が1つの `main.py` にインライン化されています。
+[Pyxel Code Maker](https://kitao.github.io/pyxel/wasm/code-maker.html) にアップロードする場合は、[`dist/code-maker.zip`](dist/code-maker.zip) を使ってください。コード全体が1つの `main.py` にインライン化されています。
 
 ```
-production/code-maker.zip
+dist/code-maker.zip
 └── block-quest/
     ├── main.py            (5,902 行・全モジュールをインライン化)
     └── my_resource.pyxres
@@ -58,13 +63,10 @@ production/code-maker.zip
 
 ## 配布物
 
-- [`index.html`](index.html) — 本番と開発版を比べる root selector
-- [`production/pyxel.html`](production/pyxel.html) — 本番ブラウザ版
-- [`production/pyxel.pyxapp`](production/pyxel.pyxapp) — 本番デスクトップ版
-- [`production/code-maker.zip`](production/code-maker.zip) — 本番 Code Maker アップロード用
-- [`development/pyxel.html`](development/pyxel.html) — 開発版ブラウザ版
-- [`development/pyxel.pyxapp`](development/pyxel.pyxapp) — 開発版デスクトップ版
-- [`development/code-maker.zip`](development/code-maker.zip) — 開発版 Code Maker アップロード用
+- [`index.html`](index.html) — kid-pixel デザインのトップページ（プレイ導線 + 「あたらしくなったこと」）
+- [`dist/pyxel.html`](dist/pyxel.html) — 本番ブラウザ版
+- [`dist/pyxel.pyxapp`](dist/pyxel.pyxapp) — 本番デスクトップ版
+- [`dist/code-maker.zip`](dist/code-maker.zip) — 本番 Code Maker アップロード用
 
 ## ドキュメント
 

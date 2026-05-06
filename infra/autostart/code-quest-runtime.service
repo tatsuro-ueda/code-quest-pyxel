@@ -15,8 +15,8 @@ RestartSec=5s
 StandardOutput=journal
 StandardError=journal
 
-# production/ が無い fresh checkout 直後や、pyxres 編集後の再起動でも
-# web_runtime_server 側の ensure_production_build() が初回ビルドを走らせる。
+# dist/ が無い fresh checkout 直後や、pyxres 編集後の再起動でも
+# web_runtime_server 側の ensure_dist_build() が初回ビルドを走らせる。
 # 追加の ExecStartPre は不要。
 
 [Install]

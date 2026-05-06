@@ -14,12 +14,12 @@ RELEASE_FILES = (
     Path("assets/blockquest.pyxres"),
 )
 RELEASE_DIRS = (Path("src"),)
-PRODUCTION_DIR = Path("production")
-PRODUCTION_PYXAPP_FILE = PRODUCTION_DIR / "pyxel.pyxapp"
-PRODUCTION_HTML_FILE = PRODUCTION_DIR / "pyxel.html"
-PRODUCTION_PLAY_FILE = PRODUCTION_DIR / "play.html"
-PRODUCTION_INDEX_FILE = PRODUCTION_DIR / "index.html"
-CODEMAKER_OUTPUT_FILE = PRODUCTION_DIR / "code-maker.zip"
+DIST_DIR = Path("dist")
+DIST_PYXAPP_FILE = DIST_DIR / "pyxel.pyxapp"
+DIST_HTML_FILE = DIST_DIR / "pyxel.html"
+DIST_PLAY_FILE = DIST_DIR / "play.html"
+DIST_INDEX_FILE = DIST_DIR / "index.html"
+CODEMAKER_OUTPUT_FILE = DIST_DIR / "code-maker.zip"
 LEGACY_ROOT_ARTIFACTS = (
     Path("play.html"),
     Path("pyxel.html"),
@@ -66,8 +66,8 @@ def stage_release(root: Path, stage_dir: Path) -> list[Path]:
     return copied_paths
 
 
-def production_output_dir(output_dir: Path) -> Path:
-    return output_dir / PRODUCTION_DIR
+def dist_output_dir(output_dir: Path) -> Path:
+    return output_dir / DIST_DIR
 
 
 def write_wrapper_outputs(wrapper_path: Path, target_dir: Path) -> tuple[Path, Path]:

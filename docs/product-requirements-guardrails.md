@@ -667,7 +667,7 @@ Rule: Code Maker 互換はビルド時点で守る
   Scenario: Code Maker との互換性を維持する
     Given AIがエントリポイントや初期化順序を変更した
     When Code Maker 用ビルドが実行される
-    Then `production/code-maker.zip` 内の `main.py` が正常に起動する
+    Then `dist/code-maker.zip` 内の `main.py` が正常に起動する
     And Code Maker で Run した場合にゲームが動作する
 
   Scenario: Code Maker 教材版のコア領域が壊れていたら開始前に止める
@@ -685,7 +685,7 @@ Rule: Code Maker 互換はビルド時点で守る
 
 実装状況:
 - `実装済み`: `.pyxres` の直接編集禁止 hook と Code Maker 互換ビルドはある
-- `部分実装`: `production/code-maker.zip` / `development/code-maker.zip` に resource を含めて配る流れはあるが、freshness と E2E 保証はまだ薄い
+- `部分実装`: `dist/code-maker.zip` / `development/code-maker.zip` に resource を含めて配る流れはあるが、freshness と E2E 保証はまだ薄い
 - `未実装`: runtime が resource を勝手に更新しないこと、build が stale resource を必ず止めることの固定はまだ目標
 - `未実装`: `AudioManager` / `SfxSystem` が imported `Sound / Music` を固定データで上書きしないことはまだ固定できていない
 

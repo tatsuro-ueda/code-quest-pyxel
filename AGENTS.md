@@ -48,7 +48,7 @@
 - M4-3 段階移行：`Game.current_town / debug_mode / state / prev_state` は @property forward。`Game.__init__` で `self.X = ...` 直接初期化すると static guard で fail
 - `src/app.py::BlockQuestApp` は Phase 1 由来の legacy shell（test/Code Maker bundler 互換のため残置）
 - pyxres = SSoT：`ImageBanks` は **書き込み・初期化・fallback のみ**（`regenerate_world_tilemap_fallback` 等）。Model は `pyxel.tilemaps[0]` / `pyxel.images[n]` を直読
-- 配布物：`production/pyxel.html / .pyxapp / code-maker.zip`、`index.html` は子ども向けトップ（Phase 3 で dev/prod 分離廃止、本番一本化）
+- 配布物：`dist/pyxel.html / .pyxapp / code-maker.zip`、`index.html` は子ども向けトップ（Phase 3 で dev/prod 分離廃止、本番一本化）
 
 ## まず読む文書（順序）
 

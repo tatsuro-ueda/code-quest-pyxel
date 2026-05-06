@@ -2,7 +2,7 @@
 """G11: Web版動作テスト (Playwright)
 
 Web版を同一オリジンのランタイムサーバで起動し、Playwright (Chromium Headless)
-で `production/play.html` を開いてコンソールエラーがないか検証する。
+で `dist/play.html` を開いてコンソールエラーがないか検証する。
 
 使い方:
     python tools/test_web_compat.py
@@ -18,7 +18,7 @@ from web_runtime_server import make_server
 
 # Web版のHTMLファイル
 ROOT = Path(__file__).resolve().parent.parent
-HTML_PATH = ROOT / "production" / "play.html"
+HTML_PATH = ROOT / "dist" / "play.html"
 SERVE_DIR = ROOT
 PORT = 8899
 WAIT_SECONDS = 10  # ゲーム初期化を待つ秒数
@@ -73,7 +73,7 @@ def main():
             page.on("crash", on_crash)
 
             # ページを開く
-            url = f"http://127.0.0.1:{PORT}/production/play.html"
+            url = f"http://127.0.0.1:{PORT}/dist/play.html"
             print(f"Opening {url} ...")
             page.goto(url, wait_until="domcontentloaded", timeout=30000)
 

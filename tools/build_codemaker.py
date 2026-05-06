@@ -3,7 +3,7 @@
 
 codemaker_bundler.py が `codemaker_manifest.txt` 通りに全 .py を連結した
 source text を生成し、本モジュールはそれを CORE_BLOCK にラップして
-`production/code-maker.zip` に main.py + my_resource.pyxres として梱包する。
+`dist/code-maker.zip` に main.py + my_resource.pyxres として梱包する。
 
 生成される main.py は Code Maker 教材版としてラップされ、
 STUDENT AREA（編集可能領域）とコア自己検査（CORE_HASH）を含む。
@@ -23,7 +23,7 @@ if str(_HERE) not in sys.path:
 from codemaker_bundler import build_bundled_source
 
 ROOT = Path(__file__).resolve().parent.parent
-OUTPUT = ROOT / "production" / "code-maker.zip"
+OUTPUT = ROOT / "dist" / "code-maker.zip"
 BUNDLE_DIR = "block-quest"
 ENTRY_POINT_MARKER = """# =====================================================================
 # ENTRY POINT

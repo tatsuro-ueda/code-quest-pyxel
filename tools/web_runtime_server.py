@@ -42,7 +42,7 @@ def rebuild_after_codemaker_resource_import(project_root: Path) -> dict[str, obj
 
     build_web_release(project_root)
     return {
-        "production_play_url": "/production/play.html",
+        "dist_play_url": "/dist/play.html",
     }
 
 
@@ -175,16 +175,16 @@ def make_server(
     return http.server.ThreadingHTTPServer((host, port), handler)
 
 
-def ensure_production_build(project_root: Path, serve_dir: Path) -> None:
-    """起動時に production/ artifacts が無ければビルドする（systemd autostart 用）。
+def ensure_dist_build(project_root: Path, serve_dir: Path) -> None:
+    """起動時に dist/ artifacts が無ければビルドする（systemd autostart 用）。
 
-    systemd で常駐させた際、`production/index.html` が無い（fresh checkout や
+    systemd で常駐させた際、`dist/index.html` が無い（fresh checkout や
     artifacts 未生成）と selector が配信できないため、初回ビルドをここで走らせる。
     """
-    production_index = serve_dir / "production" / "index.html"
-    if production_index.is_file():
+    dist_index = serve_dir / "dist" / "index.html"
+    if dist_index.is_file():
         return
-    print("[web_runtime_server] production/ artifacts not found; running initial build")
+    print("[web_runtime_server] dist/ artifacts not found; running initial build")
     from tools.build_web_release import build_web_release
 
     try:
@@ -203,13 +203,13 @@ def main() -> None:
     parser.add_argument(
         "--skip-initial-build",
         action="store_true",
-        help="production/ 不在時の初回ビルドを行わない（test 用）",
+        help="dist/ 不在時の初回ビルドを行わない（test 用）",
     )
     args = parser.parse_args()
 
     serve_dir = Path(args.serve_dir).resolve()
     if not args.skip_initial_build:
-        ensure_production_build(ROOT, serve_dir)
+        ensure_dist_build(ROOT, serve_dir)
 
     server = make_server(
         serve_dir,

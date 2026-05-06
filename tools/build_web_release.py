@@ -2,8 +2,10 @@ from __future__ import annotations
 
 """Block Quest Web release builder (P3-D で dev/prod 単一化)。
 
-本番 1 本の artifacts を output_dir/production/ と output_dir/index.html に
-書き出す。開発版ビルドや preview 承認フローは全て削除済み。
+本番 1 本の artifacts を `output_dir/dist/` 配下に書き出す（`pyxel.html` /
+`pyxel.pyxapp` / `play.html` / `code-maker.zip`）。開発版ビルドや preview
+承認フローは全て削除済み。kid-pixel `index.html` は build から切り離し済
+（2026-05-06）。
 """
 
 import argparse
@@ -19,20 +21,19 @@ sys.path.insert(0, str(ROOT))
 
 from tools.build_release_artifacts import (  # noqa: E402
     CODEMAKER_OUTPUT_FILE,
-    PRODUCTION_DIR,
-    PRODUCTION_HTML_FILE,
-    PRODUCTION_INDEX_FILE,
-    PRODUCTION_PLAY_FILE,
-    PRODUCTION_PYXAPP_FILE,
+    DIST_DIR,
+    DIST_HTML_FILE,
+    DIST_INDEX_FILE,
+    DIST_PLAY_FILE,
+    DIST_PYXAPP_FILE,
     build_codemaker_release,
-    production_output_dir,
+    dist_output_dir,
     prune_legacy_root_outputs,
     stage_release,
     write_wrapper_outputs,
 )
 from tools.render_release_selector import (  # noqa: E402
     NORMAL_CHANGE_LIST_DEPENDENCIES,
-    generate_top_selector,
     generate_wrapper,
     versioned_asset_url,
 )
@@ -77,7 +78,7 @@ def build_web_release(
     """本番 1 本を output_dir にビルドする。"""
     root = root.resolve()
     output_dir = output_dir.resolve() if output_dir else root
-    production_dir = production_output_dir(output_dir)
+    dist_dir = dist_output_dir(output_dir)
     work_dir = work_dir.resolve() if work_dir else (root / ".build" / "web_release")
     app_dir = work_dir / "app"
     app_name = app_dir.name
@@ -99,10 +100,10 @@ def build_web_release(
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    production_dir.mkdir(parents=True, exist_ok=True)
+    dist_dir.mkdir(parents=True, exist_ok=True)
     prune_legacy_root_outputs(output_dir)
-    pyxapp_path = output_dir / PRODUCTION_PYXAPP_FILE
-    html_path = output_dir / PRODUCTION_HTML_FILE
+    pyxapp_path = output_dir / DIST_PYXAPP_FILE
+    html_path = output_dir / DIST_HTML_FILE
     shutil.copy2(work_dir / f"{app_name}.pyxapp", pyxapp_path)
     shutil.copy2(work_dir / f"{app_name}.html", html_path)
     build_codemaker_release(
@@ -118,16 +119,11 @@ def build_web_release(
         pyxel_html_name=versioned_asset_url("pyxel.html", current_token),
         page_kind="production",
     )
-    play_path, _ = write_wrapper_outputs(wrapper_path, production_dir)
+    play_path, _ = write_wrapper_outputs(wrapper_path, dist_dir)
 
-    index_path = output_dir / "index.html"
-    selector_path = generate_top_selector(
-        work_dir,
-        root,
-        current_wrapper_name=versioned_asset_url("production/play.html", current_token),
-        current_codemaker_zip=versioned_asset_url("production/code-maker.zip", current_token),
-    )
-    shutil.copy2(selector_path, index_path)
+    # NOTE (2026-05-06): kid-pixel `index.html` は手書き正本 + post-commit hook
+    # による自動更新で管理する (tools/update_top_changes.py + render_top_changes.py)。
+    # `make build` は dist/ 配下のみを生成し、root index.html には触らない。
 
     return pyxapp_path, html_path, play_path
 

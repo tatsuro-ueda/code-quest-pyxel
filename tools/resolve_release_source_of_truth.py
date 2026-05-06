@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-"""Release ビルドの依存解決 / 変更リスト鮮度検証ヘルパ（P3-D で DevelopmentCandidate 系を削除）。
+"""Release ビルドの依存解決ヘルパ（P3-D で DevelopmentCandidate 系を削除）。
 
 Phase 3 で dev/prod 単一化したため、本番 1 本のビルドに必要な最小機能のみ残す:
 - file_sha256 / is_git_dirty / revision_timestamp
-- validate_change_list_freshness（top_changes.json の鮮度チェック）
 - build_cache_token（URL バスティング用トークン）
+
+2026-05-06: validate_change_list_freshness を削除（top_changes.json は
+post-commit hook 経由で更新され、build パイプラインからは独立）。
 """
 
 import hashlib
@@ -78,33 +80,6 @@ def revision_timestamp(root: Path, rel_path: Path) -> float:
             return float(result.stdout.strip())
 
     return path.stat().st_mtime
-
-
-def validate_change_list_freshness(
-    root: Path,
-    *,
-    changes_rel_path: Path,
-    dependency_paths: tuple[Path, ...],
-) -> None:
-    """top_changes.json が依存ファイルより古い場合に ValueError を投げる。"""
-    root = root.resolve()
-    changes_path = root / changes_rel_path
-    if not changes_path.exists():
-        return
-    if is_git_dirty(root, changes_rel_path):
-        return
-
-    changes_timestamp = revision_timestamp(root, changes_rel_path)
-    for dependency in dependency_paths:
-        dependency_path = root / dependency
-        if not dependency_path.exists():
-            continue
-        dependency_timestamp = revision_timestamp(root, dependency)
-        if dependency_timestamp > changes_timestamp:
-            raise ValueError(
-                f"{changes_rel_path} is older than {dependency}. "
-                "Update the change list so selector text matches the shipped content."
-            )
 
 
 def build_cache_token(root: Path, dependency_paths: tuple[Path, ...]) -> str:

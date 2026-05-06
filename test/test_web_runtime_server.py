@@ -64,7 +64,7 @@ class WebRuntimeServerTest(unittest.TestCase):
     def on_codemaker_resource_import(self, project_root: Path) -> dict[str, object]:
         self.import_calls.append(project_root)
         return {
-            "production_play_url": "/production/play.html",
+            "dist_play_url": "/dist/play.html",
         }
 
     def post_json(self, path: str, payload: dict[str, object]):
@@ -100,7 +100,7 @@ class WebRuntimeServerTest(unittest.TestCase):
             "/internal/play-sessions/start",
             {
                 "session_id": "session-1",
-                "page_kind": "production",
+                "page_kind": "dist",
                 "started_at": "2026-04-13T12:00:00+00:00",
             },
         ) as response:
@@ -132,7 +132,7 @@ class WebRuntimeServerTest(unittest.TestCase):
             [
                 {
                     "date": "2026-04-13",
-                    "page_kind": "production",
+                    "page_kind": "dist",
                     "session_count": 1,
                     "avg_active_seconds": 70,
                     "short_sessions": 0,
@@ -150,7 +150,7 @@ class WebRuntimeServerTest(unittest.TestCase):
             data=json.dumps(
                 {
                     "session_id": "session-meta",
-                    "page_kind": "production",
+                    "page_kind": "dist",
                     "started_at": "2026-04-13T12:00:00+00:00",
                 }
             ).encode("utf-8"),
@@ -178,7 +178,7 @@ class WebRuntimeServerTest(unittest.TestCase):
             "/internal/play-sessions/start",
             {
                 "session_id": "session-peer",
-                "page_kind": "production",
+                "page_kind": "dist",
                 "started_at": "2026-04-13T12:00:00+00:00",
             },
         ) as response:
@@ -209,7 +209,7 @@ class WebRuntimeServerTest(unittest.TestCase):
         self.assertEqual(response.status, 200)
         self.assertEqual(canonical.read_bytes(), b"edited-resource")
         self.assertEqual(body["ignored_code_entries"], ["block-quest/main.py"])
-        self.assertEqual(body["production_play_url"], "/production/play.html")
+        self.assertEqual(body["dist_play_url"], "/dist/play.html")
         self.assertEqual(self.import_calls, [self.project_root])
 
     def test_reports_codemaker_import_status(self):

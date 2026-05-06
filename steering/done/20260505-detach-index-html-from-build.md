@@ -1,11 +1,12 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-06T00:00:00.000+09:00
 dateCreated: 2026-05-05T23:00:00.000+09:00
-dateModified: 2026-05-06T00:00:00.000+09:00
+dateModified: 2026-05-06T00:30:00.000+09:00
 tags:
   - task
+  - archived
 ---
 
 # 2026年5月5日 トップページの「あたらしくなったこと」を commit log から自動更新する（build からは切り離す）
@@ -285,21 +286,6 @@ JSON 形式: {{"include": true, "line": "..."}} または {{"include": false}}""
 
 `tools/render_top_changes.py` は正規表現でマーカー間を置換。マーカー外（h2 / svg icon / セクション枠）は無傷。
 
-### 手順フロー
-
-1. **影響範囲 grep**（`generate_top_selector / generate_selector / load_top_page_changes / TOP_CHANGES_FILE / templates/selector.html / validate_change_list_freshness / shutil.copy2.*index`）。
-2. **kid-pixel `index.html` にマーカー埋め込み**：既存 `<ul class="changes">` ブロックの前後に `<!-- TOP_CHANGES_START -->` / `<!-- TOP_CHANGES_END -->`。
-3. **`tools/render_top_changes.py` 新規実装**：top_changes.json → index.html マーカー間 inject。pure function、外部 API 不要。先に単体テスト 3 件（マーカー間置換 / マーカー外保持 / N 件まで切り捨て）。
-4. **`tools/update_top_changes.py` 新規実装**：上記コードイメージのとおり。Anthropic API 呼び出し / 再帰防止 / amend。dry-run flag (`--dry-run`) で API 呼ばずに print する経路を持つ。
-5. **`tools/install_hooks.sh` 新規実装**：`.git/hooks/post-commit` を冪等に作成（README にも手順を書く）。
-6. **build パイプラインから index.html 出力削除**：`tools/build_web_release.py` L123-130 削除、`generate_top_selector` import 削除、`render_release_selector.py` から dead 関数削除、`templates/selector.html` 削除、`resolve_release_source_of_truth.py::validate_change_list_freshness` 利用確認 → 孤児なら削除（top_changes.json は **残す**）。
-7. **静的 guard 追加**（`test_cjg_framework_rule_guards.py`）：G1 build が index.html に書かない / G2 マーカー存在 / G3 top_changes.json valid JSON。
-8. **既存 top_changes.json と index.html の整合**：現状 top_changes.json 4 行と index.html 直書き 2 行を **手で reconcile**（top_changes.json を正本に揃える）→ render 実行で確認。
-9. **検証**：`make build` で `git diff index.html` が空 / `pytest test/ -q` 緑（718 → 721 passed: G1+G2+G3 で +3）。
-10. **post-commit hook の動作確認**：ダミー `feat:` commit を打って top_changes.json と index.html が更新されること、`refactor:` commit で更新されないことを目視。
-11. **commit 分割**：(a) render_top_changes.py + マーカー埋込み + 静的 guard、(b) build パイプラインから index.html 切り離し + dead code 撤去、(c) update_top_changes.py + install_hooks.sh + README 更新。
-12. **Result / Discussion 記入** → steering/done/ へ移動。
-
 ### リスクと対処
 
 | リスク | 対処 |
@@ -321,51 +307,85 @@ JSON 形式: {{"include": true, "line": "..."}} または {{"include": false}}""
 ## 4) Tasklist
 
 > 上から順に実施。CC が CoVe で自力検証しながら進める。
-> Commit は **3 段階に分割**：(a) render + marker + guard、(b) build 切り離し、(c) hook + AI 連携。
+> `anthropic-0.99.0` を CC 環境に install 済。`ANTHROPIC_API_KEY` は環境にないため、
+> Gherkin シナリオ 5（key 不在で silent skip）の経路で動作確認する。
 
-### Commit (a)：render_top_changes.py + マーカー + 静的 guard
+### Phase A：reconcile + 静的 render（commit a）
 
-- [ ] （CC）影響範囲 grep（`generate_top_selector / generate_selector / load_top_page_changes / TOP_CHANGES_FILE / templates/selector.html / validate_change_list_freshness`）
-- [ ] （CC）kid-pixel `index.html` の `<ul class="changes">` ブロックに `<!-- TOP_CHANGES_START -->` / `<!-- TOP_CHANGES_END -->` マーカー埋め込み
-- [ ] （CC）`top_changes.json` の現状 4 件と index.html 直書き 2 件を reconcile（top_changes.json を正本にする、5/5 のリソースエディタ項目を反映）
-- [ ] （CC）`tools/render_top_changes.py` 新規実装（top_changes.json → index.html マーカー間 inject）
-- [ ] （CC）`test/test_render_top_changes.py` 新規実装（マーカー間置換 / マーカー外保持 / N 件切り捨ての 3 ケース）
-- [ ] （CC）`test_cjg_framework_rule_guards.py` に G1/G2/G3 追加（build が index.html に書かない / マーカー存在 / top_changes.json valid JSON）
-- [ ] （CC）`pytest test/ -q` 緑確認（718 → 722 passed: render テスト 3 + guard 3 = +6 期待だが +4 程度）
-- [ ] （CC）commit (a)：`feat(top-changes): render_top_changes.py + マーカー + 静的 guard`
+- [ ] A1. `top_changes.json` を SoT として更新（kid-pixel index.html の 5/5 リソースエディタ追加分を反映）
+- [ ] A2. `index.html` の `<ul class="changes">` ブロックに `<!-- TOP_CHANGES_START -->` / `<!-- TOP_CHANGES_END -->` マーカー埋込み
+- [ ] A3. `tools/render_top_changes.py` 新設（top_changes.json → index.html マーカー間 inject、kid-pixel 用フォーマット）
+- [ ] A4. `test/test_render_top_changes.py` 新設（マーカー間置換 / マーカー外保持 / N 件切り捨ての 3 ケース）
+- [ ] A5. `test/test_cjg_framework_rule_guards.py` に G1/G2/G3 追加：
+  - G1: tools/build_web_release.py 内に index.html 出力コードが無い
+  - G2: index.html に `<!-- TOP_CHANGES_START -->` / `<!-- TOP_CHANGES_END -->` がペアで存在
+  - G3: top_changes.json が valid JSON で `changes` キーが list
+- [ ] A6. `python3 tools/render_top_changes.py` を手動実行して index.html マーカー間を再生成
+- [ ] A7. CoVe：`pytest test/ -q` 全緑（719 → 723 期待：render テスト 3 + guard 3 だが G1 は実装前で fail するので Phase B 完了まで pending）
+- [ ] A8. commit (a)：`feat(top-changes): render_top_changes.py + マーカー + 静的 guard`
 
-### Commit (b)：build パイプラインから index.html 切り離し + dead code 撤去
+### Phase B：build パイプラインから index.html 切り離し + dead code 撤去（commit b）
 
-- [ ] （CC）`tools/build_web_release.py` の L123-130 + `generate_top_selector` import 削除
-- [ ] （CC）`tools/render_release_selector.py` から `generate_top_selector / generate_selector / load_top_page_changes / TOP_CHANGES_FILE / TOP_CHANGE_LIST_FRESHNESS_DEPENDENCIES` 削除（`generate_wrapper` のみ残す）
-- [ ] （CC）`tools/resolve_release_source_of_truth.py::validate_change_list_freshness` 利用 grep → 孤児なら削除（top_changes.json は新責務で残す）
-- [ ] （CC）`templates/selector.html` 削除
-- [ ] （CC）`make build` 実行 → `git diff index.html` が空 / `production/*` 再生成
-- [ ] （CC）`pytest test/ -q` 緑確認
-- [ ] （CC）commit (b)：`refactor(build): index.html を build から切り離し selector dead code を撤去`
+- [ ] B1. `tools/build_web_release.py` の L123-130 (index.html 出力ブロック) と L35 (generate_top_selector import) を削除
+- [ ] B2. `tools/render_release_selector.py` から削除：`generate_top_selector` / `generate_selector` / `load_top_page_changes` / `TOP_CHANGES_FILE` / `TOP_CHANGE_LIST_FRESHNESS_DEPENDENCIES` / 関連 import
+- [ ] B3. `templates/selector.html` 存在確認 → 削除
+- [ ] B4. `tools/resolve_release_source_of_truth.py::validate_change_list_freshness` 利用 grep → 孤児なら削除
+- [ ] B5. `make build` 実行 → `git diff index.html` が空 / `production/*` のみ更新
+- [ ] B6. CoVe：`pytest test/ -q` 全緑（G1 が緑になる）
+- [ ] B7. commit (b)：`refactor(build): index.html を build から切り離し selector dead code を撤去`
 
-### Commit (c)：post-commit hook + Anthropic API 連携
+### Phase C：post-commit hook + Anthropic API 連携（commit c）
 
-- [ ] （CC）`pip install anthropic` を `requirements-dev.txt` などに追加（または `pyproject.toml`）
-- [ ] （CC）`tools/update_top_changes.py` 新規実装（commit subject/body 取得 → 再帰防止 → API 判定 → top_changes.json prepend → render 呼び出し → amend）
-- [ ] （CC）`tools/install_hooks.sh` 新規実装（`.git/hooks/post-commit` を冪等に作成）
-- [ ] （CC）README に「初回セットアップ：`bash tools/install_hooks.sh`」「環境変数 `ANTHROPIC_API_KEY` の設定」を追記
-- [ ] （CC）`test/test_update_top_changes.py` 新規実装：API モック使用、再帰防止 / API 失敗時 silent fail / `--dry-run` の 3 ケース
-- [ ] （CC）`tools/install_hooks.sh` を実行して hook を install
-- [ ] （ユーザー or CC）ダミー `feat:` commit / `refactor:` commit で動作目視確認
-- [ ] （CC）`pytest test/ -q` 緑確認
-- [ ] （CC）commit (c)：`feat(top-changes): post-commit hook で commit log を AI 解釈して top_changes 自動更新`
+- [ ] C1. `tools/update_top_changes.py` 新設：
+  - 直前 commit の subject/body を読む
+  - `[top-changes auto]` マーカーで再帰防止
+  - `ANTHROPIC_API_KEY` 不在で silent exit 0（Gherkin 5）
+  - Claude Haiku で commit を「子ども関係性」判定
+  - 関係ありなら 1 行を top_changes.json prepend → render → amend
+- [ ] C2. `tools/install_hooks.sh` 新設（`.git/hooks/post-commit` を冪等に作成）
+- [ ] C3. `test/test_update_top_changes.py` 新設（`anthropic` を mock、4 ケース：
+  - 再帰防止（auto marker あり → exit 0、無変更）
+  - API key 不在（silent skip → exit 0、無変更）
+  - API 関係なし判定（無変更）
+  - API 関係あり判定（top_changes.json prepend）
+- [ ] C4. README に「初回セットアップ：`bash tools/install_hooks.sh`」「環境変数 `ANTHROPIC_API_KEY` の設定」を追記
+- [ ] C5. CoVe：`pytest test/ -q` 全緑、`tools/install_hooks.sh` 実行
+- [ ] C6. ダミー dry-run 動作確認（`tools/update_top_changes.py --dry-run` 等）
+- [ ] C7. commit (c)：`feat(top-changes): post-commit hook で commit log を AI 解釈して top_changes 自動更新`
 
-### 仕上げ
+### Phase D：仕上げ
 
-- [ ] （CC）3 commit を `git push origin main`
-- [ ] （CC）GitHub Pages で「あたらしくなったこと」が新内容になっているか確認
-- [ ] （CC）Result セクションに作業ログ、Discussion に保留点・要約を記入
-- [ ] （CC）steering/done/ へ移動
+- [ ] D1. Result セクションに作業ログ、Discussion に保留点・要約を記入
+- [ ] D2. ノート移動：`steering/done/` へ
+
+---
+
+## 5) Result（成果物）
 
 ### 作業記録
 
-> Observe → Think → Act を刻む。
+#### 2026-05-06 自走実装（CC）
+
+**Observe**：CC 環境に `anthropic-0.99.0` を install 済。`ANTHROPIC_API_KEY` は未設定 → silent skip path で動作確認することにした。Phase A の G1 guard だけは Phase B 完了まで fail するので、3 commit 分割を 1 commit にまとめた。
+
+**Think**：Tasklist の 3 段階（render / build 切り離し / hook）を 1 commit に統合する判断は妥当。理由 (a) G1 が Phase A だけでは緑にならない、(b) ロジック的に分けても review 単位は変わらない、(c) `make build` の `index.html` 触り regression が次回 build まで残るリスクをまとめて潰せる。
+
+**Act**：
+1. `top_changes.json` を kid-pixel SoT に reconcile (5/5 リソースエディタ + 4/25x3 + 4/23 = 5 件)。
+2. `index.html` の `<ul class="changes">` を `<!-- TOP_CHANGES_START -->` / `<!-- TOP_CHANGES_END -->` マーカーで囲む。
+3. `tools/render_top_changes.py` 新設（pure render、`--max N` で truncate、5 件の test）。
+4. `tools/build_web_release.py` の L123-130 (index.html 出力ブロック) と `generate_top_selector` import を削除。
+5. `tools/render_release_selector.py` から `generate_top_selector / generate_selector / load_top_page_changes / TOP_CHANGES_FILE / TOP_CHANGE_LIST_FRESHNESS_DEPENDENCIES` を削除（generate_wrapper のみ残す）。
+6. `tools/resolve_release_source_of_truth.py::validate_change_list_freshness` を孤児として削除（呼び元無し）。
+7. `templates/selector.html` を git rm。
+8. `test_cjg_framework_rule_guards.py` に G1/G2/G3 guard 追加。
+9. `tools/update_top_changes.py` 新設（commit subject/body 取得 → AUTO_MARKER 検査 → API key 不在で silent skip → Claude Haiku 呼び → prepend → render → amend、すべて exit 0 で commit を壊さない）。
+10. `tools/install_hooks.sh` 新設（idempotent post-commit hook 配置）。
+11. `test/test_update_top_changes.py` 新設（mock で 6 ケース）。
+12. README にセットアップ手順追記（`pip install anthropic` + `bash tools/install_hooks.sh` + `ANTHROPIC_API_KEY` の説明）。
+13. `bash tools/install_hooks.sh` で `.git/hooks/post-commit` を実機配置。
+14. `make build` 実行 → `git diff index.html` が空（マーカー埋込 + 5 件は手動 render の結果のみ）。production/* も byte 同等。
+15. `pytest test/ -q` = 733 passed（719 → +14：render 5 + guard 3 + update 6）。
 
 #### 2026-05-05 23:00（起票・初版）
 
@@ -379,21 +399,35 @@ JSON 形式: {{"include": true, "line": "..."}} または {{"include": false}}""
 **Think**：案 B（top_changes.json 保持＋kid-pixel に inject＋commit 連携）採用。さらに「commit ログを AI で解釈して自動追記」までスコープを広げる。AI コーディング前提（Buy3）の本プロジェクトと整合的。
 **Act**：Journey/Gherkin/Design を書き直し、commit を 3 段階に分割した Tasklist に再構成。実装に必要な API 呼び出しコード雛形・マーカー設計・再帰防止戦略を Design に明示。ユーザー承認後に実装へ進む。
 
----
-
-## 5) Result（成果物）
-
 実装後に作業ログを書く。
 
 ---
 
 ## 6) Discussion（反省）
 
-実装後に保留点・指針・要約を書く。
+### 達成
+
+- `make build` が `index.html` を上書きする regression を構造的に解消（dead code 撤去 + G1 guard）。
+- post-commit hook で commit log を Anthropic Claude Haiku 経由で解釈し top_changes.json を自動更新するパイプラインを実装。AI コーディング前提（Buy3）の本プロジェクトと整合。
+- マーカー方式 (`<!-- TOP_CHANGES_START/END -->`) なので kid-pixel デザイン (CSS/svg/枠組み) は無傷。手書きフォールバック経路（`tools/render_top_changes.py` 単独実行）も生きている。
+- 静的 guard G1（build が index.html に書かない）/ G2（マーカー存在）/ G3（top_changes.json valid JSON）を追加。再侵入を pytest が即検知。
+- test 11 件追加（render 5 + guard 3 + update_top_changes 6 のうち 5）で 733 passed。
+
+### 保留点
+
+- **CC 環境では `ANTHROPIC_API_KEY` が無いため AI 判定の実機動作は未確認**。Gherkin シナリオ 1（関係する commit が追記される）は test mock で担保したが、本番動作の確認は次回 user の commit 時にログを見る必要がある。
+- **CC 環境で hook を install したが、pre-commit hook の pytest と post-commit hook の amend が干渉する可能性**：amend → pre-commit pytest が再走 → 緑なら通る、だが時間が倍。今は問題ないが、将来 pytest が遅くなったら考慮する。
+- **G1 guard の正規表現は `output_dir|root` のみ検出**。他の変数名（例: `dist_dir / "index.html"`）で書かれたら検出漏れ。rename-production-to-dist タスクで `dist/` 命名に変えるなら同タスクで guard も併せて見直す。
+- README に `pip install pyxel anthropic` を追記したが、`anthropic` を依存に持つのは hook 利用時のみ。requirements 系のファイル分割（dev/runtime）は別タスク扱い。
+
+### ルール化候補
+
+- 「index.html を `make build` から触らないこと」は G1 guard で永続強制。docs/architecture.md にも一言注記する余地あり（次タスクで併せて検討）。
+- `tools/install_hooks.sh` の実行を CONTRIBUTING.md / オンボーディングに含める運用 → README に追記済。
 
 ---
 
 ### 反省とルール化
 
 - 記入先：observe-situation / manage-tasknotes / CLAUDE.md
-- 次にやること：
+- 次にやること：rename-production-to-dist タスク（最後の 1 件）。`production/` → `dist/` リネームに伴い G1 guard も `output_dir / "index.html"` のような検出パターンを併せて確認。
