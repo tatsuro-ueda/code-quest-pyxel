@@ -106,7 +106,6 @@ class TilemapEditorTruthTest(unittest.TestCase):
             id(M.SHORE_W): (112, 0),
             id(M.SHORE_E): (128, 0),
         }
-        game.image_banks.tile_bank_water2 = None
         return game
 
     def _patch_wm(self, fake_wm):

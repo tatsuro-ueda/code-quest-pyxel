@@ -55,7 +55,6 @@ class ImageBanks:
 
     game: Any = None
     tile_bank: dict = field(default_factory=dict)
-    tile_bank_water2: object | None = None
     sprite_bank: dict = field(default_factory=dict)
     path_variant_bank: dict = field(default_factory=dict)
     shore_variant_bank: dict = field(default_factory=dict)
@@ -120,8 +119,6 @@ class ImageBanks:
             self.tile_id_by_pixel[(u, v)] = M.T_PATH
         for (u, v) in self.shore_variant_bank.values():
             self.tile_id_by_pixel[(u, v)] = M.T_WATER
-        if self.tile_bank_water2:
-            self.tile_id_by_pixel[self.tile_bank_water2] = M.T_WATER
 
     def tile_bank_layout_valid(self):
         """イメージバンク 0 のピクセルが現在の TILE_DATA と一致するか検証する。"""
@@ -279,7 +276,6 @@ class ImageBanks:
         import src.runtime.main_runtime as M
         for tid, tdata in M.TILE_DATA.items():
             yield ("tile", tid, tdata)
-        yield ("water2", "water2", M.TILE_WATER2)
         for _name, pdata in [
             ("V", M.PATH_V), ("H", M.PATH_H), ("CROSS", M.PATH_CROSS),
             ("SE", M.PATH_SE), ("SW", M.PATH_SW), ("NE", M.PATH_NE), ("NW", M.PATH_NW),
@@ -303,8 +299,6 @@ class ImageBanks:
             bx = col * 16; by = row * 16
             if kind == "tile":
                 self.tile_bank[key] = (bx, by)
-            elif kind == "water2":
-                self.tile_bank_water2 = (bx, by)
             elif kind == "path":
                 self.path_variant_bank[key] = (bx, by)
             elif kind == "shore":

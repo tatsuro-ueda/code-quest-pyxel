@@ -3,8 +3,11 @@ from __future__ import annotations
 """explore シーンの ViewModel（M2-2：解釈済みの描画用データ）。
 
 カメラ計算（game.cam_x/y への代入）は presenter 側に移し、view は VM に
-入った座標とアセット参照だけで描画する。タイル境界判定や地形 variant
-の解決はランタイム計算量が大きいので view 内のループに残す。
+入った座標とアセット参照だけで描画する。
+2026-05-05 (A 案) 以降、タイル合成は ``pyxel.bltm`` 1 回呼びで完結し、
+view 内のタイル境界判定 / 地形 variant 解決ループは撤去済み。pyxres の
+``tilemaps[0]`` が SSoT として描画されるため、VM は bltm に渡す矩形
+（``bltm_x/y/w/h``、``bltm_u/v``、``tm``）と sprite 情報のみを保持する。
 """
 
 from dataclasses import dataclass, field

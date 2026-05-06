@@ -108,7 +108,6 @@ class WorldMapSsotTest(unittest.TestCase):
             id(M.PATH_V): (64, 0),
         }
         ib.shore_variant_bank = {}
-        ib.tile_bank_water2 = None
         ib.pyxres_loaded = pyxres_loaded
         return game, ib
 
