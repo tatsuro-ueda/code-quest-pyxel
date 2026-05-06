@@ -158,13 +158,25 @@
 
 * `src/.../views/*.py`
 * `src/platform/pyxel_runtime.py` のような最外殻
+* `src/shared/ui/*.py`（**View と同等扱い**：UI 部品は views の延長として `shared/ui/` に置く。HUD / status_bar / message_window / vfx_overlay / text_renderer 等。2026-05-06 明文化）
+* `src/shared/services/audio_system.py`（**Audio ラッパ**：BGM / SE / 効果音の Pyxel 連携。`pyxel.playm / play / sounds / musics`）
+* `src/shared/services/image_banks.py`（**Resource ラッパ**：pyxres ロード/保存、image bank / tilemap の **書き込み・初期化のみ**。`pyxel.load / save / images / tilemaps[0].pset`。読み取りは Model 直読へ移管済 2026-05-05）
 
 #### 禁止
 
 * `models`（描画系は View または最外殻へ）
 * `presenters`（同上）
-* `services`（同上。ただし Audio/Save / 初期化系の Pyxel 依存ラッパは別）
+* `services`（同上。ただし Audio ラッパ / Resource ラッパは上記許可リストの通り例外）
 * `shared/state`（同上）
+
+#### 検証 grep の例
+
+```bash
+# services から pyxel 描画系直呼びを検出（Audio / Resource ラッパは除外）
+grep -nE 'pyxel\.(blt|bltm|text|line|rect|rectb|circ|circb|cls|pset|tri|trib|clip|camera)' \
+  src/shared/services/*.py | grep -vE '(audio_system|image_banks)\.py'
+# → 0 件であること
+```
 
 ### 読み取り系 API（`pyxel.tilemaps[n].pget`, `pyxel.images[n].pget`）
 

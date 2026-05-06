@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-import pyxel
+from src.shared.ui.vfx_overlay import draw_vfx_overlay
 
 
 @dataclass
@@ -39,4 +39,4 @@ class VfxSystem:
         if not cfg:
             return
         if self.timer % 2 == 0:
-            pyxel.rect(0, 0, 256, 256, cfg["color"])
+            draw_vfx_overlay(cfg["color"])

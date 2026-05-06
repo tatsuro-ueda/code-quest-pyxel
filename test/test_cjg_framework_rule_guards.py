@@ -99,6 +99,30 @@ class M1PyxelBoundaryTest(unittest.TestCase):
         hits = _grep(self.PYXEL_DRAW_CALL, [path])
         self.assertEqual(hits, [], f"player_model.py に pyxel.* 描画系直呼び: {hits}")
 
+    # M1-1 例外規定 (2026-05-06 明文化)：
+    #   - audio_system.py: Audio ラッパ
+    #   - image_banks.py: Resource ラッパ (pyxres ロード/保存、image bank/tilemap 書込)
+    # それ以外の services/*.py で pyxel.* 描画系を直呼びしてはいけない。
+    SERVICES_PYXEL_EXEMPT = frozenset({"audio_system.py", "image_banks.py"})
+
+    def test_no_pyxel_draw_calls_in_shared_services_except_resource_audio(self):
+        """src/shared/services/*.py で pyxel 描画系直呼びは Audio / Resource ラッパ以外 0 件。
+
+        2026-05-06 改訂で M1-1 例外を Audio / Resource ラッパに限定し、
+        message_display / vfx 等の UI 描画は shared/ui/ へ物理移動した。
+        """
+        services_dir = SRC / "shared" / "services"
+        target_files = [
+            p for p in services_dir.glob("*.py")
+            if p.name not in self.SERVICES_PYXEL_EXEMPT
+        ]
+        hits = _grep(self.PYXEL_DRAW_CALL, target_files)
+        self.assertEqual(
+            hits, [],
+            f"shared/services/*.py (例外 {sorted(self.SERVICES_PYXEL_EXEMPT)} 以外) "
+            f"に pyxel 描画系直呼び: {hits}",
+        )
+
 
 class M2ViewInputTest(unittest.TestCase):
     """M2-1: View は入力を見ない（ViewModel のみ受け取る）。"""
