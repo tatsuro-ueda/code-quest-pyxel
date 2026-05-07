@@ -687,7 +687,7 @@ Rule: Code Maker 互換はビルド時点で守る
 - `実装済み`: `.pyxres` の直接編集禁止 hook と Code Maker 互換ビルドはある
 - `部分実装`: `dist/code-maker.zip` / `development/code-maker.zip` に resource を含めて配る流れはあるが、freshness と E2E 保証はまだ薄い
 - `未実装`: runtime が resource を勝手に更新しないこと、build が stale resource を必ず止めることの固定はまだ目標
-- `未実装`: `AudioManager` / `SfxSystem` が imported `Sound / Music` を固定データで上書きしないことはまだ固定できていない
+- `実装済み`: BGM の中央集権 (`AudioManager` / `CHIPTUNE_TRACKS`) は撤去済（CJ44 確定版）。BGM データは pyxres を SSoT として使う。`SfxSystem` は `_slot_has_sound` ガードで pyxres 側の編集結果を上書きしない
 
 **改造対象**
 - タイル配置・地形、隠し通路
@@ -741,15 +741,16 @@ Rule: build は人が編集した resource をそのまま届ける
 ```
 
 ```gherkin
-Rule: Sound / Music は import 後に hardcoded audio で上書きしない
+Rule: Sound / Music は pyxres を SSoT とし、Python コードで上書きしない
   Code Maker で音を作っても runtime が固定メロディや固定 SE を流すなら、編集面が真実でなくなる
 
-  Scenario: imported Sound / Music が runtime audio の正本になる
+  Scenario: pyxres の Sound / Music が runtime audio の正本になる
     Given 人が Code Maker の Sound / Music エディタで音を編集した
-    And selector import がその内容を code 側 audio asset に取り込んだ
+    And pyxres に保存された
     When runtime が audio を初期化する
-    Then `AudioManager` / `SfxSystem` は imported 音データを使う
-    And 固定の `CHIPTUNE_TRACKS` / `SFX_DEFINITIONS` で上書きしない
+    Then 各 scene の view.py は `pyxel.playm` で pyxres の musics スロットを直接再生する
+    And 固定の `CHIPTUNE_TRACKS` のような Python 側上書きは存在しない（CJ44 確定版で撤去済）
+    And `SfxSystem` は pyxres にデータが入っていないスロットだけ fallback 定義を書き込む（`_slot_has_sound` ガード）
 ```
 
 ```gherkin

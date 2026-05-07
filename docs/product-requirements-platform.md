@@ -49,41 +49,13 @@ Rule: 直したつもりで別の場所を壊さない
 
 ---
 
-## CJG20: 演出ON/OFFで違いを体験する
+## CJG20: 演出を実際に当てて違いを体験する
 
-この `CJG20` では、「演出を切っても遊べるし、戻せば違いがすぐ分かる」を約束する。
-
-実装状況:
-- `実装済み`: タイトル画面とゲーム内メニューに `せってい` があり、`ぜんぶ` で BGM/SFX/VFX をまとめて ON/OFF できる
-- `実装済み`: BGM/SFX/VFX を個別にも ON/OFF でき、切り替えはその場で反映される
-
-```gherkin
-Feature: CJG20 演出ON/OFFで違いを体験する
-  子どもが演出の価値を体で感じるには
-  演出を切っても遊べて
-  戻したときの違いがすぐ伝わらなければならない
-```
-
-```gherkin
-Rule: 演出を切ってもゲーム本体は止まらない
-  演出比較のために遊べなくなってはいけない
-
-  Scenario: 演出をOFFにしてもゲームが正常に動作する
-    Given BGM/SFX/VFXがすべて有効な状態
-    When 演出を無効にしてRunする
-    Then ゲーム本編が正常に動作する
-    And 無音・演出なしでプレイできる
-```
-
-```gherkin
-Rule: 演出を戻したら違いがその場で分かる
-  切り替えたのに反映が遅いと比較にならない
-
-  Scenario: 演出をONに戻すと即座に反映される
-    Given 演出が無効な状態でプレイ中
-    When 演出を有効に切り替える
-    Then BGM/SFX/VFXが即座に有効になる
-```
+> **2026-05-07 改訂（CJ44 確定版）**：CJ20 は AV PRD に移管。
+> 旧仕様の「演出 ON/OFF UI で比較する」は撤去。詳細は [`product-requirements-av.md`](./product-requirements-av.md#cjg20-演出を実際に当てて違いを体験する) を参照。
+>
+> CJ44 シンプルさ優先により、設定画面（BGM/SFX/VFX 個別 ON/OFF・「ぜんぶ」一括）はすべて撤去。
+> BGM/SFX/VFX は常時 ON。「比べて違いを体験する」は ON/OFF UI ではなく、演出を **足す前と足したあと** の差で実現する。
 
 ---
 
@@ -325,7 +297,7 @@ Rule: テストプレイも誰でもすぐ始められる
 - `部分実装`: 保存と持ち出しの導線はあるが、環境ごとの差は残る
 - `部分実装`: `Editor で見えたもの = 実ゲーム` はまだ未達で、特に map / resource の一致は弱い
 - `部分実装`: Code Maker 用 zip に入る `my_resource.pyxres` が常に今の開発版と一致する保証はまだ薄い
-- `未実装`: `Sound / Music` は selector import 後も `AudioManager` / `SfxSystem` の固定データで上書きされ、Code Maker 側の編集結果が本編の真実になっていない
+- `実装済み`: `Sound / Music` は pyxres を SSoT として扱い、selector import 後も Code Maker 側の編集結果がそのまま本編の音になる（CJ44 確定版で AudioManager / CHIPTUNE_TRACKS は撤去済）
 
 ```gherkin
 Feature: CJG26 「自分たちのゲーム」と言えるようになる

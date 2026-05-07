@@ -50,12 +50,74 @@
 └─ docs/                      本文書を含むドキュメント群
 ```
 
+## 3.5 build の起動方法（runbook）
+
+> AI（Claude）と人間の両方が「毎回迷わずに」 build を再生できるための定型手順。
+> BGM / pyxres / view / scene を変更した後は **必ず両方** を順番に実行する。
+> （2026-05-07 追加：CJ44 確定版の運用安定化を目的に、build runbook を docs に明文化した）
+
+### 3.5.1 dist/code-maker.zip だけを再生成する
+
+```bash
+python tools/build_codemaker.py
+```
+
+- 出力：`dist/code-maker.zip`（block-quest/main.py + my_resource.pyxres を梱包した教材版 zip）
+- `tools/codemaker_manifest.txt` の順番で全 .py を 1 ファイルに inline する
+- **PYTHONPATH 不要**（スクリプト先頭で `sys.path.insert(0, _HERE)` 済み）
+
+### 3.5.2 dist/ 配下の全 release artifacts を再生成する
+
+```bash
+PYTHONPATH=. python tools/build_web_release.py
+```
+
+- 出力：`dist/code-maker.zip` / `dist/pyxel.html` / `dist/pyxel.pyxapp` / `dist/play.html` / `dist/index.html`
+- 内部で `tools/build_codemaker.py` も呼ぶので、上の 3.5.1 を別途実行する必要はない
+- **PYTHONPATH=. が必要な理由**：`tools/build_release_artifacts.py` が
+  `from tools.build_codemaker import build_codemaker_zip` という形でパッケージ相対 import を行っているため、
+  CWD（リポジトリ root）を `PYTHONPATH` に乗せる必要がある。
+  `build_web_release.py` 自体は `sys.path.insert` で済ませているが、その先で読まれる
+  `build_release_artifacts.py` が `tools.*` 名前空間で読まれるため
+
+### 3.5.3 BGM / pyxres / view / scene を変更したときの順序
+
+1. 変更を `src/` または `assets/` に commit する前にローカル検証：
+   ```bash
+   PYTHONPATH=. python -m pytest -x
+   ```
+2. release artifacts を再生成：
+   ```bash
+   PYTHONPATH=. python tools/build_web_release.py
+   ```
+3. bundle 内の `block-quest/main.py` に旧シンボル（例: `class AudioManager` / `class SettingsScene`）が
+   残っていないかを Python で確認：
+   ```bash
+   python -c "import zipfile,re; z=zipfile.ZipFile('dist/code-maker.zip'); \
+     t=z.read('block-quest/main.py').decode('utf-8'); \
+     print('AudioManager:',len(re.findall(r'class AudioManager',t))); \
+     print('SettingsScene:',len(re.findall(r'class SettingsScene',t))); \
+     print('play_bgm_track:',len(re.findall(r'play_bgm_track\(',t)))"
+   ```
+4. `git status` で `dist/` 配下の差分のみが出ていることを確認（src 側は既に commit 済みのはず）
+
+### 3.5.4 よくある落とし穴
+
+- `python tools/build_release_artifacts.py` を直接叩くと `ModuleNotFoundError: No module named 'tools'` になる。
+  必ず `PYTHONPATH=. python tools/build_web_release.py` の方を使うこと
+- `dist/code-maker.zip` を Code Maker にロードして子どもが編集した結果を本編に戻したい場合は、
+  `dist/code-maker.zip` ではなく `assets/blockquest.pyxres` を **直接 SSoT として更新** する
+  （CJ44 確定版・BGM SSoT タスクで確定した方針）
+- bundle に古い AudioManager / SettingsScene が残ったまま release した経歴があるので、毎回 3.5.3 の
+  自己検査を回すこと
+
 ## 4. ディレクトリ詳細
 
 ### 4.1 `src/runtime/app.py`（**実装の窓口**）
 
 - **class Game**：本プロジェクトのアプリ本体（pyxel 初期化＋全 Scene/Service の組み立て＋update/draw dispatcher）。
-  - `__init__`：pyxel.init / フォント / AudioManager / ImageBanks / GameState / PlayerModel / SceneManager（state holder）/ DebugService / 11 Scene を組み立てる
+  - `__init__`：pyxel.init / フォント / SfxSystem / ImageBanks / GameState / PlayerModel / SceneManager（state holder）/ DebugService / 10 Scene を組み立てる（CJ44 確定版で `settings_scene` は撤去済、AudioManager も撤去済、`current_bgm` のような BGM 状態も Game には持たない）
+  - **BGM の現在値**：`Game` クラスは BGM 状態を保持しない。冪等な BGM 再生は `src/shared/services/audio_system.py::play_bgm_track` 関数（モジュールスコープのプライベート変数 `_current_bgm_track` を使用）に集約されている。各 scene の `view.py::play_bgm` はこの関数を 1 行で呼ぶだけ
   - `start()`：`pyxel.run(self.update, self.draw)`
   - `update() / draw()`：現在 scene の update/draw を呼ぶ dispatcher
   - **property forward（M4-3 段階移行）**：`current_town` は `GameState.current_town` へ、`debug_mode / debug_seq` は `DebugService` へ、`state / prev_state` は `SceneManager` へ自動委譲する @property を持つ。`Game.__init__` が直接これらを `self.X = ...` で書くと static guard で fail する。
@@ -83,16 +145,17 @@ YAML 生成物を runtime に供給する読み出し口。
 | Scene | 責務 | scene-local state（model 保有） |
 |---|---|---|
 | `splash/` | 起動スプラッシュ | `splash_frame` |
-| `title/` | タイトル画面・設定開閉 | `title_cursor` |
+| `title/` | タイトル画面 | `title_cursor` |
 | `explore/` | フィールド / ダンジョン歩行 | `walk_frame, walk_timer, move_cooldown, _a_cooldown` |
 | `town/` | 町メニュー（宿・店・会話・セーブ） | `town_menu_cursor, town_menu_pos, menu_message` |
 | `shop/` | 武器・防具・道具の売買 | `shop_cursor, shop_inventory, shop_kind, shop_message` |
 | `battle/` | 戦闘全体（通常・ボス・Noise Guardian） | `battle_enemy, battle_phase, battle_text, battle_item_select` ほか 12 フィールド |
 | `menu/` | メニュー画面 | `menu_cursor, menu_item_cursor, menu_sub` |
-| `settings/` | AV・操作設定 | `settings_cursor, settings_return_state` |
 | `ai_help/` | Glitch Lord 戦の AI ヘルプ | - |
 | `professor/` | Professor 戦 intro / ending | `professor 系 6 state` |
 | `ending/` | エンディング | - |
+
+> 2026-05-07 改訂（CJ44 確定版）：`settings/` は撤去（演出 ON/OFF UI 廃止）。Scene は 10 個。
 
 **共通原則**：
 - `model.py` は state の保持だけ。pyxel 呼び出しは禁止
@@ -109,7 +172,7 @@ YAML 生成物を runtime に供給する読み出し口。
 | `game_state.py` | scene 間共有 state を集約（M4-3 圧縮済） | `@dataclass GameState`（13 フィールド：player_model / 進行 4 flag / world_return / cam / dungeon_template / current_town 等。`world_map / dungeon_map / dungeon_rooms` は撤去、pyxres = SSoT、Model 直読に移行） + `TownContext` |
 | `scene_manager.py` | scene 切替メタを集約（M4-3） | `SceneManager`（current / previous の 2 値 state holder。Scene オブジェクト自体は持たない） |
 | `debug_service.py` | デバッグ state を集約（M4-3） | `DebugService`（mode / seq / record_up / record_down / UUDD トグル） |
-| `audio_system.py` | BGM / SFX の scene 選択・再生 | `AudioManager`, `SfxSystem`, `choose_bgm_scene`, `sync_audio`, melody/bass/drum slot |
+| `audio_system.py` | SFX 再生（pyxres SSoT、空 slot のみ fallback 書き込み）。BGM は各 scene の view.py が直接 `pyxel.playm` を呼ぶ（CJ44 確定版で `AudioManager` / `CHIPTUNE_TRACKS` / `choose_bgm_scene` / `sync_audio` は撤去済） | `SfxSystem`, `SFX_DEFINITIONS`, `SFX_CHANNEL`, `_slot_has_sound` ガード |
 | `dialog_runner.py` | YAML ドリブン構造化会話 | `StructuredDialogRunner`, `DialogStep`, `DialogChoice`, `DialogValidationError` |
 | `message_display.py` | 短メッセージ overlay | `MessageDisplay`（say / show_message / wrap_text 等） |
 | `image_banks.py` | pyxres ロード / 初期化 / **fallback 焼き戻し**（pyxres 不在時のみ）/ pyxres 保存 | `ImageBanks`（`setup_image_banks` / `setup_world_tilemap` / `regenerate_world_tilemap_fallback` / `regenerate_dungeon_tilemap_fallback` / `paint_*` / `derive_dungeon_from_tilemap`）。**読み取りは Model 直読**（pyxel.tilemaps[0] / pyxel.images[n]）に移管済（2026-05-05 改訂） |
@@ -125,7 +188,9 @@ YAML 生成物を runtime に供給する読み出し口。
 | `codemaker_resource_store.py` | Code Maker zip の採否・保管 | `import_codemaker_resource_zip`, `promote_imported_resource`, manifest 管理 |
 
 **GameState に入れないもの（Game クラスが直接 scene に DI）**：
-`AudioManager / SfxSystem / InputStateTracker / SaveStore / ImageBanks / DialogRunner / MessageDisplay / VfxSystem / TextFormat / StatusBar / DebugService / SceneManager` — これらは **サービスインスタンス**（依存性）であり state ではない。入れ子にすると循環 import リスクが上がる。
+`SfxSystem / InputStateTracker / SaveStore / ImageBanks / DialogRunner / MessageDisplay / VfxSystem / TextFormat / StatusBar / DebugService / SceneManager` — これらは **サービスインスタンス**（依存性）であり state ではない。入れ子にすると循環 import リスクが上がる。
+
+> 2026-05-07 改訂（CJ44 確定版・追加整理）：`AudioManager` は撤去。BGM は各 scene の view.py が `audio_system.play_bgm_track(target)` を呼ぶ（内部で `pyxel.playm` を冪等に発火）。BGM の現在値は `audio_system._current_bgm_track`（モジュールスコープ変数）に集約され、`Game.current_bgm` は持たない。
 
 ### 4.6.1 `src/shared/state/`（M4-4 で新設）
 
