@@ -59,9 +59,6 @@ class SaveRoundTripAllFieldsTest(unittest.TestCase):
         pm.professor_intro_seen = True
         pm.professor_defeated = True
         pm.professor_ending_seen = True
-        pm.bgm_enabled = False
-        pm.sfx_enabled = False
-        pm.vfx_enabled = False
         pm.dialog_flags = {"castle.first_visit": True}
         pm.town_talk_idx = [1, 2, 3]
         return pm

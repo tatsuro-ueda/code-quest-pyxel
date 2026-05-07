@@ -41,9 +41,10 @@ class GameInitSmokeTest(unittest.TestCase):
         self.assertEqual(self._game.prev_state, "map")
 
     def test_all_dispatcher_scenes_are_attached(self):
+        # 2026-05-07 改訂（CJ44 確定版）：settings_scene は撤去済（演出 ON/OFF 廃止）
         expected_scene_attrs = (
             "splash_scene", "title_scene", "explore_scene", "battle_scene",
-            "menu_scene", "settings_scene", "shop_scene", "ai_help_scene",
+            "menu_scene", "shop_scene", "ai_help_scene",
             "ending_scene", "professor_scene",
         )
         for attr in expected_scene_attrs:
@@ -76,10 +77,21 @@ class GameInitSmokeTest(unittest.TestCase):
         self.assertIsNone(self._game.current_town)
 
     def test_core_game_services_are_attached(self):
-        """dispatcher が触る主要サービス属性が揃っていること。"""
-        for attr in ("messages", "sfx", "audio", "input_state", "save_store", "font"):
+        """dispatcher が触る主要サービス属性が揃っていること。
+
+        2026-05-07 改訂（CJ44 確定版・追加整理）：``audio`` も ``current_bgm`` も
+        Game には持たない。BGM は各 view が ``audio_system.play_bgm_track`` を呼び、
+        現在 BGM track はそのモジュール内のプライベート変数に集約される。
+        """
+        for attr in ("messages", "sfx", "input_state", "save_store", "font"):
             with self.subTest(attr=attr):
                 self.assertTrue(hasattr(self._game, attr), f"Game に {attr} が無い")
+        for forbidden in ("audio", "current_bgm"):
+            with self.subTest(forbidden=forbidden):
+                self.assertFalse(
+                    hasattr(self._game, forbidden),
+                    f"{forbidden} 属性は CJ44 確定版で撤去済"
+                )
 
 
 if __name__ == "__main__":

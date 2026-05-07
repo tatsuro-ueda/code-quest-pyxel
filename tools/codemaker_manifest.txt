@@ -105,12 +105,6 @@ src/scenes/professor/view.py
 src/scenes/professor/presenter.py
 src/scenes/professor/scene.py
 
-src/scenes/settings/model.py
-src/scenes/settings/view_model.py
-src/scenes/settings/view.py
-src/scenes/settings/presenter.py
-src/scenes/settings/scene.py
-
 src/scenes/shop/model.py
 src/scenes/shop/view_model.py
 src/scenes/shop/view.py

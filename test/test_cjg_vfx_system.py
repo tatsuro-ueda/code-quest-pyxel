@@ -1,9 +1,9 @@
 """CJG/vfx: VfxSystem.start と draw_overlay の挙動。
 
 根拠:
-- docs/product-requirements-av.md（VFX toggle）
+- docs/product-requirements-av.md（VFX）
 
-vfx_enabled=False なら start も draw_overlay も no-op（timer が進まない）。
+2026-05-07 改訂（CJ44 確定版）：vfx_enabled の概念は撤去済（VFX は常に ON）。
 未知の vfx_type は start しても timer が立たない。
 """
 
@@ -42,15 +42,6 @@ class StartVfxTest(unittest.TestCase):
         vfx = VfxSystem(game=game)
 
         vfx.start("unknown_effect_name")
-
-        self.assertEqual(vfx.timer, 0)
-
-    def test_start_while_vfx_disabled_does_nothing(self):
-        game = _FakeGame()
-        game.player_model.vfx_enabled = False
-        vfx = VfxSystem(game=game)
-
-        vfx.start("flash_red")
 
         self.assertEqual(vfx.timer, 0)
 

@@ -9,8 +9,7 @@ import pyxel
 from pathlib import Path
 
 from src.shared.assets.jp_font_data import JP_FONT_LAYOUT
-from src.shared.services.audio_system import AudioManager, SfxSystem
-from src.shared.services.audio_system import sync_audio as _sync_audio_fn
+from src.shared.services.audio_system import SfxSystem
 from src.shared.services.dialog_runner import StructuredDialogRunner
 from src.shared.services.image_banks import ImageBanks
 from src.shared.services.input_bindings import (
@@ -40,7 +39,6 @@ from src.scenes.ending.scene import EndingScene
 from src.scenes.explore.scene import ExploreScene
 from src.scenes.menu.scene import MenuScene
 from src.scenes.professor.scene import ProfessorScene
-from src.scenes.settings.scene import SettingsScene
 from src.scenes.shop.scene import ShopScene
 from src.scenes.splash.scene import SplashScene
 from src.scenes.title.scene import TitleScene
@@ -63,16 +61,19 @@ class Game:
         except Exception:
             self.font = None
         self.has_jp_font = bool(JP_FONT_LAYOUT)
-        self.audio = AudioManager(pyxel)
+        # 2026-05-07 改訂：BGM は scene の view.py が pyxel.playm を直接呼ぶ
+        # （CJ44 確定版）。AudioManager は撤去済。BGM の冪等性は
+        # audio_system.play_bgm_track 内のモジュールスコープ変数で保持し、
+        # Game クラス自身は BGM 状態を持たない。
         self.sfx = SfxSystem(pyxel)
         dialogue_data = DIALOGUE_JA if self.has_jp_font else DIALOGUE_EN
         self.dialog = StructuredDialogRunner(dialogue_data)
 
         self.image_banks = ImageBanks(game=self)
         self.image_banks.setup_image_banks()
-        # slot 番号の対応は維持しつつ、import 済み SFX は上書きしない
+        # pyxres ロード後に SfxSystem を再構築：import 済み SFX は上書きしない
+        # (_slot_has_sound ガード)。
         self.sfx = SfxSystem(pyxel)
-        self.audio = AudioManager(pyxel)
 
         self.image_banks.setup_world_tilemap()
 
@@ -115,17 +116,14 @@ class Game:
         self.menu_scene = MenuScene(game=self)
         self.ai_help_scene = AiHelpScene(game=self)
         self.ending_scene = EndingScene(game=self)
-        self.settings_scene = SettingsScene(game=self)
         self.town_model = TownModel()
         self.town_view = TownView(game=self)
         self.town_presenter = TownPresenter(model=self.town_model, game=self)
         self.professor_scene = ProfessorScene(game=self)
         self.battle_scene = BattleScene(game=self)
         self.status_bar = StatusBar(game=self)
-
-        self.settings_scene.apply_av()
-
-        _sync_audio_fn(self)
+        # 2026-05-07 改訂（CJ44 確定版）：settings_scene と apply_av は撤去済。
+        # BGM/SFX/VFX は常に ON。設定画面は存在しない。
 
     @property
     def current_town(self) -> "TownContext | None":
@@ -230,8 +228,6 @@ class Game:
             self.battle_scene.update()
         elif self.state == "menu":
             self.menu_scene.update()
-        elif self.state == "settings":
-            self.settings_scene.update()
         elif self.state == "message":
             self.messages.update()
         elif self.state == "town":
@@ -251,7 +247,8 @@ class Game:
         elif self.state == "ai_help":
             self.ai_help_scene.update()
 
-        _sync_audio_fn(self)
+        # 2026-05-07 改訂：BGM 同期は各 scene の view.draw 冒頭で行うため、
+        # ここでの sync_audio 呼び出しは撤去（CJ44 確定版）。
 
     def draw(self):
         pyxel.cls(0)
@@ -268,13 +265,6 @@ class Game:
             self.explore_scene.draw()
             self.status_bar.draw()
             self.menu_scene.draw()
-        elif self.state == "settings":
-            if self.settings_scene.model.origin == "menu":
-                self.explore_scene.draw()
-                self.status_bar.draw()
-            else:
-                self.title_scene.draw()
-            self.settings_scene.draw()
         elif self.state == "message":
             self.explore_scene.draw()
             self.status_bar.draw()

@@ -15,7 +15,7 @@ from src.game_data import (
 )
 from src.scenes.battle.model import BattleModel
 from src.scenes.battle.presenter import BattlePresenter
-from src.scenes.battle.view import BattleView
+from src.scenes.battle.view import BattleView, play_bgm as _play_battle_bgm
 from src.shared.state.player_model import (
     MAX_LEVEL,
     exp_for_level,
@@ -277,6 +277,7 @@ class BattleScene:
         game = self.game
         if game is None:
             return self.view.render(phase=self.model.phase)
+        _play_battle_bgm(game)
         vm = self.presenter.build_view_model(game)
         text_writer = getattr(game, "messages", None)
         vfx = getattr(game, "vfx", None)

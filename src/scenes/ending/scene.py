@@ -5,7 +5,7 @@ from typing import Any
 
 from src.scenes.ending.model import EndingModel
 from src.scenes.ending.presenter import EndingPresenter
-from src.scenes.ending.view import EndingView
+from src.scenes.ending.view import EndingView, play_bgm as _play_ending_bgm
 
 
 @dataclass
@@ -41,5 +41,6 @@ class EndingScene:
             return
         if not self.model.lines:
             self.model.lines = game.messages.dialog_lines("ending.main.line01")
+        _play_ending_bgm(game)
         vm = self.presenter.build_view_model(game)
         self.view.render(vm, game.messages)

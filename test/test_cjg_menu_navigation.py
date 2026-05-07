@@ -5,8 +5,9 @@
 - docs/product-requirements-battle.md（menu でアイテム使用が安全に動くこと）
 - docs/customer-jobs.md Make3（crash で好循環が途絶）
 
-MenuScene.update は 6 メニュー（status / items / equip / settings / ai_help / close）
-を cursor で循環し、CONFIRM で sub メニューに入る。items サブでは item_use サービス
+2026-05-07 改訂（CJ44 確定版）：「せってい」項目は撤去（演出 ON/OFF 廃止）。
+MenuScene.update は 5 メニュー（status / items / equip / ai_help / close）を
+cursor で循環し、CONFIRM で sub メニューに入る。items サブでは item_use サービス
 を通して PlayerModel を更新し、qty=0 になると inventory から取り除く。
 """
 
@@ -53,14 +54,6 @@ class _FakeMessages:
 
 
 @dataclass
-class _FakeSettingsScene:
-    opened: list[str] = field(default_factory=list)
-
-    def open(self, origin: str):
-        self.opened.append(origin)
-
-
-@dataclass
 class _FakeAiHelpScene:
     entered: int = 0
 
@@ -76,7 +69,6 @@ class _FakeGame:
     input_state: _FakeInputState = field(default_factory=_FakeInputState)
     sfx: _FakeSfx = field(default_factory=_FakeSfx)
     messages: _FakeMessages = field(default_factory=_FakeMessages)
-    settings_scene: _FakeSettingsScene = field(default_factory=_FakeSettingsScene)
     ai_help_scene: _FakeAiHelpScene = field(default_factory=_FakeAiHelpScene)
 
 
@@ -86,7 +78,7 @@ class MenuCursorTest(unittest.TestCase):
 
         game = _FakeGame()
         scene = MenuScene(game=game)
-        scene.model.cursor = 5  # 最後（とじる）
+        scene.model.cursor = 4  # 最後（とじる）
 
         game.input_state.press(DOWN_BUTTONS)
         scene.update()
@@ -103,7 +95,7 @@ class MenuCursorTest(unittest.TestCase):
         game.input_state.press(UP_BUTTONS)
         scene.update()
 
-        self.assertEqual(scene.model.cursor, 5)
+        self.assertEqual(scene.model.cursor, 4)
 
     def test_cancel_from_root_returns_to_map(self):
         from src.shared.services.input_bindings import CANCEL_BUTTONS
@@ -142,18 +134,6 @@ class MenuSubEntryTest(unittest.TestCase):
         self.assertEqual(scene.model.sub, "items")
         self.assertEqual(scene.model.item_cursor, 0)
 
-    def test_confirm_on_settings_calls_settings_scene_open_with_menu_origin(self):
-        """menu から settings_scene.open('menu') を直接呼ぶ（存在しない game._open_settings を呼ばない）。"""
-        from src.shared.services.input_bindings import CONFIRM_BUTTONS
-
-        game = _FakeGame()
-        game.input_state.press(CONFIRM_BUTTONS)
-        scene = MenuScene(game=game)
-        scene.model.cursor = 3
-        scene.update()
-
-        self.assertEqual(game.settings_scene.opened, ["menu"])
-
     def test_confirm_on_ai_help_calls_ai_help_scene_enter(self):
         """menu から ai_help_scene.enter() を直接呼ぶ（存在しない game._enter_ai_help を呼ばない）。"""
         from src.shared.services.input_bindings import CONFIRM_BUTTONS
@@ -161,7 +141,7 @@ class MenuSubEntryTest(unittest.TestCase):
         game = _FakeGame()
         game.input_state.press(CONFIRM_BUTTONS)
         scene = MenuScene(game=game)
-        scene.model.cursor = 4
+        scene.model.cursor = 3
         scene.update()
 
         self.assertEqual(game.ai_help_scene.entered, 1)
@@ -172,7 +152,7 @@ class MenuSubEntryTest(unittest.TestCase):
         game = _FakeGame()
         game.input_state.press(CONFIRM_BUTTONS)
         scene = MenuScene(game=game)
-        scene.model.cursor = 5
+        scene.model.cursor = 4
         scene.update()
 
         self.assertEqual(game.state, "map")

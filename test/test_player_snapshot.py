@@ -35,9 +35,6 @@ def _sample_player():
         "professor_intro_seen": True,
         "professor_defeated": False,
         "professor_ending_seen": False,
-        "bgm_enabled": True,
-        "sfx_enabled": False,
-        "vfx_enabled": True,
         "dialog_flags": {"foo": True},
         "town_talk_idx": [0, 0, 0],
     }
@@ -82,21 +79,28 @@ class PlayerSnapshotTest(unittest.TestCase):
             self.assertEqual(restored["player"][key], player[key], key)
         self.assertEqual(restored["town_pos"], (20, 12))
 
-    def test_restore_adds_defaults_for_missing_av_settings(self):
+    def test_restore_drops_legacy_av_settings(self):
+        """2026-05-07 改訂（CJ44 確定版）：bgm/sfx/vfx_enabled は撤去済。
+
+        古いセーブに残っていても無視され、復元結果には含まれない。
+        """
         snap = {
             "save_version": SAVE_VERSION,
             "town_pos": [20, 12],
             "player": {
                 "x": 20,
                 "y": 12,
+                "bgm_enabled": False,
+                "sfx_enabled": False,
+                "vfx_enabled": False,
             },
         }
 
         restored = restore_snapshot(snap)
 
-        self.assertTrue(restored["player"]["bgm_enabled"])
-        self.assertTrue(restored["player"]["sfx_enabled"])
-        self.assertTrue(restored["player"]["vfx_enabled"])
+        self.assertNotIn("bgm_enabled", restored["player"])
+        self.assertNotIn("sfx_enabled", restored["player"])
+        self.assertNotIn("vfx_enabled", restored["player"])
 
     def test_restore_does_not_require_all_keys(self):
         player = {"x": 1, "y": 2, "hp": 5}

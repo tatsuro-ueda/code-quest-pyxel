@@ -61,21 +61,22 @@ class SceneManagerAndAppTest(unittest.TestCase):
 
 class TitleSceneTest(unittest.TestCase):
     def test_presenter_wraps_cursor(self):
-        model = TitleModel(cursor=0, settings_open=False)
+        # 2026-05-07 改訂（CJ44 確定版）：settings_open は撤去済（設定画面廃止）
+        model = TitleModel(cursor=0)
         presenter = TitlePresenter(model)
 
-        presenter.move(-1, item_count=3)
+        presenter.move(-1, item_count=2)
 
-        self.assertEqual(model.cursor, 2)
+        self.assertEqual(model.cursor, 1)
 
     def test_scene_draw_returns_title_snapshot(self):
-        scene = TitleScene(model=TitleModel(cursor=1, settings_open=True))
+        scene = TitleScene(model=TitleModel(cursor=1))
 
         snapshot = scene.draw()
 
         self.assertEqual(
             snapshot,
-            {"title": "Block Quest", "cursor": 1, "settings_open": True},
+            {"title": "Block Quest", "cursor": 1},
         )
 
 

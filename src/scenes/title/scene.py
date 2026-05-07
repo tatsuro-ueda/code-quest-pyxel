@@ -5,7 +5,7 @@ from typing import Any
 
 from src.scenes.title.model import TitleModel
 from src.scenes.title.presenter import LOAD_OK_MSG, NO_RECORD_MSG, TitlePresenter
-from src.scenes.title.view import TitleView
+from src.scenes.title.view import TitleView, play_bgm as _play_title_bgm
 
 
 # 既存外部参照（test 等）の互換のため module-level に再エクスポート
@@ -44,10 +44,8 @@ class TitleScene:
         """
         game = self.game
         if game is None:
-            return self.view.render(
-                cursor=self.model.cursor,
-                settings_open=self.model.settings_open,
-            )
+            return self.view.render(cursor=self.model.cursor)
+        _play_title_bgm(game)
         vm = self.presenter.build_view_model(game)
         self.view.draw(vm, game.messages)
         return None

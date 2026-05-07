@@ -6,6 +6,19 @@ from typing import Any
 import pyxel
 
 from src.scenes.ending.view_model import EndingViewModel
+from src.shared.services.audio_system import play_bgm_track
+
+
+BGM_MUSIC_INDEX = 7
+"""ending BGM が住む pyxres の musics スロット番号。"""
+
+
+def play_bgm(game) -> None:
+    """ending BGM を冪等に発火する。
+
+    CJ44 確定版（追加整理）：冪等性は ``audio_system.play_bgm_track`` に集約。
+    """
+    play_bgm_track(BGM_MUSIC_INDEX)
 
 
 @dataclass

@@ -53,7 +53,6 @@ SAVED_PLAYER_KEYS: tuple[str, ...] = (
     "landmarkTreeSeen", "landmarkTowerSeen",
     "treeAsked", "towerNoiseCleared",
     "professor_intro_seen", "professor_defeated", "professor_ending_seen",
-    "bgm_enabled", "sfx_enabled", "vfx_enabled",
     "dialog_flags",
     "town_talk_idx",
 )
@@ -92,9 +91,10 @@ def restore_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
     player = dict(snapshot["player"])
     if "glitch_lord_defeated" not in player and "boss_defeated" in player:
         player["glitch_lord_defeated"] = bool(player.pop("boss_defeated"))
-    player.setdefault("bgm_enabled", True)
-    player.setdefault("sfx_enabled", True)
-    player.setdefault("vfx_enabled", True)
+    # 2026-05-07 改訂（CJ44 確定版）：bgm/sfx/vfx_enabled は撤去済。
+    # 古いセーブに残っていても無視する。
+    for legacy_av_key in ("bgm_enabled", "sfx_enabled", "vfx_enabled"):
+        player.pop(legacy_av_key, None)
     return {
         "player": player,
         "town_pos": (int(raw_pos[0]), int(raw_pos[1])),
@@ -127,9 +127,6 @@ def player_model_to_dict(pm: PlayerModel) -> dict[str, Any]:
         "professor_intro_seen": pm.professor_intro_seen,
         "professor_defeated": pm.professor_defeated,
         "professor_ending_seen": pm.professor_ending_seen,
-        "bgm_enabled": pm.bgm_enabled,
-        "sfx_enabled": pm.sfx_enabled,
-        "vfx_enabled": pm.vfx_enabled,
         "dialog_flags": dict(pm.dialog_flags),
         "town_talk_idx": list(pm.town_talk_idx),
     }

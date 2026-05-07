@@ -29,30 +29,25 @@ class TitlePresenter:
         self.model.cursor = (self.model.cursor + delta) % item_count
 
     def update(self, game: Any) -> None:
-        """タイトル画面の入力処理と state 遷移。"""
+        """タイトル画面の入力処理と state 遷移。
+
+        2026-05-07 改訂（CJ44 確定版）：「せってい」項目を撤去（演出 ON/OFF
+        機構ごと撤去）。残るのは「はじめから」「つづきから」の 2 項目のみ。
+        """
         if game.input_state.btnp(UP_BUTTONS):
-            self.move(-1, 3)
+            self.move(-1, 2)
             game.sfx.play("cursor")
             return
         if game.input_state.btnp(DOWN_BUTTONS):
-            self.move(1, 3)
+            self.move(1, 2)
             game.sfx.play("cursor")
             return
         if game.input_state.btnp(CONFIRM_BUTTONS) or game.input_state.btnp(TITLE_START_BUTTONS):
             game.sfx.play("select")
             if self.model.cursor == 0:
-                # はじめから: プレイヤー状態をクリーンに作り直す（AV設定は引き継ぐ）
-                prev = game.player_model
-                fresh = PlayerModel.new_game()
-                fresh.bgm_enabled = prev.bgm_enabled
-                fresh.sfx_enabled = prev.sfx_enabled
-                fresh.vfx_enabled = prev.vfx_enabled
-                game.player_model = fresh
-                game.settings_scene.apply_av()
+                # はじめから: プレイヤー状態をクリーンに作り直す
+                game.player_model = PlayerModel.new_game()
                 game.state = "map"
-                return
-            if self.model.cursor == 2:
-                game.settings_scene.open("title")
                 return
             # つづきから — has_save が False ならグレーアウト
             if not game._has_save:
@@ -71,7 +66,6 @@ class TitlePresenter:
             return
         restored_player, (tx, ty) = PlayerModel.from_snapshot(snap)
         game.player_model = restored_player
-        game.settings_scene.apply_av()
         game.player_model.x = tx
         game.player_model.y = ty
         game.player_model.in_dungeon = False
@@ -87,7 +81,6 @@ class TitlePresenter:
         labels = [
             game.text_fmt.t("はじめから", "NEW GAME"),
             game.text_fmt.t("つづきから", "CONTINUE"),
-            game.text_fmt.t("せってい", "SETTINGS"),
         ]
         rows: list[TitleMenuRow] = []
         for i, label in enumerate(labels):

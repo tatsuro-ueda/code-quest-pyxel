@@ -25,7 +25,7 @@ from src.shared.services.image_banks import ImageBanks
 from src.shared.services.vfx import VfxSystem
 from src.shared.services.item_use import use_item as _item_use_fn
 from src.shared.ui.status_bar import StatusBar
-from src.shared.services.audio_system import sync_audio as _sync_audio_fn
+# 2026-05-07: sync_audio は撤去済（BGM は各 scene の view.draw 冒頭で発火）。
 from src.scenes.splash.scene import SplashScene
 from src.scenes.title.scene import TitleScene
 from src.scenes.explore.scene import ExploreScene
@@ -33,7 +33,6 @@ from src.scenes.shop.scene import ShopScene
 from src.scenes.menu.scene import MenuScene
 from src.scenes.ai_help.scene import AiHelpScene
 from src.scenes.ending.scene import EndingScene
-from src.scenes.settings.scene import SettingsScene
 from src.scenes.professor.scene import ProfessorScene
 from src.scenes.battle.scene import BattleScene
 from src.runtime.app import Game, say, say_clear

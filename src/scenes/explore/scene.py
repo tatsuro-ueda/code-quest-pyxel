@@ -5,7 +5,7 @@ from typing import Any
 
 from src.scenes.explore.model import ExploreModel
 from src.scenes.explore.presenter import ExplorePresenter
-from src.scenes.explore.view import ExploreView
+from src.scenes.explore.view import ExploreView, play_bgm as _play_explore_bgm
 
 
 @dataclass
@@ -50,6 +50,7 @@ class ExploreScene:
         if game is None:
             return self.view.render(mode=self.model.mode)
         self._attach_image_banks()
+        _play_explore_bgm(game)
         vm = self.presenter.build_view_model(game)
         # explore view はテキストを描かないので text_writer は省略可
         text_writer = getattr(game, "messages", None)

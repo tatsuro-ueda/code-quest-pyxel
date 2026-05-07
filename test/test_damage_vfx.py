@@ -124,7 +124,7 @@ class TestStartVfx(unittest.TestCase):
     def _make_game(self):
         from src.shared.services.vfx import VfxSystem
         g = object.__new__(M.Game)
-        g.player_model = _pm_from_dict({"vfx_enabled": True})
+        g.player_model = _pm_from_dict({})
         g.vfx = VfxSystem(game=g)
         return g
 
@@ -146,12 +146,8 @@ class TestStartVfx(unittest.TestCase):
         self.assertEqual(g.vfx.timer, 0)
         self.assertEqual(g.vfx.type, "")
 
-    def test_start_vfx_ignored_when_vfx_disabled(self):
-        g = self._make_game()
-        g.player_model.vfx_enabled = False
-        g.vfx.start("flash_white")
-        self.assertEqual(g.vfx.timer, 0)
-        self.assertEqual(g.vfx.type, "")
+    # 2026-05-07 改訂（CJ44 確定版）：vfx_enabled=False の挙動テストは撤去済
+    # （VFX は常に ON）。
 
 
 @unittest.skipUnless(IMPORTED, "main.py import failed")
@@ -161,7 +157,7 @@ class TestDrawVfxOverlay(unittest.TestCase):
     def _make_game(self):
         from src.shared.services.vfx import VfxSystem
         g = object.__new__(M.Game)
-        g.player_model = _pm_from_dict({"vfx_enabled": True})
+        g.player_model = _pm_from_dict({})
         g.vfx = VfxSystem(game=g)
         return g
 
@@ -199,15 +195,8 @@ class TestDrawVfxOverlay(unittest.TestCase):
         g.vfx.draw_overlay()
         pyxel.rect.assert_called_once_with(0, 0, 256, 256, 8)
 
-    def test_no_overlay_when_vfx_disabled(self):
-        import pyxel
-        pyxel.rect.reset_mock()
-        g = self._make_game()
-        g.player_model.vfx_enabled = False
-        g.vfx.timer = 4
-        g.vfx.type = "flash_white"
-        g.vfx.draw_overlay()
-        pyxel.rect.assert_not_called()
+    # 2026-05-07 改訂（CJ44 確定版）：vfx_enabled=False の挙動テストは撤去済
+    # （VFX は常に ON）。
 
 
 if __name__ == "__main__":

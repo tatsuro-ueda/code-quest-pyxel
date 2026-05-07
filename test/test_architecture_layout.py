@@ -28,7 +28,6 @@ TARGETS = [
     ROOT / 'tools' / 'report_play_sessions.py',
     ROOT / 'tools' / 'web_runtime_server.py',
     ROOT / 'tools' / 'test_web_compat.py',
-    ROOT / 'test' / 'test_audio_system.py',
     ROOT / 'test' / 'test_input_bindings.py',
     ROOT / 'test' / 'test_landmark_events.py',
     ROOT / 'test' / 'test_landmark_resolve.py',
@@ -79,8 +78,13 @@ class TestArchitectureLayout(unittest.TestCase):
         input_bindings = importlib.import_module('src.shared.services.input_bindings')
         play_session_logging = importlib.import_module('src.shared.services.play_session_logging')
 
-        self.assertTrue(hasattr(audio, 'AudioManager'))
-        self.assertTrue(hasattr(audio, 'CHIPTUNE_TRACKS'))
+        # 2026-05-07 改訂：AudioManager / CHIPTUNE_TRACKS は撤去済（CJ44 確定版）。
+        # SfxSystem だけ残ることを確認する。
+        self.assertTrue(hasattr(audio, 'SfxSystem'))
+        self.assertFalse(hasattr(audio, 'AudioManager'),
+                         "AudioManager は撤去済（BGM は各 view.py が pyxel.playm を直接呼ぶ）")
+        self.assertFalse(hasattr(audio, 'CHIPTUNE_TRACKS'),
+                         "CHIPTUNE_TRACKS は撤去済（BGM データは pyxres SSoT）")
         self.assertTrue(hasattr(landmark_events, 'find_landmark_event'))
         self.assertTrue(hasattr(player_state, 'create_initial_player'))
         self.assertTrue(hasattr(player_state, 'restore_snapshot'))

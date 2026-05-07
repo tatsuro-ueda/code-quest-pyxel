@@ -87,7 +87,8 @@ class CJ24SoundEditorTruthTest(unittest.TestCase):
         self.assertIn("### CJ24: 効果音を自分で作る", journeys)
         self.assertIn("Scenario: Soundエディタで編集したSFXがゲーム内で使われる", av)
         self.assertIn("And 固定のコード定義で別音へ戻らない", av)
-        self.assertIn("Scenario: imported Sound / Music が runtime audio の正本になる", guardrails)
+        # 2026-05-07 改訂（CJ44 確定版）：guardrails の Scenario 名を改訂
+        self.assertIn("Scenario: pyxres の Sound / Music が runtime audio の正本になる", guardrails)
 
     def test_main_runtime_keeps_imported_attack_sfx_after_pyxres_load(self):
         self._assert_runtime_keeps_imported_attack_sfx("main.py")

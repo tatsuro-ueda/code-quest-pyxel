@@ -1,14 +1,14 @@
-"""CJG/title: タイトル画面の cursor 操作と「はじめから / つづきから / せってい」分岐。
+"""CJG/title: タイトル画面の cursor 操作と「はじめから / つづきから」分岐。
 
 根拠:
 - docs/customer-journeys.md（起動直後の選択体験）
 - docs/product-requirements-platform.md（セーブの取り扱い）
 - docs/customer-jobs.md Make3（crash で好循環が途絶）
 
-TitleScene.update は 3 メニューを cursor で選び、「はじめから」で PlayerModel を
-new_game で作り直し（AV フラグのみ前状態を引き継ぐ）、「つづきから」で _do_load、
-「せってい」で settings_scene.open("title") を呼ぶ。
-cursor モジュラー演算（0/1/2）も固定化する。
+2026-05-07 改訂（CJ44 確定版）：「せってい」項目は撤去。
+TitleScene.update は 2 メニューを cursor で選び、「はじめから」で PlayerModel を
+new_game で作り直し（AV フラグは存在しない）、「つづきから」で _do_load を呼ぶ。
+cursor モジュラー演算（0/1）も固定化する。
 """
 
 from __future__ import annotations
@@ -61,18 +61,6 @@ class _FakeExploreScene:
 
 
 @dataclass
-class _FakeSettingsScene:
-    applied_av: int = 0
-    opened: list[str] = field(default_factory=list)
-
-    def apply_av(self):
-        self.applied_av += 1
-
-    def open(self, origin: str):
-        self.opened.append(origin)
-
-
-@dataclass
 class _FakeMessages:
     shown: list[list[str]] = field(default_factory=list)
 
@@ -95,7 +83,6 @@ class _FakeGame:
     input_state: _FakeInputState = field(default_factory=_FakeInputState)
     sfx: _FakeSfx = field(default_factory=_FakeSfx)
     player_model: PlayerModel = field(default_factory=PlayerModel.new_game)
-    settings_scene: _FakeSettingsScene = field(default_factory=_FakeSettingsScene)
     explore_scene: _FakeExploreScene = field(default_factory=_FakeExploreScene)
     messages: _FakeMessages = field(default_factory=_FakeMessages)
     save_store: _FakeSaveStore = field(default_factory=_FakeSaveStore)
@@ -104,14 +91,14 @@ class _FakeGame:
 
 
 class TitleCursorTest(unittest.TestCase):
-    """上下入力で cursor が循環する（0↔2 境界を含む）。"""
+    """上下入力で cursor が循環する（0↔1 境界を含む。CJ44 でメニューは 2 項目）。"""
 
     def test_down_moves_cursor_down_with_wrap(self):
         from src.shared.services.input_bindings import DOWN_BUTTONS
 
         game = _FakeGame()
         scene = TitleScene(game=game)
-        scene.model.cursor = 2
+        scene.model.cursor = 1
 
         game.input_state.press(DOWN_BUTTONS)
         scene.update()
@@ -129,7 +116,7 @@ class TitleCursorTest(unittest.TestCase):
         game.input_state.press(UP_BUTTONS)
         scene.update()
 
-        self.assertEqual(scene.model.cursor, 2)
+        self.assertEqual(scene.model.cursor, 1)
 
 
 class TitleNewGameTest(unittest.TestCase):
@@ -142,7 +129,6 @@ class TitleNewGameTest(unittest.TestCase):
         # 事前に player_model を書き換えて new_game で戻ることを確認
         game.player_model.gold = 9999
         game.player_model.lv = 99
-        game.player_model.bgm_enabled = False  # 引き継ぐ
 
         game.input_state.press(CONFIRM_BUTTONS)
         scene = TitleScene(game=game)
@@ -152,25 +138,6 @@ class TitleNewGameTest(unittest.TestCase):
         self.assertEqual(game.state, "map")
         self.assertNotEqual(game.player_model.gold, 9999)
         self.assertEqual(game.player_model.lv, 1)
-        self.assertFalse(game.player_model.bgm_enabled, "AV フラグは引き継がれない")
-        self.assertEqual(game.settings_scene.applied_av, 1)
-
-    def test_new_game_preserves_all_three_av_flags(self):
-        from src.shared.services.input_bindings import CONFIRM_BUTTONS
-
-        game = _FakeGame()
-        game.player_model.bgm_enabled = False
-        game.player_model.sfx_enabled = False
-        game.player_model.vfx_enabled = False
-
-        game.input_state.press(CONFIRM_BUTTONS)
-        scene = TitleScene(game=game)
-        scene.model.cursor = 0
-        scene.update()
-
-        for attr in ("bgm_enabled", "sfx_enabled", "vfx_enabled"):
-            with self.subTest(attr=attr):
-                self.assertFalse(getattr(game.player_model, attr))
 
 
 class TitleContinueTest(unittest.TestCase):
@@ -225,21 +192,6 @@ class TitleContinueTest(unittest.TestCase):
         self.assertEqual(game.state, "message")
         self.assertEqual(game.prev_state, "title")
         self.assertFalse(game._has_save)
-
-
-class TitleSettingsTest(unittest.TestCase):
-    """せってい（cursor=2 で CONFIRM）が settings_scene.open("title") を呼ぶ。"""
-
-    def test_settings_opens_with_title_origin(self):
-        from src.shared.services.input_bindings import CONFIRM_BUTTONS
-
-        game = _FakeGame()
-        game.input_state.press(CONFIRM_BUTTONS)
-        scene = TitleScene(game=game)
-        scene.model.cursor = 2
-        scene.update()
-
-        self.assertEqual(game.settings_scene.opened, ["title"])
 
 
 class TitleNoGameGuardTest(unittest.TestCase):

@@ -20,10 +20,14 @@ class MenuPresenter:
     model: MenuModel
 
     def labels(self, game: Any) -> list[str]:
-        """メニュー表示ラベルの i18n 解決（has_jp_font に応じて切替）。"""
+        """メニュー表示ラベルの i18n 解決（has_jp_font に応じて切替）。
+
+        2026-05-07 改訂（CJ44 確定版）：「せってい/SETTINGS」を撤去。
+        演出 ON/OFF 機構ごと撤去したため、設定画面に項目が残らない。
+        """
         if game.has_jp_font:
-            return ["ステータス", "アイテム", "そうび", "せってい", "AIでしゅうせい", "とじる"]
-        return ["STATUS", "ITEMS", "EQUIP", "SETTINGS", "AI HELP", "CLOSE"]
+            return ["ステータス", "アイテム", "そうび", "AIでしゅうせい", "とじる"]
+        return ["STATUS", "ITEMS", "EQUIP", "AI HELP", "CLOSE"]
 
     def update(self, game: Any) -> None:
         """メニュー操作を処理する。sub-state に応じて分岐。"""
@@ -52,10 +56,8 @@ class MenuPresenter:
                     m.sub = "equip"
                     m.item_cursor = 0
                 elif m.cursor == 3:
-                    game.settings_scene.open("menu")
-                elif m.cursor == 4:
                     game.ai_help_scene.enter()
-                elif m.cursor == 5:
+                elif m.cursor == 4:
                     game.state = "map"
         elif m.sub == "status":
             if game.input_state.btnp(CANCEL_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS):

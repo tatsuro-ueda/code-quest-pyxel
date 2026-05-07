@@ -1,12 +1,12 @@
-"""CJG/sfx: SfxSystem の play / set_enabled / slot 管理。
+"""CJG/sfx: SfxSystem の play / slot 管理。
 
 根拠:
 - docs/product-requirements-av.md（SFX）
 - docs/customer-jobs.md Make3
 
-play() は未定義名を黙って無視（KeyError にならない）。set_enabled(False)
-は再生中 SE を止める。init 時に空スロットへは fallback 定義を set する
-（import 済み SFX は上書きしない）。
+2026-05-07 改訂（CJ44 確定版）：set_enabled 機構は撤去済（SFX は常に ON）。
+play() は未定義名を黙って無視（KeyError にならない）。init 時に空スロットへは
+fallback 定義を set する（import 済み SFX は上書きしない）。
 """
 
 from __future__ import annotations
@@ -74,38 +74,6 @@ class SfxPlayTest(unittest.TestCase):
         sfx.play("cursor")
 
         self.assertEqual(len(fp.play_calls), 1)
-
-    def test_play_while_disabled_is_noop(self):
-        fp = _FakePyxel()
-        sfx = SfxSystem(fp)
-        sfx.set_enabled(False)
-
-        sfx.play("cursor")
-
-        self.assertEqual(fp.play_calls, [])
-
-
-class SfxSetEnabledTest(unittest.TestCase):
-    def test_disabling_stops_currently_playing_channel(self):
-        fp = _FakePyxel()
-        sfx = SfxSystem(fp)
-
-        sfx.set_enabled(False)
-
-        self.assertFalse(sfx.enabled)
-        self.assertGreater(len(fp.stop_calls), 0)
-
-    def test_re_enabling_does_not_stop(self):
-        fp = _FakePyxel()
-        sfx = SfxSystem(fp)
-        sfx.set_enabled(False)
-        stops_before = len(fp.stop_calls)
-
-        sfx.set_enabled(True)
-
-        self.assertTrue(sfx.enabled)
-        self.assertEqual(len(fp.stop_calls), stops_before)
-
 
 class SfxLoadTest(unittest.TestCase):
     def test_load_populates_empty_slots(self):

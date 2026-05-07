@@ -61,7 +61,7 @@ class CreateInitialPlayerTest(unittest.TestCase):
             "weapon", "armor", "items", "spells",
             "poisoned", "in_dungeon", "glitch_lord_defeated",
             "max_zone_reached", "landmarkTreeSeen", "landmarkTowerSeen",
-            "dialog_flags", "bgm_enabled", "sfx_enabled", "vfx_enabled",
+            "dialog_flags",
         ):
             self.assertIn(key, p)
 
@@ -81,11 +81,8 @@ class CreateInitialPlayerTest(unittest.TestCase):
         self.assertEqual(p["lv"], 1)
         self.assertEqual(p["exp"], 0)
 
-    def test_av_settings_default_to_enabled(self):
-        p = create_initial_player()
-        self.assertTrue(p["bgm_enabled"])
-        self.assertTrue(p["sfx_enabled"])
-        self.assertTrue(p["vfx_enabled"])
+    # 2026-05-07 改訂（CJ44 確定版）：bgm/sfx/vfx_enabled は撤去済（常に ON）。
+    # 関連テストは削除。
 
 
 if __name__ == "__main__":

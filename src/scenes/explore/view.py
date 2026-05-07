@@ -5,6 +5,45 @@ from typing import Any
 import pyxel
 
 from src.scenes.explore.view_model import ExploreViewModel
+from src.shared.services.audio_system import play_bgm_track
+
+
+# pyxres 内 musics スロット番号（旧 TRACK_ORDER と整合）。
+# town: 1 / overworld: 2 / dungeon: 3
+TOWN_BGM_INDEX = 1
+OVERWORLD_BGM_INDEX = 2
+DUNGEON_BGM_INDEX = 3
+
+
+def _select_explore_bgm(game) -> int:
+    """game 状態から探索 BGM の musics index を決める純粋関数。"""
+    if game is None:
+        return TOWN_BGM_INDEX
+    # 町メニュー (state == "town") を開いている間は town BGM を維持する。
+    if getattr(game, "state", None) == "town":
+        return TOWN_BGM_INDEX
+    pm = getattr(game, "player_model", None)
+    if pm is not None and getattr(pm, "in_dungeon", False):
+        return DUNGEON_BGM_INDEX
+    # zone 判定（旧 sync_audio と同じく runtime の get_zone を使う）。
+    try:
+        import src.runtime.main_runtime as M
+        zone = M.get_zone(pm.y, pm.in_dungeon) if pm is not None else 0
+    except Exception:
+        zone = 0
+    if zone >= 1:
+        return OVERWORLD_BGM_INDEX
+    return TOWN_BGM_INDEX
+
+
+def play_bgm(game) -> None:
+    """探索シーンの BGM を冪等に発火する（town/overworld/dungeon を分岐選択）。
+
+    CJ44 確定版（追加整理）：冪等性は ``audio_system.play_bgm_track`` に集約。
+    """
+    if game is None:
+        return
+    play_bgm_track(_select_explore_bgm(game))
 
 
 class ExploreView:

@@ -53,9 +53,7 @@ class PlayerModelNewGameTest(unittest.TestCase):
         self.assertEqual(p.hp, p.max_hp)
         self.assertEqual(p.mp, p.max_mp)
         self.assertEqual(p.items, [PlayerItem(id=0, qty=3)])
-        self.assertTrue(p.bgm_enabled)
-        self.assertTrue(p.sfx_enabled)
-        self.assertTrue(p.vfx_enabled)
+        # 2026-05-07 改訂（CJ44 確定版）：bgm/sfx/vfx_enabled は撤去済（常に ON）。
 
     def test_new_game_custom_start_position(self):
         p = PlayerModel.new_game(start_x=10, start_y=20)
@@ -225,16 +223,26 @@ class PlayerModelSnapshotTest(unittest.TestCase):
         restored, _ = PlayerModel.from_snapshot(snap)
         self.assertTrue(restored.glitch_lord_defeated)
 
-    def test_from_snapshot_missing_av_defaults(self):
+    def test_from_snapshot_drops_legacy_av_keys(self):
+        """2026-05-07 改訂（CJ44 確定版）：bgm/sfx/vfx_enabled は撤去済。
+
+        古いセーブに残っていても無視され、PlayerModel 属性に AV フラグは生えない。
+        """
         snap = {
             "save_version": SAVE_VERSION,
             "town_pos": [25, 6],
-            "player": {"x": 25, "y": 6},
+            "player": {
+                "x": 25,
+                "y": 6,
+                "bgm_enabled": False,
+                "sfx_enabled": False,
+                "vfx_enabled": False,
+            },
         }
         restored, _ = PlayerModel.from_snapshot(snap)
-        self.assertTrue(restored.bgm_enabled)
-        self.assertTrue(restored.sfx_enabled)
-        self.assertTrue(restored.vfx_enabled)
+        for legacy_attr in ("bgm_enabled", "sfx_enabled", "vfx_enabled"):
+            self.assertFalse(hasattr(restored, legacy_attr),
+                             f"{legacy_attr} は撤去済（CJ44 確定版）")
 
     def test_items_are_restored_as_player_items(self):
         snap = {

@@ -31,7 +31,6 @@ SAVED_FIELDS: tuple[str, ...] = (
     "landmarkTreeSeen", "landmarkTowerSeen",
     "treeAsked", "towerNoiseCleared",
     "professor_intro_seen", "professor_defeated", "professor_ending_seen",
-    "bgm_enabled", "sfx_enabled", "vfx_enabled",
     "dialog_flags",
     "town_talk_idx",
 )
@@ -105,9 +104,6 @@ class PlayerModel:
     professor_intro_seen: bool = False
     professor_defeated: bool = False
     professor_ending_seen: bool = False
-    bgm_enabled: bool = True
-    sfx_enabled: bool = True
-    vfx_enabled: bool = True
     dialog_flags: dict = field(default_factory=dict)
     town_talk_idx: list = field(default_factory=lambda: [0, 0, 0])
 
@@ -157,9 +153,10 @@ class PlayerModel:
         raw_pos = snapshot["town_pos"]
         if "glitch_lord_defeated" not in raw_player and "boss_defeated" in raw_player:
             raw_player["glitch_lord_defeated"] = bool(raw_player.pop("boss_defeated"))
-        raw_player.setdefault("bgm_enabled", True)
-        raw_player.setdefault("sfx_enabled", True)
-        raw_player.setdefault("vfx_enabled", True)
+        # 2026-05-07 改訂（CJ44 確定版）：bgm/sfx/vfx_enabled は撤去済。
+        # 古いセーブに残っていても無視（PlayerModel 属性に存在しない）。
+        for legacy_av_key in ("bgm_enabled", "sfx_enabled", "vfx_enabled"):
+            raw_player.pop(legacy_av_key, None)
         kwargs: dict[str, Any] = {}
         for fld in fields(cls):
             key = _FIELD_TO_KEY.get(fld.name, fld.name)

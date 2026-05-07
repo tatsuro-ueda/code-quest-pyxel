@@ -5,6 +5,39 @@ from typing import Any
 import pyxel
 
 from src.scenes.battle.view_model import BattleViewModel
+from src.shared.services.audio_system import play_bgm_track
+
+
+# pyxres 内 musics スロット番号（旧 TRACK_ORDER と整合）。
+BATTLE_BGM_INDEX = 4
+BOSS_BGM_INDEX = 5
+VICTORY_BGM_INDEX = 6
+
+
+def _select_battle_bgm(game) -> int:
+    """game.battle_scene.model から戦闘 BGM の musics index を決める純粋関数。"""
+    if game is None:
+        return BATTLE_BGM_INDEX
+    bm = getattr(getattr(game, "battle_scene", None), "model", None)
+    if bm is None:
+        return BATTLE_BGM_INDEX
+    # 勝利フェーズ：phase == "result" かつ敵 HP 0
+    if getattr(bm, "phase", None) == "result" and getattr(bm, "enemy_hp", 1) <= 0:
+        return VICTORY_BGM_INDEX
+    # ボス戦：is_glitch_lord などボス判定
+    if getattr(bm, "is_glitch_lord", False):
+        return BOSS_BGM_INDEX
+    return BATTLE_BGM_INDEX
+
+
+def play_bgm(game) -> None:
+    """戦闘シーンの BGM を冪等に発火する（battle/boss/victory を分岐選択）。
+
+    CJ44 確定版（追加整理）：冪等性は ``audio_system.play_bgm_track`` に集約。
+    """
+    if game is None:
+        return
+    play_bgm_track(_select_battle_bgm(game))
 
 
 class BattleView:

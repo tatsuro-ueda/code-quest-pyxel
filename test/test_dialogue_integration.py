@@ -151,22 +151,46 @@ class DialogueIntegrationTest(unittest.TestCase):
         ):
             self.assertIn(expected, main_text)
 
-    def test_main_uses_audio_manager_for_bgm(self):
-        # P1-G15/P1.5-D 後: sync_audio は audio_system.py、Game は app.py に移動
-        text = MAIN_RUNTIME.read_text(encoding="utf-8")
-        for extra in (
-            PYXEL_ROOT / "src" / "shared" / "services" / "audio_system.py",
-            PYXEL_ROOT / "src" / "runtime" / "app.py",
-        ):
-            text += "\n" + extra.read_text(encoding="utf-8")
+    def test_main_uses_view_direct_playm_for_bgm(self):
+        """2026-05-07 改訂（CJ44 確定版・追加整理）：BGM は各 scene の view.py が
+        ``audio_system.play_bgm_track(target)`` を呼ぶことで pyxel.playm を
+        冪等に発火する。AudioManager / choose_bgm_scene 等の中央集権は撤去済、
+        ``Game.current_bgm`` のような中央集権状態も持たない。
+        """
+        scenes_root = PYXEL_ROOT / "src" / "scenes"
+        bgm_callers = []
+        for view_file in scenes_root.glob("*/view.py"):
+            text = view_file.read_text(encoding="utf-8")
+            # 直接 pyxel.playm を呼ぶ legacy パターンと、play_bgm_track を
+            # 経由する CJ44 追加整理パターンの両方を許容する。
+            if "pyxel.playm(" in text or "play_bgm_track(" in text:
+                bgm_callers.append(view_file.name)
+        # 主要 BGM シーンの view が BGM 発火点を持つこと（title/explore/battle/ending）
+        self.assertGreaterEqual(
+            len(bgm_callers), 4,
+            f"title/explore/battle/ending の view.py が play_bgm_track or pyxel.playm を呼ぶこと: {bgm_callers}",
+        )
 
-        for expected in (
-            "AudioManager",
-            "choose_bgm_scene",
-            "self.audio = AudioManager(pyxel)",
-            "game.audio.play_scene(",
-        ):
-            self.assertIn(expected, text)
+    def test_view_does_not_persist_bgm_state_on_game(self):
+        """CJ44 確定版（追加整理）：view.py は ``game.current_bgm`` のような
+        Game への状態書き込みをしないこと。BGM の冪等性は audio_system が一手に持つ。
+        """
+        scenes_root = PYXEL_ROOT / "src" / "scenes"
+        offenders = []
+        for view_file in scenes_root.glob("*/view.py"):
+            text = view_file.read_text(encoding="utf-8")
+            # 「game.current_bgm = ...」のような代入や読み取りは禁止。
+            # docstring 中の説明文（バッククォートや「持たない」等）は許可。
+            for line in text.splitlines():
+                stripped = line.lstrip()
+                if stripped.startswith("#"):
+                    continue
+                if "game.current_bgm" in line and "``" not in line:
+                    offenders.append(f"{view_file.name}: {line.strip()}")
+        self.assertEqual(
+            offenders, [],
+            f"view.py は game.current_bgm に触れてはいけない: {offenders}",
+        )
 
     def test_main_no_longer_hardcodes_dialogue_body_text(self):
         """main.py のダイアログ辞書 *外* にテキスト本文がハードコードされていないこと。
