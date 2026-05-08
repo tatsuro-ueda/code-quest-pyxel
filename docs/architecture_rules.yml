@@ -25,7 +25,7 @@ facts:
       must:
         - code ではなく docs に書かれた要求との差分を明記する
       must_not:
-        - 既存 code があることを理由に docs 側を自動的に正しいとみなさない
+        - code があるから正しいと考えない
     - id: pyxres_source_of_truth
       summary: .pyxres は子どもと親が Code Maker で編集する正本である。
       must:
