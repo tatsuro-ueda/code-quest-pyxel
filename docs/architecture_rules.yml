@@ -129,14 +129,258 @@ facts:
         - assets/blockquest.pyxres
         - src/shared/services/image_banks.py
         - runtime
-  runtime: {}
-  scenes: []
+  runtime:
+    entry_chain:
+      - id: runtime_main_wrapper
+        path: main.py
+        role: wrapper
+        status: active
+        summary: src/runtime/main_runtime.py を実行する 8 行 wrapper
+      - id: runtime_shim
+        path: src/runtime/main_runtime.py
+        role: shim
+        status: active
+        summary: test / Code Maker bundler 互換のための re-export shim
+      - id: runtime_game
+        path: src/runtime/app.py
+        symbol: Game
+        role: application_root
+        status: active
+        summary: pyxel 初期化、DI、scene/service 組み立て、update/draw dispatcher
+    game_responsibilities:
+      - pyxel.init と font の初期化
+      - SfxSystem / ImageBanks / GameState / PlayerModel / SceneManager / DebugService / scene 群の組み立て
+      - 現在 scene の update / draw dispatch
+    property_forwards:
+      - current_town -> GameState.current_town
+      - debug_mode -> DebugService.mode
+      - debug_seq -> DebugService.seq
+      - state -> SceneManager.current
+      - prev_state -> SceneManager.previous
+    must_not_store:
+      - current_bgm
+      - duplicated_scene_state
+  scenes:
+    - id: splash_scene
+      path: src/scenes/splash
+      status: active
+      responsibility: 起動スプラッシュ
+      local_state:
+        - splash_frame
+    - id: title_scene
+      path: src/scenes/title
+      status: active
+      responsibility: タイトル画面
+      local_state:
+        - title_cursor
+    - id: explore_scene
+      path: src/scenes/explore
+      status: active
+      responsibility: フィールド / ダンジョン歩行
+      local_state:
+        - walk_frame
+        - walk_timer
+        - move_cooldown
+        - _a_cooldown
+    - id: town_scene
+      path: src/scenes/town
+      status: active
+      responsibility: 町メニュー
+      local_state:
+        - town_menu_cursor
+        - town_menu_pos
+        - menu_message
+    - id: shop_scene
+      path: src/scenes/shop
+      status: active
+      responsibility: 武器・防具・道具の売買
+      local_state:
+        - shop_cursor
+        - shop_inventory
+        - shop_kind
+        - shop_message
+    - id: battle_scene
+      path: src/scenes/battle
+      status: active
+      responsibility: 戦闘全体
+      local_state:
+        - battle_enemy
+        - battle_phase
+        - battle_text
+        - battle_item_select
+    - id: menu_scene
+      path: src/scenes/menu
+      status: active
+      responsibility: メニュー画面
+      local_state:
+        - menu_cursor
+        - menu_item_cursor
+        - menu_sub
+    - id: ai_help_scene
+      path: src/scenes/ai_help
+      status: active
+      responsibility: Glitch Lord 戦の AI ヘルプ
+      local_state: []
+    - id: professor_scene
+      path: src/scenes/professor
+      status: active
+      responsibility: Professor 戦 intro / ending
+      local_state:
+        - professor_intro_state
+        - professor_choice_state
+    - id: ending_scene
+      path: src/scenes/ending
+      status: active
+      responsibility: エンディング
+      local_state: []
+    - id: settings_scene
+      path: src/scenes/settings
+      status: removed
+      responsibility: 演出 ON/OFF UI
+      local_state: []
+      notes:
+        - 2026-05-07 改訂で撤去済
   shared:
-    services: []
-    state: []
-    ui: []
-    constants: []
-    assets: []
+    services:
+      - id: game_state_service
+        path: src/shared/services/game_state.py
+        role: shared_state_aggregate
+        status: active
+        summary: scene 間共有 state を集約する
+      - id: scene_manager_service
+        path: src/shared/services/scene_manager.py
+        role: scene_state_holder
+        status: active
+        summary: current / previous の 2 値 state holder
+      - id: debug_service
+        path: src/shared/services/debug_service.py
+        role: debug_state
+        status: active
+        summary: debug mode / seq / UUDD を扱う
+      - id: audio_system_service
+        path: src/shared/services/audio_system.py
+        role: audio_bridge
+        status: active
+        summary: SFX 再生と冪等 BGM 再生命令
+      - id: image_banks_service
+        path: src/shared/services/image_banks.py
+        role: pyxres_bridge
+        status: active
+        summary: pyxres のロード / 保存 / fallback 書き戻し
+      - id: dialog_runner_service
+        path: src/shared/services/dialog_runner.py
+        role: structured_dialog
+        status: active
+        summary: YAML ドリブン会話
+      - id: message_display_service
+        path: src/shared/services/message_display.py
+        role: overlay_messages
+        status: active
+        summary: 短メッセージ overlay
+      - id: input_bindings_service
+        path: src/shared/services/input_bindings.py
+        role: input_snapshot
+        status: active
+        summary: 入力判定とフレーム差分
+      - id: landmark_events_service
+        path: src/shared/services/landmark_events.py
+        role: coordinate_events
+        status: active
+        summary: 座標接触イベント
+      - id: player_state_service
+        path: src/shared/services/player_state.py
+        role: legacy_player_snapshot
+        status: legacy
+        summary: snapshot helper。player の正本ではない
+      - id: save_store_service
+        path: src/shared/services/save_store.py
+        role: save_backend_bridge
+        status: active
+        summary: save 先差分の吸収
+      - id: world_generation_service
+        path: src/shared/services/world_generation.py
+        role: fallback_world_generation
+        status: active
+        summary: pyxres 不在時の fallback 生成
+      - id: vfx_service
+        path: src/shared/services/vfx.py
+        role: visual_effects
+        status: active
+        summary: ダメージ等の視覚エフェクト
+      - id: item_use_service
+        path: src/shared/services/item_use.py
+        role: item_logic
+        status: active
+        summary: アイテム使用ロジック
+      - id: text_format_service
+        path: src/shared/services/text_format.py
+        role: text_formatting
+        status: active
+        summary: 表示名整形・翻訳
+      - id: play_session_logging_service
+        path: src/shared/services/play_session_logging.py
+        role: play_logging
+        status: active
+        summary: Web プレイ記録の sqlite 永続化
+      - id: codemaker_resource_store_service
+        path: src/shared/services/codemaker_resource_store.py
+        role: codemaker_zip_store
+        status: active
+        summary: Code Maker zip の採否・保管
+    state:
+      - id: player_model_state
+        path: src/shared/state/player_model.py
+        role: player_source_of_truth
+        status: active
+        summary: HP / MP / EXP / 装備 / 所持品 / 位置などの正本 model
+    ui:
+      - id: dialog_window_ui
+        path: src/shared/ui/dialog_window.py
+        role: dialog_layout
+        status: active
+        summary: 会話ウィンドウ矩形
+      - id: menu_window_ui
+        path: src/shared/ui/menu_window.py
+        role: menu_layout
+        status: active
+        summary: メニュー矩形
+      - id: message_window_ui
+        path: src/shared/ui/message_window.py
+        role: message_layout
+        status: active
+        summary: 短メッセージ矩形
+      - id: hud_ui
+        path: src/shared/ui/hud.py
+        role: hud_layout
+        status: active
+        summary: HUD 基準座標
+      - id: status_bar_ui
+        path: src/shared/ui/status_bar.py
+        role: status_bar
+        status: active
+        summary: HP / MP / level 表示
+    constants:
+      - id: tile_data_constants
+        path: src/shared/constants/tile_data.py
+        role: tile_constants
+        status: active
+        summary: タイル定義と zone/path/shore variation
+      - id: sprite_data_constants
+        path: src/shared/constants/sprite_data.py
+        role: sprite_constants
+        status: active
+        summary: HERO / ENEMY スプライトのピクセル配列
+      - id: game_config_constants
+        path: src/shared/constants/game_config.py
+        role: game_config
+        status: active
+        summary: 画面サイズなどのゲーム設定
+    assets:
+      - id: jp_font_asset
+        path: src/shared/assets/jp_font_data.py
+        role: embedded_font_data
+        status: active
+        summary: 日本語ビットマップフォントデータ
   generated:
     entries: []
   distribution:
