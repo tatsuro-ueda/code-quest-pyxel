@@ -272,7 +272,156 @@ validation_rules:
 
 ---
 
-## 4) Tasklist
+## 4) Implementation Plan
+
+> 実行方式：Subagent-Driven。task ごとに implementer → spec review → code quality review の順で回す。
+
+### 4-1. 対象ファイル
+
+- `docs/architecture_rules.yml`
+  - sample の `layers` / `rules` を廃止し、`meta` / `facts` / `validation_rules` を持つ初版 schema に置き換える
+- `steering/20260508-architecture-rules-yaml.md`
+  - 実装結果に合わせて tasklist / result / discussion を更新する
+- 参照：
+  - `AGENTS.md`
+  - `docs/architecture.md`
+
+### 4-2. 実行タスク
+
+#### Task A: sample YAML を schema scaffold に置き換える
+
+1. 先に shape check を失敗させる
+   - `python3 -c "from pathlib import Path; import yaml; data = yaml.safe_load(Path('docs/architecture_rules.yml').read_text()); assert set(data) == {'meta', 'facts', 'validation_rules'}"`
+2. `docs/architecture_rules.yml` を次の scaffold に全置換する
+
+```yaml
+meta:
+  document_id: architecture_rules
+  version: 1
+  status: draft
+  replaces:
+    - docs/architecture.md
+  audiences:
+    - ai
+    - human
+  intent:
+    - architecture_source_of_truth
+    - human_reviewable
+    - checker_readable
+
+facts:
+  principles: []
+  repository:
+    roots: []
+  data_flows: []
+  runtime: {}
+  scenes: []
+  shared:
+    services: []
+    state: []
+    ui: []
+    constants: []
+    assets: []
+  generated:
+    entries: []
+  distribution:
+    artifacts: []
+  runbooks: []
+  migration_notes: []
+
+validation_rules: []
+```
+
+3. parse check
+   - `python3 -c "from pathlib import Path; import yaml; data = yaml.safe_load(Path('docs/architecture_rules.yml').read_text()); assert set(data) == {'meta', 'facts', 'validation_rules'}; assert data['meta']['replaces'] == ['docs/architecture.md']; print('schema scaffold ok')"`
+
+#### Task B: `facts.principles` / `repository` / `data_flows` を追加する
+
+1. `principles`, `repository.roots`, `data_flows` が空であることを確認
+2. `facts.principles` に次を追加
+   - `code_maker_primary_editor`
+   - `docs_are_requirements`
+   - `pyxres_source_of_truth`
+   - `dist_is_distribution`
+   - `done_requires_real_artifacts`
+3. `facts.repository.roots` に次を追加
+   - `index.html`, `main.py`, `src`, `assets`, `tools`, `test`, `templates`, `dist`, `steering`, `docs`
+4. `facts.data_flows` に次を追加
+   - `generated_game_data`
+   - `pyxres_roundtrip`
+5. verify
+   - `python3 -c "from pathlib import Path; import yaml; data = yaml.safe_load(Path('docs/architecture_rules.yml').read_text()); principle_ids = {item['id'] for item in data['facts']['principles']}; root_ids = {item['id'] for item in data['facts']['repository']['roots']}; flow_ids = {item['id'] for item in data['facts']['data_flows']}; assert {'code_maker_primary_editor', 'pyxres_source_of_truth', 'dist_is_distribution'} <= principle_ids; assert {'src_root', 'assets_root', 'dist_root'} <= root_ids; assert {'generated_game_data', 'pyxres_roundtrip'} <= flow_ids; print('principles/repository/data_flows ok')"`
+
+#### Task C: `facts.runtime` / `scenes` / `shared` を追加する
+
+1. `runtime`, `scenes`, `shared.services` の空 shape を確認
+2. `facts.runtime` に次を追加
+   - entry chain: `main.py -> src/runtime/main_runtime.py -> src/runtime/app.py::Game`
+   - `game_responsibilities`
+   - `property_forwards`
+   - `must_not_store`
+3. `facts.scenes` に次を追加
+   - `splash_scene`, `title_scene`, `explore_scene`, `town_scene`, `shop_scene`, `battle_scene`, `menu_scene`, `ai_help_scene`, `professor_scene`, `ending_scene`
+   - `settings_scene` は `status: removed` として明記
+4. `facts.shared` に次を追加
+   - `services`
+   - `state`
+   - `ui`
+   - `constants`
+   - `assets`
+5. verify
+   - `python3 -c "from pathlib import Path; import yaml; data = yaml.safe_load(Path('docs/architecture_rules.yml').read_text()); runtime_ids = {item['id'] for item in data['facts']['runtime']['entry_chain']}; scene_ids = {item['id'] for item in data['facts']['scenes']}; service_ids = {item['id'] for item in data['facts']['shared']['services']}; assert {'runtime_main_wrapper', 'runtime_shim', 'runtime_game'} <= runtime_ids; assert {'battle_scene', 'explore_scene', 'settings_scene'} <= scene_ids; assert {'game_state_service', 'audio_system_service', 'image_banks_service'} <= service_ids; print('runtime/scenes/shared ok')"`
+
+#### Task D: `generated` / `distribution` / `runbooks` / `migration_notes` を追加する
+
+1. `generated.entries`, `distribution.artifacts`, `runbooks`, `migration_notes` が空であることを確認
+2. `generated.entries` に `dialogue / enemies / items / weapons / armors / spells / shops` を追加
+3. `distribution.artifacts` に `dist/code-maker.zip`, `dist/pyxel.html`, `dist/pyxel.pyxapp`, `dist/play.html`, `dist/index.html` を追加
+4. `runbooks` に次を追加
+   - `build_codemaker_zip`
+   - `build_all_release_artifacts`
+   - `post_change_release_sequence`
+5. `migration_notes` に次を追加
+   - `blockquestapp_legacy_shell`
+   - `core_scene_manager_legacy`
+   - `development_runtime_removed`
+6. verify
+   - `python3 -c "from pathlib import Path; import yaml; data = yaml.safe_load(Path('docs/architecture_rules.yml').read_text()); gen_ids = {item['id'] for item in data['facts']['generated']['entries']}; artifact_ids = {item['id'] for item in data['facts']['distribution']['artifacts']}; runbook_ids = {item['id'] for item in data['facts']['runbooks']}; note_ids = {item['id'] for item in data['facts']['migration_notes']}; assert {'generated_dialogue', 'generated_enemies', 'generated_shops'} <= gen_ids; assert {'codemaker_zip', 'pyxel_html', 'top_index_html'} <= artifact_ids; assert {'build_codemaker_zip', 'build_all_release_artifacts', 'post_change_release_sequence'} <= runbook_ids; assert {'blockquestapp_legacy_shell', 'core_scene_manager_legacy'} <= note_ids; print('generated/distribution/runbooks/migration ok')"`
+
+#### Task E: `validation_rules` を warning only で定義する
+
+1. `validation_rules` が空であることを確認
+2. 次の 8 rule を追加
+   - `runtime_entry_chain`
+   - `code_maker_primary_editor`
+   - `pyxres_source_of_truth`
+   - `dist_not_source`
+   - `generated_files_not_hand_edited`
+   - `scene_mvp_boundary`
+   - `shared_service_vs_state_boundary`
+   - `build_runbook_paths`
+3. rule schema 条件
+   - 全件 `severity: warning`
+   - `enforcement.mode` は `deterministic`, `llm_assisted`, `manual` のいずれか
+   - 各 rule は `id`, `summary`, `severity`, `enforcement`, `scope`, `evidence`, `message` を持つ
+4. verify
+   - `python3 -c "from pathlib import Path; import yaml; data = yaml.safe_load(Path('docs/architecture_rules.yml').read_text()); rules = data['validation_rules']; assert len(rules) == 8; assert {rule['severity'] for rule in rules} == {'warning'}; assert {'deterministic', 'llm_assisted', 'manual'} <= {rule['enforcement']['mode'] for rule in rules}; assert all({'id', 'summary', 'severity', 'enforcement', 'scope', 'evidence', 'message'} <= set(rule) for rule in rules); print('validation_rules ok')"`
+
+#### Task F: 最終確認と task note 更新
+
+1. full parse
+   - `python3 -c "from pathlib import Path; import yaml; data = yaml.safe_load(Path('docs/architecture_rules.yml').read_text()); assert data['meta']['document_id'] == 'architecture_rules'; assert any(item['id'] == 'runtime_game' for item in data['facts']['runtime']['entry_chain']); assert any(item['id'] == 'battle_scene' for item in data['facts']['scenes']); assert any(item['id'] == 'build_all_release_artifacts' for item in data['facts']['runbooks']); print('full yaml ok')"`
+2. coverage spot check
+   - `python3 -c "from pathlib import Path; text = Path('docs/architecture_rules.yml').read_text(); required = ['code_maker_primary_editor', 'pyxres_source_of_truth', 'runtime_game', 'post_change_release_sequence', 'blockquestapp_legacy_shell']; missing = [item for item in required if item not in text]; assert not missing, missing; print('architecture coverage spot check ok')"`
+3. task note の `Tasklist` / `Result` / `Discussion` を更新
+4. repo verification
+   - `python3 tools/verify_cj_cjob.py`
+   - `python3 tools/scene_to_cj.py --verify-only`
+   - `python3 -m pytest test/ -q`
+
+---
+
+## 5) Tasklist
 
 - [x] T1: task note を起票し、Journey / Gherkin / Design を整理する
 - [ ] T2: `docs/architecture_rules.yml` の初版 schema を実ファイルとして作成する
@@ -283,7 +432,7 @@ validation_rules:
 
 ---
 
-## 5) Discussion
+## 6) Discussion
 
 ### 採用判断
 
