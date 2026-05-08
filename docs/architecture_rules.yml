@@ -1,0 +1,35 @@
+meta:
+  document_id: architecture_rules
+  version: 1
+  status: draft
+  replaces:
+    - docs/architecture.md
+  audiences:
+    - ai
+    - human
+  intent:
+    - architecture_source_of_truth
+    - human_reviewable
+    - checker_readable
+
+facts:
+  principles: []
+  repository:
+    roots: []
+  data_flows: []
+  runtime: {}
+  scenes: []
+  shared:
+    services: []
+    state: []
+    ui: []
+    constants: []
+    assets: []
+  generated:
+    entries: []
+  distribution:
+    artifacts: []
+  runbooks: []
+  migration_notes: []
+
+validation_rules: []
