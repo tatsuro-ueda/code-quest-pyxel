@@ -13,10 +13,117 @@ meta:
     - checker_readable
 
 facts:
-  principles: []
+  principles:
+    - id: code_maker_primary_editor
+      summary: Pyxel Code Maker は子どもの正式な編集面である。
+      must:
+        - tilemap / sprite / sound / .pyxres の編集面では Code Maker を最初の正として扱う
+      must_not:
+        - 内部都合で Code Maker を不要化・脇役化しない
+    - id: docs_are_requirements
+      summary: docs と code が食い違ったら未実装 / バグ / 仕様ずれとして扱う。
+      must:
+        - code ではなく docs に書かれた要求との差分を明記する
+      must_not:
+        - 既存 code があることを理由に docs 側を自動的に正しいとみなさない
+    - id: pyxres_source_of_truth
+      summary: .pyxres は子どもと親が Code Maker で編集する正本である。
+      must:
+        - AI は code / build / packaging / guardrail / test を整える
+        - pyxel resource 実体を確認するときは実物を最初の正として扱う
+      must_not:
+        - AI が .pyxres の中身をテキスト編集の主戦場にしない
+    - id: dist_is_distribution
+      summary: dist は配布物の置き場であり source ではない。
+      must:
+        - source の修正は src / assets / tools / docs 側で行う
+      must_not:
+        - dist 配下を手修正の正本にしない
+    - id: done_requires_real_artifacts
+      summary: done はコード・テスト・実物確認を含む。
+      must:
+        - zip / .pyxres / HTML / save data / 実行画面の実物確認を行う
+      must_not:
+        - runtime code や build script を直しただけで完了扱いにしない
   repository:
-    roots: []
-  data_flows: []
+    roots:
+      - id: top_page
+        path: index.html
+        role: child_facing_top_page
+        status: active
+        source_of_truth: false
+        summary: 子ども向けトップページ。プレイ導線を担う
+      - id: main_wrapper
+        path: main.py
+        role: runtime_wrapper
+        status: active
+        source_of_truth: true
+        summary: src/runtime/main_runtime.py を呼ぶ薄い wrapper
+      - id: src_root
+        path: src
+        role: source_root
+        status: active
+        source_of_truth: true
+        summary: アプリケーションコードの正本
+      - id: assets_root
+        path: assets
+        role: human_edited_assets
+        status: active
+        source_of_truth: true
+        summary: YAML / .pyxres / font / screenshot など人が直す正本
+      - id: tools_root
+        path: tools
+        role: build_and_verification
+        status: active
+        source_of_truth: true
+        summary: build / 配布 / データ生成 / 検証スクリプト
+      - id: test_root
+        path: test
+        role: automated_tests
+        status: active
+        source_of_truth: true
+        summary: pytest テスト群
+      - id: templates_root
+        path: templates
+        role: build_templates
+        status: active
+        source_of_truth: true
+        summary: build 前の HTML template
+      - id: dist_root
+        path: dist
+        role: distribution_root
+        status: distribution
+        source_of_truth: false
+        summary: 承認済み配布物の出力先
+      - id: steering_root
+        path: steering
+        role: task_notes
+        status: active
+        source_of_truth: true
+        summary: task note と作業判断の記録
+      - id: docs_root
+        path: docs
+        role: architecture_and_requirements
+        status: active
+        source_of_truth: true
+        summary: AI / 人間向けの要求・規約・構成定義
+  data_flows:
+    - id: generated_game_data
+      summary: 人が編集する YAML は tools/gen_data.py を通って generated module へ変換される
+      steps:
+        - assets/*.yaml
+        - tools/gen_data.py
+        - src/generated/*.py
+        - src/game_data.py
+        - runtime
+    - id: pyxres_roundtrip
+      summary: 子どもの編集対象である pyxres は Code Maker と runtime の間を往復する
+      steps:
+        - Pyxel Code Maker
+        - assets/blockquest.pyxres
+        - src/shared/services/image_banks.py
+        - runtime
+        - dist/code-maker.zip
   runtime: {}
   scenes: []
   shared:
