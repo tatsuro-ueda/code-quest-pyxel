@@ -57,7 +57,7 @@ facts:
         path: main.py
         role: runtime_wrapper
         status: active
-        source_of_truth: true
+        source_of_truth: false
         summary: src/runtime/main_runtime.py を呼ぶ薄い wrapper
       - id: src_root
         path: src
@@ -75,19 +75,19 @@ facts:
         path: tools
         role: build_and_verification
         status: active
-        source_of_truth: true
+        source_of_truth: false
         summary: build / 配布 / データ生成 / 検証スクリプト
       - id: test_root
         path: test
         role: automated_tests
         status: active
-        source_of_truth: true
+        source_of_truth: false
         summary: pytest テスト群
       - id: templates_root
         path: templates
         role: build_templates
         status: active
-        source_of_truth: true
+        source_of_truth: false
         summary: build 前の HTML template
       - id: dist_root
         path: dist
@@ -99,7 +99,7 @@ facts:
         path: steering
         role: task_notes
         status: active
-        source_of_truth: true
+        source_of_truth: false
         summary: task note と作業判断の記録
       - id: docs_root
         path: docs
@@ -117,13 +117,18 @@ facts:
         - src/game_data.py
         - runtime
     - id: pyxres_roundtrip
-      summary: 子どもの編集対象である pyxres は Code Maker と runtime の間を往復する
+      summary: 子どもが編集する pyxres は Code Maker と配布 zip を通って assets に戻る
       steps:
+        - assets/blockquest.pyxres
+        - dist/code-maker.zip
         - Pyxel Code Maker
+        - assets/blockquest.pyxres
+    - id: pyxres_runtime_loading
+      summary: runtime は assets の pyxres を読み込み、ImageBanks はロード / 保存 / fallback を担う
+      steps:
         - assets/blockquest.pyxres
         - src/shared/services/image_banks.py
         - runtime
-        - dist/code-maker.zip
   runtime: {}
   scenes: []
   shared:
