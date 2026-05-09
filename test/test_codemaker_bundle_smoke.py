@@ -239,6 +239,40 @@ class BundledSourceLoadsTest(unittest.TestCase):
         self.assertGreater(pm.max_hp, 0)
         self.assertGreaterEqual(pm.defense, 0)
 
+    def test_game_init_and_forwarded_runtime_state_succeed_in_bundle(self):
+        """M4-3 回帰防止: Game が DebugService / shared SceneManager を使って
+        起動でき、forwarded property が読めることを確認する。
+
+        過去バグ:
+        - DebugService 未登録で `Game()` が NameError
+        - legacy `src/core/scene_manager.py` のみ同梱され、`game.state` 参照で
+          AttributeError になった
+        """
+        mod = self._exec_bundle()
+        try:
+            game = mod.__dict__["Game"]()
+        except (AttributeError, NameError) as exc:  # pragma: no cover
+            self.fail(f"Game() / forwarded runtime state raised: {exc}")
+
+        self.assertFalse(game.debug_mode)
+        self.assertEqual(game.state, "splash")
+        self.assertEqual(game.prev_state, "map")
+
+    def test_message_display_text_renderer_is_present_in_bundle(self):
+        """M1-1 回帰防止: text_renderer.py が bundle に入り、
+        MessageDisplay.text() が NameError なく呼べることを確認する。
+
+        過去バグ:
+        - text_renderer.py 未登録で `draw_text` 未定義になり、
+          タイトルやメッセージ描画で落ちた
+        """
+        mod = self._exec_bundle()
+        self.assertIn("draw_text", mod.__dict__)
+        try:
+            mod.__dict__["MessageDisplay"]().text(4, 8, "abc", 7)
+        except NameError as exc:  # pragma: no cover
+            self.fail(f"MessageDisplay.text() raised NameError: {exc}")
+
 
 if __name__ == "__main__":
     unittest.main()

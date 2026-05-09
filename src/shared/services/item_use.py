@@ -10,35 +10,30 @@ from typing import Any
 
 
 def use_item(game: Any, item_data: dict) -> str:
-    """アイテム効果を適用し、表示用メッセージを返す（使えない場合は空文字列）。"""
-    pm = game.player_model
-    kind = item_data["type"]
-    if kind == "heal":
-        if pm.hp >= pm.max_hp:
-            return ""
-        pm.heal(item_data["value"])
+    """旧互換ブリッジ。ルール本体は PlayerModel.use_item() に委譲する。"""
+    result = game.player_model.use_item(
+        item_data,
+        town_pos=getattr(game, "last_town_pos", None) or (25, 6),
+    )
+    if result == "heal":
         game.sfx.play("heal")
         return game.messages.dialog_text(
             "battle.normal.item.heal",
             item=item_data["name"],
             value=item_data["value"],
         )
-    if kind == "mp_heal":
-        pm.restore_mp(item_data["value"])
+    if result == "mp_heal":
         game.sfx.play("heal")
         return game.messages.dialog_text(
             "battle.normal.item.mp_heal",
             item=item_data["name"],
             value=item_data["value"],
         )
-    if kind == "cure_poison":
-        if pm.cure_poison():
-            game.sfx.play("cure")
-            return f'{item_data["name"]}を使った。バグ汚染が消えた！'
+    if result == "cure_poison_ok":
+        game.sfx.play("cure")
+        return f'{item_data["name"]}を使った。バグ汚染が消えた！'
+    if result == "cure_poison_none":
         return f'{item_data["name"]}を使った。だが今は必要なかった。'
-    if kind == "warp":
-        tx, ty = getattr(game, "last_town_pos", None) or (25, 6)
-        pm.x, pm.y = tx, ty
-        pm.in_dungeon = False
+    if result == "warp":
         return f'{item_data["name"]}を使った。記録した場所に戻った。'
     return ""

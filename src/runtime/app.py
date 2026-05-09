@@ -1,8 +1,7 @@
-"""Block Quest の Game クラス本体と entry point（Phase 1.5-D で main_runtime.py から抽出）。
+"""Block Quest の Game クラス本体と entry point。
 
-`src/app.py::BlockQuestApp` は scene_manager + GameState の薄い shell として残し、
-pyxel 初期化 + scene/service instance の組み立て + update/draw dispatcher の
-重量級 runtime は本ファイルに Game クラスとして置く。
+pyxel 初期化 + scene/service instance の組み立て + update/draw dispatcher を
+まとめた唯一の runtime root を本ファイルに置く。
 """
 from __future__ import annotations
 import pyxel

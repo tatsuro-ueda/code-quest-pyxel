@@ -49,6 +49,8 @@ src/shared/services/text_format.py
 src/shared/services/audio_system.py
 src/shared/services/dialog_runner.py
 src/shared/services/game_state.py
+src/shared/services/debug_service.py
+src/shared/services/scene_manager.py
 src/shared/services/vfx.py
 src/shared/services/item_use.py
 src/shared/services/message_display.py
@@ -59,16 +61,11 @@ src/shared/services/image_banks.py
 src/shared/ui/dialog_window.py
 src/shared/ui/hud.py
 src/shared/ui/menu_window.py
+src/shared/ui/text_renderer.py
 src/shared/ui/message_window.py
 src/shared/ui/status_bar.py
 
-# --- 7. src/core: SceneManager
-src/core/scene_manager.py
-
-# --- 8. src/app.py: BlockQuestApp
-src/app.py
-
-# --- 9. scenes: M/V/P を先に、Scene を最後に
+# --- 7. scenes: M/V/P を先に、Scene を最後に
 src/scenes/ai_help/model.py
 src/scenes/ai_help/view_model.py
 src/scenes/ai_help/view.py
@@ -128,5 +125,5 @@ src/scenes/town/view_model.py
 src/scenes/town/view.py
 src/scenes/town/presenter.py
 
-# --- 10. src/runtime/app.py: Game クラス本体（全 scenes/services を使う）
+# --- 8. src/runtime/app.py: Game クラス本体（全 scenes/services を使う）
 src/runtime/app.py

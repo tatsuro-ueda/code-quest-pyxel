@@ -13,6 +13,28 @@ from src.shared.services.input_bindings import (
 )
 
 
+def _item_use_message(game: Any, item_data: dict, result: str) -> str:
+    if result == "heal":
+        return game.messages.dialog_text(
+            "battle.normal.item.heal",
+            item=item_data["name"],
+            value=item_data["value"],
+        )
+    if result == "mp_heal":
+        return game.messages.dialog_text(
+            "battle.normal.item.mp_heal",
+            item=item_data["name"],
+            value=item_data["value"],
+        )
+    if result == "cure_poison_ok":
+        return f'{item_data["name"]}を使った。バグ汚染が消えた！'
+    if result == "cure_poison_none":
+        return f'{item_data["name"]}を使った。だが今は必要なかった。'
+    if result == "warp":
+        return f'{item_data["name"]}を使った。記録した場所に戻った。'
+    return ""
+
+
 @dataclass
 class MenuPresenter:
     """menu シーンの入力解釈・遷移決定・ViewModel 組立て（M3-1 / M2-2）。"""
@@ -82,11 +104,18 @@ class MenuPresenter:
                     game.sfx.play("select")
                     item = items[m.item_cursor]
                     item_data = M.ITEMS[item.id]
-                    from src.shared.services.item_use import use_item as _use_item_fn
-                    msg = _use_item_fn(game, item_data)
-                    if not msg:
+                    result = game.player_model.use_item(
+                        item_data,
+                        town_pos=getattr(game, "last_town_pos", None) or (25, 6),
+                    )
+                    if not result:
                         m.message = "HPがまんたんで つかえない"
                     else:
+                        if result in {"heal", "mp_heal"}:
+                            game.sfx.play("heal")
+                        elif result == "cure_poison_ok":
+                            game.sfx.play("cure")
+                        _item_use_message(game, item_data, result)
                         m.message = ""
                         item.qty -= 1
                         if item.qty <= 0:

@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import unittest
 
-from src.app import BlockQuestApp
-from src.core.scene_manager import SceneManager
 from src.scenes.battle.model import BattleModel
 from src.scenes.battle.presenter import BattlePresenter
 from src.scenes.battle.scene import BattleScene
@@ -14,49 +12,21 @@ from src.scenes.explore.scene import ExploreScene
 from src.scenes.title.model import TitleModel
 from src.scenes.title.presenter import TitlePresenter
 from src.scenes.title.scene import TitleScene
+from src.shared.services.scene_manager import SceneManager
 from src.shared.ui.dialog_window import DialogWindow
 from src.shared.ui.hud import HudLayout
 from src.shared.ui.menu_window import MenuWindow
 
 
-class _FakeScene:
-    def __init__(self, name: str):
-        self.name = name
-        self.updated = 0
-        self.drawn = 0
-
-    def update(self) -> None:
-        self.updated += 1
-
-    def draw(self) -> dict[str, str]:
-        self.drawn += 1
-        return {"name": self.name}
-
-
-class SceneManagerAndAppTest(unittest.TestCase):
-    def test_scene_manager_tracks_history_and_previous_scene(self):
+class SharedSceneManagerTest(unittest.TestCase):
+    def test_scene_manager_tracks_previous_scene_name(self):
         manager = SceneManager()
-        title = _FakeScene("title")
-        battle = _FakeScene("battle")
 
-        manager.set_scene(title)
-        manager.set_scene(battle)
+        manager.set("title")
+        manager.set("battle")
 
-        self.assertEqual(manager.previous_scene_name, "title")
-        self.assertEqual(manager.history, ["title"])
-
-    def test_blockquest_app_delegates_to_scene_manager(self):
-        manager = SceneManager()
-        app = BlockQuestApp(scene_manager=manager)
-        title = _FakeScene("title")
-        app.set_scene(title)
-
-        app.update()
-        result = app.draw()
-
-        self.assertEqual(title.updated, 1)
-        self.assertEqual(title.drawn, 1)
-        self.assertEqual(result, {"name": "title"})
+        self.assertEqual(manager.previous, "title")
+        self.assertEqual(manager.current, "battle")
 
 
 class TitleSceneTest(unittest.TestCase):

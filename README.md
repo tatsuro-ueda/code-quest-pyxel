@@ -3,7 +3,7 @@
 子どもが「コードを書き換えてゲームを育てる」ことを核に置いた、Pyxel製のRPG。
 
 > **規約に従って実装するには？**
-> [AGENTS.md](AGENTS.md) (≤100 行・最優先) → [docs/architecture.md](docs/architecture.md) (人用詳細) → [docs/framework-rule.md](docs/framework-rule.md) (規約本体 M1〜M5) の順に辿ってください。
+> [AGENTS.md](AGENTS.md) (≤100 行・最優先) → [docs/repository-structure.md](docs/repository-structure.md) (人用詳細) → [docs/framework-rule.md](docs/framework-rule.md) (規約本体 M1〜M5) の順に辿ってください。
 
 
 ![Block Quest タイトル画面](assets/screenshots/title.png)

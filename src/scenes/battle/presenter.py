@@ -19,6 +19,26 @@ from src.shared.services.input_bindings import (
 )
 
 
+def _item_use_message(game: Any, item_data: dict, result: str) -> str:
+    if result == "heal":
+        return game.messages.dialog_text(
+            "battle.normal.item.heal",
+            item=item_data["name"],
+            value=item_data["value"],
+        )
+    if result == "mp_heal":
+        return game.messages.dialog_text(
+            "battle.normal.item.mp_heal",
+            item=item_data["name"],
+            value=item_data["value"],
+        )
+    if result == "cure_poison_ok":
+        return f'{item_data["name"]}を使った。バグ汚染が消えた！'
+    if result == "cure_poison_none":
+        return f'{item_data["name"]}を使った。だが今は必要なかった。'
+    return ""
+
+
 @dataclass
 class BattlePresenter:
     """バトル画面の入力解釈・フェーズ遷移・ViewModel 組立て（M3-1 / M2-2）。
@@ -135,13 +155,16 @@ class BattlePresenter:
                     m.phase = "enemy_attack"
                     m.text_timer = 30
                 else:
-                    from src.shared.services.item_use import use_item as _use_item_fn
-                    msg = _use_item_fn(game, item_data)
-                    if not msg:
+                    result = game.player_model.use_item(item_data)
+                    if not result:
                         m.text = "HPがまんたんで つかえない"
                         m.text_timer = 30
                     else:
-                        m.text = msg
+                        if result in {"heal", "mp_heal"}:
+                            game.sfx.play("heal")
+                        elif result == "cure_poison_ok":
+                            game.sfx.play("cure")
+                        m.text = _item_use_message(game, item_data, result)
                         item.qty -= 1
                         if item.qty <= 0:
                             items.pop(m.item_select)

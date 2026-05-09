@@ -63,6 +63,18 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
         raise KeyError("facts.tree must be present")
     if tree.get("path") != "." or tree.get("kind") != "root":
         raise ValueError("facts.tree must start with path='.' and kind='root'")
+    contracts = data.get("facts", {}).get("codemaker_bundle_contracts", [])
+    if contracts is not None:
+        if not isinstance(contracts, list):
+            raise TypeError("facts.codemaker_bundle_contracts must be a list")
+        for contract in contracts:
+            if not isinstance(contract, dict):
+                raise TypeError("each codemaker bundle contract must be a dict")
+            for key in ("id", "manifest_path", "required_paths"):
+                if key not in contract:
+                    raise KeyError(f"codemaker bundle contract missing key: {key}")
+            if not isinstance(contract["required_paths"], list) or not contract["required_paths"]:
+                raise TypeError("codemaker bundle contract required_paths must be a non-empty list")
     required_rule_keys = {
         "id",
         "summary",
@@ -152,6 +164,11 @@ def distribution_artifact_nodes(data: dict[str, Any]) -> list[dict[str, Any]]:
     return [child for child in dist_node.get("children", []) if child.get("kind") == "file"]
 
 
+def find_codemaker_bundle_contract(data: dict[str, Any], contract_id: str) -> dict[str, Any] | None:
+    contracts = data.get("facts", {}).get("codemaker_bundle_contracts", [])
+    return next((item for item in contracts if item.get("id") == contract_id), None)
+
+
 def _warning(
     rule: dict[str, Any],
     checked_paths: list[str],
@@ -189,6 +206,16 @@ def _skipped(rule: dict[str, Any]) -> CheckOutcome:
 
 def _file_contains(path: Path, needle: str) -> bool:
     return needle in path.read_text(encoding="utf-8")
+
+
+def _manifest_entries(path: Path) -> list[str]:
+    entries: list[str] = []
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        entries.append(line)
+    return entries
 
 
 def wrapper_chain_present(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
@@ -312,6 +339,66 @@ def generated_entries_mark_non_hand_editable_and_sources(context: CheckContext, 
     return _ok(rule, checked_paths)
 
 
+def codemaker_manifest_includes_required_paths(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+    checked_paths = _scope_paths(rule)
+    repo_root = context.repo_root
+    contract = find_codemaker_bundle_contract(context.data, "codemaker_non_scene_bundle")
+    if contract is None:
+        return _warning(
+            rule,
+            checked_paths,
+            "codemaker_manifest_includes_required_paths",
+            reason="facts.codemaker_bundle_contracts.codemaker_non_scene_bundle is missing",
+        )
+
+    manifest_rel = contract.get("manifest_path")
+    if not isinstance(manifest_rel, str) or not manifest_rel:
+        return _warning(
+            rule,
+            checked_paths,
+            "codemaker_manifest_includes_required_paths",
+            reason="manifest_path is missing from codemaker bundle contract",
+        )
+    manifest_path = repo_root / manifest_rel
+    if not manifest_path.is_file():
+        return _warning(
+            rule,
+            checked_paths,
+            "codemaker_manifest_includes_required_paths",
+            reason=f"manifest file is missing: {manifest_rel}",
+        )
+
+    required_paths = contract.get("required_paths", [])
+    if not isinstance(required_paths, list) or not required_paths:
+        return _warning(
+            rule,
+            checked_paths,
+            "codemaker_manifest_includes_required_paths",
+            reason="required_paths is empty in codemaker bundle contract",
+        )
+    for rel_path in required_paths:
+        if not (repo_root / rel_path).is_file():
+            return _warning(
+                rule,
+                checked_paths,
+                "codemaker_manifest_includes_required_paths",
+                reason=f"required bundle path is missing on disk: {rel_path}",
+            )
+
+    entries = set(_manifest_entries(manifest_path))
+    missing_paths = [path for path in required_paths if path not in entries]
+    if missing_paths:
+        return _warning(
+            rule,
+            checked_paths,
+            "codemaker_manifest_includes_required_paths",
+            reason="required non-scene bundle paths are missing from manifest",
+            expected={"required_paths": required_paths},
+            observed={"missing_paths": missing_paths},
+        )
+    return _ok(rule, checked_paths)
+
+
 def _command_script_paths(command: str) -> list[str]:
     tokens = shlex.split(command)
     if "-c" in tokens:
@@ -355,6 +442,7 @@ CHECK_REGISTRY = {
     "wrapper_chain_present": wrapper_chain_present,
     "distribution_paths_marked_non_source": distribution_paths_marked_non_source,
     "generated_entries_mark_non_hand_editable_and_sources": generated_entries_mark_non_hand_editable_and_sources,
+    "codemaker_manifest_includes_required_paths": codemaker_manifest_includes_required_paths,
     "compare_runbook_commands_and_artifact_defs": compare_runbook_commands_and_artifact_defs,
 }
 

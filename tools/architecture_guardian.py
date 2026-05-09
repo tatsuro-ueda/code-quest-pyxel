@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# architecture_rules.yml を checker で見直し、安全に直せる deterministic な差分だけを
+# YAML や生成物へ反映し、warning が消えるまで autofix と再検査を繰り返す補助スクリプト。
+
 """architecture rule 違反を自動修復しながら再検査する guardian。"""
 
 import argparse
@@ -82,6 +85,74 @@ def _format_yaml_for_humans(data: dict[str, Any]) -> str:
 
 def write_yaml(path: Path, data: dict[str, Any]) -> None:
     path.write_text(_format_yaml_for_humans(data), encoding="utf-8")
+
+
+def _read_manifest_entries_with_lines(path: Path) -> list[str]:
+    return path.read_text(encoding="utf-8").splitlines()
+
+
+def _write_manifest_lines(path: Path, lines: list[str]) -> None:
+    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
+def _find_codemaker_bundle_contract(data: dict[str, Any], contract_id: str) -> dict[str, Any] | None:
+    contracts = data.get("facts", {}).get("codemaker_bundle_contracts", [])
+    return next((item for item in contracts if item.get("id") == contract_id), None)
+
+
+def _manifest_entries(lines: list[str]) -> set[str]:
+    entries: set[str] = set()
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        entries.add(line)
+    return entries
+
+
+def _manifest_insert_before_marker(lines: list[str], path: str, marker: str | None) -> None:
+    if marker is None:
+        lines.append(path)
+        return
+    for index, line in enumerate(lines):
+        if line.startswith(marker):
+            lines.insert(index, path)
+            return
+    lines.append(path)
+
+
+def _insert_codemaker_manifest_path(lines: list[str], path: str) -> None:
+    if path in {
+        "src/shared/services/debug_service.py",
+        "src/shared/services/scene_manager.py",
+    }:
+        _manifest_insert_before_marker(lines, path, "# --- 10. src/runtime/app.py:")
+        return
+    if path.startswith("src/shared/assets/"):
+        _manifest_insert_before_marker(lines, path, "# --- 2. shared/constants:")
+        return
+    if path.startswith("src/shared/constants/"):
+        _manifest_insert_before_marker(lines, path, "# --- 3. src/generated:")
+        return
+    if path.startswith("src/generated/"):
+        _manifest_insert_before_marker(lines, path, "# --- 4. src/game_data.py:")
+        return
+    if path == "src/game_data.py":
+        _manifest_insert_before_marker(lines, path, "# --- 5a. shared/state:")
+        return
+    if path.startswith("src/shared/state/"):
+        _manifest_insert_before_marker(lines, path, "# --- 5. shared/services:")
+        return
+    if path.startswith("src/shared/services/"):
+        _manifest_insert_before_marker(lines, path, "# --- 6. shared/ui:")
+        return
+    if path.startswith("src/shared/ui/"):
+        _manifest_insert_before_marker(lines, path, "# --- 7. scenes:")
+        return
+    if path == "src/runtime/app.py":
+        _manifest_insert_before_marker(lines, path, None)
+        return
+    _manifest_insert_before_marker(lines, path, None)
 
 
 def _set_rule_internal_fields(data: dict[str, Any], rules_path: Path) -> None:
@@ -232,6 +303,53 @@ def fix_build_runbook_paths(repo_root: Path, rules_path: Path, warning: dict[str
     return fixes
 
 
+def fix_codemaker_manifest_non_scene_paths(
+    repo_root: Path,
+    rules_path: Path,
+    warning: dict[str, Any],
+) -> list[dict[str, Any]]:
+    data = load_yaml(rules_path)
+    fixes: list[dict[str, Any]] = []
+    contract = _find_codemaker_bundle_contract(data, "codemaker_non_scene_bundle")
+    if contract is None:
+        return fixes
+
+    manifest_rel = contract.get("manifest_path")
+    required_paths = contract.get("required_paths", [])
+    if not isinstance(manifest_rel, str) or not manifest_rel:
+        return fixes
+    if not isinstance(required_paths, list) or not required_paths:
+        return fixes
+
+    manifest_path = repo_root / manifest_rel
+    if not manifest_path.is_file():
+        return fixes
+    for rel_path in required_paths:
+        if not (repo_root / rel_path).is_file():
+            return fixes
+
+    lines = _read_manifest_entries_with_lines(manifest_path)
+    entries = _manifest_entries(lines)
+    changed = False
+    for rel_path in required_paths:
+        if rel_path in entries:
+            continue
+        _insert_codemaker_manifest_path(lines, rel_path)
+        entries.add(rel_path)
+        changed = True
+        fixes.append(
+            {
+                "kind": "code",
+                "path": str(manifest_path),
+                "detail": f"added missing codemaker manifest path: {rel_path}",
+            }
+        )
+
+    if changed:
+        _write_manifest_lines(manifest_path, lines)
+    return fixes
+
+
 def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str, Any]) -> list[dict[str, Any]]:
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
@@ -314,6 +432,7 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
 FIXER_REGISTRY = {
     "generated_files_edit_policy": fix_generated_files_edit_policy,
     "dist_not_source": fix_dist_not_source,
+    "codemaker_manifest_non_scene_paths": fix_codemaker_manifest_non_scene_paths,
     "build_runbook_paths": fix_build_runbook_paths,
     "runtime_entry_chain": fix_runtime_entry_chain,
 }

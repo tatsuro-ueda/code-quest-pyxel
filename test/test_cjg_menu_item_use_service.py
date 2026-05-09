@@ -1,4 +1,4 @@
-"""CJG/crash regression: menu からの item 使用は item_use サービスを呼ぶ。
+"""CJG/crash regression: menu からの item 使用は PlayerModel ルールを使う。
 
 根拠:
 - docs/customer-jobs.md Make3「ガードレール: Buy3 の壊れた出力を子どもに届けない」
@@ -6,7 +6,8 @@
 
 かつて menu/scene.py:96 が `game.use_item(item_data)` を呼んでいたが、
 Game クラスに `use_item` メソッドは存在せず AttributeError で落ちていた。
-battle/scene.py と同じく `src.shared.services.item_use.use_item` 経由にする。
+その後 item_use service を経由していたが、M4-4 後半では PlayerModel に
+ルールを集約し、scene 側は `game.player_model.use_item(...)` を使う。
 """
 
 from __future__ import annotations
@@ -21,7 +22,6 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.shared.services.item_use import use_item as use_item_fn
 from src.shared.state.player_model import PlayerModel
 
 
@@ -49,62 +49,7 @@ class _FakeGame:
     last_town_pos: tuple[int, int] | None = None
 
 
-class ItemUseServiceTest(unittest.TestCase):
-    def test_heal_item_applies_hp_and_returns_message(self):
-        game = _FakeGame()
-        game.player_model.hp = 5  # 満タンでない
-        item = {"type": "heal", "name": "やくそう", "value": 20}
-
-        msg = use_item_fn(game, item)
-
-        self.assertGreater(game.player_model.hp, 5)
-        self.assertIn("heal", msg)
-        self.assertIn("heal", game.sfx.played)
-
-    def test_heal_item_returns_empty_when_hp_full(self):
-        game = _FakeGame()
-        pm = game.player_model
-        pm.hp = pm.max_hp
-        item = {"type": "heal", "name": "やくそう", "value": 20}
-
-        msg = use_item_fn(game, item)
-
-        self.assertEqual(msg, "")
-        self.assertNotIn("heal", game.sfx.played)
-
-    def test_mp_heal_item_applies_mp_and_returns_message(self):
-        game = _FakeGame()
-        game.player_model.mp = 0
-        item = {"type": "mp_heal", "name": "まりょくのたね", "value": 10}
-
-        msg = use_item_fn(game, item)
-
-        self.assertEqual(game.player_model.mp, 10)
-        self.assertIn("mp_heal", msg)
-
-    def test_cure_poison_when_not_poisoned_returns_neutral_message(self):
-        game = _FakeGame()
-        game.player_model.poisoned = False
-        item = {"type": "cure_poison", "name": "どくけしそう"}
-
-        msg = use_item_fn(game, item)
-
-        self.assertIn("必要なかった", msg)
-
-    def test_warp_item_restores_town_position(self):
-        game = _FakeGame(last_town_pos=(10, 20))
-        pm = game.player_model
-        pm.in_dungeon = True
-        item = {"type": "warp", "name": "まちのいし"}
-
-        msg = use_item_fn(game, item)
-
-        self.assertEqual((pm.x, pm.y), (10, 20))
-        self.assertFalse(pm.in_dungeon)
-        self.assertIn("まちのいし", msg)
-
-
-class MenuUsesServiceNotGameShimTest(unittest.TestCase):
+class MenuUsesPlayerModelNotGameShimTest(unittest.TestCase):
     """menu/scene.py が `game.use_item(` のような存在しない shim を呼んでいないこと。"""
 
     def test_menu_does_not_call_game_use_item(self):
@@ -122,16 +67,13 @@ class MenuUsesServiceNotGameShimTest(unittest.TestCase):
                 " `game.use_item(` は存在しない shim で、呼ぶと AttributeError で落ちる。",
             )
 
-    def test_menu_imports_item_use_service(self):
-        # M3-2 で update() ロジックが presenter に集約されたため、
-        # `from src.shared.services.item_use import use_item` の
-        # import は presenter.py または scene.py のどちらかに存在すれば OK。
+    def test_menu_uses_player_model_rule_directly(self):
         scene_text = (ROOT / "src" / "scenes" / "menu" / "scene.py").read_text(encoding="utf-8")
         presenter_text = (ROOT / "src" / "scenes" / "menu" / "presenter.py").read_text(encoding="utf-8")
-        pattern = r"from\s+src\.shared\.services\.item_use\s+import\s+use_item"
+        pattern = r"player_model\.use_item\("
         self.assertTrue(
             re.search(pattern, scene_text) or re.search(pattern, presenter_text),
-            "menu/scene.py または menu/presenter.py は item_use サービスを import する形で書く。",
+            "menu/scene.py または menu/presenter.py は game.player_model.use_item(...) を使う。",
         )
 
 

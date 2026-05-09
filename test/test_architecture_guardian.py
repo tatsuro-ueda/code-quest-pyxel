@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import tempfile
 import textwrap
@@ -30,6 +31,22 @@ def tree_node(path: str, kind: str, **extra):
 
 
 class ArchitectureGuardianTest(unittest.TestCase):
+    def test_guardian_cli_runs_clean_on_real_repo(self):
+        completed = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / "architecture_guardian.py")],
+            capture_output=True,
+            text=True,
+            cwd=ROOT,
+            check=False,
+        )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["status"], "OK")
+        self.assertEqual(payload["cycles"], 1)
+        self.assertTrue(payload["final_check"]["run_ok"])
+        self.assertFalse(payload["final_check"]["has_warnings"])
+
     def test_write_yaml_inserts_blank_lines_between_path_entries(self):
         guardian = load_guardian_module()
 
@@ -268,6 +285,101 @@ class ArchitectureGuardianTest(unittest.TestCase):
             self.assertEqual(result["status"], "NEEDS_HUMAN")
             self.assertLessEqual(result["cycles"], 5)
             self.assertTrue(result["final_check"]["has_warnings"])
+
+    def test_guardian_autofixes_codemaker_manifest_missing_required_paths(self):
+        guardian = load_guardian_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            (repo_root / "tools").mkdir(parents=True, exist_ok=True)
+            (repo_root / "src" / "shared" / "services").mkdir(parents=True, exist_ok=True)
+            (repo_root / "src" / "shared" / "ui").mkdir(parents=True, exist_ok=True)
+
+            manifest_path = repo_root / "tools" / "codemaker_manifest.txt"
+            manifest_path.write_text(
+                textwrap.dedent(
+                    """
+                    # --- 5. shared/services
+                    src/shared/services/input_bindings.py
+                    # --- 6. shared/ui
+                    src/shared/ui/hud.py
+                    # --- 7. scenes
+                    """
+                ).lstrip(),
+                encoding="utf-8",
+            )
+            (repo_root / "src" / "shared" / "services" / "input_bindings.py").write_text(
+                "# ok\n", encoding="utf-8"
+            )
+            (repo_root / "src" / "shared" / "services" / "debug_service.py").write_text(
+                "# needs autofix\n", encoding="utf-8"
+            )
+            (repo_root / "src" / "shared" / "ui" / "hud.py").write_text(
+                "# ok\n", encoding="utf-8"
+            )
+            (repo_root / "src" / "shared" / "ui" / "text_renderer.py").write_text(
+                "# needs autofix\n", encoding="utf-8"
+            )
+
+            rules_path = repo_root / "architecture_rules.yml"
+            rules_path.write_text(
+                yaml.safe_dump(
+                    {
+                        "meta": {"document_id": "test"},
+                        "facts": {
+                            "tree": {"path": ".", "kind": "root", "children": []},
+                            "codemaker_bundle_contracts": [
+                                {
+                                    "id": "codemaker_non_scene_bundle",
+                                    "manifest_path": "tools/codemaker_manifest.txt",
+                                    "required_paths": [
+                                        "src/shared/services/input_bindings.py",
+                                        "src/shared/services/debug_service.py",
+                                        "src/shared/ui/hud.py",
+                                        "src/shared/ui/text_renderer.py",
+                                    ],
+                                }
+                            ],
+                        },
+                        "validation_rules": [
+                            {
+                                "id": "codemaker_manifest_non_scene_paths",
+                                "summary": "bundle support files stay in manifest",
+                                "severity": "warning",
+                                "enforcement": {"mode": "deterministic"},
+                                "scope": {
+                                    "paths": [
+                                        "tools/codemaker_manifest.txt",
+                                        "architecture_rules.yml",
+                                    ]
+                                },
+                                "evidence": {
+                                    "checks": ["codemaker_manifest_includes_required_paths"]
+                                },
+                                "message": "codemaker manifest drift",
+                                "suggested_actions": ["restore missing manifest paths"],
+                                "coverage": {
+                                    "deterministic_review": "implemented",
+                                    "next_checker_unit": None,
+                                    "guardian_autofix": "implemented",
+                                    "rationale": "fixture",
+                                },
+                            }
+                        ],
+                    },
+                    allow_unicode=True,
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            result = guardian.run_guardian(repo_root, rules_path, max_cycles=5)
+
+            self.assertEqual(result["status"], "AUTOFIXED")
+            self.assertFalse(result["final_check"]["has_warnings"])
+            manifest_text = manifest_path.read_text(encoding="utf-8")
+            self.assertIn("src/shared/services/debug_service.py", manifest_text)
+            self.assertIn("src/shared/ui/text_renderer.py", manifest_text)
 
 
 if __name__ == "__main__":

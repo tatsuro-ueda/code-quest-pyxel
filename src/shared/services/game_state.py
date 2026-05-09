@@ -2,9 +2,9 @@ from __future__ import annotations
 
 """Scene 間で共有する state を抱える単一データオブジェクト。
 
-Q2A / Q3A 決定により、BlockQuestApp が GameState を保有し、set_scene で
-scene に DI する。scene-local な state（battle_phase など）はこの class には
-入れず、各 scene の model.py に置く。P1-B の state inventory 参照。
+runtime root `src/runtime/app.py::Game` が GameState を保有する。scene-local な
+state（battle_phase など）はこの class には入れず、各 scene の model.py に置く。
+P1-B の state inventory 参照。
 """
 
 from dataclasses import dataclass, field

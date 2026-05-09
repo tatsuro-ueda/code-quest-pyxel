@@ -25,6 +25,14 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 SRC = ROOT / "src"
+DOCS = ROOT / "docs"
+LIVE_NAV_FILES = (
+    ROOT / "AGENTS.md",
+    ROOT / "README.md",
+    DOCS / "framework-rule.md",
+    DOCS / "architecture_rules.yml",
+    ROOT / "test" / "test_cjg_scene_directory_structure.py",
+)
 
 # 特定ディレクトリに限定するか、src 全域をスキャンするかを明示するために
 # 反復系の置換対象を集中管理する。
@@ -224,6 +232,47 @@ class M4ShopSsotTest(unittest.TestCase):
         )
 
 
+class M4PlayerModelAbsorptionGuardTest(unittest.TestCase):
+    """M4-4 後半: production code が legacy helper 前提へ戻らないことを守る。"""
+
+    PLAYER_STATE_IMPORT = re.compile(r"from\s+src\.shared\.services\.player_state\s+import|import\s+src\.shared\.services\.player_state")
+    ITEM_USE_IMPORT = re.compile(r"from\s+src\.shared\.services\.item_use\s+import|import\s+src\.shared\.services\.item_use")
+
+    def test_runtime_and_scenes_do_not_import_player_state_shim(self):
+        """PlayerModel 導入後、runtime/scenes は player_state shim を直接読まない。"""
+        target_files = [p for p in _iter_py_files(SRC / "runtime")]
+        target_files.extend(p for d in SCENE_DIRS if d.is_dir() for p in _iter_py_files(d))
+        hits = _grep(self.PLAYER_STATE_IMPORT, target_files)
+        self.assertEqual(
+            hits,
+            [],
+            "runtime/scenes が player_state shim を直接 import している",
+        )
+
+    def test_scenes_do_not_import_item_use_service(self):
+        """item 使用ルールは PlayerModel に集約し、scene が item_use service を直 import しない。"""
+        scene_files = [p for d in SCENE_DIRS if d.is_dir() for p in _iter_py_files(d)]
+        hits = _grep(self.ITEM_USE_IMPORT, scene_files)
+        self.assertEqual(
+            hits,
+            [],
+            "scenes/ が item_use service を直接 import している",
+        )
+
+
+class M4LegacyRuntimeShellRemovalGuardTest(unittest.TestCase):
+    """runtime の旧 shell / 旧 scene manager が repo に戻らないことを守る。"""
+
+    def test_src_app_py_is_gone(self):
+        self.assertFalse((SRC / "app.py").exists(), "src/app.py が復活している")
+
+    def test_src_core_scene_manager_py_is_gone(self):
+        self.assertFalse(
+            (SRC / "core" / "scene_manager.py").exists(),
+            "src/core/scene_manager.py が復活している",
+        )
+
+
 class M5SceneStructureTest(unittest.TestCase):
     """M5-1: scene ディレクトリの構造規約（scene.py / model.py / presenter.py / view.py 群）。"""
 
@@ -350,14 +399,29 @@ class M4SsotGuardTest(unittest.TestCase):
             f"AGENTS.md が {line_count} 行 (制限 100 行)。M5-3 文書 2 層構造に従い圧縮要",
         )
 
-    def test_docs_architecture_md_exists(self):
-        """人用詳細リファレンス docs/architecture.md が存在する（M5-3）。
+    def test_docs_repository_structure_md_exists(self):
+        """人用詳細リファレンス docs/repository-structure.md が存在する（M5-3）。"""
+        detail_path = DOCS / "repository-structure.md"
+        self.assertTrue(detail_path.exists(), "docs/repository-structure.md が存在しない")
 
-        2026-05-05: docs/repository-structure.md からリネームして
-        AGENTS.md の補足として位置付けた。
-        """
-        arch_path = ROOT / "docs" / "architecture.md"
-        self.assertTrue(arch_path.exists(), "docs/architecture.md が存在しない")
+    def test_live_navigation_files_no_longer_reference_docs_architecture_md(self):
+        """live 文書の導線は docs/architecture.md ではなく repository-structure を指す。"""
+        old_ref_hits: list[Path] = []
+        new_ref_misses: list[Path] = []
+        for path in LIVE_NAV_FILES:
+            text = path.read_text(encoding="utf-8")
+            if "docs/architecture.md" in text:
+                old_ref_hits.append(path)
+            if "docs/repository-structure.md" not in text:
+                new_ref_misses.append(path)
+        self.assertEqual(
+            old_ref_hits, [],
+            f"live 文書に docs/architecture.md 参照が残っている: {old_ref_hits}",
+        )
+        self.assertEqual(
+            new_ref_misses, [],
+            f"live 文書が docs/repository-structure.md を参照していない: {new_ref_misses}",
+        )
 
     def test_game_init_does_not_directly_initialize_deprecated_fields(self):
         """Game.__init__ で M4-3 段階移行済みの field を直接初期化していないこと。

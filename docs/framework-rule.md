@@ -4,7 +4,7 @@
 >
 > **上位文書（最優先・自動 load）**: [../AGENTS.md](../AGENTS.md)（≤100 行、AI 用エントリポイント）
 >
-> **人用詳細リファレンス**: [architecture.md](architecture.md)（リポジトリ構造 + ディレクトリ規約）
+> **人用詳細リファレンス**: [repository-structure.md](repository-structure.md)（リポジトリ構造 + ディレクトリ規約）
 
 ## 1. 正本を一つにする（SSoT / Single Source of Truth）
 
@@ -604,7 +604,7 @@ Scene 横断で、かつ保存価値があるもの。
 方針は明快です。
 
 * `Game` は最終的に **ランタイム殻** にする
-* shared state は `GameState` / `SceneManager`（state holder）/ `DebugService` / その他 Service のいずれかへ整理（`src/app.py::BlockQuestApp` は Phase 1 由来の legacy shell。本体は `src/runtime/app.py::Game`）
+* shared state は `GameState` / `SceneManager`（state holder）/ `DebugService` / その他 Service のいずれかへ整理（runtime root は `src/runtime/app.py::Game` のみ）
 * 「とりあえずここに置く」を禁止
 
 つまり、`Game` は将来的に **`pyxel.run` につなぐだけの最外殻** にするのがよいです（M4-3 段階移行で `current_town / debug_mode / state / prev_state` などは @property forward に変換済）。
@@ -696,7 +696,7 @@ class GameState:
 
 # M5. 層規約は AI が自力で検証できる形で可視化する
 
-**Rule**: ファイル命名・テスト優先順位・AI 向けガードレール文面を明文化し、PRD / ARCHITECTURE.md / AGENTS.md に取り込む。AI が自力で **「この規約が存在する」** と発見できる状態にする。
+**Rule**: ファイル命名・テスト優先順位・AI 向けガードレール文面を明文化し、PRD / `docs/repository-structure.md` / AGENTS.md に取り込む。AI が自力で **「この規約が存在する」** と発見できる状態にする。
 
 **Why**: 規約は書いただけでは機能しない。AI が次の改修で自然に見つけられる場所に置き、検証コマンドまで書いて初めて、層規約が実際に守られる。
 
@@ -795,23 +795,23 @@ Presenter テストでは
 * 副作用は command / request として返す
 * 1 つの PR で Scene 構造とゲームルールを同時に大改造しない
 
-このへんは `AGENTS.md` (≤100 行・自動 load) と `docs/architecture.md` (人用詳細) に書くと効きます。両者から本ファイル `docs/framework-rule.md` (規約本体) に到達できる 2 層構造を維持します。
+このへんは `AGENTS.md` (≤100 行・自動 load) と `docs/repository-structure.md` (人用詳細) に書くと効きます。両者から本ファイル `docs/framework-rule.md` (規約本体) に到達できる 2 層構造を維持します。
 
 ### 文書 2 層構造（2026-05-05 改訂）
 
 | 文書 | 役割 | サイズ |
 |---|---|---|
 | `AGENTS.md` | AI 用最優先・自動 load・エントリポイント | ≤100 行 |
-| `docs/architecture.md` | 人用詳細（補足リファレンス、AI も必要時参照） | 制限なし |
+| `docs/repository-structure.md` | 人用詳細（補足リファレンス、AI も必要時参照） | 制限なし |
 | `docs/framework-rule.md` (本ファイル) | 規約本体（M1〜M5 詳細根拠） | 制限なし |
 
-AI / 人ともに `AGENTS.md` を最初に読み、必要に応じて `architecture.md`、最後に本ファイルへ降りる流れ。`AGENTS.md` が大きくなって自動 load の context を圧迫すると AI が起動時に読み切れなくなるため、100 行制限を `test_cjg_framework_rule_guards.py` の static guard で守る。
+AI / 人ともに `AGENTS.md` を最初に読み、必要に応じて `repository-structure.md`、最後に本ファイルへ降りる流れ。`AGENTS.md` が大きくなって自動 load の context を圧迫すると AI が起動時に読み切れなくなるため、100 行制限を `test_cjg_framework_rule_guards.py` の static guard で守る。
 
 ## 検証の目安
 
 - `find src/scenes -maxdepth 2 -type f -name '*.py' | grep -vE '/(model|presenter|view|view_model|scene|__init__)\.py$'` が 0 件（命名規約）
 - `test/test_player_model.py` / `test/test_*_presenter.py` 等の Model / Presenter 単体テストが存在している（または優先順位 1 位・2 位の項目として `未実装` と明示）
-- AI 用 `AGENTS.md` が 100 行以内で自動 load される / 人用 `docs/architecture.md` が存在する 2 層構造で、両者から本ファイル `docs/framework-rule.md` に到達できる
+- AI 用 `AGENTS.md` が 100 行以内で自動 load される / 人用 `docs/repository-structure.md` が存在する 2 層構造で、両者から本ファイル `docs/framework-rule.md` に到達できる
 
 ---
 

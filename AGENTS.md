@@ -1,10 +1,10 @@
 # AGENTS.md — Block Quest Pyxel の作業ルール（AI 用最優先・自動 load）
 
 > **役割**: AI がこの repo に入って最初に読む 100 行以内のエントリポイント。
-> **補足（人用詳細）**: [docs/architecture.md](docs/architecture.md)
+> **補足（人用詳細）**: [docs/repository-structure.md](docs/repository-structure.md)
 > **規約本体（M1〜M5）**: [docs/framework-rule.md](docs/framework-rule.md)
 >
-> 起動時は本ファイル → 必要なら architecture.md → 必要なら framework-rule.md の順に辿る。
+> 起動時は本ファイル → 必要なら repository-structure.md → 必要なら framework-rule.md の順に辿る。
 
 ## いちばん大事な約束
 
@@ -46,14 +46,14 @@
 - runtime 入口：root `main.py` (8 行 wrapper) → `src/runtime/main_runtime.py` (47 行 shim) → **`src/runtime/app.py::Game`**（pyxel 初期化＋全 Scene/Service の組み立て＋update/draw dispatcher、326 行）
 - 共有 state：`GameState`（dataclass）／`SceneManager`（current/previous の 2 値 state holder、`shared/services/scene_manager.py`）／`DebugService`（mode/UUDD seq）／`PlayerModel`（`shared/state/player_model.py`）
 - M4-3 段階移行：`Game.current_town / debug_mode / state / prev_state` は @property forward。`Game.__init__` で `self.X = ...` 直接初期化すると static guard で fail
-- `src/app.py::BlockQuestApp` は Phase 1 由来の legacy shell（test/Code Maker bundler 互換のため残置）
+- `src/app.py` / `src/core/scene_manager.py` は撤去済。runtime root は `src/runtime/app.py::Game` のみ
 - pyxres = SSoT：`ImageBanks` は **書き込み・初期化・fallback のみ**（`regenerate_world_tilemap_fallback` 等）。Model は `pyxel.tilemaps[0]` / `pyxel.images[n]` を直読
 - 配布物：`dist/pyxel.html / .pyxapp / code-maker.zip`、`index.html` は子ども向けトップ（Phase 3 で dev/prod 分離廃止、本番一本化）
 
 ## まず読む文書（順序）
 
 1. 本ファイル（AGENTS.md）
-2. 必要に応じ `docs/architecture.md`（人用詳細・ディレクトリ規約）
+2. 必要に応じ `docs/repository-structure.md`（人用詳細・ディレクトリ規約）
 3. 必要に応じ `docs/framework-rule.md`（M1〜M5 規約本体）
 4. `docs/customer-journeys.md` / `docs/product-requirements-*.md` / 関係 `steering/`
 

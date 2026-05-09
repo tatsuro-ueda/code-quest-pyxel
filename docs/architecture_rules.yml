@@ -3,7 +3,7 @@ meta:
   version: 1
   status: draft
   intended_replacement_for:
-    - docs/architecture.md
+    - docs/repository-structure.md
   replacement_status: staged_migration
   audiences:
     - ai
@@ -119,28 +119,6 @@ facts:
                 must_not_store:
                   - current_bgm
                   - duplicated_scene_state
-
-          - path: src/app.py
-            kind: file
-            id: blockquestapp_legacy_shell
-            symbol: BlockQuestApp
-            status: legacy
-            summary: Phase 1 由来の薄い実行シェル。test / Code Maker bundler 互換のため残置
-            role: legacy_runtime_shell
-            source_of_truth: true
-
-          - path: src/core
-            kind: directory
-            children:
-
-              - path: src/core/scene_manager.py
-                kind: file
-                id: core_scene_manager_legacy
-                symbol: SceneManager
-                status: legacy
-                summary: 旧 SceneManager。現在の Game は shared/services/scene_manager.py を使う
-                role: legacy_scene_protocol
-                source_of_truth: true
 
           - path: src/game_data.py
             kind: file
@@ -732,7 +710,7 @@ facts:
                     id: player_state_service
                     role: legacy_player_snapshot
                     status: legacy
-                    summary: snapshot helper。player の正本ではない
+                    summary: test / bundle 互換の snapshot shim。production の player 正本ではない
 
                   - path: src/shared/services/save_store.py
                     kind: file
@@ -762,9 +740,9 @@ facts:
                     kind: file
                     source_of_truth: true
                     id: item_use_service
-                    role: item_logic
-                    status: active
-                    summary: アイテム使用ロジック
+                    role: legacy_item_use_bridge
+                    status: legacy
+                    summary: PlayerModel.use_item の結果を UI/SFX に変換する互換ブリッジ
 
                   - path: src/shared/services/text_format.py
                     kind: file
@@ -1274,7 +1252,7 @@ facts:
             source_of_truth: false
             summary: AI 向け spec / plan
 
-          - path: docs/architecture.md
+          - path: docs/repository-structure.md
             kind: file
             source_of_truth: true
             role: human_architecture_reference
@@ -1403,19 +1381,62 @@ facts:
             print('play_bgm_track:',len(re.findall(r'play_bgm_track\\(',t)))"
         - command: git status
 
+  codemaker_bundle_contracts:
+
+    - id: codemaker_non_scene_bundle
+      manifest_path: tools/codemaker_manifest.txt
+      required_paths:
+        - src/shared/assets/jp_font_data.py
+        - src/shared/constants/tile_data.py
+        - src/shared/constants/sprite_data.py
+        - src/shared/constants/game_config.py
+        - src/generated/armors.py
+        - src/generated/weapons.py
+        - src/generated/items.py
+        - src/generated/spells.py
+        - src/generated/enemies.py
+        - src/generated/shops.py
+        - src/generated/dialogue.py
+        - src/game_data.py
+        - src/shared/state/player_model.py
+        - src/shared/services/input_bindings.py
+        - src/shared/services/landmark_events.py
+        - src/shared/services/player_state.py
+        - src/shared/services/save_store.py
+        - src/shared/services/codemaker_resource_store.py
+        - src/shared/services/text_format.py
+        - src/shared/services/audio_system.py
+        - src/shared/services/dialog_runner.py
+        - src/shared/services/game_state.py
+        - src/shared/services/vfx.py
+        - src/shared/services/item_use.py
+        - src/shared/services/message_display.py
+        - src/shared/services/world_generation.py
+        - src/shared/services/image_banks.py
+        - src/shared/ui/dialog_window.py
+        - src/shared/ui/hud.py
+        - src/shared/ui/menu_window.py
+        - src/shared/ui/text_renderer.py
+        - src/shared/ui/message_window.py
+        - src/shared/ui/status_bar.py
+        - src/shared/services/debug_service.py
+        - src/shared/services/scene_manager.py
+        - src/shared/services/debug_service.py
+        - src/runtime/app.py
+
   migration_notes:
 
     - id: blockquestapp_legacy_shell
       path: src/app.py
       symbol: BlockQuestApp
-      status: legacy
-      summary: Phase 1 由来の薄い実行シェル。test / Code Maker bundler 互換のため残置
+      status: removed
+      summary: 2026-05-09 に削除。runtime root は src/runtime/app.py::Game のみ
 
     - id: core_scene_manager_legacy
       path: src/core/scene_manager.py
       symbol: SceneManager
-      status: legacy
-      summary: 旧 SceneManager。現在の Game は shared/services/scene_manager.py を使う
+      status: removed
+      summary: 2026-05-09 に削除。scene 切替メタは shared/services/scene_manager.py に一本化
 
     - id: development_runtime_removed
       path: src/runtime/main_development_runtime.py
@@ -1455,7 +1476,7 @@ validation_rules:
     scope:
       paths:
         - AGENTS.md
-        - docs/architecture.md
+        - docs/repository-structure.md
         - docs/architecture_rules.yml
         - src
         - tools
@@ -1559,7 +1580,30 @@ validation_rules:
       deterministic_review: candidate
       next_checker_unit: scene_static_boundary_checks
       guardian_autofix: not_recommended
-      rationale: 既存の framework rule guard を昇格させれば pyxel 呼び出し境界と scene package 形状までは deterministic に広げられる
+      rationale: 既存の framework rule guard を昇格させれば pyxel 呼び出し境界と scene package 形状までは deterministic
+        に広げられる
+
+  - id: codemaker_manifest_non_scene_paths
+    summary: Code Maker manifest は architecture で宣言した non-scene bundle path を含む
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - tools/codemaker_manifest.txt
+        - docs/architecture_rules.yml
+    evidence:
+      checks:
+        - codemaker_manifest_includes_required_paths
+    message: Code Maker manifest から architecture 宣言済みの support file が漏れている可能性があります
+    suggested_actions:
+      - facts.codemaker_bundle_contracts の required_paths と tools/codemaker_manifest.txt をそろえる
+      - shared/services / shared/ui / runtime support file の bundle 漏れを直す
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: null
+      guardian_autofix: implemented
+      rationale: required path 一覧と manifest の差分は静的に比較でき、guardian も安全に追記だけを行える
 
   - id: shared_service_vs_state_boundary
     summary: shared/services の service/state holder と shared/state の横断 model の配置が repo 方針と一致する
@@ -1581,7 +1625,8 @@ validation_rules:
       deterministic_review: candidate
       next_checker_unit: shared_directory_role_checks
       guardian_autofix: not_recommended
-      rationale: shared/services と shared/state の配置・命名・pyxel 利用禁止は static guard 化できるが、ファイル移動の autofix は安全でない
+      rationale: shared/services と shared/state の配置・命名・pyxel 利用禁止は static guard 化できるが、ファイル移動の
+        autofix は安全でない
 
   - id: build_runbook_paths
     summary: build runbook は documented command と artifact path を維持する
@@ -1594,7 +1639,7 @@ validation_rules:
         - tools/build_codemaker.py
         - tools/build_web_release.py
         - tools/build_release_artifacts.py
-        - docs/architecture.md
+        - docs/repository-structure.md
         - docs/architecture_rules.yml
     evidence:
       checks:

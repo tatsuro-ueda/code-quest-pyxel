@@ -249,7 +249,7 @@ class PlayerModel:
 
     # ----- ルール：アイテム使用 -----
 
-    def use_item(self, item_data: dict) -> str:
+    def use_item(self, item_data: dict, town_pos: tuple[int, int] | None = None) -> str:
         """アイテム効果を適用し、結果種別を返す。
 
         戻り値:
@@ -257,8 +257,7 @@ class PlayerModel:
             ``"cure_poison_none"`` / ``"warp"``
           - 何も起きなかった: 空文字列（例: 満タン時の heal）
         表示メッセージや音再生は呼び出し側（Presenter）で解決する。
-        ``warp`` の座標更新は Model 内で完結できない（last_town_pos 依存）ため
-        呼び出し側で ``x``/``y``/``in_dungeon`` を直接更新する。
+        ``warp`` は `town_pos` が渡された場合のみ座標更新もここで行う。
         """
         kind = item_data["type"]
         if kind == "heal":
@@ -272,6 +271,9 @@ class PlayerModel:
         if kind == "cure_poison":
             return "cure_poison_ok" if self.cure_poison() else "cure_poison_none"
         if kind == "warp":
+            if town_pos is not None:
+                self.x, self.y = town_pos
+                self.in_dungeon = False
             return "warp"
         return ""
 

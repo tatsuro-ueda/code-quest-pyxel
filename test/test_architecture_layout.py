@@ -20,7 +20,6 @@ DEPRECATED_WRAPPERS = [
 ]
 ALLOWED_ROOT_FILES = {
     ROOT / 'src' / '__init__.py',
-    ROOT / 'src' / 'app.py',
     ROOT / 'src' / 'game_data.py',
 }
 TARGETS = [
@@ -101,12 +100,9 @@ class TestArchitectureLayout(unittest.TestCase):
         self.assertTrue(hasattr(dialog_runner, 'DialogChoice'))
         self.assertTrue(hasattr(dialog_runner, 'DialogValidationError'))
 
-    def test_app_and_scene_manager_exist(self):
-        app = importlib.import_module('src.app')
-        scene_manager = importlib.import_module('src.core.scene_manager')
-
-        self.assertTrue(hasattr(app, 'BlockQuestApp'))
-        self.assertTrue(hasattr(scene_manager, 'SceneManager'))
+    def test_legacy_app_and_scene_manager_modules_are_gone(self):
+        self.assertFalse((ROOT / 'src' / 'app.py').exists())
+        self.assertFalse((ROOT / 'src' / 'core' / 'scene_manager.py').exists())
 
     def test_phase_1_5_constants_and_app_modules_exist(self):
         """P1.5-A/B/C/D で作られた shared/constants と runtime/app を確認する。"""

@@ -8,7 +8,7 @@ from __future__ import annotations
 import pyxel  # tests が M.pyxel 経由で参照する
 from src.shared.services.input_bindings import *
 from src.shared.services.landmark_events import *
-from src.shared.services.player_state import *
+from src.shared.state.player_model import *
 from src.shared.services.save_store import *
 from src.shared.services.audio_system import *
 from src.shared.services.dialog_runner import *
@@ -23,7 +23,6 @@ from src.shared.services.text_format import NAME_EN_MAP, name_en, TextFormat
 from src.shared.services.message_display import MessageDisplay
 from src.shared.services.image_banks import ImageBanks
 from src.shared.services.vfx import VfxSystem
-from src.shared.services.item_use import use_item as _item_use_fn
 from src.shared.ui.status_bar import StatusBar
 # 2026-05-07: sync_audio は撤去済（BGM は各 scene の view.draw 冒頭で発火）。
 from src.scenes.splash.scene import SplashScene
