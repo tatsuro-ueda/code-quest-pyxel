@@ -1,0 +1,1005 @@
+meta:
+  document_id: stakeholder_voices
+  version: 1
+  status: draft
+  intent:
+    - stakeholder requirement catalog for task notes
+    - AI-editable source of truth for request to requirement translation
+    - checker fixer repair input
+
+facts:
+  stakeholders:
+    - id: st_parent_customer
+      type: customer
+      label: 親
+      status: active
+
+    - id: st_child_user
+      type: user
+      label: 子ども
+      status: active
+
+    - id: st_friend_user
+      type: user
+      label: 友達
+      status: active
+
+    - id: st_repo_developer
+      type: developer
+      label: Developer
+      status: active
+
+    - id: st_coding_ai
+      type: ai
+      label: AI
+      status: active
+
+    - id: st_product_executive
+      type: executive
+      label: 経営者
+      status: active
+
+    - id: st_growth_marketer
+      type: marketer
+      label: マーケッター
+      status: active
+
+  requests:
+    - id: rq_child_edit_ownership
+      stakeholder_id: st_child_user
+      status: active
+      summary: Code Maker で触った内容がそのままゲームに出てほしい
+      source_refs:
+        - AGENTS.md
+        - docs/customer-jobs.md
+        - docs/customer-journeys.md
+      source_trace_refs:
+        - customer_jobs:JOB:JCR_CHILD_CREATOR
+        - customer_journeys:CJ23
+        - product_requirements_platform:CJG23
+
+    - id: rq_parent_fast_feedback
+      stakeholder_id: st_parent_customer
+      status: active
+      summary: 子どもの熱が冷める前に要望を試したい
+      source_refs:
+        - docs/customer-jobs.md
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+      source_trace_refs:
+        - customer_jobs:JOB:JPA_PARENT_ROOT
+        - customer_jobs:JOB:JRE_PARENT_PROGRESS
+        - customer_journeys:CJ22
+        - product_requirements_platform:CJG22
+
+    - id: rq_child_decision_power
+      stakeholder_id: st_child_user
+      status: active
+      summary: 親や AI ではなく自分で採否を決めたい
+      source_refs:
+        - docs/customer-jobs.md
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+      source_trace_refs:
+        - customer_jobs:JOB:JCT_CHILD_CRITIC
+        - customer_journeys:CJ31
+        - customer_journeys:CJ32
+        - customer_journeys:CJ33
+        - customer_journeys:CJ34
+        - product_requirements_platform:CJG31
+        - product_requirements_platform:CJG32
+        - product_requirements_platform:CJG33
+        - product_requirements_platform:CJG34
+
+    - id: rq_friend_zero_install
+      stakeholder_id: st_friend_user
+      status: active
+      summary: URL を開くだけでスマホから遊びたい
+      source_refs:
+        - docs/customer-jobs.md
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+      source_trace_refs:
+        - customer_jobs:JOB:JFR_FRIEND_LOW_FRICTION
+        - customer_journeys:CJ21
+        - product_requirements_platform:CJG21
+
+    - id: rq_parent_usage_visibility
+      stakeholder_id: st_parent_customer
+      status: active
+      summary: 実際に遊ばれたかを公開環境で確認したい
+      source_refs:
+        - docs/customer-jobs.md
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+      source_trace_refs:
+        - customer_jobs:JOB:JRE_PARENT_PROGRESS
+        - customer_jobs:JOB:JUN_PARENT_UNDERSTANDING
+        - customer_journeys:CJ43
+        - product_requirements_platform:CJG43
+
+    - id: rq_developer_safe_boundaries
+      stakeholder_id: st_repo_developer
+      status: active
+      summary: 責務境界を守って狭い範囲で直したい
+      source_refs:
+        - docs/architecture_rules.yml
+        - docs/framework-rule.md
+        - docs/product-requirements-guardrails.md
+      source_trace_refs:
+        - customer_journeys:CJ37
+        - customer_journeys:CJ44
+        - framework_rule:M1
+        - framework_rule:M2
+        - framework_rule:M3
+        - framework_rule:M4
+        - framework_rule:M5
+        - product_requirements_guardrails:CJG37
+
+    - id: rq_ai_small_safe_surface
+      stakeholder_id: st_coding_ai
+      status: active
+      summary: affected path と verification をすぐ特定したい
+      source_refs:
+        - docs/architecture_rules.yml
+        - docs/framework-rule.md
+        - docs/product-requirements-guardrails.md
+      source_trace_refs:
+        - customer_journeys:CJ37
+        - customer_journeys:CJ44
+        - framework_rule:M1
+        - framework_rule:M2
+        - framework_rule:M3
+        - framework_rule:M4
+        - framework_rule:M5
+        - product_requirements_guardrails:CJG37
+
+    - id: rq_executive_real_done_only
+      stakeholder_id: st_product_executive
+      status: active
+      summary: 動いて届く状態だけを done にしたい
+      source_refs:
+        - AGENTS.md
+        - docs/architecture_rules.yml
+        - docs/product-requirements-platform.md
+      source_trace_refs:
+        - customer_journeys:CJ41
+        - framework_rule:Golden Path Test
+        - framework_rule:No Silent Failure
+        - product_requirements_guardrails:CJG41
+
+    - id: rq_marketer_easy_share
+      stakeholder_id: st_growth_marketer
+      status: active
+      summary: 共有の摩擦を小さくしたい
+      source_refs:
+        - docs/customer-jobs.md
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+      source_trace_refs:
+        - customer_jobs:JOB:JFR_FRIEND_LOW_FRICTION
+        - customer_jobs:JOB:JSC_CHILD_SOCIAL
+        - customer_journeys:CJ21
+        - customer_journeys:CJ43
+        - product_requirements_platform:CJG21
+        - product_requirements_platform:CJG43
+
+  source_documents:
+    - id: customer_jobs
+      path: docs/customer-jobs.md
+      extraction:
+        regex:
+          - 'JOB:[A-Z0-9_]+'
+
+    - id: customer_journeys
+      path: docs/customer-journeys.md
+      extraction:
+        regex:
+          - '\bCJ\d+\b'
+
+    - id: product_requirements_map
+      path: docs/product-requirements-map.md
+      extraction:
+        regex:
+          - '\bCJG\d+\b'
+
+    - id: product_requirements_battle
+      path: docs/product-requirements-battle.md
+      extraction:
+        regex:
+          - '\bCJG\d+\b'
+
+    - id: product_requirements_platform
+      path: docs/product-requirements-platform.md
+      extraction:
+        regex:
+          - '\bCJG\d+\b'
+
+    - id: product_requirements_guardrails
+      path: docs/product-requirements-guardrails.md
+      extraction:
+        regex:
+          - '\bCJG\d+\b'
+
+    - id: framework_rule
+      path: docs/framework-rule.md
+      extraction:
+        regex:
+          - '\bM[1-5]\b'
+        literals:
+          - SSoT
+          - Golden Path Test
+          - No Silent Failure
+
+  requirements:
+    - id: req_codemaker_primary_editor
+      status: active
+      kind: product_guardrail
+      priority: p0
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+      acceptance_ids:
+        - acc_codemaker_primary_editor_roundtrip
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ23
+        - framework_rule:SSoT
+        - product_requirements_platform:CJG23
+      summary: 子ども向け編集対象では Code Maker を正式な編集面として扱う
+      must:
+        - tilemap sprite sound pyxres の編集面では Code Maker を最初の正として扱う
+      must_not:
+        - 内部都合で Code Maker を不要化 脇役化 置換しない
+      affected_paths:
+        - dist/
+        - src/shared/services/image_banks.py
+        - tools/build_codemaker.py
+        - tools/codemaker_bundler.py
+        - tools/probe_codemaker_layout.py
+      verification_refs:
+        - docs/architecture_rules.yml
+        - tools/build_codemaker.py
+        - tools/probe_codemaker_layout.py
+      source_refs:
+        - AGENTS.md
+        - docs/architecture_rules.yml
+        - docs/product-requirements-platform.md
+
+    - id: req_fast_feedback_loop
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_fast_feedback_loop_replay
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ22
+        - product_requirements_platform:CJG22
+      summary: 要望から再プレイまでを短時間で回す
+      must:
+        - 変更後に短時間で再確認できる
+      must_not:
+        - 子どもの集中が切れるほど待たせない
+      affected_paths:
+        - src/
+        - tools/build_codemaker.py
+        - tools/build_web_release.py
+        - tools/test_headless.py
+        - tools/test_web_compat.py
+      verification_refs:
+        - tools/build_codemaker.py
+        - tools/build_web_release.py
+        - tools/test_headless.py
+        - tools/test_web_compat.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+
+    - id: req_child_keeps_decision_power
+      status: active
+      kind: experience
+      priority: p0
+      derived_from_request_ids:
+        - rq_child_decision_power
+      acceptance_ids:
+        - acc_child_keeps_decision_power_review
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ31
+        - customer_journeys:CJ32
+        - customer_journeys:CJ33
+        - customer_journeys:CJ34
+        - product_requirements_platform:CJG31
+        - product_requirements_platform:CJG32
+        - product_requirements_platform:CJG33
+        - product_requirements_platform:CJG34
+      summary: 開発版の採否は子どもが体感差で決める
+      must:
+        - 子どもが承認 却下 巻き戻しを判断できる
+        - 承認前の開発版は本番へ自動昇格しない
+      must_not:
+        - 親や AI の都合で一括反映しない
+      affected_paths:
+        - dist/
+        - index.html
+        - tools/build_web_release.py
+        - tools/render_release_selector.py
+      verification_refs:
+        - docs/product-requirements-platform.md
+        - tools/build_web_release.py
+        - tools/test_web_compat.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+
+    - id: req_url_share_no_install
+      status: active
+      kind: distribution
+      priority: p1
+      derived_from_request_ids:
+        - rq_friend_zero_install
+        - rq_marketer_easy_share
+      acceptance_ids:
+        - acc_url_share_no_install_browser
+      stakeholder_ids:
+        - st_friend_user
+        - st_growth_marketer
+      source_trace_refs:
+        - customer_journeys:CJ21
+        - product_requirements_platform:CJG21
+      summary: URL だけでブラウザから遊べる
+      must:
+        - ブラウザからプレイできる
+      must_not:
+        - インストール ダウンロード 会員登録 ログインを前提にしない
+      affected_paths:
+        - dist/
+        - index.html
+        - tools/build_web_release.py
+        - tools/web_runtime_server.py
+      verification_refs:
+        - docs/product-requirements-platform.md
+        - tools/build_web_release.py
+        - tools/test_web_compat.py
+      source_refs:
+        - docs/product-requirements-platform.md
+
+    - id: req_phone_fullscreen_playable
+      status: active
+      kind: distribution
+      priority: p1
+      derived_from_request_ids:
+        - rq_friend_zero_install
+        - rq_marketer_easy_share
+      acceptance_ids:
+        - acc_phone_fullscreen_playable_mobile
+      stakeholder_ids:
+        - st_friend_user
+        - st_growth_marketer
+      source_trace_refs:
+        - customer_journeys:CJ21
+        - product_requirements_platform:CJG21
+      summary: スマホでも全画面で遊びやすい
+      must:
+        - スマホで全画面プレイできる
+      must_not:
+        - スマホ導線を PC 前提の UI にしない
+      affected_paths:
+        - dist/
+        - index.html
+        - tools/build_web_release.py
+      verification_refs:
+        - docs/product-requirements-platform.md
+        - tools/build_web_release.py
+        - tools/test_web_compat.py
+      source_refs:
+        - docs/product-requirements-platform.md
+
+    - id: req_public_play_session_visible
+      status: active
+      kind: visibility
+      priority: p1
+      derived_from_request_ids:
+        - rq_marketer_easy_share
+        - rq_parent_usage_visibility
+      acceptance_ids:
+        - acc_public_play_session_visible_logs
+      stakeholder_ids:
+        - st_growth_marketer
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ43
+        - product_requirements_platform:CJG43
+      summary: 実公開で遊ばれた記録が見える
+      must:
+        - 公開 URL で遊ばれた記録を確認できる
+      must_not:
+        - 静的配信だけで記録されない状態を done 扱いしない
+      affected_paths:
+        - dist/
+        - tools/report_play_sessions.py
+        - tools/web_runtime_server.py
+      verification_refs:
+        - docs/product-requirements-platform.md
+        - tools/report_play_sessions.py
+        - tools/web_runtime_server.py
+      source_refs:
+        - docs/product-requirements-platform.md
+
+    - id: req_safe_architecture_boundaries
+      status: active
+      kind: engineering_guardrail
+      priority: p0
+      derived_from_request_ids:
+        - rq_ai_small_safe_surface
+        - rq_developer_safe_boundaries
+      acceptance_ids:
+        - acc_safe_architecture_boundaries_guard
+      stakeholder_ids:
+        - st_coding_ai
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ37
+        - customer_journeys:CJ44
+        - framework_rule:M1
+        - framework_rule:M2
+        - framework_rule:M3
+        - framework_rule:M4
+        - framework_rule:M5
+        - product_requirements_guardrails:CJG37
+      summary: AI と開発者が責務境界を越えずに変更できる
+      must:
+        - 責務境界を static に検査できる
+      must_not:
+        - 暗黙依存で広範囲破壊を起こさない
+      affected_paths:
+        - src/
+        - test/test_architecture_layout.py
+        - test/test_cjg_framework_rule_guards.py
+        - tools/check_architecture_rules.py
+      verification_refs:
+        - test/test_architecture_layout.py
+        - test/test_cjg_framework_rule_guards.py
+        - tools/check_architecture_rules.py
+      source_refs:
+        - docs/architecture_rules.yml
+        - docs/framework-rule.md
+        - docs/product-requirements-guardrails.md
+
+    - id: req_no_silent_failure
+      status: active
+      kind: engineering_guardrail
+      priority: p0
+      derived_from_request_ids:
+        - rq_ai_small_safe_surface
+        - rq_developer_safe_boundaries
+        - rq_executive_real_done_only
+      acceptance_ids:
+        - acc_no_silent_failure_gates
+      stakeholder_ids:
+        - st_coding_ai
+        - st_product_executive
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ35
+        - framework_rule:No Silent Failure
+        - product_requirements_guardrails:CJG35
+      summary: 失敗時に黙って fallback したり壊れた版を届けない
+      must:
+        - 起動不能版や主要操作で死ぬ版は子どもに届く前に止める
+      must_not:
+        - エラー握りつぶし 無言上書き 成功したふり をしない
+      affected_paths:
+        - src/
+        - test/
+        - tools/test_headless.py
+        - tools/test_save_compat.py
+        - tools/test_web_compat.py
+      verification_refs:
+        - docs/framework-rule.md
+        - tools/test_headless.py
+        - tools/test_save_compat.py
+        - tools/test_web_compat.py
+      source_refs:
+        - docs/framework-rule.md
+        - docs/product-requirements-guardrails.md
+
+    - id: req_dist_is_not_source
+      status: active
+      kind: engineering_guardrail
+      priority: p1
+      derived_from_request_ids:
+        - rq_ai_small_safe_surface
+        - rq_developer_safe_boundaries
+      acceptance_ids:
+        - acc_dist_is_not_source_build_path
+      stakeholder_ids:
+        - st_coding_ai
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ41
+        - framework_rule:SSoT
+        - product_requirements_guardrails:CJG41
+      summary: dist は配布物であり source ではない
+      must:
+        - source の修正は src assets tools docs 側で行う
+      must_not:
+        - dist 配下を手修正の正本にしない
+      affected_paths:
+        - dist/
+        - src/
+        - tools/build_release_artifacts.py
+        - tools/build_web_release.py
+      verification_refs:
+        - docs/architecture_rules.yml
+        - tools/build_release_artifacts.py
+        - tools/build_web_release.py
+      source_refs:
+        - AGENTS.md
+        - docs/architecture_rules.yml
+
+    - id: req_done_requires_real_artifacts
+      status: active
+      kind: done_criteria
+      priority: p0
+      derived_from_request_ids:
+        - rq_executive_real_done_only
+        - rq_parent_usage_visibility
+      acceptance_ids:
+        - acc_done_requires_real_artifacts_review
+      stakeholder_ids:
+        - st_parent_customer
+        - st_product_executive
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ43
+        - framework_rule:Golden Path Test
+        - product_requirements_platform:CJG43
+      summary: done はコード テスト 実物確認まで含む
+      must:
+        - zip pyxres HTML save data 実行画面などの実物確認を含める
+      must_not:
+        - runtime code や build script だけ直して完了扱いしない
+      affected_paths:
+        - assets/
+        - dist/
+        - tools/build_codemaker.py
+        - tools/build_release_artifacts.py
+        - tools/build_web_release.py
+      verification_refs:
+        - AGENTS.md
+        - tools/build_codemaker.py
+        - tools/build_release_artifacts.py
+        - tools/build_web_release.py
+      source_refs:
+        - AGENTS.md
+        - docs/architecture_rules.yml
+        - docs/product-requirements-platform.md
+
+  acceptance:
+    - id: acc_codemaker_primary_editor_roundtrip
+      status: active
+      requirement_id: req_codemaker_primary_editor
+      priority: p0
+      source_trace_refs:
+        - customer_journeys:CJ23
+        - product_requirements_platform:CJG23
+      summary: Code Maker で触った編集結果がゲーム側にも残る
+      given: Code Maker build と対応する配布物が更新されている
+      when: 子どもが Code Maker で tilemap sprite sound pyxres を編集してゲームを確認する
+      then:
+        - Code Maker で見た編集結果がゲーム内にも反映される
+        - 別の内部専用 editor を経由しなくても編集が成立する
+      verification:
+        mode: deterministic
+        refs:
+          - tools/build_codemaker.py
+          - tools/probe_codemaker_layout.py
+
+    - id: acc_fast_feedback_loop_replay
+      status: active
+      requirement_id: req_fast_feedback_loop
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ22
+        - product_requirements_platform:CJG22
+      summary: 変更後の再プレイ導線が短い
+      given: 変更前後を比較したい親子ループがある
+      when: 変更を build して再実行する
+      then:
+        - 変更後の build を短時間で再確認できる
+        - 子どもの集中が切れるほど長い待ち時間を前提にしない
+      verification:
+        mode: deterministic
+        refs:
+          - tools/build_web_release.py
+          - tools/test_headless.py
+          - tools/test_web_compat.py
+
+    - id: acc_child_keeps_decision_power_review
+      status: active
+      requirement_id: req_child_keeps_decision_power
+      priority: p0
+      source_trace_refs:
+        - customer_journeys:CJ31
+        - product_requirements_platform:CJG31
+      summary: 開発版の採否を子どもが体感差で決められる
+      given: 子どもが比較できる現行版と開発版がある
+      when: 子どもが実際に遊んで採否を決める
+      then:
+        - 子どもが承認 却下 巻き戻しを判断できる
+        - 承認前の開発版は本番へ自動昇格しない
+      verification:
+        mode: manual
+        refs:
+          - docs/customer-journeys.md
+          - docs/product-requirements-platform.md
+
+    - id: acc_url_share_no_install_browser
+      status: active
+      requirement_id: req_url_share_no_install
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ21
+        - product_requirements_platform:CJG21
+      summary: URL を開くだけでブラウザから遊び始められる
+      given: Web build と配布 URL がある
+      when: 友達がスマホまたは PC のブラウザで URL を開く
+      then:
+        - ゲームが読み込まれプレイ開始まで進める
+        - 会員登録やログインを要求しない
+      verification:
+        mode: deterministic
+        refs:
+          - tools/build_web_release.py
+          - tools/test_web_compat.py
+
+    - id: acc_phone_fullscreen_playable_mobile
+      status: active
+      requirement_id: req_phone_fullscreen_playable
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ21
+        - product_requirements_platform:CJG21
+      summary: スマホで全画面プレイ導線が成立する
+      given: スマホブラウザから公開 URL を開ける
+      when: プレイヤーがゲーム開始から全画面プレイへ進む
+      then:
+        - スマホで全画面プレイ導線を辿れる
+        - PC 前提の操作説明だけに依存しない
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-platform.md
+          - tools/test_web_compat.py
+
+    - id: acc_public_play_session_visible_logs
+      status: active
+      requirement_id: req_public_play_session_visible
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ43
+        - product_requirements_platform:CJG43
+      summary: 公開 URL のプレイ記録を確認できる
+      given: 公開 URL でプレイが発生する
+      when: 公開環境のプレイ履歴を確認する
+      then:
+        - 遊ばれた記録を確認できる
+        - 静的配信のみで記録されない状態を done 扱いしない
+      verification:
+        mode: deterministic
+        refs:
+          - tools/report_play_sessions.py
+          - tools/web_runtime_server.py
+
+    - id: acc_safe_architecture_boundaries_guard
+      status: active
+      requirement_id: req_safe_architecture_boundaries
+      priority: p0
+      source_trace_refs:
+        - customer_journeys:CJ37
+        - framework_rule:M1
+        - framework_rule:M2
+        - framework_rule:M3
+        - framework_rule:M4
+        - framework_rule:M5
+        - product_requirements_guardrails:CJG37
+      summary: 責務境界 drift を static guard で検知できる
+      given: architecture guard と関連テストがある
+      when: AI または開発者が責務境界に関わる変更を入れる
+      then:
+        - static guard が boundary drift を検知できる
+        - 暗黙依存による広範囲破壊を見逃さない
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_architecture_layout.py
+          - test/test_cjg_framework_rule_guards.py
+          - tools/check_architecture_rules.py
+
+    - id: acc_no_silent_failure_gates
+      status: active
+      requirement_id: req_no_silent_failure
+      priority: p0
+      source_trace_refs:
+        - customer_journeys:CJ35
+        - framework_rule:No Silent Failure
+        - product_requirements_guardrails:CJG35
+      summary: 主要 build と互換 check が黙って失敗しない
+      given: build と compatibility check が用意されている
+      when: 変更後の成果物を出荷前に検証する
+      then:
+        - 起動不能版や主要操作で死ぬ版を出荷前に止める
+        - エラー握りつぶしや成功したふりをしない
+      verification:
+        mode: deterministic
+        refs:
+          - tools/test_headless.py
+          - tools/test_save_compat.py
+          - tools/test_web_compat.py
+
+    - id: acc_dist_is_not_source_build_path
+      status: active
+      requirement_id: req_dist_is_not_source
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ41
+        - framework_rule:SSoT
+        - product_requirements_guardrails:CJG41
+      summary: source 側を直して dist は build 結果として更新する
+      given: source と dist の責務が分かれている
+      when: 配布物の差分を直したい
+      then:
+        - src assets tools docs 側の修正から dist を再生成する
+        - dist 配下を手修正の正本にしない
+      verification:
+        mode: deterministic
+        refs:
+          - docs/architecture_rules.yml
+          - tools/build_release_artifacts.py
+          - tools/build_web_release.py
+
+    - id: acc_done_requires_real_artifacts_review
+      status: active
+      requirement_id: req_done_requires_real_artifacts
+      priority: p0
+      source_trace_refs:
+        - customer_journeys:CJ43
+        - framework_rule:Golden Path Test
+        - product_requirements_platform:CJG43
+      summary: done 判定に実物確認が含まれる
+      given: コード変更と build 生成物がある
+      when: task を done 判定する
+      then:
+        - zip pyxres HTML save data 実行画面などの実物確認を含める
+        - runtime code や build script だけ直して完了扱いしない
+      verification:
+        mode: manual
+        refs:
+          - AGENTS.md
+          - docs/product-requirements-platform.md
+
+  tasknote_contracts:
+    note_glob: steering/*.md
+    opt_in_frontmatter_key: requirement_ids
+    required_frontmatter_keys:
+      - acceptance_ids
+      - affected_paths
+      - done_checks
+      - requirement_ids
+      - stakeholder_ids
+      - verification_refs
+
+validation_rules:
+  - id: id_uniqueness
+    summary: stakeholder request requirement rule ids are unique
+    severity: error
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - docs/stakeholder_voices.yml
+    evidence:
+      checks:
+        - id_uniqueness
+    message: stakeholder voice ids may be duplicated
+    suggested_actions:
+      - rename the duplicated ids so each logical item has one stable key
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/check_stakeholder_voices.py
+      repair_autofix: not_recommended
+      rationale: duplicate ids are fully machine-detectable but renaming needs human intent
+
+  - id: stakeholder_reference_integrity
+    summary: stakeholder references resolve from requests and requirements
+    severity: error
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - docs/stakeholder_voices.yml
+    evidence:
+      checks:
+        - stakeholder_reference_integrity
+    message: stakeholder references may be broken
+    suggested_actions:
+      - add the missing stakeholder definitions or fix the referenced stakeholder ids
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/check_stakeholder_voices.py
+      repair_autofix: not_recommended
+      rationale: referential integrity is fully machine-detectable but missing intent cannot be autofixed
+
+  - id: request_reference_integrity
+    summary: requirement request references resolve
+    severity: error
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - docs/stakeholder_voices.yml
+    evidence:
+      checks:
+        - request_reference_integrity
+    message: requirement request references may be broken
+    suggested_actions:
+      - add the missing request definitions or fix derived_from_request_ids
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/check_stakeholder_voices.py
+      repair_autofix: not_recommended
+      rationale: missing request ids are easy to detect but not safe to invent automatically
+
+  - id: requirement_has_code_hints
+    summary: active requirements keep code and verification hints
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - docs/stakeholder_voices.yml
+    evidence:
+      checks:
+        - requirement_has_code_hints
+    message: requirement may be missing code hints
+    suggested_actions:
+      - add affected_paths verification_refs and source_refs for each active requirement
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/check_stakeholder_voices.py
+      repair_autofix: not_recommended
+      rationale: presence checks are machine-detectable but the right hints need human judgment
+
+  - id: requirement_acceptance_integrity
+    summary: active P0 P1 requirements link to acceptance scenarios with gherkin fields
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - docs/stakeholder_voices.yml
+    evidence:
+      checks:
+        - requirement_acceptance_integrity
+    message: requirement acceptance links may be missing or incomplete
+    suggested_actions:
+      - add acceptance_ids for each active P0 P1 requirement
+      - add acceptance entries with requirement_id given when then
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/check_stakeholder_voices.py
+      repair_autofix: not_recommended
+      rationale: acceptance linkage and gherkin field presence are machine-detectable but scenario content is not safe to invent
+
+  - id: acceptance_has_verification
+    summary: acceptance scenarios stay verifiable and distinguish manual vs deterministic checks
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - docs/stakeholder_voices.yml
+    evidence:
+      checks:
+        - acceptance_has_verification
+    message: acceptance verification may be missing or invalid
+    suggested_actions:
+      - add verification.mode as manual or deterministic
+      - add verification.refs with at least one live path
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/check_stakeholder_voices.py
+      repair_autofix: not_recommended
+      rationale: verification structure is deterministic to inspect but choosing the right proof remains a human design decision
+
+  - id: source_traceability_integrity
+    summary: active request requirement acceptance trace refs resolve to known docs and live stable ids
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - docs/stakeholder_voices.yml
+    evidence:
+      checks:
+        - source_traceability_integrity
+    message: structured source trace refs may be missing or broken
+    suggested_actions:
+      - add source_documents entries for stable-id docs
+      - add or fix source_trace_refs in doc_id:stable_ref format
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/check_stakeholder_voices.py
+      repair_autofix: not_recommended
+      rationale: doc ids and stable ref token presence are deterministic to inspect, but choosing the right source trace remains a human judgment
+
+  - id: referenced_paths_exist
+    summary: referenced paths exist for requirements and acceptance verification refs
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - docs/stakeholder_voices.yml
+        - steering/
+    evidence:
+      checks:
+        - referenced_paths_exist
+    message: referenced code or docs paths may be stale
+    suggested_actions:
+      - update affected_paths verification_refs source_refs or acceptance verification refs to live paths
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/check_stakeholder_voices.py
+      repair_autofix: not_recommended
+      rationale: path existence is deterministic but replacement paths need human intent
+
+  - id: tasknote_frontmatter_integrity
+    summary: opt-in task notes keep required frontmatter keys and resolvable requirement stakeholder acceptance ids
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - steering/
+        - docs/stakeholder_voices.yml
+    evidence:
+      checks:
+        - tasknote_frontmatter_integrity
+    message: task note frontmatter may have drifted from stakeholder voice contracts
+    suggested_actions:
+      - add the required frontmatter keys and fix unresolved requirement stakeholder or acceptance ids
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/check_stakeholder_voices.py
+      repair_autofix: not_recommended
+      rationale: required keys and id resolution are deterministic once notes opt in
+
+  - id: normalized_requirement_lists
+    summary: requirement id and path lists stay sorted and unique
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - docs/stakeholder_voices.yml
+    evidence:
+      checks:
+        - normalized_requirement_lists
+    message: requirement lists may need normalization
+    suggested_actions:
+      - sort and deduplicate requirement id and path lists
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: tools/stakeholder_voices/fix_stakeholder_voices.py
+      repair_autofix: implemented
+      rationale: sorting and deduplication are safe deterministic edits

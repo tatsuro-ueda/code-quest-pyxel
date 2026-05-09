@@ -1,0 +1,230 @@
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+import yaml
+
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "tools"))
+
+
+def load_report_module():
+    try:
+        import report_source_trace_coverage
+    except ImportError as exc:  # pragma: no cover - TDD red path
+        raise AssertionError(f"tools/report_source_trace_coverage.py is missing: {exc}") from exc
+    return report_source_trace_coverage
+
+
+def make_rules_document(
+    *,
+    source_documents: list[dict],
+    requests: list[dict],
+    requirements: list[dict] | None = None,
+    acceptance: list[dict] | None = None,
+) -> dict:
+    return {
+        "meta": {"document_id": "stakeholder_voices"},
+        "facts": {
+            "stakeholders": [
+                {
+                    "id": "st_repo_developer",
+                    "type": "developer",
+                    "label": "Developer",
+                    "status": "active",
+                }
+            ],
+            "requests": requests,
+            "source_documents": source_documents,
+            "requirements": requirements or [],
+            "acceptance": acceptance or [],
+            "tasknote_contracts": {
+                "note_glob": "steering/*.md",
+                "opt_in_frontmatter_key": "requirement_ids",
+                "required_frontmatter_keys": [
+                    "requirement_ids",
+                    "acceptance_ids",
+                    "stakeholder_ids",
+                    "affected_paths",
+                    "verification_refs",
+                    "done_checks",
+                ],
+            },
+        },
+        "validation_rules": [],
+    }
+
+
+class SourceTraceCoverageReportTest(unittest.TestCase):
+    def test_build_report_counts_total_referenced_and_missing_refs(self):
+        report_module = load_report_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            (repo_root / "docs").mkdir(parents=True, exist_ok=True)
+            (repo_root / "docs" / "customer-jobs.md").write_text(
+                "# jobs\n\n## A [JOB:JPL_CHILD_PLAYER]\n## B [JOB:JCR_CHILD_CREATOR]\n",
+                encoding="utf-8",
+            )
+            rules_path = repo_root / "stakeholder_voices.yml"
+            rules_path.write_text(
+                yaml.safe_dump(
+                    make_rules_document(
+                        source_documents=[
+                            {
+                                "id": "customer_jobs",
+                                "path": "docs/customer-jobs.md",
+                                "extraction": {
+                                    "regex": ["JOB:[A-Z0-9_]+"],
+                                },
+                            }
+                        ],
+                        requests=[
+                            {
+                                "id": "rq_child_edit_ownership",
+                                "stakeholder_id": "st_repo_developer",
+                                "status": "active",
+                                "summary": "child wants ownership",
+                                "source_refs": ["docs/customer-jobs.md"],
+                                "source_trace_refs": ["customer_jobs:JOB:JCR_CHILD_CREATOR"],
+                            }
+                        ],
+                    ),
+                    allow_unicode=True,
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            report = report_module.build_report(repo_root, rules_path)
+
+        self.assertEqual(report["status"], "OK")
+        self.assertEqual(report["summary"]["total_documents"], 1)
+        self.assertEqual(report["summary"]["broken_documents"], 0)
+        self.assertEqual(report["documents"][0]["doc_id"], "customer_jobs")
+        self.assertEqual(report["documents"][0]["total_refs"], 2)
+        self.assertEqual(
+            report["documents"][0]["referenced_refs"],
+            ["JOB:JCR_CHILD_CREATOR"],
+        )
+        self.assertEqual(
+            report["documents"][0]["missing_refs"],
+            ["JOB:JPL_CHILD_PLAYER"],
+        )
+
+    def test_build_report_fails_closed_when_source_document_has_no_extraction_contract(self):
+        report_module = load_report_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            (repo_root / "docs").mkdir(parents=True, exist_ok=True)
+            (repo_root / "docs" / "customer-jobs.md").write_text(
+                "# jobs\n\n## A [JOB:JPL_CHILD_PLAYER]\n",
+                encoding="utf-8",
+            )
+            rules_path = repo_root / "stakeholder_voices.yml"
+            rules_path.write_text(
+                yaml.safe_dump(
+                    make_rules_document(
+                        source_documents=[
+                            {
+                                "id": "customer_jobs",
+                                "path": "docs/customer-jobs.md",
+                            }
+                        ],
+                        requests=[
+                            {
+                                "id": "rq_child_edit_ownership",
+                                "stakeholder_id": "st_repo_developer",
+                                "status": "active",
+                                "summary": "child wants ownership",
+                                "source_refs": ["docs/customer-jobs.md"],
+                                "source_trace_refs": ["customer_jobs:JOB:JPL_CHILD_PLAYER"],
+                            }
+                        ],
+                    ),
+                    allow_unicode=True,
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            report = report_module.build_report(repo_root, rules_path)
+
+        self.assertEqual(report["status"], "BROKEN_TRACEABILITY")
+        self.assertGreaterEqual(len(report["errors"]), 1)
+        self.assertEqual(report["errors"][0]["kind"], "invalid_extraction_contract")
+
+    def test_build_report_fails_closed_when_trace_ref_uses_unknown_doc_id(self):
+        report_module = load_report_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            (repo_root / "docs").mkdir(parents=True, exist_ok=True)
+            (repo_root / "docs" / "customer-jobs.md").write_text(
+                "# jobs\n\n## A [JOB:JPL_CHILD_PLAYER]\n",
+                encoding="utf-8",
+            )
+            rules_path = repo_root / "stakeholder_voices.yml"
+            rules_path.write_text(
+                yaml.safe_dump(
+                    make_rules_document(
+                        source_documents=[
+                            {
+                                "id": "customer_jobs",
+                                "path": "docs/customer-jobs.md",
+                                "extraction": {
+                                    "regex": ["JOB:[A-Z0-9_]+"],
+                                },
+                            }
+                        ],
+                        requests=[
+                            {
+                                "id": "rq_child_edit_ownership",
+                                "stakeholder_id": "st_repo_developer",
+                                "status": "active",
+                                "summary": "child wants ownership",
+                                "source_refs": ["docs/customer-jobs.md"],
+                                "source_trace_refs": ["unknown_doc:JOB:JPL_CHILD_PLAYER"],
+                            }
+                        ],
+                    ),
+                    allow_unicode=True,
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            report = report_module.build_report(repo_root, rules_path)
+
+        self.assertEqual(report["status"], "BROKEN_TRACEABILITY")
+        self.assertGreaterEqual(len(report["errors"]), 1)
+        self.assertEqual(report["errors"][0]["kind"], "unknown_doc_id")
+
+    def test_cli_runs_on_real_repo_and_returns_document_summaries(self):
+        completed = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / "report_source_trace_coverage.py")],
+            capture_output=True,
+            text=True,
+            cwd=ROOT,
+            check=False,
+        )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["status"], "OK")
+        self.assertGreaterEqual(payload["summary"]["total_documents"], 7)
+        document_ids = {item["doc_id"] for item in payload["documents"]}
+        self.assertIn("customer_jobs", document_ids)
+        self.assertIn("framework_rule", document_ids)
+
+
+if __name__ == "__main__":
+    unittest.main()
