@@ -16,12 +16,12 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
 
 
-def load_guardian_module():
+def load_repair_module():
     try:
-        import architecture_guardian
+        import repair_architecture_rules
     except ImportError as exc:  # pragma: no cover - TDD red path
-        raise AssertionError(f"tools/architecture_guardian.py is missing: {exc}") from exc
-    return architecture_guardian
+        raise AssertionError(f"tools/repair_architecture_rules.py is missing: {exc}") from exc
+    return repair_architecture_rules
 
 
 def tree_node(path: str, kind: str, **extra):
@@ -30,10 +30,25 @@ def tree_node(path: str, kind: str, **extra):
     return node
 
 
-class ArchitectureGuardianTest(unittest.TestCase):
-    def test_guardian_cli_runs_clean_on_real_repo(self):
+def coverage_metadata(
+    *,
+    deterministic_review: str,
+    next_checker_unit: str | None = None,
+    repair_autofix: str,
+    rationale: str = "fixture",
+) -> dict:
+    return {
+        "deterministic_review": deterministic_review,
+        "next_checker_unit": next_checker_unit,
+        "repair_autofix": repair_autofix,
+        "rationale": rationale,
+    }
+
+
+class RepairArchitectureRulesTest(unittest.TestCase):
+    def test_repair_cli_runs_clean_on_real_repo(self):
         completed = subprocess.run(
-            [sys.executable, str(ROOT / "tools" / "architecture_guardian.py")],
+            [sys.executable, str(ROOT / "tools" / "repair_architecture_rules.py")],
             capture_output=True,
             text=True,
             cwd=ROOT,
@@ -47,64 +62,8 @@ class ArchitectureGuardianTest(unittest.TestCase):
         self.assertTrue(payload["final_check"]["run_ok"])
         self.assertFalse(payload["final_check"]["has_warnings"])
 
-    def test_write_yaml_inserts_blank_lines_between_path_entries(self):
-        guardian = load_guardian_module()
-
-        with tempfile.TemporaryDirectory() as tmp:
-            rules_path = Path(tmp) / "architecture_rules.yml"
-            guardian.write_yaml(
-                rules_path,
-                {
-                    "meta": {"document_id": "test"},
-                    "facts": {
-                        "tree": {
-                            "path": ".",
-                            "kind": "root",
-                            "children": [
-                                tree_node("alpha.txt", "file", summary="first file"),
-                                tree_node("beta.txt", "file", summary="second file"),
-                                tree_node(
-                                    "src",
-                                    "directory",
-                                    children=[
-                                        tree_node("src/a.py", "file", summary="nested first"),
-                                        tree_node("src/b.py", "file", summary="nested second"),
-                                    ],
-                                ),
-                            ],
-                        }
-                    },
-                    "validation_rules": [
-                        {
-                            "id": "sample_rule",
-                            "summary": "sample",
-                            "severity": "warning",
-                            "enforcement": {"mode": "manual"},
-                            "scope": {"paths": ["alpha.txt"]},
-                            "evidence": {"checks": ["manual_check"]},
-                            "message": "sample message",
-                            "suggested_actions": ["sample action"],
-                            "coverage": {
-                                "deterministic_review": "keep_manual",
-                                "next_checker_unit": None,
-                                "guardian_autofix": "not_recommended",
-                                "rationale": "sample",
-                            },
-                        }
-                    ],
-                },
-            )
-
-            text = rules_path.read_text(encoding="utf-8")
-
-            self.assertRegex(text, r"children:\n\n\s+- path: alpha\.txt")
-            self.assertRegex(text, r"summary: first file\n\n\s+- path: beta\.txt")
-            self.assertRegex(text, r"children:\n\n\s+- path: src/a\.py")
-            self.assertRegex(text, r"summary: nested first\n\n\s+- path: src/b\.py")
-            self.assertRegex(text, r"validation_rules:\n\n\s+- id: sample_rule")
-
-    def test_guardian_autofixes_generated_rule_until_clean(self):
-        guardian = load_guardian_module()
+    def test_run_repair_autofixes_generated_rule_until_clean(self):
+        repair = load_repair_module()
 
         with tempfile.TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
@@ -174,12 +133,10 @@ class ArchitectureGuardianTest(unittest.TestCase):
                                 "evidence": {"checks": ["generated_entries_mark_non_hand_editable_and_sources"]},
                                 "message": "generated drift",
                                 "suggested_actions": ["run gen_data"],
-                                "coverage": {
-                                    "deterministic_review": "implemented",
-                                    "next_checker_unit": None,
-                                    "guardian_autofix": "implemented",
-                                    "rationale": "fixture",
-                                },
+                                "coverage": coverage_metadata(
+                                    deterministic_review="implemented",
+                                    repair_autofix="implemented",
+                                ),
                             }
                         ],
                     },
@@ -189,18 +146,14 @@ class ArchitectureGuardianTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            result = guardian.run_guardian(repo_root, rules_path, max_cycles=5)
+            result = repair.run_repair(repo_root, rules_path, max_cycles=5)
 
-            self.assertEqual(result["status"], "AUTOFIXED")
-            self.assertLessEqual(result["cycles"], 5)
-            self.assertFalse(result["final_check"]["has_warnings"])
-            fixed_yaml = yaml.safe_load(rules_path.read_text(encoding="utf-8"))
-            generated_node = fixed_yaml["facts"]["tree"]["children"][2]["children"][0]["children"][0]
-            self.assertFalse(generated_node["hand_editable"])
-            self.assertIn("DATA = []", (repo_root / "src" / "generated" / "dialogue.py").read_text(encoding="utf-8"))
+        self.assertEqual(result["status"], "AUTOFIXED")
+        self.assertLessEqual(result["cycles"], 5)
+        self.assertFalse(result["final_check"]["has_warnings"])
 
-    def test_guardian_returns_needs_human_when_issue_remains(self):
-        guardian = load_guardian_module()
+    def test_run_repair_returns_needs_human_when_issue_remains(self):
+        repair = load_repair_module()
 
         with tempfile.TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
@@ -265,12 +218,10 @@ class ArchitectureGuardianTest(unittest.TestCase):
                                 "evidence": {"checks": ["wrapper_chain_present"]},
                                 "message": "runtime drift",
                                 "suggested_actions": ["restore runtime entry chain"],
-                                "coverage": {
-                                    "deterministic_review": "implemented",
-                                    "next_checker_unit": None,
-                                    "guardian_autofix": "implemented",
-                                    "rationale": "fixture",
-                                },
+                                "coverage": coverage_metadata(
+                                    deterministic_review="implemented",
+                                    repair_autofix="implemented",
+                                ),
                             }
                         ],
                     },
@@ -280,14 +231,14 @@ class ArchitectureGuardianTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            result = guardian.run_guardian(repo_root, rules_path, max_cycles=5)
+            result = repair.run_repair(repo_root, rules_path, max_cycles=5)
 
-            self.assertEqual(result["status"], "NEEDS_HUMAN")
-            self.assertLessEqual(result["cycles"], 5)
-            self.assertTrue(result["final_check"]["has_warnings"])
+        self.assertEqual(result["status"], "NEEDS_HUMAN")
+        self.assertLessEqual(result["cycles"], 5)
+        self.assertTrue(result["final_check"]["has_warnings"])
 
-    def test_guardian_autofixes_codemaker_manifest_missing_required_paths(self):
-        guardian = load_guardian_module()
+    def test_run_repair_autofixes_codemaker_manifest_missing_required_paths(self):
+        repair = load_repair_module()
 
         with tempfile.TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
@@ -358,12 +309,10 @@ class ArchitectureGuardianTest(unittest.TestCase):
                                 },
                                 "message": "codemaker manifest drift",
                                 "suggested_actions": ["restore missing manifest paths"],
-                                "coverage": {
-                                    "deterministic_review": "implemented",
-                                    "next_checker_unit": None,
-                                    "guardian_autofix": "implemented",
-                                    "rationale": "fixture",
-                                },
+                                "coverage": coverage_metadata(
+                                    deterministic_review="implemented",
+                                    repair_autofix="implemented",
+                                ),
                             }
                         ],
                     },
@@ -373,13 +322,13 @@ class ArchitectureGuardianTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            result = guardian.run_guardian(repo_root, rules_path, max_cycles=5)
-
-            self.assertEqual(result["status"], "AUTOFIXED")
-            self.assertFalse(result["final_check"]["has_warnings"])
+            result = repair.run_repair(repo_root, rules_path, max_cycles=5)
             manifest_text = manifest_path.read_text(encoding="utf-8")
-            self.assertIn("src/shared/services/debug_service.py", manifest_text)
-            self.assertIn("src/shared/ui/text_renderer.py", manifest_text)
+
+        self.assertEqual(result["status"], "AUTOFIXED")
+        self.assertFalse(result["final_check"]["has_warnings"])
+        self.assertIn("src/shared/services/debug_service.py", manifest_text)
+        self.assertIn("src/shared/ui/text_renderer.py", manifest_text)
 
 
 if __name__ == "__main__":

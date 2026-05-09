@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-# architecture_rules.yml を checker で見直し、安全に直せる deterministic な差分だけを
-# YAML や生成物へ反映し、warning が消えるまで autofix と再検査を繰り返す補助スクリプト。
-
-"""architecture rule 違反を自動修復しながら再検査する guardian。"""
+"""architecture rule warning に対して一度だけ deterministic fix を適用する。"""
 
 import argparse
 import json
@@ -14,10 +11,10 @@ from typing import Any
 
 import yaml
 
-import check_architecture_rules
+from . import check_architecture_rules
 
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 
 CANONICAL_MAIN_WRAPPER = """from pathlib import Path
 
@@ -438,69 +435,48 @@ FIXER_REGISTRY = {
 }
 
 
-def run_guardian(
+def run_fixer(
     repo_root: Path,
     rules_path: Path,
     *,
-    max_cycles: int = 5,
     rule_ids: set[str] | None = None,
+    check: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     rules_path = rules_path.resolve()
-    history: list[dict[str, Any]] = []
-    applied_fixes: list[dict[str, Any]] = []
-    autofixed = False
-
     try:
-        for cycle in range(1, max_cycles + 1):
-            check = check_architecture_rules.run_checker(repo_root, rules_path, rule_ids=rule_ids)
-            history.append({"cycle": cycle, "check": check})
-            if not check["has_warnings"]:
-                return {
-                    "status": "AUTOFIXED" if autofixed else "OK",
-                    "cycles": cycle,
-                    "history": history,
-                    "applied_fixes": applied_fixes,
-                    "final_check": check,
-                }
+        current_check = check or check_architecture_rules.run_checker(
+            repo_root,
+            rules_path,
+            rule_ids=rule_ids,
+        )
+        if not current_check["has_warnings"]:
+            return {
+                "status": "OK",
+                "check": current_check,
+                "applied_fixes": [],
+            }
 
-            cycle_fixes: list[dict[str, Any]] = []
-            warnings = [item for item in check["results"] if item["status"] == "warning"]
-            for warning in warnings:
-                fixer = FIXER_REGISTRY.get(warning["rule_id"])
-                if fixer is None:
-                    continue
-                fixes = fixer(repo_root, rules_path, warning)
-                if fixes:
-                    cycle_fixes.extend(fixes)
+        applied_fixes: list[dict[str, Any]] = []
+        warnings = [item for item in current_check["results"] if item["status"] == "warning"]
+        for warning in warnings:
+            fixer = FIXER_REGISTRY.get(warning["rule_id"])
+            if fixer is None:
+                continue
+            fixes = fixer(repo_root, rules_path, warning)
+            if fixes:
+                applied_fixes.extend(fixes)
 
-            if not cycle_fixes:
-                return {
-                    "status": "NEEDS_HUMAN",
-                    "cycles": cycle,
-                    "history": history,
-                    "applied_fixes": applied_fixes,
-                    "final_check": check,
-                }
-
-            autofixed = True
-            applied_fixes.extend({"cycle": cycle, **fix} for fix in cycle_fixes)
-
-        final_check = check_architecture_rules.run_checker(repo_root, rules_path, rule_ids=rule_ids)
-        history.append({"cycle": max_cycles + 1, "check": final_check})
         return {
-            "status": "AUTOFIXED" if autofixed and not final_check["has_warnings"] else "NEEDS_HUMAN",
-            "cycles": max_cycles,
-            "history": history,
+            "status": "FIXED" if applied_fixes else "NEEDS_HUMAN",
+            "check": current_check,
             "applied_fixes": applied_fixes,
-            "final_check": final_check,
         }
     except Exception as exc:
         return {
             "status": "ERROR",
-            "cycles": len(history),
-            "history": history,
-            "applied_fixes": applied_fixes,
+            "check": check,
+            "applied_fixes": [],
             "error": str(exc),
         }
 
@@ -509,17 +485,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     parser.add_argument("--rules-path", type=Path, default=ROOT / "docs" / "architecture_rules.yml")
-    parser.add_argument("--max-cycles", type=int, default=5)
     parser.add_argument("--rule-id", action="append", default=[])
     args = parser.parse_args(argv)
-    result = run_guardian(
+    result = run_fixer(
         args.repo_root,
         args.rules_path,
-        max_cycles=args.max_cycles,
         rule_ids=set(args.rule_id) if args.rule_id else None,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0 if result["status"] in {"OK", "AUTOFIXED"} else 1
+    return 0 if result["status"] in {"OK", "FIXED"} else 1
 
 
 if __name__ == "__main__":

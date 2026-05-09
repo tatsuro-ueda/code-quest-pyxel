@@ -33,6 +33,21 @@ def find_tree_node(node: dict, path_value: str) -> dict | None:
     return None
 
 
+def coverage_metadata(
+    *,
+    deterministic_review: str,
+    next_checker_unit: str | None = None,
+    repair_autofix: str,
+    rationale: str = "fixture",
+) -> dict:
+    return {
+        "deterministic_review": deterministic_review,
+        "next_checker_unit": next_checker_unit,
+        "repair_autofix": repair_autofix,
+        "rationale": rationale,
+    }
+
+
 class ArchitectureRulesCheckerTest(unittest.TestCase):
     def test_real_rules_expose_tree_first_facts(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
@@ -66,8 +81,10 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
             self.assertIsInstance(coverage, dict)
             self.assertIn("deterministic_review", coverage)
             self.assertIn("next_checker_unit", coverage)
-            self.assertIn("guardian_autofix", coverage)
+            self.assertIn("repair_autofix", coverage)
+            self.assertNotIn("guardian_autofix", coverage)
             self.assertIn("rationale", coverage)
+            self.assertEqual(len([key for key in coverage if key.endswith("_autofix")]), 1)
 
     def test_codemaker_contract_excludes_removed_legacy_shell_paths(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
@@ -122,9 +139,9 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
         )
         self.assertEqual(result["coverage_review"]["deterministic_candidate_rule_ids"], [])
         self.assertEqual(result["coverage_review"]["next_checker_units"], [])
-        self.assertEqual(result["coverage_review"]["guardian_candidate_rule_ids"], [])
+        self.assertEqual(result["coverage_review"]["repair_candidate_rule_ids"], [])
         self.assertEqual(
-            result["coverage_review"]["guardian_implemented_rule_ids"],
+            result["coverage_review"]["repair_implemented_rule_ids"],
             [
                 "runtime_entry_chain",
                 "dist_not_source",
@@ -226,12 +243,10 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
                                 },
                                 "message": "codemaker manifest drift",
                                 "suggested_actions": ["restore missing manifest paths"],
-                                "coverage": {
-                                    "deterministic_review": "implemented",
-                                    "next_checker_unit": None,
-                                    "guardian_autofix": "implemented",
-                                    "rationale": "fixture",
-                                },
+                                "coverage": coverage_metadata(
+                                    deterministic_review="implemented",
+                                    repair_autofix="implemented",
+                                ),
                             }
                         ],
                     },
@@ -283,12 +298,10 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
                                 "evidence": {"checks": ["scene_static_boundary_checks"]},
                                 "message": "scene boundary drift",
                                 "suggested_actions": ["fix scene boundary"],
-                                "coverage": {
-                                    "deterministic_review": "implemented",
-                                    "next_checker_unit": None,
-                                    "guardian_autofix": "not_recommended",
-                                    "rationale": "fixture",
-                                },
+                                "coverage": coverage_metadata(
+                                    deterministic_review="implemented",
+                                    repair_autofix="not_recommended",
+                                ),
                             }
                         ],
                     },
@@ -387,12 +400,10 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
                                 "evidence": {"checks": ["shared_directory_role_checks"]},
                                 "message": "shared boundary drift",
                                 "suggested_actions": ["fix shared boundary"],
-                                "coverage": {
-                                    "deterministic_review": "implemented",
-                                    "next_checker_unit": None,
-                                    "guardian_autofix": "not_recommended",
-                                    "rationale": "fixture",
-                                },
+                                "coverage": coverage_metadata(
+                                    deterministic_review="implemented",
+                                    repair_autofix="not_recommended",
+                                ),
                             }
                         ],
                     },

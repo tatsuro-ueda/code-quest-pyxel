@@ -1098,16 +1098,55 @@ facts:
           - path: tools/check_architecture_rules.py
             kind: file
             source_of_truth: false
-            role: architecture_checker
+            role: architecture_rules_checker_cli
             status: active
-            summary: architecture_rules.yml の deterministic rule を検査する
+            summary: architecture_rules checker の薄い CLI 入口
 
-          - path: tools/architecture_guardian.py
+          - path: tools/fix_architecture_rules.py
             kind: file
             source_of_truth: false
-            role: architecture_guardian
+            role: architecture_rules_fixer_cli
             status: active
-            summary: checker -> fixer -> recheck を回す guardian
+            summary: architecture_rules fixer の薄い CLI 入口
+
+          - path: tools/repair_architecture_rules.py
+            kind: file
+            source_of_truth: false
+            role: architecture_rules_repair_cli
+            status: active
+            summary: architecture_rules repair の薄い CLI 入口
+
+          - path: tools/architecture_rules
+            kind: directory
+            children:
+
+              - path: tools/architecture_rules/__init__.py
+                kind: file
+                source_of_truth: false
+                role: architecture_rules_package_init
+                status: active
+                summary: architecture_rules 実装パッケージの export
+
+              - path: tools/architecture_rules/check_architecture_rules.py
+                kind: file
+                source_of_truth: false
+                role: architecture_rules_checker
+                status: active
+                summary: checker 実装本体
+
+              - path: tools/architecture_rules/fix_architecture_rules.py
+                kind: file
+                source_of_truth: false
+                role: architecture_rules_fixer
+                status: active
+                summary: fixer 実装本体
+
+              - path: tools/architecture_rules/repair_architecture_rules.py
+                kind: file
+                source_of_truth: false
+                role: architecture_rules_repairer
+                status: active
+                summary: repair orchestration 本体
 
           - path: tools/install_hooks.sh
             kind: file
@@ -1149,16 +1188,23 @@ facts:
           - path: test/test_architecture_rules_checker.py
             kind: file
             source_of_truth: false
-            role: architecture_checker_tests
+            role: architecture_rules_checker_tests
             status: active
             summary: checker の回帰 test
 
-          - path: test/test_architecture_guardian.py
+          - path: test/test_fix_architecture_rules.py
             kind: file
             source_of_truth: false
-            role: architecture_guardian_tests
+            role: architecture_rules_fixer_tests
             status: active
-            summary: guardian の回帰 test
+            summary: fixer の回帰 test
+
+          - path: test/test_repair_architecture_rules.py
+            kind: file
+            source_of_truth: false
+            role: architecture_rules_repair_tests
+            status: active
+            summary: repair の回帰 test
         id: test_root
         role: automated_tests
         status: active
@@ -1464,7 +1510,7 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      guardian_autofix: implemented
+      repair_autofix: implemented
       rationale: tree-first facts と実ファイル照合だけで判定でき、guardian も安全に正規形へ戻せる
 
   - id: code_maker_primary_editor
@@ -1489,7 +1535,7 @@ validation_rules:
     coverage:
       deterministic_review: keep_llm_assisted
       next_checker_unit: null
-      guardian_autofix: not_recommended
+      repair_autofix: not_recommended
       rationale: 子ども向けの正式編集面を脇役化していないかは path だけでは判定できず、変更意図の読解が要る
 
   - id: pyxres_source_of_truth
@@ -1512,7 +1558,7 @@ validation_rules:
     coverage:
       deterministic_review: keep_manual
       next_checker_unit: null
-      guardian_autofix: not_recommended
+      repair_autofix: not_recommended
       rationale: 実物の pyxres と Code Maker roundtrip を見て判断すべきで、Python だけの自動修復は危険
 
   - id: dist_not_source
@@ -1534,7 +1580,7 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      guardian_autofix: implemented
+      repair_autofix: implemented
       rationale: dist root と artifact node は facts.tree と実在 path だけで機械判定できる
 
   - id: generated_files_edit_policy
@@ -1557,7 +1603,7 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      guardian_autofix: implemented
+      repair_autofix: implemented
       rationale: generated file node と生成元 YAML の対応は tree-first facts と gen_data.py 実行で機械化できる
 
   - id: scene_mvp_boundary
@@ -1578,7 +1624,7 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      guardian_autofix: not_recommended
+      repair_autofix: not_recommended
       rationale: 既存の framework rule guard を checker に昇格し、pyxel 呼び出し境界と scene package 形状を deterministic
         に検査できる
 
@@ -1601,7 +1647,7 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      guardian_autofix: implemented
+      repair_autofix: implemented
       rationale: required path 一覧と manifest の差分は静的に比較でき、guardian も安全に追記だけを行える
 
   - id: shared_service_vs_state_boundary
@@ -1623,7 +1669,7 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      guardian_autofix: not_recommended
+      repair_autofix: not_recommended
       rationale: shared/services と shared/state の配置、legacy shim 依存、pyxel 利用禁止を deterministic に検査できるが、
         ファイル移動の autofix は安全でない
 
@@ -1650,5 +1696,5 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      guardian_autofix: implemented
+      repair_autofix: implemented
       rationale: runbook command と artifact path のズレは tree-first facts と build script 名で機械検査できる
