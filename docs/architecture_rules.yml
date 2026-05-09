@@ -400,10 +400,108 @@ facts:
         status: active
         summary: 日本語ビットマップフォントデータ
   generated:
-    entries: []
+    entries:
+      - id: generated_dialogue
+        path: src/generated/dialogue.py
+        status: generated
+        generated_from:
+          - assets/dialogue.yaml
+      - id: generated_enemies
+        path: src/generated/enemies.py
+        status: generated
+        generated_from:
+          - assets/enemies.yaml
+      - id: generated_items
+        path: src/generated/items.py
+        status: generated
+        generated_from:
+          - assets/items.yaml
+      - id: generated_weapons
+        path: src/generated/weapons.py
+        status: generated
+        generated_from:
+          - assets/weapons.yaml
+      - id: generated_armors
+        path: src/generated/armors.py
+        status: generated
+        generated_from:
+          - assets/armors.yaml
+      - id: generated_spells
+        path: src/generated/spells.py
+        status: generated
+        generated_from:
+          - assets/spells.yaml
+      - id: generated_shops
+        path: src/generated/shops.py
+        status: generated
+        generated_from:
+          - assets/shops.yaml
   distribution:
-    artifacts: []
-  runbooks: []
-  migration_notes: []
+    artifacts:
+      - id: codemaker_zip
+        path: dist/code-maker.zip
+        status: distribution
+        summary: block-quest/main.py + my_resource.pyxres を梱包した教材版 zip
+      - id: pyxel_html
+        path: dist/pyxel.html
+        status: distribution
+        summary: Web 配布用 HTML
+      - id: pyxel_pyxapp
+        path: dist/pyxel.pyxapp
+        status: distribution
+        summary: Pyxel app 配布物
+      - id: play_html
+        path: dist/play.html
+        status: distribution
+        summary: プレイページ
+      - id: top_index_html
+        path: dist/index.html
+        status: distribution
+        summary: 配布用トップページ
+  runbooks:
+    - id: build_codemaker_zip
+      summary: dist/code-maker.zip だけを再生成する
+      steps:
+        - command: python tools/build_codemaker.py
+          outputs:
+            - dist/code-maker.zip
+          checks:
+            - tools/codemaker_manifest.txt の順番で inline される
+    - id: build_all_release_artifacts
+      summary: dist 配下の release artifact を再生成する
+      steps:
+        - command: PYTHONPATH=. python tools/build_web_release.py
+          outputs:
+            - dist/code-maker.zip
+            - dist/pyxel.html
+            - dist/pyxel.pyxapp
+            - dist/play.html
+            - dist/index.html
+          checks:
+            - tools/build_release_artifacts.py が tools.build_codemaker を import できる
+          common_failures:
+            - python tools/build_release_artifacts.py を直接叩くと ModuleNotFoundError になる
+    - id: post_change_release_sequence
+      summary: BGM / pyxres / view / scene を変更した後の順序
+      steps:
+        - command: PYTHONPATH=. python -m pytest -x
+        - command: PYTHONPATH=. python tools/build_web_release.py
+        - command: python -c "import zipfile,re; z=zipfile.ZipFile('dist/code-maker.zip'); t=z.read('block-quest/main.py').decode('utf-8'); print('AudioManager:',len(re.findall(r'class AudioManager',t))); print('SettingsScene:',len(re.findall(r'class SettingsScene',t))); print('play_bgm_track:',len(re.findall(r'play_bgm_track\\(',t)))"
+        - command: git status
+  migration_notes:
+    - id: blockquestapp_legacy_shell
+      path: src/app.py
+      symbol: BlockQuestApp
+      status: legacy
+      summary: Phase 1 由来の薄い実行シェル。test / Code Maker bundler 互換のため残置
+    - id: core_scene_manager_legacy
+      path: src/core/scene_manager.py
+      symbol: SceneManager
+      status: legacy
+      summary: 旧 SceneManager。現在の Game は shared/services/scene_manager.py を使う
+    - id: development_runtime_removed
+      path: src/runtime/main_development_runtime.py
+      status: removed
+      summary: Phase 3 で削除済
 
 validation_rules: []
