@@ -152,11 +152,16 @@ facts:
       - SfxSystem / ImageBanks / GameState / PlayerModel / SceneManager / DebugService / scene 群の組み立て
       - 現在 scene の update / draw dispatch
     property_forwards:
-      - current_town -> GameState.current_town
-      - debug_mode -> DebugService.mode
-      - debug_seq -> DebugService.seq
-      - state -> SceneManager.current
-      - prev_state -> SceneManager.previous
+      - property: current_town
+        target: GameState.current_town
+      - property: debug_mode
+        target: DebugService.mode
+      - property: debug_seq
+        target: DebugService.seq
+      - property: state
+        target: SceneManager.current
+      - property: prev_state
+        target: SceneManager.previous
     must_not_store:
       - current_bgm
       - duplicated_scene_state
@@ -166,75 +171,93 @@ facts:
       status: active
       responsibility: 起動スプラッシュ
       local_state:
-        - splash_frame
+        - frame
     - id: title_scene
       path: src/scenes/title
       status: active
       responsibility: タイトル画面
       local_state:
-        - title_cursor
+        - cursor
     - id: explore_scene
       path: src/scenes/explore
       status: active
       responsibility: フィールド / ダンジョン歩行
       local_state:
+        - mode
         - walk_frame
         - walk_timer
         - move_cooldown
-        - _a_cooldown
+        - a_cooldown
+        - image_banks
+        - cam_x
+        - cam_y
     - id: town_scene
       path: src/scenes/town
       status: active
       responsibility: 町メニュー
       local_state:
-        - town_menu_cursor
-        - town_menu_pos
-        - menu_message
+        - menu_cursor
+        - menu_pos
     - id: shop_scene
       path: src/scenes/shop
       status: active
       responsibility: 武器・防具・道具の売買
       local_state:
-        - shop_cursor
-        - shop_inventory
-        - shop_kind
-        - shop_message
+        - kind
+        - inventory
+        - cursor
+        - message
     - id: battle_scene
       path: src/scenes/battle
       status: active
       responsibility: 戦闘全体
       local_state:
-        - battle_enemy
-        - battle_phase
-        - battle_text
-        - battle_item_select
+        - enemy
+        - enemy_hp
+        - menu
+        - phase
+        - text
+        - text_timer
+        - item_select
+        - spell_select
+        - is_glitch_lord
+        - is_professor
+        - boss_phase
+        - noise_guardian
     - id: menu_scene
       path: src/scenes/menu
       status: active
       responsibility: メニュー画面
       local_state:
-        - menu_cursor
-        - menu_item_cursor
-        - menu_sub
+        - cursor
+        - sub
+        - item_cursor
+        - message
     - id: ai_help_scene
       path: src/scenes/ai_help
       status: active
       responsibility: Glitch Lord 戦の AI ヘルプ
-      local_state: []
+      local_state:
+        - status
     - id: professor_scene
       path: src/scenes/professor
       status: active
       responsibility: Professor 戦 intro / ending
       local_state:
-        - professor_intro_state
-        - professor_choice_state
+        - choice_active
+        - choice_cursor
+        - intro_idx
+        - intro_lines
+        - ending_idx
+        - ending_lines
     - id: ending_scene
       path: src/scenes/ending
       status: active
       responsibility: エンディング
-      local_state: []
+      local_state:
+        - lines
     - id: settings_scene
-      path: src/scenes/settings
+      path: null
       status: removed
       responsibility: 演出 ON/OFF UI
       local_state: []
@@ -334,31 +357,26 @@ facts:
         status: active
         summary: HP / MP / EXP / 装備 / 所持品 / 位置などの正本 model
     ui:
-      - id: dialog_window_ui
-        path: src/shared/ui/dialog_window.py
-        role: dialog_layout
-        status: active
-        summary: 会話ウィンドウ矩形
-      - id: menu_window_ui
-        path: src/shared/ui/menu_window.py
-        role: menu_layout
-        status: active
-        summary: メニュー矩形
       - id: message_window_ui
         path: src/shared/ui/message_window.py
-        role: message_layout
+        role: message_window
         status: active
-        summary: 短メッセージ矩形
-      - id: hud_ui
-        path: src/shared/ui/hud.py
-        role: hud_layout
+        summary: 短メッセージウィンドウ描画とページング表示
+      - id: text_renderer_ui
+        path: src/shared/ui/text_renderer.py
+        role: text_renderer
         status: active
-        summary: HUD 基準座標
+        summary: JP フォントを使う共通テキスト描画
       - id: status_bar_ui
         path: src/shared/ui/status_bar.py
         role: status_bar
         status: active
-        summary: HP / MP / level 表示
+        summary: HP / MP / level / zone の status bar 描画
+      - id: vfx_overlay_ui
+        path: src/shared/ui/vfx_overlay.py
+        role: vfx_overlay
+        status: active
+        summary: 全画面フラッシュ overlay 描画
     constants:
       - id: tile_data_constants
         path: src/shared/constants/tile_data.py
