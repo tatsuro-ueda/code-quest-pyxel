@@ -424,15 +424,24 @@ validation_rules: []
 ## 5) Tasklist
 
 - [x] T1: task note を起票し、Journey / Gherkin / Design を整理する
-- [ ] T2: `docs/architecture_rules.yml` の初版 schema を実ファイルとして作成する
-- [ ] T3: `architecture.md` の stable な内容を `facts` に移し始める
-- [ ] T4: 初版 `validation_rules` を warning only で定義する
+- [x] T2: `docs/architecture_rules.yml` の初版 schema を実ファイルとして作成する
+- [x] T3: `architecture.md` の stable な内容を `facts` に移し始める
+- [x] T4: 初版 `validation_rules` を warning only で定義する
 - [ ] T5: `architecture.md` を補助説明へ縮小する範囲を別 commit で判断する
 - [ ] T6: 将来の Python checker 向けに deterministic / llm_assisted / manual の使い分けを README 化する
 
 ---
 
 ## 6) Discussion
+
+### Result
+
+- `docs/architecture_rules.yml` は sample から初版の実 schema へ置き換えられた
+- top-level は `meta` / `facts` / `validation_rules` を持つ構成になった
+- `facts` と `validation_rules` は review loop を通して、実コードの配置と現行 build 挙動に揃うよう精査された
+- rule set は warning only のままで、`deterministic` / `llm_assisted` / `manual` をカバーしている
+
+`architecture.md` の縮小と README / checker usage の文書化は、この task とは分けた follow-up work として残す。
 
 ### 採用判断
 
