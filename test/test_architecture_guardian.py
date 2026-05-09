@@ -30,6 +30,62 @@ def tree_node(path: str, kind: str, **extra):
 
 
 class ArchitectureGuardianTest(unittest.TestCase):
+    def test_write_yaml_inserts_blank_lines_between_path_entries(self):
+        guardian = load_guardian_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            rules_path = Path(tmp) / "architecture_rules.yml"
+            guardian.write_yaml(
+                rules_path,
+                {
+                    "meta": {"document_id": "test"},
+                    "facts": {
+                        "tree": {
+                            "path": ".",
+                            "kind": "root",
+                            "children": [
+                                tree_node("alpha.txt", "file", summary="first file"),
+                                tree_node("beta.txt", "file", summary="second file"),
+                                tree_node(
+                                    "src",
+                                    "directory",
+                                    children=[
+                                        tree_node("src/a.py", "file", summary="nested first"),
+                                        tree_node("src/b.py", "file", summary="nested second"),
+                                    ],
+                                ),
+                            ],
+                        }
+                    },
+                    "validation_rules": [
+                        {
+                            "id": "sample_rule",
+                            "summary": "sample",
+                            "severity": "warning",
+                            "enforcement": {"mode": "manual"},
+                            "scope": {"paths": ["alpha.txt"]},
+                            "evidence": {"checks": ["manual_check"]},
+                            "message": "sample message",
+                            "suggested_actions": ["sample action"],
+                            "coverage": {
+                                "deterministic_review": "keep_manual",
+                                "next_checker_unit": None,
+                                "guardian_autofix": "not_recommended",
+                                "rationale": "sample",
+                            },
+                        }
+                    ],
+                },
+            )
+
+            text = rules_path.read_text(encoding="utf-8")
+
+            self.assertRegex(text, r"children:\n\n\s+- path: alpha\.txt")
+            self.assertRegex(text, r"summary: first file\n\n\s+- path: beta\.txt")
+            self.assertRegex(text, r"children:\n\n\s+- path: src/a\.py")
+            self.assertRegex(text, r"summary: nested first\n\n\s+- path: src/b\.py")
+            self.assertRegex(text, r"validation_rules:\n\n\s+- id: sample_rule")
+
     def test_guardian_autofixes_generated_rule_until_clean(self):
         guardian = load_guardian_module()
 
@@ -101,6 +157,12 @@ class ArchitectureGuardianTest(unittest.TestCase):
                                 "evidence": {"checks": ["generated_entries_mark_non_hand_editable_and_sources"]},
                                 "message": "generated drift",
                                 "suggested_actions": ["run gen_data"],
+                                "coverage": {
+                                    "deterministic_review": "implemented",
+                                    "next_checker_unit": None,
+                                    "guardian_autofix": "implemented",
+                                    "rationale": "fixture",
+                                },
                             }
                         ],
                     },
@@ -186,6 +248,12 @@ class ArchitectureGuardianTest(unittest.TestCase):
                                 "evidence": {"checks": ["wrapper_chain_present"]},
                                 "message": "runtime drift",
                                 "suggested_actions": ["restore runtime entry chain"],
+                                "coverage": {
+                                    "deterministic_review": "implemented",
+                                    "next_checker_unit": None,
+                                    "guardian_autofix": "implemented",
+                                    "rationale": "fixture",
+                                },
                             }
                         ],
                     },

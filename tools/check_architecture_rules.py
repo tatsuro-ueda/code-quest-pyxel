@@ -14,6 +14,17 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parent.parent
+VALID_DETERMINISTIC_REVIEWS = {
+    "implemented",
+    "candidate",
+    "keep_llm_assisted",
+    "keep_manual",
+}
+VALID_GUARDIAN_AUTOFIX = {
+    "implemented",
+    "candidate",
+    "not_recommended",
+}
 
 
 @dataclass
@@ -61,6 +72,7 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
         "evidence",
         "message",
         "suggested_actions",
+        "coverage",
     }
     for rule in data["validation_rules"]:
         missing = required_rule_keys - set(rule)
@@ -75,6 +87,27 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
         checks = rule.get("evidence", {}).get("checks")
         if not isinstance(checks, list) or not checks:
             raise TypeError(f"rule {rule['id']} evidence.checks must be a non-empty list")
+        coverage = rule.get("coverage")
+        if not isinstance(coverage, dict):
+            raise TypeError(f"rule {rule['id']} coverage must be a dict")
+        for key in ("deterministic_review", "next_checker_unit", "guardian_autofix", "rationale"):
+            if key not in coverage:
+                raise KeyError(f"rule {rule['id']} coverage missing key: {key}")
+        if coverage["deterministic_review"] not in VALID_DETERMINISTIC_REVIEWS:
+            raise ValueError(
+                f"rule {rule['id']} coverage.deterministic_review must be one of "
+                f"{sorted(VALID_DETERMINISTIC_REVIEWS)}"
+            )
+        next_checker_unit = coverage["next_checker_unit"]
+        if next_checker_unit is not None and not isinstance(next_checker_unit, str):
+            raise TypeError(f"rule {rule['id']} coverage.next_checker_unit must be a string or null")
+        if coverage["guardian_autofix"] not in VALID_GUARDIAN_AUTOFIX:
+            raise ValueError(
+                f"rule {rule['id']} coverage.guardian_autofix must be one of "
+                f"{sorted(VALID_GUARDIAN_AUTOFIX)}"
+            )
+        if not isinstance(coverage["rationale"], str) or not coverage["rationale"].strip():
+            raise TypeError(f"rule {rule['id']} coverage.rationale must be a non-empty string")
         if rule["enforcement"]["mode"] == "deterministic":
             for check_name in checks:
                 if check_name not in CHECK_REGISTRY:
@@ -347,6 +380,7 @@ def result_record(rule: dict[str, Any], outcome: CheckOutcome) -> dict[str, Any]
         "status": outcome.status,
         "severity": rule.get("severity"),
         "mode": rule["enforcement"]["mode"],
+        "coverage": dict(rule.get("coverage", {})),
         "checked_paths": outcome.checked_paths,
         "failed_checks": outcome.failed_checks,
         "message": outcome.message,
@@ -355,6 +389,53 @@ def result_record(rule: dict[str, Any], outcome: CheckOutcome) -> dict[str, Any]
         "expected": outcome.expected,
         "observed": outcome.observed,
         "rule_source": str(rule.get("__rules_path", "")),
+    }
+
+
+def build_coverage_review(results: list[dict[str, Any]]) -> dict[str, Any]:
+    mode_counts = {
+        "deterministic": 0,
+        "llm_assisted": 0,
+        "manual": 0,
+    }
+    deterministic_candidate_rule_ids: list[str] = []
+    next_checker_units: list[dict[str, str]] = []
+    guardian_candidate_rule_ids: list[str] = []
+    guardian_implemented_rule_ids: list[str] = []
+    keep_non_deterministic_rule_ids: list[str] = []
+
+    for item in results:
+        mode = item["mode"]
+        if mode in mode_counts:
+            mode_counts[mode] += 1
+        coverage = item.get("coverage", {})
+        deterministic_review = coverage.get("deterministic_review")
+        if deterministic_review == "candidate":
+            deterministic_candidate_rule_ids.append(item["rule_id"])
+            next_checker_unit = coverage.get("next_checker_unit")
+            if next_checker_unit:
+                next_checker_units.append(
+                    {
+                        "rule_id": item["rule_id"],
+                        "unit": next_checker_unit,
+                    }
+                )
+        elif deterministic_review in {"keep_llm_assisted", "keep_manual"}:
+            keep_non_deterministic_rule_ids.append(item["rule_id"])
+
+        guardian_autofix = coverage.get("guardian_autofix")
+        if guardian_autofix == "candidate":
+            guardian_candidate_rule_ids.append(item["rule_id"])
+        elif guardian_autofix == "implemented":
+            guardian_implemented_rule_ids.append(item["rule_id"])
+
+    return {
+        "mode_counts": mode_counts,
+        "deterministic_candidate_rule_ids": deterministic_candidate_rule_ids,
+        "next_checker_units": next_checker_units,
+        "guardian_candidate_rule_ids": guardian_candidate_rule_ids,
+        "guardian_implemented_rule_ids": guardian_implemented_rule_ids,
+        "keep_non_deterministic_rule_ids": keep_non_deterministic_rule_ids,
     }
 
 
@@ -370,6 +451,7 @@ def build_output(results: list[dict[str, Any]]) -> dict[str, Any]:
         "run_ok": summary["error_rules"] == 0,
         "has_warnings": summary["warning_rules"] > 0,
         "summary": summary,
+        "coverage_review": build_coverage_review(results),
         "results": results,
     }
 

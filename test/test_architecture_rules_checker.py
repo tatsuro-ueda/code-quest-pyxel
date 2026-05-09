@@ -55,6 +55,20 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
             self.assertIn("suggested_actions", rule)
             self.assertIsInstance(rule["suggested_actions"], list)
 
+    def test_validation_rules_include_coverage_metadata(self):
+        data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
+        rules = data["validation_rules"]
+
+        self.assertTrue(rules)
+        for rule in rules:
+            self.assertIn("coverage", rule)
+            coverage = rule["coverage"]
+            self.assertIsInstance(coverage, dict)
+            self.assertIn("deterministic_review", coverage)
+            self.assertIn("next_checker_unit", coverage)
+            self.assertIn("guardian_autofix", coverage)
+            self.assertIn("rationale", coverage)
+
     def test_run_checker_executes_deterministic_rules_and_skips_others(self):
         checker = load_checker_module()
 
@@ -72,6 +86,65 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
         self.assertEqual(by_rule["build_runbook_paths"]["status"], "ok")
         self.assertEqual(by_rule["code_maker_primary_editor"]["status"], "skipped")
         self.assertEqual(by_rule["pyxres_source_of_truth"]["status"], "skipped")
+        self.assertEqual(
+            by_rule["scene_mvp_boundary"]["coverage"]["deterministic_review"],
+            "candidate",
+        )
+        self.assertEqual(
+            by_rule["shared_service_vs_state_boundary"]["coverage"]["deterministic_review"],
+            "candidate",
+        )
+
+    def test_run_checker_reports_coverage_review(self):
+        checker = load_checker_module()
+
+        result = checker.run_checker(ROOT, ROOT / "docs" / "architecture_rules.yml")
+
+        self.assertEqual(
+            result["coverage_review"]["mode_counts"],
+            {
+                "deterministic": 4,
+                "llm_assisted": 3,
+                "manual": 1,
+            },
+        )
+        self.assertEqual(
+            result["coverage_review"]["deterministic_candidate_rule_ids"],
+            [
+                "scene_mvp_boundary",
+                "shared_service_vs_state_boundary",
+            ],
+        )
+        self.assertEqual(
+            result["coverage_review"]["next_checker_units"],
+            [
+                {
+                    "rule_id": "scene_mvp_boundary",
+                    "unit": "scene_static_boundary_checks",
+                },
+                {
+                    "rule_id": "shared_service_vs_state_boundary",
+                    "unit": "shared_directory_role_checks",
+                },
+            ],
+        )
+        self.assertEqual(result["coverage_review"]["guardian_candidate_rule_ids"], [])
+        self.assertEqual(
+            result["coverage_review"]["guardian_implemented_rule_ids"],
+            [
+                "runtime_entry_chain",
+                "dist_not_source",
+                "generated_files_edit_policy",
+                "build_runbook_paths",
+            ],
+        )
+        self.assertEqual(
+            result["coverage_review"]["keep_non_deterministic_rule_ids"],
+            [
+                "code_maker_primary_editor",
+                "pyxres_source_of_truth",
+            ],
+        )
 
     def test_run_checker_can_filter_single_rule(self):
         checker = load_checker_module()

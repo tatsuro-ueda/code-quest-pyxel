@@ -40,8 +40,48 @@ def load_yaml(path: Path) -> dict[str, Any]:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
+class _ReadableYamlDumper(yaml.SafeDumper):
+    def increase_indent(self, flow: bool = False, indentless: bool = False) -> Any:
+        return super().increase_indent(flow, False)
+
+
+def _format_yaml_for_humans(data: dict[str, Any]) -> str:
+    dumped = yaml.dump(
+        data,
+        Dumper=_ReadableYamlDumper,
+        allow_unicode=True,
+        sort_keys=False,
+        default_flow_style=False,
+        width=88,
+    )
+    major_fact_keys = {
+        "  tree:",
+        "  flows:",
+        "  entry_points:",
+        "  runbooks:",
+        "  migration_notes:",
+    }
+    formatted: list[str] = []
+    for raw_line in dumped.splitlines():
+        line = raw_line.rstrip()
+        stripped = line.lstrip()
+        indent = len(line) - len(stripped)
+        needs_separator = False
+        if line in {"facts:", "validation_rules:"} or line in major_fact_keys:
+            needs_separator = True
+        elif stripped.startswith("- path:"):
+            needs_separator = True
+        elif stripped.startswith("- id:") and indent <= 4:
+            needs_separator = True
+
+        if needs_separator and formatted and formatted[-1] != "":
+            formatted.append("")
+        formatted.append(line)
+    return "\n".join(formatted).lstrip("\n") + "\n"
+
+
 def write_yaml(path: Path, data: dict[str, Any]) -> None:
-    path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+    path.write_text(_format_yaml_for_humans(data), encoding="utf-8")
 
 
 def _set_rule_internal_fields(data: dict[str, Any], rules_path: Path) -> None:

@@ -3,48 +3,55 @@ meta:
   version: 1
   status: draft
   intended_replacement_for:
-  - docs/architecture.md
+    - docs/architecture.md
   replacement_status: staged_migration
   audiences:
-  - ai
-  - human
+    - ai
+    - human
   intent:
-  - architecture_source_of_truth
-  - human_reviewable
-  - checker_readable
+    - アーキテクチャの正本候補
+    - 人が読みやすい
+    - checker が読みやすい
+
 facts:
   principles:
-  - id: code_maker_primary_editor
-    summary: Pyxel Code Maker は子どもの正式な編集面である。
-    must:
-    - tilemap / sprite / sound / .pyxres の編集面では Code Maker を最初の正として扱う
-    must_not:
-    - 内部都合で Code Maker を不要化・脇役化しない
-  - id: docs_are_requirements
-    summary: docs と code が食い違ったら未実装 / バグ / 仕様ずれとして扱う。
-    must:
-    - code ではなく docs に書かれた要求との差分を明記する
-    must_not:
-    - code があるから正しいと考えない
-  - id: pyxres_source_of_truth
-    summary: .pyxres は子どもと親が Code Maker で編集する正本である。
-    must:
-    - AI は code / build / packaging / guardrail / test を整える
-    - pyxel resource 実体を確認するときは実物を最初の正として扱う
-    must_not:
-    - AI が .pyxres の中身をテキスト編集の主戦場にしない
-  - id: dist_is_distribution
-    summary: dist は配布物の置き場であり source ではない。
-    must:
-    - source の修正は src / assets / tools / docs 側で行う
-    must_not:
-    - dist 配下を手修正の正本にしない
-  - id: done_requires_real_artifacts
-    summary: done はコード・テスト・実物確認を含む。
-    must:
-    - zip / .pyxres / HTML / save data / 実行画面の実物確認を行う
-    must_not:
-    - runtime code や build script を直しただけで完了扱いにしない
+
+    - id: code_maker_primary_editor
+      summary: Pyxel Code Maker は子どもの正式な編集面である。
+      must:
+        - tilemap / sprite / sound / .pyxres の編集面では Code Maker を最初の正として扱わなければならない
+      must_not:
+        - 内部都合で Code Maker を不要化したり脇役化したりしてはならない
+
+    - id: docs_are_requirements
+      summary: docs と code が食い違ったら未実装 / バグ / 仕様ずれとして扱う。
+      must:
+        - code ではなく docs に書かれた要求との差分を明記しなければならない
+      must_not:
+        - code があるから正しいと考えてはならない
+
+    - id: pyxres_source_of_truth
+      summary: .pyxres は子どもと親が Code Maker で編集する正本である。
+      must:
+        - AI は code / build / packaging / guardrail / test を整えなければならない
+        - pyxel resource 実体を確認するときは実物を最初の正として扱わなければならない
+      must_not:
+        - AI が .pyxres の中身をテキスト編集の主戦場にしてはならない
+
+    - id: dist_is_distribution
+      summary: dist は配布物の置き場であり source ではない。
+      must:
+        - source の修正は src / assets / tools / docs 側で行わなければならない
+      must_not:
+        - dist 配下を手修正の正本にしてはならない
+
+    - id: done_requires_real_artifacts
+      summary: done はコード・テスト・実物確認を含む。
+      must:
+        - zip / .pyxres / HTML / save data / 実行画面の実物確認を行わなければならない
+      must_not:
+        - runtime code や build script を直しただけで完了扱いにしてはならない
+
   tree:
     path: .
     kind: root
@@ -52,1337 +59,1552 @@ facts:
     status: active
     summary: Block Quest Pyxel repository root
     children:
-    - path: index.html
-      kind: file
-      id: top_page
-      role: child_facing_top_page
-      status: active
-      source_of_truth: false
-      summary: 子ども向けトップページ。プレイ導線を担う
-    - path: main.py
-      kind: file
-      id: runtime_main_wrapper
-      role: wrapper
-      status: active
-      source_of_truth: false
-      summary: src/runtime/main_runtime.py を実行する 8 行 wrapper
-    - path: src
-      kind: directory
-      children:
-      - path: src/runtime
+
+      - path: index.html
+        kind: file
+        id: top_page
+        role: child_facing_top_page
+        status: active
+        source_of_truth: false
+        summary: 子ども向けトップページ。プレイ導線を担う
+
+      - path: main.py
+        kind: file
+        id: runtime_main_wrapper
+        role: wrapper
+        status: active
+        source_of_truth: false
+        summary: src/runtime/main_runtime.py を実行する 8 行 wrapper
+
+      - path: src
         kind: directory
         children:
-        - path: src/runtime/main_runtime.py
-          kind: file
-          id: runtime_shim
+
+          - path: src/runtime
+            kind: directory
+            children:
+
+              - path: src/runtime/main_runtime.py
+                kind: file
+                id: runtime_shim
+                role: shim
+                status: active
+                summary: test / Code Maker bundler 互換のための re-export shim
+                source_of_truth: true
+
+              - path: src/runtime/app.py
+                kind: file
+                id: runtime_game
+                symbol: Game
+                role: application_root
+                status: active
+                summary: pyxel 初期化、DI、scene/service 組み立て、update/draw dispatcher
+                source_of_truth: true
+                responsibilities:
+                  - pyxel.init と font の初期化
+                  - SfxSystem / ImageBanks / GameState / PlayerModel / SceneManager / DebugService
+                    / scene 群の組み立て
+                  - 現在 scene の update / draw dispatch
+                property_forwards:
+                  - property: current_town
+                    target: GameState.current_town
+                  - property: debug_mode
+                    target: DebugService.mode
+                  - property: debug_seq
+                    target: DebugService.seq
+                  - property: state
+                    target: SceneManager.current
+                  - property: prev_state
+                    target: SceneManager.previous
+                must_not_store:
+                  - current_bgm
+                  - duplicated_scene_state
+
+          - path: src/app.py
+            kind: file
+            id: blockquestapp_legacy_shell
+            symbol: BlockQuestApp
+            status: legacy
+            summary: Phase 1 由来の薄い実行シェル。test / Code Maker bundler 互換のため残置
+            role: legacy_runtime_shell
+            source_of_truth: true
+
+          - path: src/core
+            kind: directory
+            children:
+
+              - path: src/core/scene_manager.py
+                kind: file
+                id: core_scene_manager_legacy
+                symbol: SceneManager
+                status: legacy
+                summary: 旧 SceneManager。現在の Game は shared/services/scene_manager.py を使う
+                role: legacy_scene_protocol
+                source_of_truth: true
+
+          - path: src/game_data.py
+            kind: file
+            role: generated_data_gateway
+            status: active
+            source_of_truth: true
+            summary: YAML 生成物を runtime へ供給する読み出し口
+
+          - path: src/scenes
+            kind: directory
+            children:
+
+              - path: src/scenes/splash
+                kind: directory
+                children:
+
+                  - path: src/scenes/splash/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/splash/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/splash/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/splash/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+
+                  - path: src/scenes/splash/scene.py
+                    kind: file
+                    role: scene_coordinator
+                    status: active
+                    source_of_truth: true
+                    summary: MVP を束ねる薄い層
+                id: splash_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: 起動スプラッシュ
+                local_state:
+                  - frame
+                summary: 起動スプラッシュ
+
+              - path: src/scenes/title
+                kind: directory
+                children:
+
+                  - path: src/scenes/title/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/title/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/title/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/title/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+
+                  - path: src/scenes/title/scene.py
+                    kind: file
+                    role: scene_coordinator
+                    status: active
+                    source_of_truth: true
+                    summary: MVP を束ねる薄い層
+                id: title_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: タイトル画面
+                local_state:
+                  - cursor
+                summary: タイトル画面
+
+              - path: src/scenes/explore
+                kind: directory
+                children:
+
+                  - path: src/scenes/explore/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/explore/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/explore/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/explore/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+
+                  - path: src/scenes/explore/scene.py
+                    kind: file
+                    role: scene_coordinator
+                    status: active
+                    source_of_truth: true
+                    summary: MVP を束ねる薄い層
+                id: explore_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: フィールド / ダンジョン歩行
+                local_state:
+                  - mode
+                  - walk_frame
+                  - walk_timer
+                  - move_cooldown
+                  - a_cooldown
+                  - image_banks
+                  - cam_x
+                  - cam_y
+                summary: フィールド / ダンジョン歩行
+
+              - path: src/scenes/town
+                kind: directory
+                children:
+
+                  - path: src/scenes/town/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/town/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/town/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/town/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+                id: town_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: 町メニュー
+                local_state:
+                  - menu_cursor
+                  - menu_pos
+                summary: 町メニュー
+
+              - path: src/scenes/shop
+                kind: directory
+                children:
+
+                  - path: src/scenes/shop/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/shop/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/shop/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/shop/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+
+                  - path: src/scenes/shop/scene.py
+                    kind: file
+                    role: scene_coordinator
+                    status: active
+                    source_of_truth: true
+                    summary: MVP を束ねる薄い層
+                id: shop_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: 武器・防具・道具の売買
+                local_state:
+                  - kind
+                  - inventory
+                  - cursor
+                  - message
+                summary: 武器・防具・道具の売買
+
+              - path: src/scenes/battle
+                kind: directory
+                children:
+
+                  - path: src/scenes/battle/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/battle/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/battle/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/battle/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+
+                  - path: src/scenes/battle/scene.py
+                    kind: file
+                    role: scene_coordinator
+                    status: active
+                    source_of_truth: true
+                    summary: MVP を束ねる薄い層
+                id: battle_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: 戦闘全体
+                local_state:
+                  - enemy
+                  - enemy_hp
+                  - menu
+                  - phase
+                  - text
+                  - text_timer
+                  - item_select
+                  - spell_select
+                  - is_glitch_lord
+                  - is_professor
+                  - boss_phase
+                  - noise_guardian
+                summary: 戦闘全体
+
+              - path: src/scenes/menu
+                kind: directory
+                children:
+
+                  - path: src/scenes/menu/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/menu/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/menu/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/menu/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+
+                  - path: src/scenes/menu/scene.py
+                    kind: file
+                    role: scene_coordinator
+                    status: active
+                    source_of_truth: true
+                    summary: MVP を束ねる薄い層
+                id: menu_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: メニュー画面
+                local_state:
+                  - cursor
+                  - sub
+                  - item_cursor
+                  - message
+                summary: メニュー画面
+
+              - path: src/scenes/ai_help
+                kind: directory
+                children:
+
+                  - path: src/scenes/ai_help/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/ai_help/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/ai_help/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/ai_help/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+
+                  - path: src/scenes/ai_help/scene.py
+                    kind: file
+                    role: scene_coordinator
+                    status: active
+                    source_of_truth: true
+                    summary: MVP を束ねる薄い層
+                id: ai_help_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: Glitch Lord 戦の AI ヘルプ
+                local_state:
+                  - status
+                summary: Glitch Lord 戦の AI ヘルプ
+
+              - path: src/scenes/professor
+                kind: directory
+                children:
+
+                  - path: src/scenes/professor/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/professor/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/professor/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/professor/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+
+                  - path: src/scenes/professor/scene.py
+                    kind: file
+                    role: scene_coordinator
+                    status: active
+                    source_of_truth: true
+                    summary: MVP を束ねる薄い層
+                id: professor_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: Professor 戦 intro / ending
+                local_state:
+                  - choice_active
+                  - choice_cursor
+                  - intro_idx
+                  - intro_lines
+                  - ending_idx
+                  - ending_lines
+                summary: Professor 戦 intro / ending
+
+              - path: src/scenes/ending
+                kind: directory
+                children:
+
+                  - path: src/scenes/ending/__init__.py
+                    kind: file
+                    role: scene_package_init
+                    status: active
+                    source_of_truth: true
+                    summary: scene package export
+
+                  - path: src/scenes/ending/model.py
+                    kind: file
+                    role: scene_model
+                    status: active
+                    source_of_truth: true
+                    summary: scene-local state holder
+
+                  - path: src/scenes/ending/view.py
+                    kind: file
+                    role: scene_view
+                    status: active
+                    source_of_truth: true
+                    summary: Pyxel 描画と view-model 整形
+
+                  - path: src/scenes/ending/presenter.py
+                    kind: file
+                    role: scene_presenter
+                    status: active
+                    source_of_truth: true
+                    summary: 入力解釈と scene 遷移の指揮
+
+                  - path: src/scenes/ending/scene.py
+                    kind: file
+                    role: scene_coordinator
+                    status: active
+                    source_of_truth: true
+                    summary: MVP を束ねる薄い層
+                id: ending_scene
+                role: scene_package
+                status: active
+                source_of_truth: true
+                responsibility: エンディング
+                local_state:
+                  - lines
+                summary: エンディング
+
+          - path: src/shared
+            kind: directory
+            children:
+
+              - path: src/shared/services
+                kind: directory
+                children:
+
+                  - path: src/shared/services/game_state.py
+                    kind: file
+                    source_of_truth: true
+                    id: game_state_service
+                    role: shared_state_aggregate
+                    status: active
+                    summary: scene 間共有 state を集約する
+
+                  - path: src/shared/services/scene_manager.py
+                    kind: file
+                    source_of_truth: true
+                    id: scene_manager_service
+                    role: scene_state_holder
+                    status: active
+                    summary: current / previous の 2 値 state holder
+
+                  - path: src/shared/services/debug_service.py
+                    kind: file
+                    source_of_truth: true
+                    id: debug_service
+                    role: debug_state
+                    status: active
+                    summary: debug mode / seq / UUDD を扱う
+
+                  - path: src/shared/services/audio_system.py
+                    kind: file
+                    source_of_truth: true
+                    id: audio_system_service
+                    role: audio_bridge
+                    status: active
+                    summary: SFX 再生と冪等 BGM 再生命令
+
+                  - path: src/shared/services/image_banks.py
+                    kind: file
+                    source_of_truth: true
+                    id: image_banks_service
+                    role: pyxres_bridge
+                    status: active
+                    summary: pyxres のロード / 保存 / fallback 書き戻し
+
+                  - path: src/shared/services/dialog_runner.py
+                    kind: file
+                    source_of_truth: true
+                    id: dialog_runner_service
+                    role: structured_dialog
+                    status: active
+                    summary: YAML ドリブン会話
+
+                  - path: src/shared/services/message_display.py
+                    kind: file
+                    source_of_truth: true
+                    id: message_display_service
+                    role: overlay_messages
+                    status: active
+                    summary: 短メッセージ overlay
+
+                  - path: src/shared/services/input_bindings.py
+                    kind: file
+                    source_of_truth: true
+                    id: input_bindings_service
+                    role: input_snapshot
+                    status: active
+                    summary: 入力判定とフレーム差分
+
+                  - path: src/shared/services/landmark_events.py
+                    kind: file
+                    source_of_truth: true
+                    id: landmark_events_service
+                    role: coordinate_events
+                    status: active
+                    summary: 座標接触イベント
+
+                  - path: src/shared/services/player_state.py
+                    kind: file
+                    source_of_truth: true
+                    id: player_state_service
+                    role: legacy_player_snapshot
+                    status: legacy
+                    summary: snapshot helper。player の正本ではない
+
+                  - path: src/shared/services/save_store.py
+                    kind: file
+                    source_of_truth: true
+                    id: save_store_service
+                    role: save_backend_bridge
+                    status: active
+                    summary: save 先差分の吸収
+
+                  - path: src/shared/services/world_generation.py
+                    kind: file
+                    source_of_truth: true
+                    id: world_generation_service
+                    role: fallback_world_generation
+                    status: active
+                    summary: pyxres 不在時の fallback 生成
+
+                  - path: src/shared/services/vfx.py
+                    kind: file
+                    source_of_truth: true
+                    id: vfx_service
+                    role: visual_effects
+                    status: active
+                    summary: ダメージ等の視覚エフェクト
+
+                  - path: src/shared/services/item_use.py
+                    kind: file
+                    source_of_truth: true
+                    id: item_use_service
+                    role: item_logic
+                    status: active
+                    summary: アイテム使用ロジック
+
+                  - path: src/shared/services/text_format.py
+                    kind: file
+                    source_of_truth: true
+                    id: text_format_service
+                    role: text_formatting
+                    status: active
+                    summary: 表示名整形・翻訳
+
+                  - path: src/shared/services/play_session_logging.py
+                    kind: file
+                    source_of_truth: true
+                    id: play_session_logging_service
+                    role: play_logging
+                    status: active
+                    summary: Web プレイ記録の sqlite 永続化
+
+                  - path: src/shared/services/codemaker_resource_store.py
+                    kind: file
+                    source_of_truth: true
+                    id: codemaker_resource_store_service
+                    role: codemaker_zip_store
+                    status: active
+                    summary: Code Maker zip の採否・保管
+                role: shared_services
+                status: active
+                source_of_truth: true
+                summary: shared/services の責務グループ
+
+              - path: src/shared/state
+                kind: directory
+                children:
+
+                  - path: src/shared/state/player_model.py
+                    kind: file
+                    source_of_truth: true
+                    id: player_model_state
+                    role: player_source_of_truth
+                    status: active
+                    summary: HP / MP / EXP / 装備 / 所持品 / 位置などの正本 model
+                role: shared_state
+                status: active
+                source_of_truth: true
+                summary: shared/state の責務グループ
+
+              - path: src/shared/ui
+                kind: directory
+                children:
+
+                  - path: src/shared/ui/dialog_window.py
+                    kind: file
+                    source_of_truth: true
+                    id: dialog_window_ui
+                    role: dialog_layout
+                    status: active
+                    summary: 会話ウィンドウ矩形 helper
+
+                  - path: src/shared/ui/menu_window.py
+                    kind: file
+                    source_of_truth: true
+                    id: menu_window_ui
+                    role: menu_layout
+                    status: active
+                    summary: メニュー矩形 helper
+
+                  - path: src/shared/ui/message_window.py
+                    kind: file
+                    source_of_truth: true
+                    id: message_window_ui
+                    role: message_window
+                    status: active
+                    summary: 短メッセージウィンドウ描画とページング表示
+
+                  - path: src/shared/ui/hud.py
+                    kind: file
+                    source_of_truth: true
+                    id: hud_ui
+                    role: hud_layout
+                    status: active
+                    summary: HUD 基準座標 helper
+
+                  - path: src/shared/ui/text_renderer.py
+                    kind: file
+                    source_of_truth: true
+                    id: text_renderer_ui
+                    role: text_renderer
+                    status: active
+                    summary: JP フォントを使う共通テキスト描画
+
+                  - path: src/shared/ui/status_bar.py
+                    kind: file
+                    source_of_truth: true
+                    id: status_bar_ui
+                    role: status_bar
+                    status: active
+                    summary: HP / MP / level / zone の status bar 描画
+
+                  - path: src/shared/ui/vfx_overlay.py
+                    kind: file
+                    source_of_truth: true
+                    id: vfx_overlay_ui
+                    role: vfx_overlay
+                    status: active
+                    summary: 全画面フラッシュ overlay 描画
+                role: shared_ui
+                status: active
+                source_of_truth: true
+                summary: shared/ui の責務グループ
+
+              - path: src/shared/constants
+                kind: directory
+                children:
+
+                  - path: src/shared/constants/tile_data.py
+                    kind: file
+                    source_of_truth: true
+                    id: tile_data_constants
+                    role: tile_constants
+                    status: active
+                    summary: タイル定義と zone/path/shore variation
+
+                  - path: src/shared/constants/sprite_data.py
+                    kind: file
+                    source_of_truth: true
+                    id: sprite_data_constants
+                    role: sprite_constants
+                    status: active
+                    summary: HERO / ENEMY スプライトのピクセル配列
+
+                  - path: src/shared/constants/game_config.py
+                    kind: file
+                    source_of_truth: true
+                    id: game_config_constants
+                    role: game_config
+                    status: active
+                    summary: 画面サイズなどのゲーム設定
+                role: shared_constants
+                status: active
+                source_of_truth: true
+                summary: shared/constants の責務グループ
+
+              - path: src/shared/assets
+                kind: directory
+                children:
+
+                  - path: src/shared/assets/jp_font_data.py
+                    kind: file
+                    source_of_truth: true
+                    id: jp_font_asset
+                    role: embedded_font_data
+                    status: active
+                    summary: 日本語ビットマップフォントデータ
+                role: shared_assets
+                status: active
+                source_of_truth: true
+                summary: shared/assets の責務グループ
+
+          - path: src/generated
+            kind: directory
+            children:
+
+              - path: src/generated/dialogue.py
+                kind: file
+                role: generated_module
+                source_of_truth: false
+                id: generated_dialogue
+                status: generated
+                hand_editable: false
+                generated_from:
+                  - assets/dialogue.yaml
+
+              - path: src/generated/enemies.py
+                kind: file
+                role: generated_module
+                source_of_truth: false
+                id: generated_enemies
+                status: generated
+                hand_editable: false
+                generated_from:
+                  - assets/enemies.yaml
+
+              - path: src/generated/items.py
+                kind: file
+                role: generated_module
+                source_of_truth: false
+                id: generated_items
+                status: generated
+                hand_editable: false
+                generated_from:
+                  - assets/items.yaml
+
+              - path: src/generated/weapons.py
+                kind: file
+                role: generated_module
+                source_of_truth: false
+                id: generated_weapons
+                status: generated
+                hand_editable: false
+                generated_from:
+                  - assets/weapons.yaml
+
+              - path: src/generated/armors.py
+                kind: file
+                role: generated_module
+                source_of_truth: false
+                id: generated_armors
+                status: generated
+                hand_editable: false
+                generated_from:
+                  - assets/armors.yaml
+
+              - path: src/generated/spells.py
+                kind: file
+                role: generated_module
+                source_of_truth: false
+                id: generated_spells
+                status: generated
+                hand_editable: false
+                generated_from:
+                  - assets/spells.yaml
+
+              - path: src/generated/shops.py
+                kind: file
+                role: generated_module
+                source_of_truth: false
+                id: generated_shops
+                status: generated
+                hand_editable: false
+                generated_from:
+                  - assets/shops.yaml
+            role: generated_modules
+            status: generated
+            source_of_truth: false
+            summary: YAML から生成される Python module
+        id: src_root
+        role: source_root
+        status: active
+        source_of_truth: true
+        summary: アプリケーションコードの正本
+
+      - path: assets
+        kind: directory
+        children:
+
+          - path: assets/blockquest.pyxres
+            kind: file
+            source_of_truth: true
+            role: codemaker_source_of_truth
+            status: active
+            summary: 子どもが Code Maker で編集する pyxres 正本
+
+          - path: assets/dialogue.yaml
+            kind: file
+            source_of_truth: true
+            role: yaml_source
+            status: active
+            summary: 会話定義 YAML
+
+          - path: assets/enemies.yaml
+            kind: file
+            source_of_truth: true
+            role: yaml_source
+            status: active
+            summary: 敵定義 YAML
+
+          - path: assets/items.yaml
+            kind: file
+            source_of_truth: true
+            role: yaml_source
+            status: active
+            summary: アイテム定義 YAML
+
+          - path: assets/weapons.yaml
+            kind: file
+            source_of_truth: true
+            role: yaml_source
+            status: active
+            summary: 武器定義 YAML
+
+          - path: assets/armors.yaml
+            kind: file
+            source_of_truth: true
+            role: yaml_source
+            status: active
+            summary: 防具定義 YAML
+
+          - path: assets/spells.yaml
+            kind: file
+            source_of_truth: true
+            role: yaml_source
+            status: active
+            summary: 呪文定義 YAML
+
+          - path: assets/shops.yaml
+            kind: file
+            source_of_truth: true
+            role: yaml_source
+            status: active
+            summary: 店定義 YAML
+
+          - path: assets/umplus_j10r.bdf
+            kind: file
+            source_of_truth: true
+            role: font_asset
+            status: active
+            summary: 日本語ビットマップフォント
+
+          - path: assets/screenshots
+            kind: directory
+            children: []
+            role: reference_screenshots
+            status: active
+            source_of_truth: true
+            summary: 確認用スクリーンショット
+        id: assets_root
+        role: human_edited_assets
+        status: active
+        source_of_truth: true
+        summary: YAML / .pyxres / font / screenshot など人が直す正本
+
+      - path: tools
+        kind: directory
+        children:
+
+          - path: tools/gen_data.py
+            kind: file
+            source_of_truth: false
+            role: data_codegen
+            status: active
+            summary: assets/*.yaml から generated module を生成する
+
+          - path: tools/build_codemaker.py
+            kind: file
+            source_of_truth: false
+            role: codemaker_zip_builder
+            status: active
+            summary: Code Maker 用 zip を生成する
+
+          - path: tools/build_web_release.py
+            kind: file
+            source_of_truth: false
+            role: release_builder
+            status: active
+            summary: dist 配下の release artifact を再生成する
+
+          - path: tools/build_release_artifacts.py
+            kind: file
+            source_of_truth: false
+            role: release_artifact_builder
+            status: active
+            summary: Web release artifact を組み立てる
+
+          - path: tools/check_architecture_rules.py
+            kind: file
+            source_of_truth: false
+            role: architecture_checker
+            status: active
+            summary: architecture_rules.yml の deterministic rule を検査する
+
+          - path: tools/architecture_guardian.py
+            kind: file
+            source_of_truth: false
+            role: architecture_guardian
+            status: active
+            summary: checker -> fixer -> recheck を回す guardian
+
+          - path: tools/install_hooks.sh
+            kind: file
+            source_of_truth: false
+            role: hook_installer
+            status: active
+            summary: repo 用 git hook をインストールする
+
+          - path: tools/verify_module_docstrings.py
+            kind: file
+            source_of_truth: false
+            role: docstring_guard
+            status: active
+            summary: module docstring drift を検査する
+
+          - path: tools/verify_cj_cjob.py
+            kind: file
+            source_of_truth: false
+            role: cj_cjob_guard
+            status: active
+            summary: CJ link と CJob category を検査する
+
+          - path: tools/scene_to_cj.py
+            kind: file
+            source_of_truth: false
+            role: scene_cj_guard
+            status: active
+            summary: scene_to_cj 対応表を検査する
+        id: tools_root
+        role: build_and_verification
+        status: active
+        source_of_truth: false
+        summary: build / 配布 / データ生成 / 検証スクリプト
+
+      - path: test
+        kind: directory
+        children:
+
+          - path: test/test_architecture_rules_checker.py
+            kind: file
+            source_of_truth: false
+            role: architecture_checker_tests
+            status: active
+            summary: checker の回帰 test
+
+          - path: test/test_architecture_guardian.py
+            kind: file
+            source_of_truth: false
+            role: architecture_guardian_tests
+            status: active
+            summary: guardian の回帰 test
+        id: test_root
+        role: automated_tests
+        status: active
+        source_of_truth: false
+        summary: pytest テスト群
+
+      - path: templates
+        kind: directory
+        children: []
+        id: templates_root
+        role: build_templates
+        status: active
+        source_of_truth: false
+        summary: build 前の HTML template
+
+      - path: dist
+        kind: directory
+        children:
+
+          - path: dist/code-maker.zip
+            kind: file
+            role: distribution_artifact
+            source_of_truth: false
+            id: codemaker_zip
+            status: distribution
+            summary: block-quest/main.py + my_resource.pyxres を梱包した教材版 zip
+
+          - path: dist/pyxel.html
+            kind: file
+            role: distribution_artifact
+            source_of_truth: false
+            id: pyxel_html
+            status: distribution
+            summary: Web 配布用 HTML
+
+          - path: dist/pyxel.pyxapp
+            kind: file
+            role: distribution_artifact
+            source_of_truth: false
+            id: pyxel_pyxapp
+            status: distribution
+            summary: Pyxel app 配布物
+
+          - path: dist/play.html
+            kind: file
+            role: distribution_artifact
+            source_of_truth: false
+            id: play_html
+            status: distribution
+            summary: プレイページ
+
+          - path: dist/index.html
+            kind: file
+            role: distribution_artifact
+            source_of_truth: false
+            id: top_index_html
+            status: distribution
+            summary: play.html と同内容の wrapper alias
+        id: dist_root
+        role: distribution_root
+        status: distribution
+        source_of_truth: false
+        summary: 承認済み配布物の出力先
+
+      - path: steering
+        kind: directory
+        children:
+
+          - path: steering/done
+            kind: directory
+            children: []
+            role: archived_task_notes
+            status: active
+            source_of_truth: false
+            summary: 完了済み task note の保管先
+        id: steering_root
+        role: task_notes
+        status: active
+        source_of_truth: false
+        summary: task note と作業判断の記録
+
+      - path: docs
+        kind: directory
+        children:
+
+          - path: docs/superpowers
+            kind: directory
+            children: []
+            role: ai_specs_and_plans
+            status: active
+            source_of_truth: false
+            summary: AI 向け spec / plan
+
+          - path: docs/architecture.md
+            kind: file
+            source_of_truth: true
+            role: human_architecture_reference
+            status: active
+            summary: 人向けの詳細アーキテクチャ定義書
+
+          - path: docs/architecture_rules.yml
+            kind: file
+            source_of_truth: true
+            role: checker_readable_architecture_rules
+            status: draft
+            summary: AI / checker / human 向けの architecture 正本候補
+
+          - path: docs/framework-rule.md
+            kind: file
+            source_of_truth: true
+            role: framework_rules
+            status: active
+            summary: M1〜M5 の規約本体
+
+          - path: docs/customer-jobs.md
+            kind: file
+            source_of_truth: true
+            role: customer_jobs
+            status: active
+            summary: Customer Jobs 一覧
+
+          - path: docs/customer-journeys.md
+            kind: file
+            source_of_truth: true
+            role: customer_journeys
+            status: active
+            summary: Customer Journeys 一覧
+        id: docs_root
+        role: architecture_and_requirements
+        status: active
+        source_of_truth: true
+        summary: AI / 人間向けの要求・規約・構成定義
+
+  flows:
+
+    - id: generated_game_data
+      summary: 人が編集する YAML は tools/gen_data.py を通って generated module へ変換される
+      steps:
+        - assets/*.yaml
+        - tools/gen_data.py
+        - src/generated/*.py
+        - src/game_data.py
+        - runtime
+
+    - id: pyxres_roundtrip
+      summary: 子どもが編集する pyxres は Code Maker と配布 zip を通って assets に戻る
+      steps:
+        - assets/blockquest.pyxres
+        - dist/code-maker.zip
+        - Pyxel Code Maker
+        - assets/blockquest.pyxres
+
+    - id: pyxres_runtime_loading
+      summary: runtime は assets の pyxres を読み込み、ImageBanks はロード / 保存 / fallback を担う
+      steps:
+        - assets/blockquest.pyxres
+        - src/shared/services/image_banks.py
+        - runtime
+
+  entry_points:
+
+    - id: runtime_entry_chain
+      summary: runtime の入口は wrapper -> shim -> Game の流れを保つ
+      paths:
+        - main.py
+        - src/runtime/main_runtime.py
+        - src/runtime/app.py
+      nodes:
+        - id: runtime_main_wrapper
+          path: main.py
+          role: wrapper
+          status: active
+          summary: src/runtime/main_runtime.py を実行する 8 行 wrapper
+        - id: runtime_shim
+          path: src/runtime/main_runtime.py
           role: shim
           status: active
           summary: test / Code Maker bundler 互換のための re-export shim
-          source_of_truth: true
-        - path: src/runtime/app.py
-          kind: file
-          id: runtime_game
+        - id: runtime_game
+          path: src/runtime/app.py
           symbol: Game
           role: application_root
           status: active
           summary: pyxel 初期化、DI、scene/service 組み立て、update/draw dispatcher
-          source_of_truth: true
-          responsibilities:
-          - pyxel.init と font の初期化
-          - SfxSystem / ImageBanks / GameState / PlayerModel / SceneManager / DebugService
-            / scene 群の組み立て
-          - 現在 scene の update / draw dispatch
-          property_forwards:
-          - property: current_town
-            target: GameState.current_town
-          - property: debug_mode
-            target: DebugService.mode
-          - property: debug_seq
-            target: DebugService.seq
-          - property: state
-            target: SceneManager.current
-          - property: prev_state
-            target: SceneManager.previous
-          must_not_store:
-          - current_bgm
-          - duplicated_scene_state
-      - path: src/app.py
-        kind: file
-        id: blockquestapp_legacy_shell
-        symbol: BlockQuestApp
-        status: legacy
-        summary: Phase 1 由来の薄い実行シェル。test / Code Maker bundler 互換のため残置
-        role: legacy_runtime_shell
-        source_of_truth: true
-      - path: src/core
-        kind: directory
-        children:
-        - path: src/core/scene_manager.py
-          kind: file
-          id: core_scene_manager_legacy
-          symbol: SceneManager
-          status: legacy
-          summary: 旧 SceneManager。現在の Game は shared/services/scene_manager.py を使う
-          role: legacy_scene_protocol
-          source_of_truth: true
-      - path: src/game_data.py
-        kind: file
-        role: generated_data_gateway
-        status: active
-        source_of_truth: true
-        summary: YAML 生成物を runtime へ供給する読み出し口
-      - path: src/scenes
-        kind: directory
-        children:
-        - path: src/scenes/splash
-          kind: directory
-          children:
-          - path: src/scenes/splash/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/splash/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/splash/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/splash/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          - path: src/scenes/splash/scene.py
-            kind: file
-            role: scene_coordinator
-            status: active
-            source_of_truth: true
-            summary: MVP を束ねる薄い層
-          id: splash_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: 起動スプラッシュ
-          local_state:
-          - frame
-          summary: 起動スプラッシュ
-        - path: src/scenes/title
-          kind: directory
-          children:
-          - path: src/scenes/title/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/title/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/title/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/title/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          - path: src/scenes/title/scene.py
-            kind: file
-            role: scene_coordinator
-            status: active
-            source_of_truth: true
-            summary: MVP を束ねる薄い層
-          id: title_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: タイトル画面
-          local_state:
-          - cursor
-          summary: タイトル画面
-        - path: src/scenes/explore
-          kind: directory
-          children:
-          - path: src/scenes/explore/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/explore/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/explore/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/explore/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          - path: src/scenes/explore/scene.py
-            kind: file
-            role: scene_coordinator
-            status: active
-            source_of_truth: true
-            summary: MVP を束ねる薄い層
-          id: explore_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: フィールド / ダンジョン歩行
-          local_state:
-          - mode
-          - walk_frame
-          - walk_timer
-          - move_cooldown
-          - a_cooldown
-          - image_banks
-          - cam_x
-          - cam_y
-          summary: フィールド / ダンジョン歩行
-        - path: src/scenes/town
-          kind: directory
-          children:
-          - path: src/scenes/town/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/town/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/town/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/town/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          id: town_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: 町メニュー
-          local_state:
-          - menu_cursor
-          - menu_pos
-          summary: 町メニュー
-        - path: src/scenes/shop
-          kind: directory
-          children:
-          - path: src/scenes/shop/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/shop/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/shop/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/shop/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          - path: src/scenes/shop/scene.py
-            kind: file
-            role: scene_coordinator
-            status: active
-            source_of_truth: true
-            summary: MVP を束ねる薄い層
-          id: shop_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: 武器・防具・道具の売買
-          local_state:
-          - kind
-          - inventory
-          - cursor
-          - message
-          summary: 武器・防具・道具の売買
-        - path: src/scenes/battle
-          kind: directory
-          children:
-          - path: src/scenes/battle/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/battle/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/battle/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/battle/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          - path: src/scenes/battle/scene.py
-            kind: file
-            role: scene_coordinator
-            status: active
-            source_of_truth: true
-            summary: MVP を束ねる薄い層
-          id: battle_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: 戦闘全体
-          local_state:
-          - enemy
-          - enemy_hp
-          - menu
-          - phase
-          - text
-          - text_timer
-          - item_select
-          - spell_select
-          - is_glitch_lord
-          - is_professor
-          - boss_phase
-          - noise_guardian
-          summary: 戦闘全体
-        - path: src/scenes/menu
-          kind: directory
-          children:
-          - path: src/scenes/menu/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/menu/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/menu/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/menu/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          - path: src/scenes/menu/scene.py
-            kind: file
-            role: scene_coordinator
-            status: active
-            source_of_truth: true
-            summary: MVP を束ねる薄い層
-          id: menu_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: メニュー画面
-          local_state:
-          - cursor
-          - sub
-          - item_cursor
-          - message
-          summary: メニュー画面
-        - path: src/scenes/ai_help
-          kind: directory
-          children:
-          - path: src/scenes/ai_help/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/ai_help/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/ai_help/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/ai_help/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          - path: src/scenes/ai_help/scene.py
-            kind: file
-            role: scene_coordinator
-            status: active
-            source_of_truth: true
-            summary: MVP を束ねる薄い層
-          id: ai_help_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: Glitch Lord 戦の AI ヘルプ
-          local_state:
-          - status
-          summary: Glitch Lord 戦の AI ヘルプ
-        - path: src/scenes/professor
-          kind: directory
-          children:
-          - path: src/scenes/professor/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/professor/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/professor/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/professor/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          - path: src/scenes/professor/scene.py
-            kind: file
-            role: scene_coordinator
-            status: active
-            source_of_truth: true
-            summary: MVP を束ねる薄い層
-          id: professor_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: Professor 戦 intro / ending
-          local_state:
-          - choice_active
-          - choice_cursor
-          - intro_idx
-          - intro_lines
-          - ending_idx
-          - ending_lines
-          summary: Professor 戦 intro / ending
-        - path: src/scenes/ending
-          kind: directory
-          children:
-          - path: src/scenes/ending/__init__.py
-            kind: file
-            role: scene_package_init
-            status: active
-            source_of_truth: true
-            summary: scene package export
-          - path: src/scenes/ending/model.py
-            kind: file
-            role: scene_model
-            status: active
-            source_of_truth: true
-            summary: scene-local state holder
-          - path: src/scenes/ending/view.py
-            kind: file
-            role: scene_view
-            status: active
-            source_of_truth: true
-            summary: Pyxel 描画と view-model 整形
-          - path: src/scenes/ending/presenter.py
-            kind: file
-            role: scene_presenter
-            status: active
-            source_of_truth: true
-            summary: 入力解釈と scene 遷移の指揮
-          - path: src/scenes/ending/scene.py
-            kind: file
-            role: scene_coordinator
-            status: active
-            source_of_truth: true
-            summary: MVP を束ねる薄い層
-          id: ending_scene
-          role: scene_package
-          status: active
-          source_of_truth: true
-          responsibility: エンディング
-          local_state:
-          - lines
-          summary: エンディング
-      - path: src/shared
-        kind: directory
-        children:
-        - path: src/shared/services
-          kind: directory
-          children:
-          - path: src/shared/services/game_state.py
-            kind: file
-            source_of_truth: true
-            id: game_state_service
-            role: shared_state_aggregate
-            status: active
-            summary: scene 間共有 state を集約する
-          - path: src/shared/services/scene_manager.py
-            kind: file
-            source_of_truth: true
-            id: scene_manager_service
-            role: scene_state_holder
-            status: active
-            summary: current / previous の 2 値 state holder
-          - path: src/shared/services/debug_service.py
-            kind: file
-            source_of_truth: true
-            id: debug_service
-            role: debug_state
-            status: active
-            summary: debug mode / seq / UUDD を扱う
-          - path: src/shared/services/audio_system.py
-            kind: file
-            source_of_truth: true
-            id: audio_system_service
-            role: audio_bridge
-            status: active
-            summary: SFX 再生と冪等 BGM 再生命令
-          - path: src/shared/services/image_banks.py
-            kind: file
-            source_of_truth: true
-            id: image_banks_service
-            role: pyxres_bridge
-            status: active
-            summary: pyxres のロード / 保存 / fallback 書き戻し
-          - path: src/shared/services/dialog_runner.py
-            kind: file
-            source_of_truth: true
-            id: dialog_runner_service
-            role: structured_dialog
-            status: active
-            summary: YAML ドリブン会話
-          - path: src/shared/services/message_display.py
-            kind: file
-            source_of_truth: true
-            id: message_display_service
-            role: overlay_messages
-            status: active
-            summary: 短メッセージ overlay
-          - path: src/shared/services/input_bindings.py
-            kind: file
-            source_of_truth: true
-            id: input_bindings_service
-            role: input_snapshot
-            status: active
-            summary: 入力判定とフレーム差分
-          - path: src/shared/services/landmark_events.py
-            kind: file
-            source_of_truth: true
-            id: landmark_events_service
-            role: coordinate_events
-            status: active
-            summary: 座標接触イベント
-          - path: src/shared/services/player_state.py
-            kind: file
-            source_of_truth: true
-            id: player_state_service
-            role: legacy_player_snapshot
-            status: legacy
-            summary: snapshot helper。player の正本ではない
-          - path: src/shared/services/save_store.py
-            kind: file
-            source_of_truth: true
-            id: save_store_service
-            role: save_backend_bridge
-            status: active
-            summary: save 先差分の吸収
-          - path: src/shared/services/world_generation.py
-            kind: file
-            source_of_truth: true
-            id: world_generation_service
-            role: fallback_world_generation
-            status: active
-            summary: pyxres 不在時の fallback 生成
-          - path: src/shared/services/vfx.py
-            kind: file
-            source_of_truth: true
-            id: vfx_service
-            role: visual_effects
-            status: active
-            summary: ダメージ等の視覚エフェクト
-          - path: src/shared/services/item_use.py
-            kind: file
-            source_of_truth: true
-            id: item_use_service
-            role: item_logic
-            status: active
-            summary: アイテム使用ロジック
-          - path: src/shared/services/text_format.py
-            kind: file
-            source_of_truth: true
-            id: text_format_service
-            role: text_formatting
-            status: active
-            summary: 表示名整形・翻訳
-          - path: src/shared/services/play_session_logging.py
-            kind: file
-            source_of_truth: true
-            id: play_session_logging_service
-            role: play_logging
-            status: active
-            summary: Web プレイ記録の sqlite 永続化
-          - path: src/shared/services/codemaker_resource_store.py
-            kind: file
-            source_of_truth: true
-            id: codemaker_resource_store_service
-            role: codemaker_zip_store
-            status: active
-            summary: Code Maker zip の採否・保管
-          role: shared_services
-          status: active
-          source_of_truth: true
-          summary: shared/services の責務グループ
-        - path: src/shared/state
-          kind: directory
-          children:
-          - path: src/shared/state/player_model.py
-            kind: file
-            source_of_truth: true
-            id: player_model_state
-            role: player_source_of_truth
-            status: active
-            summary: HP / MP / EXP / 装備 / 所持品 / 位置などの正本 model
-          role: shared_state
-          status: active
-          source_of_truth: true
-          summary: shared/state の責務グループ
-        - path: src/shared/ui
-          kind: directory
-          children:
-          - path: src/shared/ui/dialog_window.py
-            kind: file
-            source_of_truth: true
-            id: dialog_window_ui
-            role: dialog_layout
-            status: active
-            summary: 会話ウィンドウ矩形 helper
-          - path: src/shared/ui/menu_window.py
-            kind: file
-            source_of_truth: true
-            id: menu_window_ui
-            role: menu_layout
-            status: active
-            summary: メニュー矩形 helper
-          - path: src/shared/ui/message_window.py
-            kind: file
-            source_of_truth: true
-            id: message_window_ui
-            role: message_window
-            status: active
-            summary: 短メッセージウィンドウ描画とページング表示
-          - path: src/shared/ui/hud.py
-            kind: file
-            source_of_truth: true
-            id: hud_ui
-            role: hud_layout
-            status: active
-            summary: HUD 基準座標 helper
-          - path: src/shared/ui/text_renderer.py
-            kind: file
-            source_of_truth: true
-            id: text_renderer_ui
-            role: text_renderer
-            status: active
-            summary: JP フォントを使う共通テキスト描画
-          - path: src/shared/ui/status_bar.py
-            kind: file
-            source_of_truth: true
-            id: status_bar_ui
-            role: status_bar
-            status: active
-            summary: HP / MP / level / zone の status bar 描画
-          - path: src/shared/ui/vfx_overlay.py
-            kind: file
-            source_of_truth: true
-            id: vfx_overlay_ui
-            role: vfx_overlay
-            status: active
-            summary: 全画面フラッシュ overlay 描画
-          role: shared_ui
-          status: active
-          source_of_truth: true
-          summary: shared/ui の責務グループ
-        - path: src/shared/constants
-          kind: directory
-          children:
-          - path: src/shared/constants/tile_data.py
-            kind: file
-            source_of_truth: true
-            id: tile_data_constants
-            role: tile_constants
-            status: active
-            summary: タイル定義と zone/path/shore variation
-          - path: src/shared/constants/sprite_data.py
-            kind: file
-            source_of_truth: true
-            id: sprite_data_constants
-            role: sprite_constants
-            status: active
-            summary: HERO / ENEMY スプライトのピクセル配列
-          - path: src/shared/constants/game_config.py
-            kind: file
-            source_of_truth: true
-            id: game_config_constants
-            role: game_config
-            status: active
-            summary: 画面サイズなどのゲーム設定
-          role: shared_constants
-          status: active
-          source_of_truth: true
-          summary: shared/constants の責務グループ
-        - path: src/shared/assets
-          kind: directory
-          children:
-          - path: src/shared/assets/jp_font_data.py
-            kind: file
-            source_of_truth: true
-            id: jp_font_asset
-            role: embedded_font_data
-            status: active
-            summary: 日本語ビットマップフォントデータ
-          role: shared_assets
-          status: active
-          source_of_truth: true
-          summary: shared/assets の責務グループ
-      - path: src/generated
-        kind: directory
-        children:
-        - path: src/generated/dialogue.py
-          kind: file
-          role: generated_module
-          source_of_truth: false
-          id: generated_dialogue
-          status: generated
-          hand_editable: false
-          generated_from:
-          - assets/dialogue.yaml
-        - path: src/generated/enemies.py
-          kind: file
-          role: generated_module
-          source_of_truth: false
-          id: generated_enemies
-          status: generated
-          hand_editable: false
-          generated_from:
-          - assets/enemies.yaml
-        - path: src/generated/items.py
-          kind: file
-          role: generated_module
-          source_of_truth: false
-          id: generated_items
-          status: generated
-          hand_editable: false
-          generated_from:
-          - assets/items.yaml
-        - path: src/generated/weapons.py
-          kind: file
-          role: generated_module
-          source_of_truth: false
-          id: generated_weapons
-          status: generated
-          hand_editable: false
-          generated_from:
-          - assets/weapons.yaml
-        - path: src/generated/armors.py
-          kind: file
-          role: generated_module
-          source_of_truth: false
-          id: generated_armors
-          status: generated
-          hand_editable: false
-          generated_from:
-          - assets/armors.yaml
-        - path: src/generated/spells.py
-          kind: file
-          role: generated_module
-          source_of_truth: false
-          id: generated_spells
-          status: generated
-          hand_editable: false
-          generated_from:
-          - assets/spells.yaml
-        - path: src/generated/shops.py
-          kind: file
-          role: generated_module
-          source_of_truth: false
-          id: generated_shops
-          status: generated
-          hand_editable: false
-          generated_from:
-          - assets/shops.yaml
-        role: generated_modules
-        status: generated
-        source_of_truth: false
-        summary: YAML から生成される Python module
-      id: src_root
-      role: source_root
-      status: active
-      source_of_truth: true
-      summary: アプリケーションコードの正本
-    - path: assets
-      kind: directory
-      children:
-      - path: assets/blockquest.pyxres
-        kind: file
-        source_of_truth: true
-        role: codemaker_source_of_truth
-        status: active
-        summary: 子どもが Code Maker で編集する pyxres 正本
-      - path: assets/dialogue.yaml
-        kind: file
-        source_of_truth: true
-        role: yaml_source
-        status: active
-        summary: 会話定義 YAML
-      - path: assets/enemies.yaml
-        kind: file
-        source_of_truth: true
-        role: yaml_source
-        status: active
-        summary: 敵定義 YAML
-      - path: assets/items.yaml
-        kind: file
-        source_of_truth: true
-        role: yaml_source
-        status: active
-        summary: アイテム定義 YAML
-      - path: assets/weapons.yaml
-        kind: file
-        source_of_truth: true
-        role: yaml_source
-        status: active
-        summary: 武器定義 YAML
-      - path: assets/armors.yaml
-        kind: file
-        source_of_truth: true
-        role: yaml_source
-        status: active
-        summary: 防具定義 YAML
-      - path: assets/spells.yaml
-        kind: file
-        source_of_truth: true
-        role: yaml_source
-        status: active
-        summary: 呪文定義 YAML
-      - path: assets/shops.yaml
-        kind: file
-        source_of_truth: true
-        role: yaml_source
-        status: active
-        summary: 店定義 YAML
-      - path: assets/umplus_j10r.bdf
-        kind: file
-        source_of_truth: true
-        role: font_asset
-        status: active
-        summary: 日本語ビットマップフォント
-      - path: assets/screenshots
-        kind: directory
-        children: []
-        role: reference_screenshots
-        status: active
-        source_of_truth: true
-        summary: 確認用スクリーンショット
-      id: assets_root
-      role: human_edited_assets
-      status: active
-      source_of_truth: true
-      summary: YAML / .pyxres / font / screenshot など人が直す正本
-    - path: tools
-      kind: directory
-      children:
-      - path: tools/gen_data.py
-        kind: file
-        source_of_truth: false
-        role: data_codegen
-        status: active
-        summary: assets/*.yaml から generated module を生成する
-      - path: tools/build_codemaker.py
-        kind: file
-        source_of_truth: false
-        role: codemaker_zip_builder
-        status: active
-        summary: Code Maker 用 zip を生成する
-      - path: tools/build_web_release.py
-        kind: file
-        source_of_truth: false
-        role: release_builder
-        status: active
-        summary: dist 配下の release artifact を再生成する
-      - path: tools/build_release_artifacts.py
-        kind: file
-        source_of_truth: false
-        role: release_artifact_builder
-        status: active
-        summary: Web release artifact を組み立てる
-      - path: tools/check_architecture_rules.py
-        kind: file
-        source_of_truth: false
-        role: architecture_checker
-        status: active
-        summary: architecture_rules.yml の deterministic rule を検査する
-      - path: tools/architecture_guardian.py
-        kind: file
-        source_of_truth: false
-        role: architecture_guardian
-        status: active
-        summary: checker -> fixer -> recheck を回す guardian
-      - path: tools/install_hooks.sh
-        kind: file
-        source_of_truth: false
-        role: hook_installer
-        status: active
-        summary: repo 用 git hook をインストールする
-      - path: tools/verify_module_docstrings.py
-        kind: file
-        source_of_truth: false
-        role: docstring_guard
-        status: active
-        summary: module docstring drift を検査する
-      - path: tools/verify_cj_cjob.py
-        kind: file
-        source_of_truth: false
-        role: cj_cjob_guard
-        status: active
-        summary: CJ link と CJob category を検査する
-      - path: tools/scene_to_cj.py
-        kind: file
-        source_of_truth: false
-        role: scene_cj_guard
-        status: active
-        summary: scene_to_cj 対応表を検査する
-      id: tools_root
-      role: build_and_verification
-      status: active
-      source_of_truth: false
-      summary: build / 配布 / データ生成 / 検証スクリプト
-    - path: test
-      kind: directory
-      children:
-      - path: test/test_architecture_rules_checker.py
-        kind: file
-        source_of_truth: false
-        role: architecture_checker_tests
-        status: active
-        summary: checker の回帰 test
-      - path: test/test_architecture_guardian.py
-        kind: file
-        source_of_truth: false
-        role: architecture_guardian_tests
-        status: active
-        summary: guardian の回帰 test
-      id: test_root
-      role: automated_tests
-      status: active
-      source_of_truth: false
-      summary: pytest テスト群
-    - path: templates
-      kind: directory
-      children: []
-      id: templates_root
-      role: build_templates
-      status: active
-      source_of_truth: false
-      summary: build 前の HTML template
-    - path: dist
-      kind: directory
-      children:
-      - path: dist/code-maker.zip
-        kind: file
-        role: distribution_artifact
-        source_of_truth: false
-        id: codemaker_zip
-        status: distribution
-        summary: block-quest/main.py + my_resource.pyxres を梱包した教材版 zip
-      - path: dist/pyxel.html
-        kind: file
-        role: distribution_artifact
-        source_of_truth: false
-        id: pyxel_html
-        status: distribution
-        summary: Web 配布用 HTML
-      - path: dist/pyxel.pyxapp
-        kind: file
-        role: distribution_artifact
-        source_of_truth: false
-        id: pyxel_pyxapp
-        status: distribution
-        summary: Pyxel app 配布物
-      - path: dist/play.html
-        kind: file
-        role: distribution_artifact
-        source_of_truth: false
-        id: play_html
-        status: distribution
-        summary: プレイページ
-      - path: dist/index.html
-        kind: file
-        role: distribution_artifact
-        source_of_truth: false
-        id: top_index_html
-        status: distribution
-        summary: play.html と同内容の wrapper alias
-      id: dist_root
-      role: distribution_root
-      status: distribution
-      source_of_truth: false
-      summary: 承認済み配布物の出力先
-    - path: steering
-      kind: directory
-      children:
-      - path: steering/done
-        kind: directory
-        children: []
-        role: archived_task_notes
-        status: active
-        source_of_truth: false
-        summary: 完了済み task note の保管先
-      id: steering_root
-      role: task_notes
-      status: active
-      source_of_truth: false
-      summary: task note と作業判断の記録
-    - path: docs
-      kind: directory
-      children:
-      - path: docs/superpowers
-        kind: directory
-        children: []
-        role: ai_specs_and_plans
-        status: active
-        source_of_truth: false
-        summary: AI 向け spec / plan
-      - path: docs/architecture.md
-        kind: file
-        source_of_truth: true
-        role: human_architecture_reference
-        status: active
-        summary: 人向けの詳細アーキテクチャ定義書
-      - path: docs/architecture_rules.yml
-        kind: file
-        source_of_truth: true
-        role: checker_readable_architecture_rules
-        status: draft
-        summary: AI / checker / human 向けの architecture 正本候補
-      - path: docs/framework-rule.md
-        kind: file
-        source_of_truth: true
-        role: framework_rules
-        status: active
-        summary: M1〜M5 の規約本体
-      - path: docs/customer-jobs.md
-        kind: file
-        source_of_truth: true
-        role: customer_jobs
-        status: active
-        summary: Customer Jobs 一覧
-      - path: docs/customer-journeys.md
-        kind: file
-        source_of_truth: true
-        role: customer_journeys
-        status: active
-        summary: Customer Journeys 一覧
-      id: docs_root
-      role: architecture_and_requirements
-      status: active
-      source_of_truth: true
-      summary: AI / 人間向けの要求・規約・構成定義
-  flows:
-  - id: generated_game_data
-    summary: 人が編集する YAML は tools/gen_data.py を通って generated module へ変換される
-    steps:
-    - assets/*.yaml
-    - tools/gen_data.py
-    - src/generated/*.py
-    - src/game_data.py
-    - runtime
-  - id: pyxres_roundtrip
-    summary: 子どもが編集する pyxres は Code Maker と配布 zip を通って assets に戻る
-    steps:
-    - assets/blockquest.pyxres
-    - dist/code-maker.zip
-    - Pyxel Code Maker
-    - assets/blockquest.pyxres
-  - id: pyxres_runtime_loading
-    summary: runtime は assets の pyxres を読み込み、ImageBanks はロード / 保存 / fallback を担う
-    steps:
-    - assets/blockquest.pyxres
-    - src/shared/services/image_banks.py
-    - runtime
-  entry_points:
+
+  runbooks:
+
+    - id: build_codemaker_zip
+      summary: dist/code-maker.zip だけを再生成する
+      steps:
+        - command: python tools/build_codemaker.py
+          outputs:
+            - dist/code-maker.zip
+          checks:
+            - tools/codemaker_manifest.txt の順番で inline される
+
+    - id: build_all_release_artifacts
+      summary: dist 配下の release artifact を再生成する
+      steps:
+        - command: python tools/build_web_release.py
+          outputs:
+            - dist/code-maker.zip
+            - dist/pyxel.html
+            - dist/pyxel.pyxapp
+            - dist/play.html
+            - dist/index.html
+          checks:
+            - tools/build_release_artifacts.py が tools.build_codemaker を import できる
+          common_failures:
+            - python tools/build_release_artifacts.py を直接叩くと ModuleNotFoundError になる
+
+    - id: post_change_release_sequence
+      summary: BGM / pyxres / view / scene を変更した後の順序
+      steps:
+        - command: PYTHONPATH=. python -m pytest -x
+        - command: python tools/build_web_release.py
+        - command: python -c "import zipfile,re; z=zipfile.ZipFile('dist/code-maker.zip');
+            t=z.read('block-quest/main.py').decode('utf-8'); print('AudioManager:',len(re.findall(r'class
+            AudioManager',t))); print('SettingsScene:',len(re.findall(r'class SettingsScene',t)));
+            print('play_bgm_track:',len(re.findall(r'play_bgm_track\\(',t)))"
+        - command: git status
+
+  migration_notes:
+
+    - id: blockquestapp_legacy_shell
+      path: src/app.py
+      symbol: BlockQuestApp
+      status: legacy
+      summary: Phase 1 由来の薄い実行シェル。test / Code Maker bundler 互換のため残置
+
+    - id: core_scene_manager_legacy
+      path: src/core/scene_manager.py
+      symbol: SceneManager
+      status: legacy
+      summary: 旧 SceneManager。現在の Game は shared/services/scene_manager.py を使う
+
+    - id: development_runtime_removed
+      path: src/runtime/main_development_runtime.py
+      status: removed
+      summary: Phase 3 で削除済
+
+validation_rules:
+
   - id: runtime_entry_chain
     summary: runtime の入口は wrapper -> shim -> Game の流れを保つ
-    paths:
-    - main.py
-    - src/runtime/main_runtime.py
-    - src/runtime/app.py
-    nodes:
-    - id: runtime_main_wrapper
-      path: main.py
-      role: wrapper
-      status: active
-      summary: src/runtime/main_runtime.py を実行する 8 行 wrapper
-    - id: runtime_shim
-      path: src/runtime/main_runtime.py
-      role: shim
-      status: active
-      summary: test / Code Maker bundler 互換のための re-export shim
-    - id: runtime_game
-      path: src/runtime/app.py
-      symbol: Game
-      role: application_root
-      status: active
-      summary: pyxel 初期化、DI、scene/service 組み立て、update/draw dispatcher
-  runbooks:
-  - id: build_codemaker_zip
-    summary: dist/code-maker.zip だけを再生成する
-    steps:
-    - command: python tools/build_codemaker.py
-      outputs:
-      - dist/code-maker.zip
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - main.py
+        - src/runtime/main_runtime.py
+        - src/runtime/app.py
+    evidence:
       checks:
-      - tools/codemaker_manifest.txt の順番で inline される
-  - id: build_all_release_artifacts
-    summary: dist 配下の release artifact を再生成する
-    steps:
-    - command: python tools/build_web_release.py
-      outputs:
-      - dist/code-maker.zip
-      - dist/pyxel.html
-      - dist/pyxel.pyxapp
-      - dist/play.html
-      - dist/index.html
+        - wrapper_chain_present
+    message: runtime の入口構成が architecture 定義から外れている可能性があります
+    suggested_actions:
+      - facts.runtime.entry_chain の path / symbol と実コードの entry chain をそろえる
+      - main.py, src/runtime/main_runtime.py, src/runtime/app.py の委譲関係を崩していないか確認する
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: null
+      guardian_autofix: implemented
+      rationale: tree-first facts と実ファイル照合だけで判定でき、guardian も安全に正規形へ戻せる
+
+  - id: code_maker_primary_editor
+    summary: Code Maker を子どもの正式な編集面として扱う
+    severity: warning
+    enforcement:
+      mode: llm_assisted
+    scope:
+      paths:
+        - AGENTS.md
+        - docs/architecture.md
+        - docs/architecture_rules.yml
+        - src
+        - tools
+    evidence:
       checks:
-      - tools/build_release_artifacts.py が tools.build_codemaker を import できる
-      common_failures:
-      - python tools/build_release_artifacts.py を直接叩くと ModuleNotFoundError になる
-  - id: post_change_release_sequence
-    summary: BGM / pyxres / view / scene を変更した後の順序
-    steps:
-    - command: PYTHONPATH=. python -m pytest -x
-    - command: python tools/build_web_release.py
-    - command: python -c "import zipfile,re; z=zipfile.ZipFile('dist/code-maker.zip');
-        t=z.read('block-quest/main.py').decode('utf-8'); print('AudioManager:',len(re.findall(r'class
-        AudioManager',t))); print('SettingsScene:',len(re.findall(r'class SettingsScene',t)));
-        print('play_bgm_track:',len(re.findall(r'play_bgm_track\\(',t)))"
-    - command: git status
-  migration_notes:
-  - id: blockquestapp_legacy_shell
-    path: src/app.py
-    symbol: BlockQuestApp
-    status: legacy
-    summary: Phase 1 由来の薄い実行シェル。test / Code Maker bundler 互換のため残置
-  - id: core_scene_manager_legacy
-    path: src/core/scene_manager.py
-    symbol: SceneManager
-    status: legacy
-    summary: 旧 SceneManager。現在の Game は shared/services/scene_manager.py を使う
-  - id: development_runtime_removed
-    path: src/runtime/main_development_runtime.py
-    status: removed
-    summary: Phase 3 で削除済
-validation_rules:
-- id: runtime_entry_chain
-  summary: runtime の入口は wrapper -> shim -> Game の流れを保つ
-  severity: warning
-  enforcement:
-    mode: deterministic
-  scope:
-    paths:
-    - main.py
-    - src/runtime/main_runtime.py
-    - src/runtime/app.py
-  evidence:
-    checks:
-    - wrapper_chain_present
-  message: runtime の入口構成が architecture 定義から外れている可能性があります
-  suggested_actions:
-  - facts.runtime.entry_chain の path / symbol と実コードの entry chain をそろえる
-  - main.py, src/runtime/main_runtime.py, src/runtime/app.py の委譲関係を崩していないか確認する
-- id: code_maker_primary_editor
-  summary: Code Maker を子どもの正式な編集面として扱う
-  severity: warning
-  enforcement:
-    mode: llm_assisted
-  scope:
-    paths:
-    - AGENTS.md
-    - docs/architecture.md
-    - docs/architecture_rules.yml
-    - src
-    - tools
-  evidence:
-    checks:
-    - inspect_editor_replacement_risk
-  message: Code Maker を脇役化する変更が入っている可能性があります
-  suggested_actions:
-  - Code Maker を子どもの正式な編集面として扱う原則を AGENTS.md と docs に照らして確認する
-  - tilemap / sprite / sound / .pyxres の編集面を別経路へ置き換える変更が混ざっていないか見直す
-- id: pyxres_source_of_truth
-  summary: pyxres を正本として扱い、AI がテキスト編集の主戦場にしない
-  severity: warning
-  enforcement:
-    mode: manual
-  scope:
-    paths:
-    - assets
-    - src/shared/services/image_banks.py
-    - docs/architecture_rules.yml
-  evidence:
-    checks:
-    - inspect_pyxres_source_of_truth
-  message: pyxres の正本性を崩す変更が入っている可能性があります
-  suggested_actions:
-  - assets/blockquest.pyxres と Code Maker を正本として扱う構成に戻す
-  - AI が .pyxres を直接編集する前提になっていないか見直す
-- id: dist_not_source
-  summary: dist を source の正本として扱わない
-  severity: warning
-  enforcement:
-    mode: deterministic
-  scope:
-    paths:
-    - dist
-    - docs/architecture_rules.yml
-  evidence:
-    checks:
-    - distribution_paths_marked_non_source
-  message: dist 配下が source のように扱われている可能性があります
-  suggested_actions:
-  - facts.repository.roots の dist_root を status=distribution / source_of_truth=false
-    にそろえる
-  - source の修正先を src / assets / tools / docs 側へ戻す
-- id: generated_files_edit_policy
-  summary: generated module は手編集禁止で、編集元が assets/*.yaml に固定されている
-  severity: warning
-  enforcement:
-    mode: deterministic
-  scope:
-    paths:
-    - src/generated
-    - assets
-    - tools/gen_data.py
-  evidence:
-    checks:
-    - generated_entries_mark_non_hand_editable_and_sources
-  message: generated module の手編集禁止ポリシーまたは入力元定義が欠けている可能性があります
-  suggested_actions:
-  - src/generated 配下を手編集せず、assets/*.yaml を修正して tools/gen_data.py を実行する
-  - facts.generated.entries の hand_editable と generated_from を実ファイル構成にそろえる
-- id: scene_mvp_boundary
-  summary: scene は MVP 境界を越えて責務を混在させない
-  severity: warning
-  enforcement:
-    mode: llm_assisted
-  scope:
-    paths:
-    - src/scenes
-  evidence:
-    checks:
-    - inspect_scene_boundary_against_mvp_roles
-  message: scene の model / view / presenter / scene の責務境界が崩れている可能性があります
-  suggested_actions:
-  - src/scenes 配下で model / view / presenter の責務を見直し、pyxel 描画や state 更新の置き場を整理する
-  - framework-rule.md の M1-M4 と scene 実装の責務分担を照合する
-- id: shared_service_vs_state_boundary
-  summary: shared/services の service/state holder と shared/state の横断 model の配置が repo
-    方針と一致する
-  severity: warning
-  enforcement:
-    mode: llm_assisted
-  scope:
-    paths:
-    - src/shared/services
-    - src/shared/state
-  evidence:
-    checks:
-    - inspect_shared_boundary_with_state_holders
-  message: shared/services の state holder と shared/state の横断 model の境界が崩れている可能性があります
-  suggested_actions:
-  - shared/services と shared/state の責務を見直し、state holder と横断 model の配置を整理する
-  - architecture_rules.yml の shared facts と実ファイル配置を照合する
-- id: build_runbook_paths
-  summary: build runbook は documented command と artifact path を維持する
-  severity: warning
-  enforcement:
-    mode: deterministic
-  scope:
-    paths:
-    - Makefile
-    - tools/build_codemaker.py
-    - tools/build_web_release.py
-    - tools/build_release_artifacts.py
-    - docs/architecture.md
-    - docs/architecture_rules.yml
-  evidence:
-    checks:
-    - compare_runbook_commands_and_artifact_defs
-  message: build runbook fact と build script / artifact 定義がずれている可能性があります
-  suggested_actions:
-  - facts.runbooks の command / outputs を実在する build script と artifact path にそろえる
-  - dist artifact 定義と build_release_artifacts.py / build_web_release.py の出力先を照合する
+        - inspect_editor_replacement_risk
+    message: Code Maker を脇役化する変更が入っている可能性があります
+    suggested_actions:
+      - Code Maker を子どもの正式な編集面として扱う原則を AGENTS.md と docs に照らして確認する
+      - tilemap / sprite / sound / .pyxres の編集面を別経路へ置き換える変更が混ざっていないか見直す
+    coverage:
+      deterministic_review: keep_llm_assisted
+      next_checker_unit: null
+      guardian_autofix: not_recommended
+      rationale: 子ども向けの正式編集面を脇役化していないかは path だけでは判定できず、変更意図の読解が要る
+
+  - id: pyxres_source_of_truth
+    summary: pyxres を正本として扱い、AI がテキスト編集の主戦場にしない
+    severity: warning
+    enforcement:
+      mode: manual
+    scope:
+      paths:
+        - assets
+        - src/shared/services/image_banks.py
+        - docs/architecture_rules.yml
+    evidence:
+      checks:
+        - inspect_pyxres_source_of_truth
+    message: pyxres の正本性を崩す変更が入っている可能性があります
+    suggested_actions:
+      - assets/blockquest.pyxres と Code Maker を正本として扱う構成に戻す
+      - AI が .pyxres を直接編集する前提になっていないか見直す
+    coverage:
+      deterministic_review: keep_manual
+      next_checker_unit: null
+      guardian_autofix: not_recommended
+      rationale: 実物の pyxres と Code Maker roundtrip を見て判断すべきで、Python だけの自動修復は危険
+
+  - id: dist_not_source
+    summary: dist を source の正本として扱わない
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - dist
+        - docs/architecture_rules.yml
+    evidence:
+      checks:
+        - distribution_paths_marked_non_source
+    message: dist 配下が source のように扱われている可能性があります
+    suggested_actions:
+      - facts.repository.roots の dist_root を status=distribution / source_of_truth=false にそろえる
+      - source の修正先を src / assets / tools / docs 側へ戻す
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: null
+      guardian_autofix: implemented
+      rationale: dist root と artifact node は facts.tree と実在 path だけで機械判定できる
+
+  - id: generated_files_edit_policy
+    summary: generated module は手編集禁止で、編集元が assets/*.yaml に固定されている
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - src/generated
+        - assets
+        - tools/gen_data.py
+    evidence:
+      checks:
+        - generated_entries_mark_non_hand_editable_and_sources
+    message: generated module の手編集禁止ポリシーまたは入力元定義が欠けている可能性があります
+    suggested_actions:
+      - src/generated 配下を手編集せず、assets/*.yaml を修正して tools/gen_data.py を実行する
+      - facts.generated.entries の hand_editable と generated_from を実ファイル構成にそろえる
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: null
+      guardian_autofix: implemented
+      rationale: generated file node と生成元 YAML の対応は tree-first facts と gen_data.py 実行で機械化できる
+
+  - id: scene_mvp_boundary
+    summary: scene は MVP 境界を越えて責務を混在させない
+    severity: warning
+    enforcement:
+      mode: llm_assisted
+    scope:
+      paths:
+        - src/scenes
+    evidence:
+      checks:
+        - inspect_scene_boundary_against_mvp_roles
+    message: scene の model / view / presenter / scene の責務境界が崩れている可能性があります
+    suggested_actions:
+      - src/scenes 配下で model / view / presenter の責務を見直し、pyxel 描画や state 更新の置き場を整理する
+      - framework-rule.md の M1-M4 と scene 実装の責務分担を照合する
+    coverage:
+      deterministic_review: candidate
+      next_checker_unit: scene_static_boundary_checks
+      guardian_autofix: not_recommended
+      rationale: 既存の framework rule guard を昇格させれば pyxel 呼び出し境界と scene package 形状までは deterministic に広げられる
+
+  - id: shared_service_vs_state_boundary
+    summary: shared/services の service/state holder と shared/state の横断 model の配置が repo 方針と一致する
+    severity: warning
+    enforcement:
+      mode: llm_assisted
+    scope:
+      paths:
+        - src/shared/services
+        - src/shared/state
+    evidence:
+      checks:
+        - inspect_shared_boundary_with_state_holders
+    message: shared/services の state holder と shared/state の横断 model の境界が崩れている可能性があります
+    suggested_actions:
+      - shared/services と shared/state の責務を見直し、state holder と横断 model の配置を整理する
+      - architecture_rules.yml の shared facts と実ファイル配置を照合する
+    coverage:
+      deterministic_review: candidate
+      next_checker_unit: shared_directory_role_checks
+      guardian_autofix: not_recommended
+      rationale: shared/services と shared/state の配置・命名・pyxel 利用禁止は static guard 化できるが、ファイル移動の autofix は安全でない
+
+  - id: build_runbook_paths
+    summary: build runbook は documented command と artifact path を維持する
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - Makefile
+        - tools/build_codemaker.py
+        - tools/build_web_release.py
+        - tools/build_release_artifacts.py
+        - docs/architecture.md
+        - docs/architecture_rules.yml
+    evidence:
+      checks:
+        - compare_runbook_commands_and_artifact_defs
+    message: build runbook fact と build script / artifact 定義がずれている可能性があります
+    suggested_actions:
+      - facts.runbooks の command / outputs を実在する build script と artifact path にそろえる
+      - dist artifact 定義と build_release_artifacts.py / build_web_release.py の出力先を照合する
+    coverage:
+      deterministic_review: implemented
+      next_checker_unit: null
+      guardian_autofix: implemented
+      rationale: runbook command と artifact path のズレは tree-first facts と build script 名で機械検査できる
