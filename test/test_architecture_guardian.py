@@ -23,7 +23,69 @@ def load_guardian_module():
     return architecture_guardian
 
 
+def tree_node(path: str, kind: str, **extra):
+    node = {"path": path, "kind": kind}
+    node.update(extra)
+    return node
+
+
 class ArchitectureGuardianTest(unittest.TestCase):
+    def test_write_yaml_inserts_blank_lines_between_path_entries(self):
+        guardian = load_guardian_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            rules_path = Path(tmp) / "architecture_rules.yml"
+            guardian.write_yaml(
+                rules_path,
+                {
+                    "meta": {"document_id": "test"},
+                    "facts": {
+                        "tree": {
+                            "path": ".",
+                            "kind": "root",
+                            "children": [
+                                tree_node("alpha.txt", "file", summary="first file"),
+                                tree_node("beta.txt", "file", summary="second file"),
+                                tree_node(
+                                    "src",
+                                    "directory",
+                                    children=[
+                                        tree_node("src/a.py", "file", summary="nested first"),
+                                        tree_node("src/b.py", "file", summary="nested second"),
+                                    ],
+                                ),
+                            ],
+                        }
+                    },
+                    "validation_rules": [
+                        {
+                            "id": "sample_rule",
+                            "summary": "sample",
+                            "severity": "warning",
+                            "enforcement": {"mode": "manual"},
+                            "scope": {"paths": ["alpha.txt"]},
+                            "evidence": {"checks": ["manual_check"]},
+                            "message": "sample message",
+                            "suggested_actions": ["sample action"],
+                            "coverage": {
+                                "deterministic_review": "keep_manual",
+                                "next_checker_unit": None,
+                                "guardian_autofix": "not_recommended",
+                                "rationale": "sample",
+                            },
+                        }
+                    ],
+                },
+            )
+
+            text = rules_path.read_text(encoding="utf-8")
+
+            self.assertRegex(text, r"children:\n\n\s+- path: alpha\.txt")
+            self.assertRegex(text, r"summary: first file\n\n\s+- path: beta\.txt")
+            self.assertRegex(text, r"children:\n\n\s+- path: src/a\.py")
+            self.assertRegex(text, r"summary: nested first\n\n\s+- path: src/b\.py")
+            self.assertRegex(text, r"validation_rules:\n\n\s+- id: sample_rule")
+
     def test_guardian_autofixes_generated_rule_until_clean(self):
         guardian = load_guardian_module()
 
@@ -56,16 +118,33 @@ class ArchitectureGuardianTest(unittest.TestCase):
                     {
                         "meta": {"document_id": "test"},
                         "facts": {
-                            "generated": {
-                                "entries": [
-                                    {
-                                        "id": "generated_dialogue",
-                                        "path": "src/generated/dialogue.py",
-                                        "status": "generated",
-                                        "hand_editable": True,
-                                        "generated_from": ["assets/dialogue.yaml"],
-                                    }
-                                ]
+                            "tree": {
+                                "path": ".",
+                                "kind": "root",
+                                "children": [
+                                    tree_node("assets", "directory", children=[tree_node("assets/dialogue.yaml", "file", status="active")]),
+                                    tree_node("tools", "directory", children=[tree_node("tools/gen_data.py", "file", status="active")]),
+                                    tree_node(
+                                        "src",
+                                        "directory",
+                                        children=[
+                                            tree_node(
+                                                "src/generated",
+                                                "directory",
+                                                children=[
+                                                    tree_node(
+                                                        "src/generated/dialogue.py",
+                                                        "file",
+                                                        id="generated_dialogue",
+                                                        status="generated",
+                                                        hand_editable=True,
+                                                        generated_from=["assets/dialogue.yaml"],
+                                                    )
+                                                ],
+                                            )
+                                        ],
+                                    ),
+                                ],
                             }
                         },
                         "validation_rules": [
@@ -78,6 +157,12 @@ class ArchitectureGuardianTest(unittest.TestCase):
                                 "evidence": {"checks": ["generated_entries_mark_non_hand_editable_and_sources"]},
                                 "message": "generated drift",
                                 "suggested_actions": ["run gen_data"],
+                                "coverage": {
+                                    "deterministic_review": "implemented",
+                                    "next_checker_unit": None,
+                                    "guardian_autofix": "implemented",
+                                    "rationale": "fixture",
+                                },
                             }
                         ],
                     },
@@ -93,7 +178,8 @@ class ArchitectureGuardianTest(unittest.TestCase):
             self.assertLessEqual(result["cycles"], 5)
             self.assertFalse(result["final_check"]["has_warnings"])
             fixed_yaml = yaml.safe_load(rules_path.read_text(encoding="utf-8"))
-            self.assertFalse(fixed_yaml["facts"]["generated"]["entries"][0]["hand_editable"])
+            generated_node = fixed_yaml["facts"]["tree"]["children"][2]["children"][0]["children"][0]
+            self.assertFalse(generated_node["hand_editable"])
             self.assertIn("DATA = []", (repo_root / "src" / "generated" / "dialogue.py").read_text(encoding="utf-8"))
 
     def test_guardian_returns_needs_human_when_issue_remains(self):
@@ -113,19 +199,44 @@ class ArchitectureGuardianTest(unittest.TestCase):
                     {
                         "meta": {"document_id": "test"},
                         "facts": {
-                            "runtime": {
-                                "entry_chain": [
-                                    {"id": "runtime_main_wrapper", "path": "main.py", "role": "wrapper", "status": "active"},
-                                    {"id": "runtime_shim", "path": "src/runtime/main_runtime.py", "role": "shim", "status": "active"},
-                                    {
-                                        "id": "runtime_game",
-                                        "path": "src/runtime/app.py",
-                                        "symbol": "Game",
-                                        "role": "application_root",
-                                        "status": "active",
-                                    },
-                                ]
-                            }
+                            "tree": {
+                                "path": ".",
+                                "kind": "root",
+                                "children": [
+                                    tree_node("main.py", "file", role="wrapper", status="active"),
+                                    tree_node(
+                                        "src",
+                                        "directory",
+                                        children=[
+                                            tree_node(
+                                                "src/runtime",
+                                                "directory",
+                                                children=[
+                                                    tree_node("src/runtime/main_runtime.py", "file", role="shim", status="active")
+                                                ],
+                                            )
+                                        ],
+                                    ),
+                                ],
+                            },
+                            "entry_points": [
+                                {
+                                    "id": "runtime_entry_chain",
+                                    "summary": "runtime chain",
+                                    "paths": ["main.py", "src/runtime/main_runtime.py", "src/runtime/app.py"],
+                                    "nodes": [
+                                        {"id": "runtime_main_wrapper", "path": "main.py", "role": "wrapper", "status": "active"},
+                                        {"id": "runtime_shim", "path": "src/runtime/main_runtime.py", "role": "shim", "status": "active"},
+                                        {
+                                            "id": "runtime_game",
+                                            "path": "src/runtime/app.py",
+                                            "symbol": "Game",
+                                            "role": "application_root",
+                                            "status": "active",
+                                        },
+                                    ],
+                                }
+                            ],
                         },
                         "validation_rules": [
                             {
@@ -137,6 +248,12 @@ class ArchitectureGuardianTest(unittest.TestCase):
                                 "evidence": {"checks": ["wrapper_chain_present"]},
                                 "message": "runtime drift",
                                 "suggested_actions": ["restore runtime entry chain"],
+                                "coverage": {
+                                    "deterministic_review": "implemented",
+                                    "next_checker_unit": None,
+                                    "guardian_autofix": "implemented",
+                                    "rationale": "fixture",
+                                },
                             }
                         ],
                     },
