@@ -1421,7 +1421,6 @@ facts:
         - src/shared/ui/status_bar.py
         - src/shared/services/debug_service.py
         - src/shared/services/scene_manager.py
-        - src/shared/services/debug_service.py
         - src/runtime/app.py
 
   migration_notes:
@@ -1565,23 +1564,23 @@ validation_rules:
     summary: scene は MVP 境界を越えて責務を混在させない
     severity: warning
     enforcement:
-      mode: llm_assisted
+      mode: deterministic
     scope:
       paths:
         - src/scenes
     evidence:
       checks:
-        - inspect_scene_boundary_against_mvp_roles
+        - scene_static_boundary_checks
     message: scene の model / view / presenter / scene の責務境界が崩れている可能性があります
     suggested_actions:
       - src/scenes 配下で model / view / presenter の責務を見直し、pyxel 描画や state 更新の置き場を整理する
       - framework-rule.md の M1-M4 と scene 実装の責務分担を照合する
     coverage:
-      deterministic_review: candidate
-      next_checker_unit: scene_static_boundary_checks
+      deterministic_review: implemented
+      next_checker_unit: null
       guardian_autofix: not_recommended
-      rationale: 既存の framework rule guard を昇格させれば pyxel 呼び出し境界と scene package 形状までは deterministic
-        に広げられる
+      rationale: 既存の framework rule guard を checker に昇格し、pyxel 呼び出し境界と scene package 形状を deterministic
+        に検査できる
 
   - id: codemaker_manifest_non_scene_paths
     summary: Code Maker manifest は architecture で宣言した non-scene bundle path を含む
@@ -1609,24 +1608,24 @@ validation_rules:
     summary: shared/services の service/state holder と shared/state の横断 model の配置が repo 方針と一致する
     severity: warning
     enforcement:
-      mode: llm_assisted
+      mode: deterministic
     scope:
       paths:
         - src/shared/services
         - src/shared/state
     evidence:
       checks:
-        - inspect_shared_boundary_with_state_holders
+        - shared_directory_role_checks
     message: shared/services の state holder と shared/state の横断 model の境界が崩れている可能性があります
     suggested_actions:
       - shared/services と shared/state の責務を見直し、state holder と横断 model の配置を整理する
       - architecture_rules.yml の shared facts と実ファイル配置を照合する
     coverage:
-      deterministic_review: candidate
-      next_checker_unit: shared_directory_role_checks
+      deterministic_review: implemented
+      next_checker_unit: null
       guardian_autofix: not_recommended
-      rationale: shared/services と shared/state の配置・命名・pyxel 利用禁止は static guard 化できるが、ファイル移動の
-        autofix は安全でない
+      rationale: shared/services と shared/state の配置、legacy shim 依存、pyxel 利用禁止を deterministic に検査できるが、
+        ファイル移動の autofix は安全でない
 
   - id: build_runbook_paths
     summary: build runbook は documented command と artifact path を維持する
