@@ -542,6 +542,9 @@ validation_rules:
       checks:
         - wrapper_chain_present
     message: runtime の入口構成が architecture 定義から外れている可能性があります
+    suggested_actions:
+      - facts.runtime.entry_chain の path / symbol と実コードの entry chain をそろえる
+      - main.py, src/runtime/main_runtime.py, src/runtime/app.py の委譲関係を崩していないか確認する
   - id: code_maker_primary_editor
     summary: Code Maker を子どもの正式な編集面として扱う
     severity: warning
@@ -558,6 +561,9 @@ validation_rules:
       checks:
         - inspect_editor_replacement_risk
     message: Code Maker を脇役化する変更が入っている可能性があります
+    suggested_actions:
+      - Code Maker を子どもの正式な編集面として扱う原則を AGENTS.md と docs に照らして確認する
+      - tilemap / sprite / sound / .pyxres の編集面を別経路へ置き換える変更が混ざっていないか見直す
   - id: pyxres_source_of_truth
     summary: pyxres を正本として扱い、AI がテキスト編集の主戦場にしない
     severity: warning
@@ -572,6 +578,9 @@ validation_rules:
       checks:
         - inspect_pyxres_source_of_truth
     message: pyxres の正本性を崩す変更が入っている可能性があります
+    suggested_actions:
+      - assets/blockquest.pyxres と Code Maker を正本として扱う構成に戻す
+      - AI が .pyxres を直接編集する前提になっていないか見直す
   - id: dist_not_source
     summary: dist を source の正本として扱わない
     severity: warning
@@ -585,6 +594,9 @@ validation_rules:
       checks:
         - distribution_paths_marked_non_source
     message: dist 配下が source のように扱われている可能性があります
+    suggested_actions:
+      - facts.repository.roots の dist_root を status=distribution / source_of_truth=false にそろえる
+      - source の修正先を src / assets / tools / docs 側へ戻す
   - id: generated_files_edit_policy
     summary: generated module は手編集禁止で、編集元が assets/*.yaml に固定されている
     severity: warning
@@ -599,6 +611,9 @@ validation_rules:
       checks:
         - generated_entries_mark_non_hand_editable_and_sources
     message: generated module の手編集禁止ポリシーまたは入力元定義が欠けている可能性があります
+    suggested_actions:
+      - src/generated 配下を手編集せず、assets/*.yaml を修正して tools/gen_data.py を実行する
+      - facts.generated.entries の hand_editable と generated_from を実ファイル構成にそろえる
   - id: scene_mvp_boundary
     summary: scene は MVP 境界を越えて責務を混在させない
     severity: warning
@@ -611,6 +626,9 @@ validation_rules:
       checks:
         - inspect_scene_boundary_against_mvp_roles
     message: scene の model / view / presenter / scene の責務境界が崩れている可能性があります
+    suggested_actions:
+      - src/scenes 配下で model / view / presenter の責務を見直し、pyxel 描画や state 更新の置き場を整理する
+      - framework-rule.md の M1-M4 と scene 実装の責務分担を照合する
   - id: shared_service_vs_state_boundary
     summary: shared/services の service/state holder と shared/state の横断 model の配置が repo 方針と一致する
     severity: warning
@@ -624,6 +642,9 @@ validation_rules:
       checks:
         - inspect_shared_boundary_with_state_holders
     message: shared/services の state holder と shared/state の横断 model の境界が崩れている可能性があります
+    suggested_actions:
+      - shared/services と shared/state の責務を見直し、state holder と横断 model の配置を整理する
+      - architecture_rules.yml の shared facts と実ファイル配置を照合する
   - id: build_runbook_paths
     summary: build runbook は documented command と artifact path を維持する
     severity: warning
@@ -641,3 +662,6 @@ validation_rules:
       checks:
         - compare_runbook_commands_and_artifact_defs
     message: build runbook fact と build script / artifact 定義がずれている可能性があります
+    suggested_actions:
+      - facts.runbooks の command / outputs を実在する build script と artifact path にそろえる
+      - dist artifact 定義と build_release_artifacts.py / build_web_release.py の出力先を照合する

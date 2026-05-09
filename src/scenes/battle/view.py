@@ -1,3 +1,12 @@
+"""バトル画面の View 層モジュール。
+
+- バトル状況から再生する BGM の musics index を決める純粋関数（通常戦／ボス戦／勝利）
+- 戦闘シーン用の BGM を冪等に発火する（``audio_system.play_bgm_track`` に委譲）
+- バトル画面の描画担当クラス（解釈済み ``BattleViewModel`` を受け取って描画のみ）
+  - 現在のバトルフェーズを snapshot 用の辞書として返す
+  - 敵スプライト・敵 HP バー・プレイヤーステータス枠・メッセージ枠・サブパネル・VFX オーバーレイを描画する
+
+"""
 from __future__ import annotations
 
 from typing import Any

@@ -1,0 +1,21 @@
+{
+  "_comment": "scene名 ↔ CJ ID 対応表。tools/scene_to_cj.py が読む。粗版。CJ ID は docs/customer-journeys.md に実在する '### CJxx:' 見出しと一致すること。",
+  "scenes": {
+    "battle":    ["CJ08", "CJ10", "CJ13", "CJ16", "CJ29", "CJ44"],
+    "explore":   ["CJ12", "CJ14", "CJ15", "CJ20", "CJ44"],
+    "town":      ["CJ09", "CJ15", "CJ20", "CJ44"],
+    "professor": ["CJ09", "CJ27", "CJ30"],
+    "ai_help":   ["CJ22", "CJ31", "CJ32", "CJ33", "CJ34"],
+    "menu":      ["CJ01", "CJ02", "CJ03", "CJ04", "CJ05", "CJ06", "CJ07"],
+    "shop":      ["CJ29"],
+    "splash":    ["CJ42"],
+    "title":     ["CJ42"],
+    "ending":    ["CJ30", "CJ42"]
+  },
+  "areas": {
+    "runtime": ["CJ37", "CJ41"],
+    "shared":  ["CJ37"],
+    "core":    ["CJ37"],
+    "generated": ["CJ36"]
+  }
+}

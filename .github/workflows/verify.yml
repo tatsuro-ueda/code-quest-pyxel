@@ -1,0 +1,39 @@
+# 検証ワークフロー（B2 / C4）
+#
+# push / PR のたびに以下を走らせる：
+#   1. make verify
+#      - verify-module-docstrings: モジュール docstring drift（B1）
+#      - verify-cj-cjob: CJ ID リンク健全性 + CJ→CJob カテゴリ整合（C1 / C2）
+#      - verify-scene-cj-map: scene_to_cj 対応表の健全性（C3）
+#   2. make test（pytest）
+#
+# 1 つでも失敗するとワークフローが赤くなる。
+
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # scene_to_cj.py --since が動くよう履歴を深く取る
+          fetch-depth: 50
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run make verify
+        run: make verify
+
+      - name: Run pytest
+        run: make test
