@@ -539,7 +539,7 @@ validation_rules:
     summary: pyxres を正本として扱い、AI がテキスト編集の主戦場にしない
     severity: warning
     enforcement:
-      mode: llm_assisted
+      mode: manual
     scope:
       paths:
         - assets
