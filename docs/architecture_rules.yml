@@ -457,7 +457,7 @@ facts:
       - id: top_index_html
         path: dist/index.html
         status: distribution
-        summary: 配布用トップページ
+        summary: play.html と同内容の wrapper alias
   runbooks:
     - id: build_codemaker_zip
       summary: dist/code-maker.zip だけを再生成する
@@ -470,7 +470,7 @@ facts:
     - id: build_all_release_artifacts
       summary: dist 配下の release artifact を再生成する
       steps:
-        - command: PYTHONPATH=. python tools/build_web_release.py
+        - command: python tools/build_web_release.py
           outputs:
             - dist/code-maker.zip
             - dist/pyxel.html
@@ -485,7 +485,7 @@ facts:
       summary: BGM / pyxres / view / scene を変更した後の順序
       steps:
         - command: PYTHONPATH=. python -m pytest -x
-        - command: PYTHONPATH=. python tools/build_web_release.py
+        - command: python tools/build_web_release.py
         - command: python -c "import zipfile,re; z=zipfile.ZipFile('dist/code-maker.zip'); t=z.read('block-quest/main.py').decode('utf-8'); print('AudioManager:',len(re.findall(r'class AudioManager',t))); print('SettingsScene:',len(re.findall(r'class SettingsScene',t))); print('play_bgm_track:',len(re.findall(r'play_bgm_track\\(',t)))"
         - command: git status
   migration_notes:
