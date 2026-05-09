@@ -47,6 +47,11 @@ def load_rules(path: Path) -> dict[str, Any]:
 
 
 def validate_rules_schema(data: dict[str, Any]) -> None:
+    tree = data.get("facts", {}).get("tree")
+    if not isinstance(tree, dict):
+        raise KeyError("facts.tree must be present")
+    if tree.get("path") != "." or tree.get("kind") != "root":
+        raise ValueError("facts.tree must start with path='.' and kind='root'")
     required_rule_keys = {
         "id",
         "summary",
@@ -78,6 +83,40 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
 
 def _scope_paths(rule: dict[str, Any]) -> list[str]:
     return list(rule.get("scope", {}).get("paths", []))
+
+
+def iter_tree_nodes(node: dict[str, Any]):
+    yield node
+    for child in node.get("children", []):
+        yield from iter_tree_nodes(child)
+
+
+def find_tree_node(data: dict[str, Any], path_value: str) -> dict[str, Any] | None:
+    for node in iter_tree_nodes(data["facts"]["tree"]):
+        if node.get("path") == path_value:
+            return node
+    return None
+
+
+def find_entry_point(data: dict[str, Any], entry_id: str) -> dict[str, Any] | None:
+    entries = data.get("facts", {}).get("entry_points", [])
+    return next((item for item in entries if item.get("id") == entry_id), None)
+
+
+def generated_file_nodes(data: dict[str, Any]) -> list[dict[str, Any]]:
+    nodes: list[dict[str, Any]] = []
+    for node in iter_tree_nodes(data["facts"]["tree"]):
+        path_value = node.get("path", "")
+        if node.get("kind") == "file" and path_value.startswith("src/generated/"):
+            nodes.append(node)
+    return nodes
+
+
+def distribution_artifact_nodes(data: dict[str, Any]) -> list[dict[str, Any]]:
+    dist_node = find_tree_node(data, "dist")
+    if dist_node is None:
+        return []
+    return [child for child in dist_node.get("children", []) if child.get("kind") == "file"]
 
 
 def _warning(
@@ -115,11 +154,6 @@ def _skipped(rule: dict[str, Any]) -> CheckOutcome:
     )
 
 
-def _find_repository_root(data: dict[str, Any], path_value: str) -> dict[str, Any] | None:
-    roots = data["facts"]["repository"]["roots"]
-    return next((item for item in roots if item.get("path") == path_value), None)
-
-
 def _file_contains(path: Path, needle: str) -> bool:
     return needle in path.read_text(encoding="utf-8")
 
@@ -131,14 +165,17 @@ def wrapper_chain_present(context: CheckContext, rule: dict[str, Any]) -> CheckO
         if not (repo_root / rel_path).exists():
             return _warning(rule, checked_paths, "wrapper_chain_present", reason=f"missing path: {rel_path}")
 
-    entry_chain = context.data["facts"]["runtime"]["entry_chain"]
+    entry = find_entry_point(context.data, "runtime_entry_chain")
+    if entry is None:
+        return _warning(rule, checked_paths, "wrapper_chain_present", reason="facts.entry_points.runtime_entry_chain is missing")
+    entry_chain = list(entry.get("nodes", []))
     entry_paths = [item.get("path") for item in entry_chain]
     if entry_paths != checked_paths:
         return _warning(
             rule,
             checked_paths,
             "wrapper_chain_present",
-            reason="facts.runtime.entry_chain paths do not match scope",
+            reason="facts.entry_points.runtime_entry_chain paths do not match scope",
             expected={"scope_paths": checked_paths},
             observed={"entry_chain_paths": entry_paths},
         )
@@ -177,9 +214,9 @@ def wrapper_chain_present(context: CheckContext, rule: dict[str, Any]) -> CheckO
 def distribution_paths_marked_non_source(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
-    dist_root = _find_repository_root(context.data, "dist")
+    dist_root = find_tree_node(context.data, "dist")
     if dist_root is None:
-        return _warning(rule, checked_paths, "distribution_paths_marked_non_source", reason="dist root is missing from facts.repository.roots")
+        return _warning(rule, checked_paths, "distribution_paths_marked_non_source", reason="dist root is missing from facts.tree")
     if dist_root.get("status") != "distribution":
         return _warning(
             rule,
@@ -206,7 +243,7 @@ def distribution_paths_marked_non_source(context: CheckContext, rule: dict[str, 
 def generated_entries_mark_non_hand_editable_and_sources(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
-    entries = context.data["facts"]["generated"]["entries"]
+    entries = generated_file_nodes(context.data)
     if not (repo_root / "tools/gen_data.py").is_file():
         return _warning(rule, checked_paths, "generated_entries_mark_non_hand_editable_and_sources", reason="tools/gen_data.py is missing")
 
@@ -252,8 +289,8 @@ def _command_script_paths(command: str) -> list[str]:
 def compare_runbook_commands_and_artifact_defs(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
-    artifact_paths = {item["path"] for item in context.data["facts"]["distribution"]["artifacts"]}
-    runbooks = context.data["facts"]["runbooks"]
+    artifact_paths = {item["path"] for item in distribution_artifact_nodes(context.data)}
+    runbooks = context.data["facts"].get("runbooks", [])
 
     for rel_path in checked_paths:
         if not (repo_root / rel_path).exists():

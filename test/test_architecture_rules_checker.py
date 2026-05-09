@@ -23,7 +23,29 @@ def load_checker_module():
     return check_architecture_rules
 
 
+def find_tree_node(node: dict, path_value: str) -> dict | None:
+    if node.get("path") == path_value:
+        return node
+    for child in node.get("children", []):
+        found = find_tree_node(child, path_value)
+        if found is not None:
+            return found
+    return None
+
+
 class ArchitectureRulesCheckerTest(unittest.TestCase):
+    def test_real_rules_expose_tree_first_facts(self):
+        data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
+
+        self.assertIn("tree", data["facts"])
+        self.assertNotIn("repository", data["facts"])
+        self.assertNotIn("runtime", data["facts"])
+        self.assertNotIn("generated", data["facts"])
+        self.assertNotIn("distribution", data["facts"])
+        self.assertIsNotNone(find_tree_node(data["facts"]["tree"], "src/runtime/app.py"))
+        self.assertIsNotNone(find_tree_node(data["facts"]["tree"], "src/generated/dialogue.py"))
+        self.assertIn("entry_points", data["facts"])
+
     def test_validation_rules_include_suggested_actions(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
         rules = data["validation_rules"]
@@ -82,10 +104,9 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
 
     def test_cli_fail_on_warning_returns_exit_one(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
-        for entry in data["facts"]["generated"]["entries"]:
-            if entry["id"] == "generated_dialogue":
-                entry["hand_editable"] = True
-                break
+        dialogue_node = find_tree_node(data["facts"]["tree"], "src/generated/dialogue.py")
+        self.assertIsNotNone(dialogue_node)
+        dialogue_node["hand_editable"] = True
 
         with tempfile.TemporaryDirectory() as tmp:
             broken_yaml = Path(tmp) / "architecture_rules.yml"
@@ -131,10 +152,9 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
                     "src/generated を手編集せず、assets 側を直して gen_data.py を実行する"
                 ]
                 break
-        for entry in data["facts"]["generated"]["entries"]:
-            if entry["id"] == "generated_dialogue":
-                entry["hand_editable"] = True
-                break
+        dialogue_node = find_tree_node(data["facts"]["tree"], "src/generated/dialogue.py")
+        self.assertIsNotNone(dialogue_node)
+        dialogue_node["hand_editable"] = True
 
         with tempfile.TemporaryDirectory() as tmp:
             broken_yaml = Path(tmp) / "architecture_rules.yml"

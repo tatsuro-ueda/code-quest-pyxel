@@ -23,6 +23,12 @@ def load_guardian_module():
     return architecture_guardian
 
 
+def tree_node(path: str, kind: str, **extra):
+    node = {"path": path, "kind": kind}
+    node.update(extra)
+    return node
+
+
 class ArchitectureGuardianTest(unittest.TestCase):
     def test_guardian_autofixes_generated_rule_until_clean(self):
         guardian = load_guardian_module()
@@ -56,16 +62,33 @@ class ArchitectureGuardianTest(unittest.TestCase):
                     {
                         "meta": {"document_id": "test"},
                         "facts": {
-                            "generated": {
-                                "entries": [
-                                    {
-                                        "id": "generated_dialogue",
-                                        "path": "src/generated/dialogue.py",
-                                        "status": "generated",
-                                        "hand_editable": True,
-                                        "generated_from": ["assets/dialogue.yaml"],
-                                    }
-                                ]
+                            "tree": {
+                                "path": ".",
+                                "kind": "root",
+                                "children": [
+                                    tree_node("assets", "directory", children=[tree_node("assets/dialogue.yaml", "file", status="active")]),
+                                    tree_node("tools", "directory", children=[tree_node("tools/gen_data.py", "file", status="active")]),
+                                    tree_node(
+                                        "src",
+                                        "directory",
+                                        children=[
+                                            tree_node(
+                                                "src/generated",
+                                                "directory",
+                                                children=[
+                                                    tree_node(
+                                                        "src/generated/dialogue.py",
+                                                        "file",
+                                                        id="generated_dialogue",
+                                                        status="generated",
+                                                        hand_editable=True,
+                                                        generated_from=["assets/dialogue.yaml"],
+                                                    )
+                                                ],
+                                            )
+                                        ],
+                                    ),
+                                ],
                             }
                         },
                         "validation_rules": [
@@ -93,7 +116,8 @@ class ArchitectureGuardianTest(unittest.TestCase):
             self.assertLessEqual(result["cycles"], 5)
             self.assertFalse(result["final_check"]["has_warnings"])
             fixed_yaml = yaml.safe_load(rules_path.read_text(encoding="utf-8"))
-            self.assertFalse(fixed_yaml["facts"]["generated"]["entries"][0]["hand_editable"])
+            generated_node = fixed_yaml["facts"]["tree"]["children"][2]["children"][0]["children"][0]
+            self.assertFalse(generated_node["hand_editable"])
             self.assertIn("DATA = []", (repo_root / "src" / "generated" / "dialogue.py").read_text(encoding="utf-8"))
 
     def test_guardian_returns_needs_human_when_issue_remains(self):
@@ -113,19 +137,44 @@ class ArchitectureGuardianTest(unittest.TestCase):
                     {
                         "meta": {"document_id": "test"},
                         "facts": {
-                            "runtime": {
-                                "entry_chain": [
-                                    {"id": "runtime_main_wrapper", "path": "main.py", "role": "wrapper", "status": "active"},
-                                    {"id": "runtime_shim", "path": "src/runtime/main_runtime.py", "role": "shim", "status": "active"},
-                                    {
-                                        "id": "runtime_game",
-                                        "path": "src/runtime/app.py",
-                                        "symbol": "Game",
-                                        "role": "application_root",
-                                        "status": "active",
-                                    },
-                                ]
-                            }
+                            "tree": {
+                                "path": ".",
+                                "kind": "root",
+                                "children": [
+                                    tree_node("main.py", "file", role="wrapper", status="active"),
+                                    tree_node(
+                                        "src",
+                                        "directory",
+                                        children=[
+                                            tree_node(
+                                                "src/runtime",
+                                                "directory",
+                                                children=[
+                                                    tree_node("src/runtime/main_runtime.py", "file", role="shim", status="active")
+                                                ],
+                                            )
+                                        ],
+                                    ),
+                                ],
+                            },
+                            "entry_points": [
+                                {
+                                    "id": "runtime_entry_chain",
+                                    "summary": "runtime chain",
+                                    "paths": ["main.py", "src/runtime/main_runtime.py", "src/runtime/app.py"],
+                                    "nodes": [
+                                        {"id": "runtime_main_wrapper", "path": "main.py", "role": "wrapper", "status": "active"},
+                                        {"id": "runtime_shim", "path": "src/runtime/main_runtime.py", "role": "shim", "status": "active"},
+                                        {
+                                            "id": "runtime_game",
+                                            "path": "src/runtime/app.py",
+                                            "symbol": "Game",
+                                            "role": "application_root",
+                                            "status": "active",
+                                        },
+                                    ],
+                                }
+                            ],
                         },
                         "validation_rules": [
                             {

@@ -54,11 +54,39 @@ def _generated_entry_expected_source(entry_path: str) -> str:
     return f"assets/{stem}.yaml"
 
 
+def ensure_tree_path(root: dict[str, Any], path_value: str, kind: str, **fields: Any) -> dict[str, Any]:
+    if path_value == ".":
+        root.update(fields)
+        return root
+
+    segments = path_value.split("/")
+    current = root
+    for index, segment in enumerate(segments):
+        current_path = "/".join(segments[: index + 1])
+        is_last = index == len(segments) - 1
+        wanted_kind = kind if is_last else "directory"
+        children = current.setdefault("children", [])
+        child = next((item for item in children if item.get("path") == current_path), None)
+        if child is None:
+            child = {"path": current_path, "kind": wanted_kind}
+            if wanted_kind != "file":
+                child["children"] = []
+            children.append(child)
+        elif child.get("kind") != wanted_kind:
+            child["kind"] = wanted_kind
+        current = child
+    current.update(fields)
+    if current.get("kind") != "file":
+        current.setdefault("children", [])
+    return current
+
+
 def fix_generated_files_edit_policy(repo_root: Path, rules_path: Path, warning: dict[str, Any]) -> list[dict[str, Any]]:
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
     changed_yaml = False
-    entries = data.setdefault("facts", {}).setdefault("generated", {}).setdefault("entries", [])
+    tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
+    entries = check_architecture_rules.generated_file_nodes(data)
 
     for entry in entries:
         if entry.get("hand_editable") is not False:
@@ -86,27 +114,19 @@ def fix_dist_not_source(repo_root: Path, rules_path: Path, warning: dict[str, An
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
     changed_yaml = False
-    roots = data.setdefault("facts", {}).setdefault("repository", {}).setdefault("roots", [])
-    dist_root = next((item for item in roots if item.get("path") == "dist"), None)
-    canonical = {
-        "id": "dist_root",
-        "path": "dist",
-        "role": "distribution_root",
-        "status": "distribution",
-        "source_of_truth": False,
-        "summary": "承認済み配布物の出力先",
-    }
-    if dist_root is None:
-        roots.append(canonical)
+    tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
+    dist_root = ensure_tree_path(
+        tree,
+        "dist",
+        "directory",
+        role="distribution_root",
+        status="distribution",
+        source_of_truth=False,
+        summary="承認済み配布物の出力先",
+    )
+    if dist_root:
         changed_yaml = True
-        fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "added canonical dist_root"})
-    else:
-        for key, value in canonical.items():
-            if dist_root.get(key) != value:
-                dist_root[key] = value
-                changed_yaml = True
-        if changed_yaml:
-            fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized dist_root"})
+        fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized dist root node"})
 
     build_script = repo_root / "tools" / "build_web_release.py"
     if build_script.is_file():
@@ -122,6 +142,7 @@ def fix_build_runbook_paths(repo_root: Path, rules_path: Path, warning: dict[str
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
     changed_yaml = False
+    tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
     artifacts = [
         {"id": "codemaker_zip", "path": "dist/code-maker.zip", "status": "distribution", "summary": "block-quest/main.py + my_resource.pyxres を梱包した教材版 zip"},
         {"id": "pyxel_html", "path": "dist/pyxel.html", "status": "distribution", "summary": "Web 配布用 HTML"},
@@ -129,11 +150,17 @@ def fix_build_runbook_paths(repo_root: Path, rules_path: Path, warning: dict[str
         {"id": "play_html", "path": "dist/play.html", "status": "distribution", "summary": "プレイページ"},
         {"id": "top_index_html", "path": "dist/index.html", "status": "distribution", "summary": "play.html と同内容の wrapper alias"},
     ]
-    distribution = data.setdefault("facts", {}).setdefault("distribution", {})
-    if distribution.get("artifacts") != artifacts:
-        distribution["artifacts"] = artifacts
-        changed_yaml = True
-        fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized distribution artifacts"})
+    for artifact in artifacts:
+        ensure_tree_path(
+            tree,
+            artifact["path"],
+            "file",
+            id=artifact["id"],
+            status=artifact["status"],
+            summary=artifact["summary"],
+        )
+    changed_yaml = True
+    fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized distribution artifact nodes"})
 
     runbooks = data.setdefault("facts", {}).setdefault("runbooks", [])
     for runbook in runbooks:
@@ -169,6 +196,7 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
     changed_yaml = False
+    tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
 
     main_path = repo_root / "main.py"
     if main_path.is_file():
@@ -196,18 +224,50 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
             shim_path.write_text(text, encoding="utf-8")
             fixes.append({"kind": "code", "path": str(shim_path), "detail": "normalized runtime shim tail"})
 
-    runtime = data.setdefault("facts", {}).setdefault("runtime", {})
     canonical_entry_chain = [
         {"id": "runtime_main_wrapper", "path": "main.py", "role": "wrapper", "status": "active", "summary": "src/runtime/main_runtime.py を実行する 8 行 wrapper"},
         {"id": "runtime_shim", "path": "src/runtime/main_runtime.py", "role": "shim", "status": "active", "summary": "test / Code Maker bundler 互換のための re-export shim"},
         {"id": "runtime_game", "path": "src/runtime/app.py", "symbol": "Game", "role": "application_root", "status": "active", "summary": "pyxel 初期化、DI、scene/service 組み立て、update/draw dispatcher"},
     ]
-    if runtime.get("entry_chain") != canonical_entry_chain:
-        runtime["entry_chain"] = canonical_entry_chain
+    ensure_tree_path(tree, "main.py", "file", role="runtime_wrapper", status="active", source_of_truth=False, summary="src/runtime/main_runtime.py を呼ぶ薄い wrapper")
+    ensure_tree_path(tree, "src/runtime", "directory", role="runtime_container", status="active", source_of_truth=True, summary="Pyxel 単一入口の受け皿")
+    ensure_tree_path(
+        tree,
+        "src/runtime/main_runtime.py",
+        "file",
+        role="shim",
+        status="active",
+        source_of_truth=False,
+        summary="test / Code Maker bundler 互換のための re-export shim",
+    )
+    ensure_tree_path(
+        tree,
+        "src/runtime/app.py",
+        "file",
+        role="application_root",
+        status="active",
+        source_of_truth=True,
+        symbol="Game",
+        summary="pyxel 初期化、DI、scene/service 組み立て、update/draw dispatcher",
+    )
+    entry_points = data.setdefault("facts", {}).setdefault("entry_points", [])
+    current_entry = next((item for item in entry_points if item.get("id") == "runtime_entry_chain"), None)
+    canonical_entry = {
+        "id": "runtime_entry_chain",
+        "summary": "runtime の入口は wrapper -> shim -> Game の流れを保つ",
+        "paths": [item["path"] for item in canonical_entry_chain],
+        "nodes": canonical_entry_chain,
+    }
+    if current_entry is None:
+        entry_points.append(canonical_entry)
+        changed_yaml = True
+    elif current_entry != canonical_entry:
+        current_entry.clear()
+        current_entry.update(canonical_entry)
         changed_yaml = True
     if changed_yaml:
         write_yaml(rules_path, data)
-        fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized runtime entry_chain facts"})
+        fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized runtime entry tree nodes and entry_points"})
     return fixes
 
 
