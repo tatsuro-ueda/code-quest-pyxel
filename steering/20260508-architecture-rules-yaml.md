@@ -1,9 +1,9 @@
 ---
-status: in_progress
+status: done
 priority: normal
 scheduled: 2026-05-08T00:00:00.000+09:00
 dateCreated: 2026-05-08T00:00:00.000+09:00
-dateModified: 2026-05-08T00:00:00.000+09:00
+dateModified: 2026-05-08T23:59:00.000+09:00
 tags:
   - task
   - docs
@@ -14,7 +14,7 @@ tags:
 
 # 2026年5月8日 architecture.md を architecture_rules.yml に段階移行
 
-> 状態：③ Design（task note 起票 / 設計確定、実装前）
+> 状態：⑥ Discussion（初版 YAML 実装完了 / follow-up あり）
 > 対応シナリオ：CJ37（責務が曖昧で直すほど別の所が壊れる）/ CJ44（シンプルさは変更速度の前提条件）
 > 完了条件：`docs/architecture_rules.yml` 初版が AI 検収と人間レビューの両方に使える
 
@@ -70,7 +70,7 @@ Feature: architecture_rules.yml 初版（AI 検収）
   Scenario: 文書の身分が明記されている
     Given docs/architecture_rules.yml
     When  meta を読む
-    Then  replaces に docs/architecture.md が含まれる
+    Then  intended_replacement_for に docs/architecture.md が含まれる
     And   audiences に ai と human が含まれる
 
   Scenario: facts と validation_rules が分離されている
@@ -129,7 +129,7 @@ validation_rules:
 - `document_id`
 - `version`
 - `status`
-- `replaces`
+- `intended_replacement_for`
 - `audiences`
 - `intent`
 
@@ -140,8 +140,9 @@ meta:
   document_id: architecture_rules
   version: 1
   status: draft
-  replaces:
+  intended_replacement_for:
     - docs/architecture.md
+  replacement_status: staged_migration
   audiences:
     - ai
     - human
@@ -247,7 +248,7 @@ validation_rules:
 - `code_maker_primary_editor`
 - `pyxres_source_of_truth`
 - `dist_not_source`
-- `generated_files_not_hand_edited`
+- `generated_files_edit_policy`
 - `scene_mvp_boundary`
 - `shared_service_vs_state_boundary`
 - `build_runbook_paths`
@@ -299,8 +300,9 @@ meta:
   document_id: architecture_rules
   version: 1
   status: draft
-  replaces:
+  intended_replacement_for:
     - docs/architecture.md
+  replacement_status: staged_migration
   audiences:
     - ai
     - human
@@ -333,7 +335,7 @@ validation_rules: []
 ```
 
 3. parse check
-   - `python3 -c "from pathlib import Path; import yaml; data = yaml.safe_load(Path('docs/architecture_rules.yml').read_text()); assert set(data) == {'meta', 'facts', 'validation_rules'}; assert data['meta']['replaces'] == ['docs/architecture.md']; print('schema scaffold ok')"`
+   - `python3 -c "from pathlib import Path; import yaml; data = yaml.safe_load(Path('docs/architecture_rules.yml').read_text()); assert set(data) == {'meta', 'facts', 'validation_rules'}; assert data['meta']['intended_replacement_for'] == ['docs/architecture.md']; assert data['meta']['replacement_status'] == 'staged_migration'; print('schema scaffold ok')"`
 
 #### Task B: `facts.principles` / `repository` / `data_flows` を追加する
 
@@ -396,7 +398,7 @@ validation_rules: []
    - `code_maker_primary_editor`
    - `pyxres_source_of_truth`
    - `dist_not_source`
-   - `generated_files_not_hand_edited`
+   - `generated_files_edit_policy`
    - `scene_mvp_boundary`
    - `shared_service_vs_state_boundary`
    - `build_runbook_paths`
@@ -440,6 +442,10 @@ validation_rules: []
 - top-level は `meta` / `facts` / `validation_rules` を持つ構成になった
 - `facts` と `validation_rules` は review loop を通して、実コードの配置と現行 build 挙動に揃うよう精査された
 - rule set は warning only のままで、`deterministic` / `llm_assisted` / `manual` をカバーしている
+- verification: `full yaml ok`
+- verification: `architecture coverage spot check ok`
+- verification: `CJ link OK` / `scene_to_cj map OK`
+- verification: `python3 -m pytest test/ -q` passed (`669 passed, 8 skipped`)
 
 `architecture.md` の縮小と README / checker usage の文書化は、この task とは分けた follow-up work として残す。
 

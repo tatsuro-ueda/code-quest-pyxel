@@ -2,8 +2,9 @@ meta:
   document_id: architecture_rules
   version: 1
   status: draft
-  replaces:
+  intended_replacement_for:
     - docs/architecture.md
+  replacement_status: staged_migration
   audiences:
     - ai
     - human
@@ -357,11 +358,26 @@ facts:
         status: active
         summary: HP / MP / EXP / 装備 / 所持品 / 位置などの正本 model
     ui:
+      - id: dialog_window_ui
+        path: src/shared/ui/dialog_window.py
+        role: dialog_layout
+        status: active
+        summary: 会話ウィンドウ矩形 helper
+      - id: menu_window_ui
+        path: src/shared/ui/menu_window.py
+        role: menu_layout
+        status: active
+        summary: メニュー矩形 helper
       - id: message_window_ui
         path: src/shared/ui/message_window.py
         role: message_window
         status: active
         summary: 短メッセージウィンドウ描画とページング表示
+      - id: hud_ui
+        path: src/shared/ui/hud.py
+        role: hud_layout
+        status: active
+        summary: HUD 基準座標 helper
       - id: text_renderer_ui
         path: src/shared/ui/text_renderer.py
         role: text_renderer
@@ -404,36 +420,43 @@ facts:
       - id: generated_dialogue
         path: src/generated/dialogue.py
         status: generated
+        hand_editable: false
         generated_from:
           - assets/dialogue.yaml
       - id: generated_enemies
         path: src/generated/enemies.py
         status: generated
+        hand_editable: false
         generated_from:
           - assets/enemies.yaml
       - id: generated_items
         path: src/generated/items.py
         status: generated
+        hand_editable: false
         generated_from:
           - assets/items.yaml
       - id: generated_weapons
         path: src/generated/weapons.py
         status: generated
+        hand_editable: false
         generated_from:
           - assets/weapons.yaml
       - id: generated_armors
         path: src/generated/armors.py
         status: generated
+        hand_editable: false
         generated_from:
           - assets/armors.yaml
       - id: generated_spells
         path: src/generated/spells.py
         status: generated
+        hand_editable: false
         generated_from:
           - assets/spells.yaml
       - id: generated_shops
         path: src/generated/shops.py
         status: generated
+        hand_editable: false
         generated_from:
           - assets/shops.yaml
   distribution:
@@ -562,8 +585,8 @@ validation_rules:
       checks:
         - distribution_paths_marked_non_source
     message: dist 配下が source のように扱われている可能性があります
-  - id: generated_files_provenance
-    summary: generated module が assets/*.yaml の入力元情報を持つことを確認する
+  - id: generated_files_edit_policy
+    summary: generated module は手編集禁止で、編集元が assets/*.yaml に固定されている
     severity: warning
     enforcement:
       mode: deterministic
@@ -574,8 +597,8 @@ validation_rules:
         - tools/gen_data.py
     evidence:
       checks:
-        - generated_entries_have_generated_from
-    message: generated module の provenance 定義が欠けている可能性があります
+        - generated_entries_mark_non_hand_editable_and_sources
+    message: generated module の手編集禁止ポリシーまたは入力元定義が欠けている可能性があります
   - id: scene_mvp_boundary
     summary: scene は MVP 境界を越えて責務を混在させない
     severity: warning
