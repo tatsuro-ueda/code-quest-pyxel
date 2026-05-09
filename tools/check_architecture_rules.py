@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shlex
 import sys
 from dataclasses import dataclass, field
@@ -216,6 +217,250 @@ def _manifest_entries(path: Path) -> list[str]:
             continue
         entries.append(line)
     return entries
+
+
+SCENE_ALLOWED_FILES = {
+    "__init__.py",
+    "scene.py",
+    "model.py",
+    "presenter.py",
+    "view.py",
+    "view_model.py",
+}
+SCENE_DRAW_CALL = re.compile(
+    r"(?:^|[^_a-zA-Z])pyxel\."
+    r"(blt|bltm|text|line|rect|rectb|circ|circb|cls|pset|tri|trib|clip|camera)\b"
+)
+SCENE_INPUT_CALL = re.compile(r"(pyxel\.btnp|pyxel\.btn[^_]|input_state\.btnp|input_state\.btn[^_])")
+PYXEL_ANY_CALL = re.compile(r"(?:^|[^_a-zA-Z])pyxel\.")
+PLAYER_STATE_IMPORT = re.compile(
+    r"from\s+src\.shared\.services\.player_state\s+import|import\s+src\.shared\.services\.player_state"
+)
+ITEM_USE_IMPORT = re.compile(
+    r"from\s+src\.shared\.services\.item_use\s+import|import\s+src\.shared\.services\.item_use"
+)
+SHARED_SERVICE_PYXEL_EXEMPT = {"audio_system.py", "image_banks.py"}
+
+
+def _iter_py_files(base: Path):
+    if not base.exists():
+        return
+    for path in base.rglob("*.py"):
+        if "__pycache__" in path.parts:
+            continue
+        yield path
+
+
+def _grep(pattern: re.Pattern[str], files: list[Path]) -> list[tuple[Path, int, str]]:
+    hits: list[tuple[Path, int, str]] = []
+    for path in files:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for lineno, line in enumerate(text.splitlines(), 1):
+            if pattern.search(line):
+                hits.append((path, lineno, line))
+    return hits
+
+
+def _rel_hit(repo_root: Path, hit: tuple[Path, int, str]) -> str:
+    path, lineno, line = hit
+    return f"{path.relative_to(repo_root)}:{lineno}: {line.strip()}"
+
+
+def scene_static_boundary_checks(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+    checked_paths = _scope_paths(rule)
+    repo_root = context.repo_root
+    scene_root = repo_root / "src" / "scenes"
+    if not scene_root.is_dir():
+        return _warning(rule, checked_paths, "scene_static_boundary_checks", reason="missing path: src/scenes")
+
+    scene_dirs = sorted(p for p in scene_root.iterdir() if p.is_dir() and not p.name.startswith("__"))
+    if not scene_dirs:
+        return _warning(rule, checked_paths, "scene_static_boundary_checks", reason="src/scenes has no scene directories")
+
+    for scene_dir in scene_dirs:
+        for required in ("model.py", "presenter.py", "view.py"):
+            rel = f"src/scenes/{scene_dir.name}/{required}"
+            if not (scene_dir / required).is_file():
+                return _warning(
+                    rule,
+                    checked_paths,
+                    "scene_static_boundary_checks",
+                    reason=f"missing required scene file: {rel}",
+                )
+        if scene_dir.name == "town":
+            if (scene_dir / "scene.py").exists():
+                return _warning(
+                    rule,
+                    checked_paths,
+                    "scene_static_boundary_checks",
+                    reason="town/scene.py must not exist",
+                )
+        elif not (scene_dir / "scene.py").is_file():
+            return _warning(
+                rule,
+                checked_paths,
+                "scene_static_boundary_checks",
+                reason=f"missing required scene file: src/scenes/{scene_dir.name}/scene.py",
+            )
+        unexpected = sorted(
+            child.name
+            for child in scene_dir.iterdir()
+            if child.is_file() and child.suffix == ".py" and child.name not in SCENE_ALLOWED_FILES
+        )
+        if unexpected:
+            return _warning(
+                rule,
+                checked_paths,
+                "scene_static_boundary_checks",
+                reason=f"unexpected python files in src/scenes/{scene_dir.name}: {unexpected}",
+            )
+
+    model_hits = _grep(
+        SCENE_DRAW_CALL,
+        [scene_dir / "model.py" for scene_dir in scene_dirs if (scene_dir / "model.py").is_file()],
+    )
+    if model_hits:
+        return _warning(
+            rule,
+            checked_paths,
+            "scene_static_boundary_checks",
+            reason=f"pyxel draw call in scene model: {_rel_hit(repo_root, model_hits[0])}",
+        )
+
+    presenter_hits = _grep(
+        SCENE_DRAW_CALL,
+        [scene_dir / "presenter.py" for scene_dir in scene_dirs if (scene_dir / "presenter.py").is_file()],
+    )
+    if presenter_hits:
+        return _warning(
+            rule,
+            checked_paths,
+            "scene_static_boundary_checks",
+            reason=f"pyxel draw call in scene presenter: {_rel_hit(repo_root, presenter_hits[0])}",
+        )
+
+    view_like_files: list[Path] = []
+    for scene_dir in scene_dirs:
+        for name in ("view.py", "view_model.py"):
+            path = scene_dir / name
+            if path.is_file():
+                view_like_files.append(path)
+    input_hits = _grep(SCENE_INPUT_CALL, view_like_files)
+    if input_hits:
+        return _warning(
+            rule,
+            checked_paths,
+            "scene_static_boundary_checks",
+            reason=f"input read in scene view layer: {_rel_hit(repo_root, input_hits[0])}",
+        )
+
+    return _ok(rule, checked_paths)
+
+
+def shared_directory_role_checks(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+    checked_paths = _scope_paths(rule)
+    repo_root = context.repo_root
+    services_root = repo_root / "src" / "shared" / "services"
+    state_root = repo_root / "src" / "shared" / "state"
+    if not services_root.is_dir():
+        return _warning(rule, checked_paths, "shared_directory_role_checks", reason="missing path: src/shared/services")
+    if not state_root.is_dir():
+        return _warning(rule, checked_paths, "shared_directory_role_checks", reason="missing path: src/shared/state")
+
+    player_model_node = find_tree_node(context.data, "src/shared/state/player_model.py")
+    if player_model_node is not None:
+        if player_model_node.get("role") != "player_source_of_truth" or player_model_node.get("status") != "active":
+            return _warning(
+                rule,
+                checked_paths,
+                "shared_directory_role_checks",
+                reason="player_model.py facts are not aligned with source-of-truth role",
+                expected={"path": "src/shared/state/player_model.py", "role": "player_source_of_truth", "status": "active"},
+                observed={"role": player_model_node.get("role"), "status": player_model_node.get("status")},
+            )
+    for rel_path, expected_role in (
+        ("src/shared/services/player_state.py", "legacy_player_snapshot"),
+        ("src/shared/services/item_use.py", "legacy_item_use_bridge"),
+    ):
+        node = find_tree_node(context.data, rel_path)
+        if node is not None and (node.get("status") != "legacy" or node.get("role") != expected_role):
+            return _warning(
+                rule,
+                checked_paths,
+                "shared_directory_role_checks",
+                reason=f"{Path(rel_path).name} facts are not aligned with legacy bridge status",
+                expected={"path": rel_path, "role": expected_role, "status": "legacy"},
+                observed={"role": node.get("role"), "status": node.get("status")},
+            )
+
+    for node in iter_tree_nodes(find_tree_node(context.data, "src/shared/services") or {"children": []}):
+        if node.get("kind") != "file":
+            continue
+        role = str(node.get("role", ""))
+        if role.endswith("_source_of_truth"):
+            return _warning(
+                rule,
+                checked_paths,
+                "shared_directory_role_checks",
+                reason=f"service file keeps source-of-truth role: {node.get('path')}",
+            )
+    for node in iter_tree_nodes(find_tree_node(context.data, "src/shared/state") or {"children": []}):
+        if node.get("kind") != "file":
+            continue
+        role = str(node.get("role", ""))
+        if role.endswith("_bridge") or role.endswith("_state_holder"):
+            return _warning(
+                rule,
+                checked_paths,
+                "shared_directory_role_checks",
+                reason=f"state file has service-like role: {node.get('path')}",
+            )
+
+    state_hits = _grep(PYXEL_ANY_CALL, list(_iter_py_files(state_root)))
+    if state_hits:
+        return _warning(
+            rule,
+            checked_paths,
+            "shared_directory_role_checks",
+            reason=f"pyxel access in shared/state file: {_rel_hit(repo_root, state_hits[0])}",
+        )
+
+    service_files = [
+        path for path in services_root.glob("*.py")
+        if path.name not in SHARED_SERVICE_PYXEL_EXEMPT
+    ]
+    service_hits = _grep(SCENE_DRAW_CALL, service_files)
+    if service_hits:
+        return _warning(
+            rule,
+            checked_paths,
+            "shared_directory_role_checks",
+            reason=f"pyxel draw call in shared/services file: {_rel_hit(repo_root, service_hits[0])}",
+        )
+
+    dependency_targets = list(_iter_py_files(repo_root / "src" / "runtime"))
+    dependency_targets.extend(_iter_py_files(repo_root / "src" / "scenes"))
+    player_state_hits = _grep(PLAYER_STATE_IMPORT, dependency_targets)
+    if player_state_hits:
+        return _warning(
+            rule,
+            checked_paths,
+            "shared_directory_role_checks",
+            reason=f"runtime/scenes import legacy player_state shim: {_rel_hit(repo_root, player_state_hits[0])}",
+        )
+    item_use_hits = _grep(ITEM_USE_IMPORT, dependency_targets)
+    if item_use_hits:
+        return _warning(
+            rule,
+            checked_paths,
+            "shared_directory_role_checks",
+            reason=f"runtime/scenes import legacy item_use bridge: {_rel_hit(repo_root, item_use_hits[0])}",
+        )
+
+    return _ok(rule, checked_paths)
 
 
 def wrapper_chain_present(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
@@ -442,7 +687,9 @@ CHECK_REGISTRY = {
     "wrapper_chain_present": wrapper_chain_present,
     "distribution_paths_marked_non_source": distribution_paths_marked_non_source,
     "generated_entries_mark_non_hand_editable_and_sources": generated_entries_mark_non_hand_editable_and_sources,
+    "scene_static_boundary_checks": scene_static_boundary_checks,
     "codemaker_manifest_includes_required_paths": codemaker_manifest_includes_required_paths,
+    "shared_directory_role_checks": shared_directory_role_checks,
     "compare_runbook_commands_and_artifact_defs": compare_runbook_commands_and_artifact_defs,
 }
 
