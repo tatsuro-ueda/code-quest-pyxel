@@ -504,4 +504,115 @@ facts:
       status: removed
       summary: Phase 3 で削除済
 
-validation_rules: []
+validation_rules:
+  - id: runtime_entry_chain
+    summary: runtime の入口は wrapper -> shim -> Game の流れを保つ
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - main.py
+        - src/runtime/main_runtime.py
+        - src/runtime/app.py
+    evidence:
+      checks:
+        - wrapper_chain_present
+    message: runtime の入口構成が architecture 定義から外れている可能性があります
+  - id: code_maker_primary_editor
+    summary: Code Maker を子どもの正式な編集面として扱う
+    severity: warning
+    enforcement:
+      mode: llm_assisted
+    scope:
+      paths:
+        - AGENTS.md
+        - docs/architecture.md
+        - docs/architecture_rules.yml
+        - src
+        - tools
+    evidence:
+      checks:
+        - inspect_editor_replacement_risk
+    message: Code Maker を脇役化する変更が入っている可能性があります
+  - id: pyxres_source_of_truth
+    summary: pyxres を正本として扱い、AI がテキスト編集の主戦場にしない
+    severity: warning
+    enforcement:
+      mode: llm_assisted
+    scope:
+      paths:
+        - assets
+        - src/shared/services/image_banks.py
+        - docs/architecture_rules.yml
+    evidence:
+      checks:
+        - inspect_pyxres_source_of_truth
+    message: pyxres の正本性を崩す変更が入っている可能性があります
+  - id: dist_not_source
+    summary: dist を source の正本として扱わない
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - dist
+        - docs/architecture_rules.yml
+    evidence:
+      checks:
+        - distribution_paths_marked_non_source
+    message: dist 配下が source のように扱われている可能性があります
+  - id: generated_files_not_hand_edited
+    summary: generated module は assets/*.yaml から生成される前提を崩さない
+    severity: warning
+    enforcement:
+      mode: deterministic
+    scope:
+      paths:
+        - src/generated
+        - assets
+        - tools/gen_data.py
+    evidence:
+      checks:
+        - generated_entries_have_generated_from
+    message: generated file の入力元定義が欠けている可能性があります
+  - id: scene_mvp_boundary
+    summary: scene は MVP 境界を越えて責務を混在させない
+    severity: warning
+    enforcement:
+      mode: llm_assisted
+    scope:
+      paths:
+        - src/scenes
+    evidence:
+      checks:
+        - inspect_scene_boundary
+    message: scene 内で model / presenter / view の責務が混線している可能性があります
+  - id: shared_service_vs_state_boundary
+    summary: shared/services と shared/state の役割を混在させない
+    severity: warning
+    enforcement:
+      mode: llm_assisted
+    scope:
+      paths:
+        - src/shared/services
+        - src/shared/state
+    evidence:
+      checks:
+        - inspect_shared_boundary
+    message: service と state の責務境界が崩れている可能性があります
+  - id: build_runbook_paths
+    summary: build runbook は documented command と artifact path を維持する
+    severity: warning
+    enforcement:
+      mode: manual
+    scope:
+      paths:
+        - tools/build_codemaker.py
+        - tools/build_web_release.py
+        - docs/architecture.md
+        - docs/architecture_rules.yml
+    evidence:
+      checks:
+        - compare_runbook_commands_to_actual_tools
+    message: build runbook と実際の起動方法がずれている可能性があります
