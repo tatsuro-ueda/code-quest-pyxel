@@ -562,8 +562,8 @@ validation_rules:
       checks:
         - distribution_paths_marked_non_source
     message: dist 配下が source のように扱われている可能性があります
-  - id: generated_files_not_hand_edited
-    summary: generated module は assets/*.yaml から生成される前提を崩さない
+  - id: generated_files_provenance
+    summary: generated module が assets/*.yaml の入力元情報を持つことを確認する
     severity: warning
     enforcement:
       mode: deterministic
@@ -575,7 +575,7 @@ validation_rules:
     evidence:
       checks:
         - generated_entries_have_generated_from
-    message: generated file の入力元定義が欠けている可能性があります
+    message: generated module の provenance 定義が欠けている可能性があります
   - id: scene_mvp_boundary
     summary: scene は MVP 境界を越えて責務を混在させない
     severity: warning
@@ -586,10 +586,10 @@ validation_rules:
         - src/scenes
     evidence:
       checks:
-        - inspect_scene_boundary
-    message: scene 内で model / presenter / view の責務が混線している可能性があります
+        - inspect_scene_boundary_against_mvp_roles
+    message: scene の model / view / presenter / scene の責務境界が崩れている可能性があります
   - id: shared_service_vs_state_boundary
-    summary: shared/services と shared/state の役割を混在させない
+    summary: shared/services の service/state holder と shared/state の横断 model の配置が repo 方針と一致する
     severity: warning
     enforcement:
       mode: llm_assisted
@@ -599,20 +599,22 @@ validation_rules:
         - src/shared/state
     evidence:
       checks:
-        - inspect_shared_boundary
-    message: service と state の責務境界が崩れている可能性があります
+        - inspect_shared_boundary_with_state_holders
+    message: shared/services の state holder と shared/state の横断 model の境界が崩れている可能性があります
   - id: build_runbook_paths
     summary: build runbook は documented command と artifact path を維持する
     severity: warning
     enforcement:
-      mode: manual
+      mode: deterministic
     scope:
       paths:
+        - Makefile
         - tools/build_codemaker.py
         - tools/build_web_release.py
+        - tools/build_release_artifacts.py
         - docs/architecture.md
         - docs/architecture_rules.yml
     evidence:
       checks:
-        - compare_runbook_commands_to_actual_tools
-    message: build runbook と実際の起動方法がずれている可能性があります
+        - compare_runbook_commands_and_artifact_defs
+    message: build runbook fact と build script / artifact 定義がずれている可能性があります
