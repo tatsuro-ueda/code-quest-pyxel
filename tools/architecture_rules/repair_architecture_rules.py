@@ -28,6 +28,8 @@ def run_repair(
 
     try:
         for cycle in range(1, max_cycles + 1):
+            # 毎サイクルの最初に checker の生結果を history へ積み、
+            # 「何を見てどこで止まったか」を後から追えるようにする。
             check = check_architecture_rules.run_checker(repo_root, rules_path, rule_ids=rule_ids)
             history.append({"cycle": cycle, "check": check})
             if not check["has_warnings"]:
@@ -45,6 +47,7 @@ def run_repair(
                 rule_ids=rule_ids,
                 check=check,
             )
+            # fixer が内部例外を返した場合は再試行しても改善しないので即終了。
             if fix_result["status"] == "ERROR":
                 return {
                     "status": "ERROR",
@@ -53,6 +56,7 @@ def run_repair(
                     "applied_fixes": applied_fixes,
                     "error": fix_result["error"],
                 }
+            # 「直せる rule が残っていない」状態なので、人手判断に切り替える。
             if fix_result["status"] != "FIXED":
                 return {
                     "status": "NEEDS_HUMAN",
@@ -65,6 +69,7 @@ def run_repair(
             autofixed = True
             applied_fixes.extend({"cycle": cycle, **fix} for fix in fix_result["applied_fixes"])
 
+        # 上限回数に達した場合も最後に再検査し、直り切ったのか未収束なのかを確定させる。
         final_check = check_architecture_rules.run_checker(repo_root, rules_path, rule_ids=rule_ids)
         history.append({"cycle": max_cycles + 1, "check": final_check})
         return {

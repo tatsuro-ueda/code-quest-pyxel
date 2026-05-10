@@ -16,21 +16,24 @@ meta:
 facts:
   principles:
 
-    - id: code_maker_primary_editor
+    - label_ja: Code Maker を子どもの正式編集面として守る
+      id: code_maker_primary_editor
       summary: Pyxel Code Maker は子どもの正式な編集面である。
       must:
         - tilemap / sprite / sound / .pyxres の編集面では Code Maker を最初の正として扱わなければならない
       must_not:
         - 内部都合で Code Maker を不要化したり脇役化したりしてはならない
 
-    - id: docs_are_requirements
+    - label_ja: docs を要求として扱う
+      id: docs_are_requirements
       summary: docs と code が食い違ったら未実装 / バグ / 仕様ずれとして扱う。
       must:
         - code ではなく docs に書かれた要求との差分を明記しなければならない
       must_not:
         - code があるから正しいと考えてはならない
 
-    - id: pyxres_source_of_truth
+    - label_ja: pyxres を正本として守る
+      id: pyxres_source_of_truth
       summary: .pyxres は子どもと親が Code Maker で編集する正本である。
       must:
         - AI は code / build / packaging / guardrail / test を整えなければならない
@@ -38,14 +41,16 @@ facts:
       must_not:
         - AI が .pyxres の中身をテキスト編集の主戦場にしてはならない
 
-    - id: dist_is_distribution
+    - label_ja: dist を配布物として扱う
+      id: dist_is_distribution
       summary: dist は配布物の置き場であり source ではない。
       must:
         - source の修正は src / assets / tools / docs 側で行わなければならない
       must_not:
         - dist 配下を手修正の正本にしてはならない
 
-    - id: done_requires_real_artifacts
+    - label_ja: done に実物確認を含める
+      id: done_requires_real_artifacts
       summary: done はコード・テスト・実物確認を含む。
       must:
         - zip / .pyxres / HTML / save data / 実行画面の実物確認を行わなければならない
@@ -1340,7 +1345,8 @@ facts:
 
   flows:
 
-    - id: generated_game_data
+    - label_ja: YAML から generated data へ流す
+      id: generated_game_data
       summary: 人が編集する YAML は tools/gen_data.py を通って generated module へ変換される
       steps:
         - assets/*.yaml
@@ -1349,7 +1355,8 @@ facts:
         - src/game_data.py
         - runtime
 
-    - id: pyxres_roundtrip
+    - label_ja: pyxres を Code Maker と往復させる
+      id: pyxres_roundtrip
       summary: 子どもが編集する pyxres は Code Maker と配布 zip を通って assets に戻る
       steps:
         - assets/blockquest.pyxres
@@ -1357,7 +1364,8 @@ facts:
         - Pyxel Code Maker
         - assets/blockquest.pyxres
 
-    - id: pyxres_runtime_loading
+    - label_ja: runtime が pyxres を読む流れを保つ
+      id: pyxres_runtime_loading
       summary: runtime は assets の pyxres を読み込み、ImageBanks はロード / 保存 / fallback を担う
       steps:
         - assets/blockquest.pyxres
@@ -1366,24 +1374,28 @@ facts:
 
   entry_points:
 
-    - id: runtime_entry_chain
+    - label_ja: runtime 入口チェーン
+      id: runtime_entry_chain
       summary: runtime の入口は wrapper -> shim -> Game の流れを保つ
       paths:
         - main.py
         - src/runtime/main_runtime.py
         - src/runtime/app.py
       nodes:
-        - id: runtime_main_wrapper
+        - label_ja: main.py wrapper
+          id: runtime_main_wrapper
           path: main.py
           role: wrapper
           status: active
           summary: src/runtime/main_runtime.py を実行する 8 行 wrapper
-        - id: runtime_shim
+        - label_ja: runtime shim
+          id: runtime_shim
           path: src/runtime/main_runtime.py
           role: shim
           status: active
           summary: test / Code Maker bundler 互換のための re-export shim
-        - id: runtime_game
+        - label_ja: Game application root
+          id: runtime_game
           path: src/runtime/app.py
           symbol: Game
           role: application_root
@@ -1392,7 +1404,8 @@ facts:
 
   runbooks:
 
-    - id: build_codemaker_zip
+    - label_ja: Code Maker zip 再生成
+      id: build_codemaker_zip
       summary: dist/code-maker.zip だけを再生成する
       steps:
         - command: python tools/build_codemaker.py
@@ -1401,7 +1414,8 @@ facts:
           checks:
             - tools/codemaker_manifest.txt の順番で inline される
 
-    - id: build_all_release_artifacts
+    - label_ja: release artifact 一括再生成
+      id: build_all_release_artifacts
       summary: dist 配下の release artifact を再生成する
       steps:
         - command: python tools/build_web_release.py
@@ -1416,7 +1430,8 @@ facts:
           common_failures:
             - python tools/build_release_artifacts.py を直接叩くと ModuleNotFoundError になる
 
-    - id: post_change_release_sequence
+    - label_ja: 変更後の配布確認手順
+      id: post_change_release_sequence
       summary: BGM / pyxres / view / scene を変更した後の順序
       steps:
         - command: PYTHONPATH=. python -m pytest -x
@@ -1429,7 +1444,8 @@ facts:
 
   codemaker_bundle_contracts:
 
-    - id: codemaker_non_scene_bundle
+    - label_ja: Code Maker 非 scene bundle 契約
+      id: codemaker_non_scene_bundle
       manifest_path: tools/codemaker_manifest.txt
       required_paths:
         - src/shared/assets/jp_font_data.py
@@ -1471,26 +1487,30 @@ facts:
 
   migration_notes:
 
-    - id: blockquestapp_legacy_shell
+    - label_ja: BlockQuestApp legacy shell 撤去
+      id: blockquestapp_legacy_shell
       path: src/app.py
       symbol: BlockQuestApp
       status: removed
       summary: 2026-05-09 に削除。runtime root は src/runtime/app.py::Game のみ
 
-    - id: core_scene_manager_legacy
+    - label_ja: core scene manager legacy 撤去
+      id: core_scene_manager_legacy
       path: src/core/scene_manager.py
       symbol: SceneManager
       status: removed
       summary: 2026-05-09 に削除。scene 切替メタは shared/services/scene_manager.py に一本化
 
-    - id: development_runtime_removed
+    - label_ja: development runtime 撤去
+      id: development_runtime_removed
       path: src/runtime/main_development_runtime.py
       status: removed
       summary: Phase 3 で削除済
 
 validation_rules:
 
-  - id: runtime_entry_chain
+  - label_ja: runtime 入口チェーンを保つ
+    id: runtime_entry_chain
     summary: runtime の入口は wrapper -> shim -> Game の流れを保つ
     severity: warning
     enforcement:
@@ -1510,10 +1530,11 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      repair_autofix: implemented
+      guardian_autofix: implemented
       rationale: tree-first facts と実ファイル照合だけで判定でき、guardian も安全に正規形へ戻せる
 
-  - id: code_maker_primary_editor
+  - label_ja: Code Maker 正式編集面を守る
+    id: code_maker_primary_editor
     summary: Code Maker を子どもの正式な編集面として扱う
     severity: warning
     enforcement:
@@ -1535,10 +1556,11 @@ validation_rules:
     coverage:
       deterministic_review: keep_llm_assisted
       next_checker_unit: null
-      repair_autofix: not_recommended
+      guardian_autofix: not_recommended
       rationale: 子ども向けの正式編集面を脇役化していないかは path だけでは判定できず、変更意図の読解が要る
 
-  - id: pyxres_source_of_truth
+  - label_ja: pyxres 正本性を守る
+    id: pyxres_source_of_truth
     summary: pyxres を正本として扱い、AI がテキスト編集の主戦場にしない
     severity: warning
     enforcement:
@@ -1558,10 +1580,11 @@ validation_rules:
     coverage:
       deterministic_review: keep_manual
       next_checker_unit: null
-      repair_autofix: not_recommended
+      guardian_autofix: not_recommended
       rationale: 実物の pyxres と Code Maker roundtrip を見て判断すべきで、Python だけの自動修復は危険
 
-  - id: dist_not_source
+  - label_ja: dist を source 扱いしない
+    id: dist_not_source
     summary: dist を source の正本として扱わない
     severity: warning
     enforcement:
@@ -1580,10 +1603,11 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      repair_autofix: implemented
+      guardian_autofix: implemented
       rationale: dist root と artifact node は facts.tree と実在 path だけで機械判定できる
 
-  - id: generated_files_edit_policy
+  - label_ja: generated files 編集ポリシー
+    id: generated_files_edit_policy
     summary: generated module は手編集禁止で、編集元が assets/*.yaml に固定されている
     severity: warning
     enforcement:
@@ -1603,10 +1627,11 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      repair_autofix: implemented
+      guardian_autofix: implemented
       rationale: generated file node と生成元 YAML の対応は tree-first facts と gen_data.py 実行で機械化できる
 
-  - id: scene_mvp_boundary
+  - label_ja: scene MVP 境界を守る
+    id: scene_mvp_boundary
     summary: scene は MVP 境界を越えて責務を混在させない
     severity: warning
     enforcement:
@@ -1624,11 +1649,12 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      repair_autofix: not_recommended
+      guardian_autofix: not_recommended
       rationale: 既存の framework rule guard を checker に昇格し、pyxel 呼び出し境界と scene package 形状を deterministic
         に検査できる
 
-  - id: codemaker_manifest_non_scene_paths
+  - label_ja: Code Maker manifest 必須 path
+    id: codemaker_manifest_non_scene_paths
     summary: Code Maker manifest は architecture で宣言した non-scene bundle path を含む
     severity: warning
     enforcement:
@@ -1647,10 +1673,11 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      repair_autofix: implemented
+      guardian_autofix: implemented
       rationale: required path 一覧と manifest の差分は静的に比較でき、guardian も安全に追記だけを行える
 
-  - id: shared_service_vs_state_boundary
+  - label_ja: shared service と state の境界
+    id: shared_service_vs_state_boundary
     summary: shared/services の service/state holder と shared/state の横断 model の配置が repo 方針と一致する
     severity: warning
     enforcement:
@@ -1669,11 +1696,12 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      repair_autofix: not_recommended
+      guardian_autofix: not_recommended
       rationale: shared/services と shared/state の配置、legacy shim 依存、pyxel 利用禁止を deterministic に検査できるが、
         ファイル移動の autofix は安全でない
 
-  - id: build_runbook_paths
+  - label_ja: build runbook と path の整合
+    id: build_runbook_paths
     summary: build runbook は documented command と artifact path を維持する
     severity: warning
     enforcement:
@@ -1696,5 +1724,5 @@ validation_rules:
     coverage:
       deterministic_review: implemented
       next_checker_unit: null
-      repair_autofix: implemented
+      guardian_autofix: implemented
       rationale: runbook command と artifact path のズレは tree-first facts と build script 名で機械検査できる

@@ -26,7 +26,8 @@ VALID_REPAIR_AUTOFIX = {
     "candidate",
     "not_recommended",
 }
-REPAIR_AUTOFIX_KEY = "repair_autofix"
+PRIMARY_AUTOFIX_KEY = "guardian_autofix"
+LEGACY_AUTOFIX_KEYS = (PRIMARY_AUTOFIX_KEY, "repair_autofix")
 
 
 @dataclass
@@ -55,13 +56,24 @@ def load_rules(path: Path) -> dict[str, Any]:
     for key in ("meta", "facts", "validation_rules"):
         if key not in data:
             raise KeyError(f"missing top-level key: {key}")
+    # checker 本体は rule ごとの差分検出に集中させたいので、
+    # 入口で YAML の骨格を先に落として異常系を早期に止める。
     validate_rules_schema(data)
     return data
+
+
+def _coverage_autofix_key(coverage: dict[str, Any]) -> str | None:
+    for key in LEGACY_AUTOFIX_KEYS:
+        if key in coverage:
+            return key
+    return None
 
 def validate_rules_schema(data: dict[str, Any]) -> None:
     tree = data.get("facts", {}).get("tree")
     if not isinstance(tree, dict):
         raise KeyError("facts.tree must be present")
+    # facts.tree は repo 全体の基準木なので、root 形状が崩れた時点で
+    # 個別 rule の判定を続けてもノイズしか増えない。
     if tree.get("path") != "." or tree.get("kind") != "root":
         raise ValueError("facts.tree must start with path='.' and kind='root'")
     contracts = data.get("facts", {}).get("codemaker_bundle_contracts", [])
@@ -106,8 +118,11 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
         for key in ("deterministic_review", "next_checker_unit", "rationale"):
             if key not in coverage:
                 raise KeyError(f"rule {rule['id']} coverage missing key: {key}")
-        if REPAIR_AUTOFIX_KEY not in coverage:
-            raise KeyError(f"rule {rule['id']} coverage missing key: {REPAIR_AUTOFIX_KEY}")
+        autofix_key = _coverage_autofix_key(coverage)
+        if autofix_key is None:
+            raise KeyError(
+                f"rule {rule['id']} coverage missing key: {PRIMARY_AUTOFIX_KEY} (or legacy repair_autofix)"
+            )
         if coverage["deterministic_review"] not in VALID_DETERMINISTIC_REVIEWS:
             raise ValueError(
                 f"rule {rule['id']} coverage.deterministic_review must be one of "
@@ -116,14 +131,16 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
         next_checker_unit = coverage["next_checker_unit"]
         if next_checker_unit is not None and not isinstance(next_checker_unit, str):
             raise TypeError(f"rule {rule['id']} coverage.next_checker_unit must be a string or null")
-        autofix_value = coverage[REPAIR_AUTOFIX_KEY]
+        autofix_value = coverage[autofix_key]
         if autofix_value not in VALID_REPAIR_AUTOFIX:
             raise ValueError(
-                f"rule {rule['id']} coverage.{REPAIR_AUTOFIX_KEY} must be one of "
+                f"rule {rule['id']} coverage.{autofix_key} must be one of "
                 f"{sorted(VALID_REPAIR_AUTOFIX)}"
             )
         if not isinstance(coverage["rationale"], str) or not coverage["rationale"].strip():
             raise TypeError(f"rule {rule['id']} coverage.rationale must be a non-empty string")
+        # deterministic rule は「実装した checker 名」と必ず 1 対 1 に対応させる。
+        # ここが曖昧だと YAML 上では deterministic なのに実行不能という事故が起きる。
         if rule["enforcement"]["mode"] == "deterministic":
             for check_name in checks:
                 if check_name not in CHECK_REGISTRY:
@@ -283,6 +300,8 @@ def scene_static_boundary_checks(context: CheckContext, rule: dict[str, Any]) ->
     if not scene_dirs:
         return _warning(rule, checked_paths, "scene_static_boundary_checks", reason="src/scenes has no scene directories")
 
+    # まず scene ディレクトリ構造そのものを検証する。
+    # 構造が壊れている状態でレイヤ境界だけ見ても原因が読み取りにくいため。
     for scene_dir in scene_dirs:
         for required in ("model.py", "presenter.py", "view.py"):
             rel = f"src/scenes/{scene_dir.name}/{required}"
@@ -321,6 +340,8 @@ def scene_static_boundary_checks(context: CheckContext, rule: dict[str, Any]) ->
                 reason=f"unexpected python files in src/scenes/{scene_dir.name}: {unexpected}",
             )
 
+    # 次に「どの層が pyxel を触っているか」を静的に洗う。
+    # 最初の違反だけ返す設計なので、warning の指す場所が常に最短経路になる。
     model_hits = _grep(
         SCENE_DRAW_CALL,
         [scene_dir / "model.py" for scene_dir in scene_dirs if (scene_dir / "model.py").is_file()],
@@ -373,6 +394,8 @@ def shared_directory_role_checks(context: CheckContext, rule: dict[str, Any]) ->
     if not state_root.is_dir():
         return _warning(rule, checked_paths, "shared_directory_role_checks", reason="missing path: src/shared/state")
 
+    # player_model.py は shared/state 側の SSoT として明示されているので、
+    # facts 側の role/status が崩れていないかを先に点検する。
     player_model_node = find_tree_node(context.data, "src/shared/state/player_model.py")
     if player_model_node is not None:
         if player_model_node.get("role") != "player_source_of_truth" or player_model_node.get("status") != "active":
@@ -399,6 +422,8 @@ def shared_directory_role_checks(context: CheckContext, rule: dict[str, Any]) ->
                 observed={"role": node.get("role"), "status": node.get("status")},
             )
 
+    # facts 上の role 整合を見た後、実ファイルに pyxel や legacy bridge 参照が
+    # 残っていないかを grep で二重確認する。
     for node in iter_tree_nodes(find_tree_node(context.data, "src/shared/services") or {"children": []}):
         if node.get("kind") != "file":
             continue
@@ -473,6 +498,8 @@ def wrapper_chain_present(context: CheckContext, rule: dict[str, Any]) -> CheckO
         if not (repo_root / rel_path).exists():
             return _warning(rule, checked_paths, "wrapper_chain_present", reason=f"missing path: {rel_path}")
 
+    # この rule は「facts に書いてある入口チェーン」と「実コード上の import/run 連鎖」の
+    # 両方が一致して初めて OK とする。
     entry = find_entry_point(context.data, "runtime_entry_chain")
     if entry is None:
         return _warning(rule, checked_paths, "wrapper_chain_present", reason="facts.entry_points.runtime_entry_chain is missing")
@@ -742,6 +769,8 @@ def build_coverage_review(results: list[dict[str, Any]]) -> dict[str, Any]:
     repair_implemented_rule_ids: list[str] = []
     keep_non_deterministic_rule_ids: list[str] = []
 
+    # ここは検査結果の要約ではなく、「この rule 群を今後どこまで自動化できるか」の
+    # 棚卸しを返すメタレポート。
     for item in results:
         mode = item["mode"]
         if mode in mode_counts:
@@ -761,7 +790,8 @@ def build_coverage_review(results: list[dict[str, Any]]) -> dict[str, Any]:
         elif deterministic_review in {"keep_llm_assisted", "keep_manual"}:
             keep_non_deterministic_rule_ids.append(item["rule_id"])
 
-        repair_autofix = coverage.get(REPAIR_AUTOFIX_KEY)
+        autofix_key = _coverage_autofix_key(coverage)
+        repair_autofix = coverage.get(autofix_key) if autofix_key is not None else None
         if repair_autofix == "candidate":
             repair_candidate_rule_ids.append(item["rule_id"])
         elif repair_autofix == "implemented":
@@ -810,6 +840,8 @@ def run_checker(
         if rule_ids is not None and rule["id"] not in rule_ids:
             continue
         mode = rule["enforcement"]["mode"]
+        # 非 deterministic rule も結果から消さず、skipped として残す。
+        # これで coverage_review 側が「まだ人手/LLM に寄っている rule」を集計できる。
         if mode != "deterministic":
             results.append(result_record(rule, _skipped(rule)))
             continue

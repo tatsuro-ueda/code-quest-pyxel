@@ -34,13 +34,13 @@ def coverage_metadata(
     *,
     deterministic_review: str,
     next_checker_unit: str | None = None,
-    repair_autofix: str,
+    guardian_autofix: str,
     rationale: str = "fixture",
 ) -> dict:
     return {
         "deterministic_review": deterministic_review,
         "next_checker_unit": next_checker_unit,
-        "repair_autofix": repair_autofix,
+        "guardian_autofix": guardian_autofix,
         "rationale": rationale,
     }
 
@@ -91,6 +91,7 @@ class FixArchitectureRulesTest(unittest.TestCase):
                     },
                     "validation_rules": [
                         {
+                            "label_ja": "サンプルルール",
                             "id": "sample_rule",
                             "summary": "sample",
                             "severity": "warning",
@@ -101,7 +102,7 @@ class FixArchitectureRulesTest(unittest.TestCase):
                             "suggested_actions": ["sample action"],
                             "coverage": coverage_metadata(
                                 deterministic_review="keep_manual",
-                                repair_autofix="not_recommended",
+                                guardian_autofix="not_recommended",
                             ),
                         }
                     ],
@@ -114,7 +115,7 @@ class FixArchitectureRulesTest(unittest.TestCase):
         self.assertRegex(text, r"summary: first file\n\n\s+- path: beta\.txt")
         self.assertRegex(text, r"children:\n\n\s+- path: src/a\.py")
         self.assertRegex(text, r"summary: nested first\n\n\s+- path: src/b\.py")
-        self.assertRegex(text, r"validation_rules:\n\n\s+- id: sample_rule")
+        self.assertRegex(text, r"validation_rules:\n\n\s+- label_ja: サンプルルール")
 
     def test_run_fixer_applies_generated_rule_fix_once(self):
         fixer = load_fixer_module()
@@ -189,7 +190,7 @@ class FixArchitectureRulesTest(unittest.TestCase):
                                 "suggested_actions": ["run gen_data"],
                                 "coverage": coverage_metadata(
                                     deterministic_review="implemented",
-                                    repair_autofix="implemented",
+                                    guardian_autofix="implemented",
                                 ),
                             }
                         ],
@@ -210,6 +211,93 @@ class FixArchitectureRulesTest(unittest.TestCase):
         generated_node = fixed_yaml["facts"]["tree"]["children"][2]["children"][0]["children"][0]
         self.assertFalse(generated_node["hand_editable"])
         self.assertIn("DATA = []", generated_text)
+
+    def test_fix_runtime_entry_chain_preserves_label_ja(self):
+        fixer = load_fixer_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            (repo_root / "src" / "runtime").mkdir(parents=True, exist_ok=True)
+            (repo_root / "main.py").write_text("print('stale')\n", encoding="utf-8")
+            (repo_root / "src" / "runtime" / "main_runtime.py").write_text(
+                "from src.runtime.app import run as _run\n",
+                encoding="utf-8",
+            )
+            (repo_root / "src" / "runtime" / "app.py").write_text(
+                "class Game:\n    pass\n\ndef run():\n    return 0\n",
+                encoding="utf-8",
+            )
+            rules_path = repo_root / "architecture_rules.yml"
+            rules_path.write_text(
+                yaml.safe_dump(
+                    {
+                        "meta": {"document_id": "test"},
+                        "facts": {
+                            "tree": {
+                                "path": ".",
+                                "kind": "root",
+                                "children": [
+                                    tree_node("main.py", "file", id="runtime_main_wrapper", label_ja="実行ラッパー"),
+                                    tree_node(
+                                        "src",
+                                        "directory",
+                                        children=[
+                                            tree_node(
+                                                "src/runtime",
+                                                "directory",
+                                                children=[
+                                                    tree_node(
+                                                        "src/runtime/main_runtime.py",
+                                                        "file",
+                                                        id="runtime_shim",
+                                                        label_ja="runtime shim",
+                                                    ),
+                                                    tree_node(
+                                                        "src/runtime/app.py",
+                                                        "file",
+                                                        id="runtime_game",
+                                                        label_ja="Game本体",
+                                                    ),
+                                                ],
+                                            )
+                                        ],
+                                    ),
+                                ],
+                            },
+                            "entry_points": [
+                                {
+                                    "id": "runtime_entry_chain",
+                                    "label_ja": "runtime入口チェーン",
+                                    "summary": "stale summary",
+                                    "paths": ["main.py"],
+                                    "nodes": [
+                                        {
+                                            "id": "runtime_main_wrapper",
+                                            "label_ja": "実行ラッパー",
+                                            "path": "main.py",
+                                            "role": "stale",
+                                            "status": "stale",
+                                            "summary": "stale node",
+                                        }
+                                    ],
+                                }
+                            ],
+                            "codemaker_bundle_contracts": [],
+                        },
+                        "validation_rules": [],
+                    },
+                    allow_unicode=True,
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            fixer.fix_runtime_entry_chain(repo_root, rules_path, {"rule_id": "runtime_entry_chain"})
+            fixed_yaml = yaml.safe_load(rules_path.read_text(encoding="utf-8"))
+
+        runtime_entry = fixed_yaml["facts"]["entry_points"][0]
+        self.assertEqual(runtime_entry["label_ja"], "runtime入口チェーン")
+        self.assertEqual(runtime_entry["nodes"][0]["label_ja"], "実行ラッパー")
 
 
 if __name__ == "__main__":

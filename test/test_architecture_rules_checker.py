@@ -37,13 +37,13 @@ def coverage_metadata(
     *,
     deterministic_review: str,
     next_checker_unit: str | None = None,
-    repair_autofix: str,
+    guardian_autofix: str,
     rationale: str = "fixture",
 ) -> dict:
     return {
         "deterministic_review": deterministic_review,
         "next_checker_unit": next_checker_unit,
-        "repair_autofix": repair_autofix,
+        "guardian_autofix": guardian_autofix,
         "rationale": rationale,
     }
 
@@ -81,10 +81,38 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
             self.assertIsInstance(coverage, dict)
             self.assertIn("deterministic_review", coverage)
             self.assertIn("next_checker_unit", coverage)
-            self.assertIn("repair_autofix", coverage)
-            self.assertNotIn("guardian_autofix", coverage)
+            self.assertIn("guardian_autofix", coverage)
+            self.assertNotIn("repair_autofix", coverage)
             self.assertIn("rationale", coverage)
             self.assertEqual(len([key for key in coverage if key.endswith("_autofix")]), 1)
+
+    def test_major_id_sections_put_label_ja_before_id(self):
+        data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
+
+        self.assertTrue(all("label_ja" in item for item in data["facts"]["principles"]))
+        self.assertTrue(all("label_ja" in item for item in data["facts"]["flows"]))
+        self.assertTrue(all("label_ja" in item for item in data["facts"]["entry_points"]))
+        self.assertTrue(all("label_ja" in item for item in data["facts"]["runbooks"]))
+        self.assertTrue(all("label_ja" in item for item in data["facts"]["codemaker_bundle_contracts"]))
+        self.assertTrue(all("label_ja" in item for item in data["facts"]["migration_notes"]))
+        self.assertTrue(all("label_ja" in item for item in data["validation_rules"]))
+
+        for item in data["facts"]["principles"]:
+            self.assertEqual(list(item.keys())[:2], ["label_ja", "id"])
+        for item in data["facts"]["flows"]:
+            self.assertEqual(list(item.keys())[:2], ["label_ja", "id"])
+        for item in data["facts"]["entry_points"]:
+            self.assertEqual(list(item.keys())[:2], ["label_ja", "id"])
+            for node in item.get("nodes", []):
+                self.assertEqual(list(node.keys())[:2], ["label_ja", "id"])
+        for item in data["facts"]["runbooks"]:
+            self.assertEqual(list(item.keys())[:2], ["label_ja", "id"])
+        for item in data["facts"]["codemaker_bundle_contracts"]:
+            self.assertEqual(list(item.keys())[:2], ["label_ja", "id"])
+        for item in data["facts"]["migration_notes"]:
+            self.assertEqual(list(item.keys())[:2], ["label_ja", "id"])
+        for item in data["validation_rules"]:
+            self.assertEqual(list(item.keys())[:2], ["label_ja", "id"])
 
     def test_codemaker_contract_excludes_removed_legacy_shell_paths(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
@@ -245,7 +273,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
                                 "suggested_actions": ["restore missing manifest paths"],
                                 "coverage": coverage_metadata(
                                     deterministic_review="implemented",
-                                    repair_autofix="implemented",
+                                    guardian_autofix="implemented",
                                 ),
                             }
                         ],
@@ -300,7 +328,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
                                 "suggested_actions": ["fix scene boundary"],
                                 "coverage": coverage_metadata(
                                     deterministic_review="implemented",
-                                    repair_autofix="not_recommended",
+                                    guardian_autofix="not_recommended",
                                 ),
                             }
                         ],
@@ -402,7 +430,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
                                 "suggested_actions": ["fix shared boundary"],
                                 "coverage": coverage_metadata(
                                     deterministic_review="implemented",
-                                    repair_autofix="not_recommended",
+                                    guardian_autofix="not_recommended",
                                 ),
                             }
                         ],

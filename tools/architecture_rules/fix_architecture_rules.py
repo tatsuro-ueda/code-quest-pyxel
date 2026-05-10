@@ -67,11 +67,16 @@ def _format_yaml_for_humans(data: dict[str, Any]) -> str:
         stripped = line.lstrip()
         indent = len(line) - len(stripped)
         needs_separator = False
+        # YAML 自体は機械が読めれば十分だが、このファイルは人が review して直すことも多い。
+        # 主要セクションの前に空行を差し込んで diff を読みやすくする。
         if line in {"facts:", "validation_rules:"} or line in major_fact_keys:
             needs_separator = True
         elif stripped.startswith("- path:"):
             needs_separator = True
-        elif stripped.startswith("- id:") and indent <= 4:
+        elif (
+            stripped.startswith("- id:")
+            or stripped.startswith("- label_ja:")
+        ) and indent <= 4:
             needs_separator = True
 
         if needs_separator and formatted and formatted[-1] != "":
@@ -119,6 +124,8 @@ def _manifest_insert_before_marker(lines: list[str], path: str, marker: str | No
 
 
 def _insert_codemaker_manifest_path(lines: list[str], path: str) -> None:
+    # manifest は順序にも意味があるため、単純 append ではなく
+    # 既存セクションの近くへ差し込んで可読性を保つ。
     if path in {
         "src/shared/services/debug_service.py",
         "src/shared/services/scene_manager.py",
@@ -169,6 +176,8 @@ def ensure_tree_path(root: dict[str, Any], path_value: str, kind: str, **fields:
 
     segments = path_value.split("/")
     current = root
+    # facts.tree に親ディレクトリがまだ無くても repair が進められるよう、
+    # 足りないノードを上から順に補完する。
     for index, segment in enumerate(segments):
         current_path = "/".join(segments[: index + 1])
         is_last = index == len(segments) - 1
@@ -189,6 +198,37 @@ def ensure_tree_path(root: dict[str, Any], path_value: str, kind: str, **fields:
     return current
 
 
+def _merge_runtime_entry_preserving_extras(
+    current_entry: dict[str, Any],
+    canonical_entry: dict[str, Any],
+) -> dict[str, Any]:
+    merged_entry = dict(current_entry)
+    existing_nodes = current_entry.get("nodes", [])
+    canonical_nodes = canonical_entry.get("nodes", [])
+    merged_nodes: list[dict[str, Any]] = []
+
+    # canonical が保証したい最小構造だけ上書きし、
+    # 追加メタデータは current 側からなるべく保持する。
+    for index, canonical_node in enumerate(canonical_nodes):
+        existing_node = (
+            existing_nodes[index]
+            if isinstance(existing_nodes, list)
+            and index < len(existing_nodes)
+            and isinstance(existing_nodes[index], dict)
+            else {}
+        )
+        merged_node = dict(existing_node)
+        merged_node.update(canonical_node)
+        merged_nodes.append(merged_node)
+
+    for key, value in canonical_entry.items():
+        if key == "nodes":
+            merged_entry[key] = merged_nodes
+            continue
+        merged_entry[key] = value
+    return merged_entry
+
+
 def fix_generated_files_edit_policy(repo_root: Path, rules_path: Path, warning: dict[str, Any]) -> list[dict[str, Any]]:
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
@@ -196,6 +236,8 @@ def fix_generated_files_edit_policy(repo_root: Path, rules_path: Path, warning: 
     tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
     entries = check_architecture_rules.generated_file_nodes(data)
 
+    # generated file rule は Python 実体を書き換えず、facts 側の宣言だけを正す。
+    # 生成物そのものは別フローで再生成するのが前提。
     for entry in entries:
         if entry.get("hand_editable") is not False:
             entry["hand_editable"] = False
@@ -223,6 +265,8 @@ def fix_dist_not_source(repo_root: Path, rules_path: Path, warning: dict[str, An
     fixes: list[dict[str, Any]] = []
     changed_yaml = False
     tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
+    # dist 配下は build の結果物なので、code を直接修正せず
+    # architecture facts と再 build だけで整合を取り直す。
     dist_root = ensure_tree_path(
         tree,
         "dist",
@@ -271,6 +315,8 @@ def fix_build_runbook_paths(repo_root: Path, rules_path: Path, warning: dict[str
     fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized distribution artifact nodes"})
 
     runbooks = data.setdefault("facts", {}).setdefault("runbooks", [])
+    # runbook は script と artifact を同時に説明する契約なので、
+    # path の補完も両者を一括で揃える。
     for runbook in runbooks:
         if runbook.get("id") == "build_codemaker_zip":
             step = runbook.setdefault("steps", [{}])[0]
@@ -328,6 +374,7 @@ def fix_codemaker_manifest_non_scene_paths(
     lines = _read_manifest_entries_with_lines(manifest_path)
     entries = _manifest_entries(lines)
     changed = False
+    # 既存のコメント行は保持したまま、足りない path だけを所定位置へ挿入する。
     for rel_path in required_paths:
         if rel_path in entries:
             continue
@@ -354,6 +401,8 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
     tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
 
     main_path = repo_root / "main.py"
+    # まず実コード側の wrapper/shim を canonical 形に寄せる。
+    # facts だけ直しても実 entry chain が壊れていれば rule は再発するため。
     if main_path.is_file():
         if main_path.read_text(encoding="utf-8") != CANONICAL_MAIN_WRAPPER:
             main_path.write_text(CANONICAL_MAIN_WRAPPER, encoding="utf-8")
@@ -379,6 +428,7 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
             shim_path.write_text(text, encoding="utf-8")
             fixes.append({"kind": "code", "path": str(shim_path), "detail": "normalized runtime shim tail"})
 
+    # 次に YAML 側の facts / entry_points を揃え、checker が参照する宣言面も一致させる。
     canonical_entry_chain = [
         {"id": "runtime_main_wrapper", "path": "main.py", "role": "wrapper", "status": "active", "summary": "src/runtime/main_runtime.py を実行する 8 行 wrapper"},
         {"id": "runtime_shim", "path": "src/runtime/main_runtime.py", "role": "shim", "status": "active", "summary": "test / Code Maker bundler 互換のための re-export shim"},
@@ -416,10 +466,12 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
     if current_entry is None:
         entry_points.append(canonical_entry)
         changed_yaml = True
-    elif current_entry != canonical_entry:
-        current_entry.clear()
-        current_entry.update(canonical_entry)
-        changed_yaml = True
+    else:
+        merged_entry = _merge_runtime_entry_preserving_extras(current_entry, canonical_entry)
+        if current_entry != merged_entry:
+            current_entry.clear()
+            current_entry.update(merged_entry)
+            changed_yaml = True
     if changed_yaml:
         write_yaml(rules_path, data)
         fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized runtime entry tree nodes and entry_points"})
@@ -459,6 +511,8 @@ def run_fixer(
 
         applied_fixes: list[dict[str, Any]] = []
         warnings = [item for item in current_check["results"] if item["status"] == "warning"]
+        # autofix できるのは registry に登録された rule だけ。
+        # 未登録 warning は silent success にせず、そのまま NEEDS_HUMAN へ流す。
         for warning in warnings:
             fixer = FIXER_REGISTRY.get(warning["rule_id"])
             if fixer is None:
