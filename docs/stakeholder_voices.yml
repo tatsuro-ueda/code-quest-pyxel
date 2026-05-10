@@ -538,6 +538,163 @@ facts:
         - docs/customer-journeys.md
         - docs/product-requirements-map.md
 
+    - id: req_enemy_balance_adjustable
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_enemy_balance_adjustable_roundtrip
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ08
+        - product_requirements_battle:CJG08
+      summary: 強すぎる敵は数値を短いループで調整し、戦闘全体を壊さず再確認できる
+      must:
+        - 敵の HP ATK DEF EXP GOLD を変えた結果がすぐ戦闘へ反映される
+        - 数値変更後もダメージ計算 報酬 レベルアップの基本が壊れない
+      must_not:
+        - 数値変更だけで戦闘結果や報酬整合を壊さない
+        - 反映確認の前に長い手戻りを前提にしない
+      affected_paths:
+        - assets/enemies.yaml
+        - src/game_data.py
+        - src/scenes/battle/scene.py
+        - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_data_progressions.py
+        - tools/gen_data.py
+      verification_refs:
+        - docs/product-requirements-battle.md
+        - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_data_progressions.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-battle.md
+
+    - id: req_new_enemy_spawn_and_render
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_new_enemy_spawn_and_render
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ10
+        - product_requirements_battle:CJG10
+      summary: 新しい敵は必要情報をそろえて追加でき、指定場所で出現し、見た目つきで戦える
+      must:
+        - 新しい敵に必要なデータ項目をそろえて追加できる
+        - 指定した zone で出現し、戦闘画面で見た目を確認できる
+      must_not:
+        - データだけ増えてゲーム中で会えない敵を作らない
+        - 子どもが描いた見た目と切り離して敵追加を完了扱いしない
+      affected_paths:
+        - assets/enemies.yaml
+        - dist/
+        - src/game_data.py
+        - src/scenes/battle/scene.py
+        - src/scenes/battle/view.py
+        - tools/build_codemaker.py
+        - tools/gen_data.py
+      verification_refs:
+        - docs/product-requirements-battle.md
+        - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_data_progressions.py
+        - tools/build_codemaker.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-battle.md
+
+    - id: req_new_spell_usable_feedback
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_new_spell_usable_feedback
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ13
+        - product_requirements_battle:CJG13
+      summary: 新しい呪文は追加後に戦闘で使え、使えない時も理由が分かる
+      must:
+        - 新しい呪文に必要なデータ項目をそろえて追加できる
+        - 戦闘中に選択して MP 消費や効果を確認できる
+        - MP 不足など使えない理由がメッセージで分かる
+      must_not:
+        - 呪文名だけ見えて実際には使えない状態を作らない
+        - 使えない理由を無言失敗にしない
+      affected_paths:
+        - assets/spells.yaml
+        - src/game_data.py
+        - src/scenes/battle/scene.py
+        - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_player_model_spell_learn.py
+        - test/test_spell_logic.py
+        - tools/gen_data.py
+      verification_refs:
+        - docs/product-requirements-battle.md
+        - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_player_model_spell_learn.py
+        - test/test_spell_logic.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-battle.md
+
+    - id: req_global_balance_tunable_replay
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_decision_power
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_global_balance_tunable_replay
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ29
+        - product_requirements_battle:CJG29
+      summary: 後半難易度や成長カーブをまとめて調整しても、子どもが通しプレイで採否を判断できる
+      must:
+        - 指定した範囲の敵や成長カーブをまとめて調整できる
+        - 調整後も通しプレイと再共有のループを回せる
+      must_not:
+        - 前半まで巻き込む無差別調整にしない
+        - 数値だけ変えて子どもの採否確認なしに完了扱いしない
+      affected_paths:
+        - assets/enemies.yaml
+        - assets/spells.yaml
+        - dist/
+        - src/game_data.py
+        - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_data_progressions.py
+        - tools/build_web_release.py
+        - tools/gen_data.py
+        - tools/test_web_compat.py
+      verification_refs:
+        - docs/product-requirements-battle.md
+        - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_data_progressions.py
+        - tools/build_web_release.py
+        - tools/test_web_compat.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-battle.md
+
     - id: req_child_keeps_decision_power
       status: active
       kind: experience
@@ -996,6 +1153,85 @@ facts:
         refs:
           - docs/product-requirements-map.md
           - tools/build_codemaker.py
+
+    - id: acc_enemy_balance_adjustable_roundtrip
+      status: active
+      requirement_id: req_enemy_balance_adjustable
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ08
+        - product_requirements_battle:CJG08
+      summary: 強すぎる敵を調整したあと、戦闘と報酬の基本が壊れず再確認できる
+      given: 親子が特定の敵を強すぎると感じて数値を調整したい
+      when: 敵の HP ATK DEF EXP GOLD を変更して Run する
+      then:
+        - 変更した敵の手ごたえが戦闘ですぐ変わる
+        - ダメージ計算 勝利報酬 レベルアップの基本は壊れない
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_cjg_battle_flow_smoke.py
+          - test/test_cjg_data_progressions.py
+
+    - id: acc_new_enemy_spawn_and_render
+      status: active
+      requirement_id: req_new_enemy_spawn_and_render
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ10
+        - product_requirements_battle:CJG10
+      summary: 新しい敵を足したら会いに行けて見た目つきで戦える
+      given: 子どもが新しい敵の見た目を考え、親が敵データと出現 zone を追加したい
+      when: 新しい敵を追加して Run し、指定 zone を歩いて戦闘へ入る
+      then:
+        - 指定した zone でその敵に遭遇できる
+        - 戦闘画面でその敵の見た目を確認できる
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-battle.md
+          - tools/build_codemaker.py
+          - test/test_cjg_battle_flow_smoke.py
+
+    - id: acc_new_spell_usable_feedback
+      status: active
+      requirement_id: req_new_spell_usable_feedback
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ13
+        - product_requirements_battle:CJG13
+      summary: 新しい呪文は戦闘中に使え、使えない時も理由が分かる
+      given: 新しい呪文が SPELLS データに追加され、プレイヤーが習得条件を満たしている
+      when: 戦闘中にその呪文を選択する
+      then:
+        - 呪文が選択肢に現れ、使えるときは効果と MP 消費が反映される
+        - MP 不足など使えない時は理由がメッセージで分かる
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_cjg_battle_flow_smoke.py
+          - test/test_cjg_player_model_spell_learn.py
+          - test/test_spell_logic.py
+
+    - id: acc_global_balance_tunable_replay
+      status: active
+      requirement_id: req_global_balance_tunable_replay
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ29
+        - product_requirements_battle:CJG29
+      summary: 後半難易度や成長カーブをまとめて変えても子どもが通しプレイで採否を決められる
+      given: 敵や呪文を何度か追加した結果、後半の難易度や成長ペースを見直したい
+      when: 指定範囲の敵や成長カーブを調整し、Web build も更新して通しプレイする
+      then:
+        - 調整対象の範囲だけ難易度や成長ペースが変わる
+        - 子どもが通しプレイでちょうどよさを判断し、必要なら再共有できる
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-battle.md
+          - tools/build_web_release.py
+          - tools/test_web_compat.py
 
     - id: acc_child_keeps_decision_power_review
       status: active

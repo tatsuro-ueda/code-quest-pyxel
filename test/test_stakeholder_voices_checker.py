@@ -122,8 +122,8 @@ class StakeholderVoicesCheckerTest(unittest.TestCase):
         self.assertIn("tasknote_contracts", data["facts"])
         self.assertIn("validation_rules", data)
         self.assertGreaterEqual(len(data["facts"]["source_documents"]), 7)
-        self.assertGreaterEqual(len(data["facts"]["requirements"]), 17)
-        self.assertGreaterEqual(len(data["facts"]["acceptance"]), 17)
+        self.assertGreaterEqual(len(data["facts"]["requirements"]), 21)
+        self.assertGreaterEqual(len(data["facts"]["acceptance"]), 21)
 
     def test_run_checker_executes_deterministic_rules_without_warnings_on_real_repo(self):
         checker = load_checker_module()
