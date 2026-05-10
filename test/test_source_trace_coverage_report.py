@@ -225,6 +225,18 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         self.assertIn("customer_jobs", document_ids)
         self.assertIn("framework_rule", document_ids)
 
+    def test_real_repo_report_covers_all_map_prd_refs(self):
+        report_module = load_report_module()
+
+        payload = report_module.build_report(ROOT, ROOT / "docs" / "stakeholder_voices.yml")
+        document = next(item for item in payload["documents"] if item["doc_id"] == "product_requirements_map")
+
+        self.assertEqual(
+            document["referenced_refs"],
+            ["CJG01", "CJG02", "CJG03", "CJG04", "CJG05", "CJG06", "CJG07"],
+        )
+        self.assertEqual(document["missing_refs"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -301,6 +301,243 @@ facts:
         - docs/customer-journeys.md
         - docs/product-requirements-platform.md
 
+    - id: req_map_first_tile_visible
+      status: active
+      kind: experience
+      priority: p0
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_map_first_tile_visible_roundtrip
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ01
+        - product_requirements_map:CJG01
+      summary: 子どもが置いた最初のタイルはすぐ見えてそのまま遊べる
+      must:
+        - Tilemap で置いた 1 マスの変化がすぐ見える
+        - Run するとその変化がゲーム内にも反映される
+      must_not:
+        - クリックしても何も起きないように見せない
+        - 実行時だけ別の地形へ補正しない
+      affected_paths:
+        - dist/
+        - src/shared/constants/tile_data.py
+        - src/shared/services/image_banks.py
+        - tools/build_codemaker.py
+        - tools/probe_codemaker_layout.py
+      verification_refs:
+        - docs/product-requirements-map.md
+        - tools/build_codemaker.py
+        - tools/probe_codemaker_layout.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-map.md
+
+    - id: req_map_roads_match_runtime
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_map_roads_match_runtime
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ02
+        - product_requirements_map:CJG02
+      summary: 子どもが置いた道は見た目も通り方もそのまま世界になる
+      must:
+        - エディタで見えた道の形がゲームでも一致する
+        - 道として置いた場所は続けて歩ける
+      must_not:
+        - 見た目は道なのに歩けない状態を作らない
+        - 実行時だけ道の形を別物へ補正しない
+      affected_paths:
+        - src/scenes/explore/model.py
+        - src/shared/constants/tile_data.py
+        - src/shared/services/image_banks.py
+        - tools/build_codemaker.py
+        - tools/probe_codemaker_layout.py
+      verification_refs:
+        - docs/product-requirements-map.md
+        - tools/build_codemaker.py
+        - tools/probe_codemaker_layout.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-map.md
+
+    - id: req_map_forest_blocks_cleanly
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_map_forest_blocks_cleanly
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ03
+        - product_requirements_map:CJG03
+      summary: 森は見た目どおりに通れない場所と通れる隙間を伝える
+      must:
+        - 木を密集させると通行不可エリアになる
+        - 隙間として残した草地は歩ける
+      must_not:
+        - 見た目だけ森で歩けてしまう状態にしない
+      affected_paths:
+        - src/scenes/explore/model.py
+        - src/shared/constants/tile_data.py
+        - src/shared/services/world_generation.py
+        - tools/build_codemaker.py
+      verification_refs:
+        - docs/product-requirements-map.md
+        - tools/build_codemaker.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-map.md
+
+    - id: req_map_water_shape_readable
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_map_water_shape_readable
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ04
+        - product_requirements_map:CJG04
+      summary: 水と岸はひと目で分かる湖として見え、通れない
+      must:
+        - 水タイルは水として見えて通れない
+        - 岸と組み合わせて湖としてまとまって見える
+      must_not:
+        - 水なのに歩ける状態を作らない
+      affected_paths:
+        - src/scenes/explore/view.py
+        - src/shared/constants/tile_data.py
+        - src/shared/services/image_banks.py
+        - tools/build_codemaker.py
+        - tools/probe_codemaker_layout.py
+      verification_refs:
+        - docs/product-requirements-map.md
+        - tools/build_codemaker.py
+        - tools/probe_codemaker_layout.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-map.md
+
+    - id: req_map_decorations_preserve_walkability
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+      acceptance_ids:
+        - acc_map_decorations_preserve_walkability
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ05
+        - product_requirements_map:CJG05
+      summary: 装飾は世界をにぎやかにしても歩きやすさを壊さない
+      must:
+        - 装飾で見た目の個性を増やせる
+        - 装飾を置いても基本の通行性を壊さない
+      must_not:
+        - 花や岩を置いただけで急に通れなくしない
+      affected_paths:
+        - src/scenes/explore/model.py
+        - src/shared/constants/tile_data.py
+        - src/shared/services/world_generation.py
+        - tools/build_codemaker.py
+      verification_refs:
+        - docs/product-requirements-map.md
+        - tools/build_codemaker.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-map.md
+
+    - id: req_map_maze_playtestable
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_map_maze_playtestable
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ06
+        - product_requirements_map:CJG06
+      summary: 迷路は壁と道の役割が分かれ、自分で解いて確かめられる
+      must:
+        - 壁と道の役割が見た目どおりに分かれる
+        - 子どもが入口から出口まで自分で確かめられる
+      must_not:
+        - 壁なのに抜けられる あるいは道なのに進めない状態を作らない
+      affected_paths:
+        - src/scenes/explore/model.py
+        - src/scenes/explore/presenter.py
+        - src/shared/constants/tile_data.py
+        - tools/build_codemaker.py
+      verification_refs:
+        - docs/product-requirements-map.md
+        - tools/build_codemaker.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-map.md
+
+    - id: req_map_landmarks_stay_special
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+      acceptance_ids:
+        - acc_map_landmarks_stay_special
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ07
+        - product_requirements_map:CJG07
+      summary: ランドマークは特別な場所として正しい形で置けて触れる
+      must:
+        - 大きいランドマークが正しい形で置ける
+        - ランドマークは乗る場所ではなく触る場所として伝わる
+      must_not:
+        - 既存の拠点やランドマークと重ねて意味を壊さない
+      affected_paths:
+        - src/scenes/explore/presenter.py
+        - src/shared/constants/tile_data.py
+        - src/shared/services/landmark_events.py
+        - tools/build_codemaker.py
+      verification_refs:
+        - docs/product-requirements-map.md
+        - tools/build_codemaker.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-map.md
+
     - id: req_child_keeps_decision_power
       status: active
       kind: experience
@@ -623,6 +860,142 @@ facts:
           - tools/build_web_release.py
           - tools/test_headless.py
           - tools/test_web_compat.py
+
+    - id: acc_map_first_tile_visible_roundtrip
+      status: active
+      requirement_id: req_map_first_tile_visible
+      priority: p0
+      source_trace_refs:
+        - customer_journeys:CJ01
+        - product_requirements_map:CJG01
+      summary: 置いた最初のタイルが見えてそのまま遊べる
+      given: Tilemap タブで 1 マスのタイル編集を行える
+      when: 子どもがタイルを 1 個置いて Run する
+      then:
+        - 置いたマスの見た目がその場で変わる
+        - ゲームを起動するとその変化がゲーム内にも反映される
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-map.md
+          - tools/build_codemaker.py
+          - tools/probe_codemaker_layout.py
+
+    - id: acc_map_roads_match_runtime
+      status: active
+      requirement_id: req_map_roads_match_runtime
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ02
+        - product_requirements_map:CJG02
+      summary: 置いた道の形と通り方が runtime と一致する
+      given: 子どもが Tilemap で道を連続して配置した
+      when: Run してゲーム内でその道を歩く
+      then:
+        - エディタで見えた道のつながり方がゲームでも一致する
+        - 道として置いた場所を連続して歩ける
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-map.md
+          - tools/build_codemaker.py
+          - tools/probe_codemaker_layout.py
+
+    - id: acc_map_forest_blocks_cleanly
+      status: active
+      requirement_id: req_map_forest_blocks_cleanly
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ03
+        - product_requirements_map:CJG03
+      summary: 森は見た目どおりに通行不可エリアとして伝わる
+      given: 木タイルをまとめて配置して森を作る
+      when: Run してキャラを森に向かって歩かせる
+      then:
+        - 木タイルの上は歩けない
+        - 隙間として残した草地は歩ける
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-map.md
+          - tools/build_codemaker.py
+
+    - id: acc_map_water_shape_readable
+      status: active
+      requirement_id: req_map_water_shape_readable
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ04
+        - product_requirements_map:CJG04
+      summary: 水と岸が湖としてまとまり、通れないと分かる
+      given: 水タイルと岸タイルを組み合わせて水辺を作る
+      when: Run して見た目と通行可否を確認する
+      then:
+        - 水辺が湖としてまとまって見える
+        - 水と岸は通行不可として振る舞う
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-map.md
+          - tools/build_codemaker.py
+          - tools/probe_codemaker_layout.py
+
+    - id: acc_map_decorations_preserve_walkability
+      status: active
+      requirement_id: req_map_decorations_preserve_walkability
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ05
+        - product_requirements_map:CJG05
+      summary: 装飾は世界の個性を増やしても歩きやすさを壊さない
+      given: 花や岩などの装飾タイルを配置する
+      when: Run してその上を歩く
+      then:
+        - 装飾で見た目の違いを出せる
+        - 装飾を置いても基本の通行性は保たれる
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-map.md
+          - tools/build_codemaker.py
+
+    - id: acc_map_maze_playtestable
+      status: active
+      requirement_id: req_map_maze_playtestable
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ06
+        - product_requirements_map:CJG06
+      summary: 迷路は壁と道の役割を保ったまま自分で解いて確かめられる
+      given: 子どもが壁と道を組み合わせて迷路を作った
+      when: Run して入口から出口まで歩く
+      then:
+        - 壁は抜けられず道だけを進める
+        - 行き止まりでは引き返しながら自分で解ける
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-map.md
+          - tools/build_codemaker.py
+
+    - id: acc_map_landmarks_stay_special
+      status: active
+      requirement_id: req_map_landmarks_stay_special
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ07
+        - product_requirements_map:CJG07
+      summary: ランドマークは特別な場所として置けて隣接から触れられる
+      given: 世界樹や通信塔などのランドマークを配置したい
+      when: Run してランドマークへ近づきインタラクションする
+      then:
+        - ランドマークは正しい形で置かれ上には乗れない
+        - 隣接した状態で特別な場所としてイベントを起こせる
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-map.md
+          - tools/build_codemaker.py
 
     - id: acc_child_keeps_decision_power_review
       status: active

@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-09T00:00:00.000+09:00
 dateCreated: 2026-05-09T00:00:00.000+09:00
@@ -25,20 +25,29 @@ stakeholder_ids:
 affected_paths:
   - docs/product-requirements-map.md
   - docs/stakeholder_voices.yml
-  - docs/superpowers/plans/
-  - test/
-  - tools/
+  - docs/superpowers/plans/2026-05-09-stakeholder-voices-map-prd-migration.md
+  - test/test_source_trace_coverage_report.py
+  - test/test_stakeholder_voices_checker.py
+  - test/test_fix_stakeholder_voices.py
+  - test/test_repair_stakeholder_voices.py
+  - tools/check_stakeholder_voices.py
+  - tools/report_source_trace_coverage.py
   - steering/
 verification_refs:
-  - python -m pytest test/test_stakeholder_voices_checker.py -q
+  - python -m pytest test/test_source_trace_coverage_report.py test/test_stakeholder_voices_checker.py test/test_fix_stakeholder_voices.py test/test_repair_stakeholder_voices.py -q
+  - python tools/report_source_trace_coverage.py
   - python tools/check_stakeholder_voices.py
-done_checks: []
+done_checks:
+  - python -m pytest test/test_source_trace_coverage_report.py test/test_stakeholder_voices_checker.py -q
+  - python -m pytest test/test_source_trace_coverage_report.py test/test_stakeholder_voices_checker.py test/test_fix_stakeholder_voices.py test/test_repair_stakeholder_voices.py -q
+  - python tools/report_source_trace_coverage.py
+  - python tools/check_stakeholder_voices.py
 ---
 
 # 2026年5月9日 stakeholder_voices map PRD migration
 
-> 状態：① Journey
-> 次のゲート：（CC）`product-requirements-map.md` の `CJG01-CJG07` を requirement / acceptance へ落とす plan を書く
+> 状態：⑤ Result（実装完了）
+> 実装 plan: [2026-05-09-stakeholder-voices-map-prd-migration.md](/home/exedev/code-quest-pyxel/docs/superpowers/plans/2026-05-09-stakeholder-voices-map-prd-migration.md)
 
 ---
 
@@ -175,11 +184,12 @@ flowchart TD
 
 > 必ず上から順に実施。CCがCoVeで自力検証しながら進める。
 
-- [ ] （CC）`/superpowers:writing-plans` で plan を書き、この note に task 単位で反映する
-- [ ] （CC）map migration 用 red test を追加する
-- [ ] （CC）`CJG01-CJG07` を stakeholder voices に移植する
-- [ ] （CC）coverage report と checker の改善を確認する
-- [ ] （CC）Result に実装過程、Discussion に結論・懸念・次ノート候補を残す
+- [x] （CC）`/superpowers:writing-plans` で plan を書き、この note に task 単位で反映する
+  plan: [2026-05-09-stakeholder-voices-map-prd-migration.md](/home/exedev/code-quest-pyxel/docs/superpowers/plans/2026-05-09-stakeholder-voices-map-prd-migration.md)
+- [x] （CC）map migration 用 red test を追加する
+- [x] （CC）`CJG01-CJG07` を stakeholder voices に移植する
+- [x] （CC）coverage report と checker の改善を確認する
+- [x] （CC）Result に実装過程、Discussion に結論・懸念・次ノート候補を残す
 
 ### 作業記録
 
@@ -193,17 +203,38 @@ flowchart TD
 
 ## 5) Result（成果物）
 
-実装の場合はここに記入しなくて良い
+- `writing-plans` に従って [2026-05-09-stakeholder-voices-map-prd-migration.md](/home/exedev/code-quest-pyxel/docs/superpowers/plans/2026-05-09-stakeholder-voices-map-prd-migration.md) を作成し、`coverage red -> YAML migration -> checker/report verify` の順に実装計画を固定した。
+- red test として [test_source_trace_coverage_report.py](/home/exedev/code-quest-pyxel/test/test_source_trace_coverage_report.py) に `product_requirements_map` の `referenced_refs == CJG01-CJG07` と `missing_refs == []` を追加し、[test_stakeholder_voices_checker.py](/home/exedev/code-quest-pyxel/test/test_stakeholder_voices_checker.py) に real repo の requirement / acceptance 数が 17 以上になる期待を追加した。移植前は `referenced_refs == []` と `requirements == 10` で red だった。
+- [stakeholder_voices.yml](/home/exedev/code-quest-pyxel/docs/stakeholder_voices.yml) に map 系 requirement 7 件と acceptance 7 件を追加した。
+  - requirements: `req_map_first_tile_visible`, `req_map_roads_match_runtime`, `req_map_forest_blocks_cleanly`, `req_map_water_shape_readable`, `req_map_decorations_preserve_walkability`, `req_map_maze_playtestable`, `req_map_landmarks_stay_special`
+  - acceptance: `acc_map_first_tile_visible_roundtrip`, `acc_map_roads_match_runtime`, `acc_map_forest_blocks_cleanly`, `acc_map_water_shape_readable`, `acc_map_decorations_preserve_walkability`, `acc_map_maze_playtestable`, `acc_map_landmarks_stay_special`
+- request は増設せず、既存の `rq_child_edit_ownership` と `rq_parent_fast_feedback` を中心根拠にした。これで request の粒度を増やしすぎず、map 体験の requirement / acceptance だけを拡張できた。
+- `source_trace_refs` は 7 件すべてで `customer_journeys:CJ01-CJ07` と `product_requirements_map:CJG01-CJG07` を持つため、map PRD と journeys の両側から trace できる。
+- CoVe:
+  - シナリオ1 `map PRD の 7 項目を stakeholder voices から辿れる`: coverage report で `product_requirements_map` の `referenced_refs` が `CJG01-CJG07` になり達成。
+  - シナリオ2 `Code Maker の map 体験を requirement と acceptance に落とせる`: タイル配置、道、森、水辺、装飾、迷路、ランドマークを 7 requirement / 7 acceptance に分離して達成。
+  - シナリオ3 `coverage report が map docs の進捗改善を示す`: `product_requirements_map` は `7/7 missing` から `0 missing` へ改善し達成。
+  - シナリオ4 `checker と task note contract を壊さない`: `python tools/check_stakeholder_voices.py` は `warning_rules: 0` を維持し達成。
+- focused verify:
+  - `python -m pytest test/test_source_trace_coverage_report.py test/test_stakeholder_voices_checker.py -q` -> `15 passed`
+- full stakeholder verify:
+  - `python -m pytest test/test_source_trace_coverage_report.py test/test_stakeholder_voices_checker.py test/test_fix_stakeholder_voices.py test/test_repair_stakeholder_voices.py -q`
+  - `python tools/report_source_trace_coverage.py`
+  - `python tools/check_stakeholder_voices.py`
 
 ---
 
 ## 6) Discussion（反省）
 
-- 起票時点の仮説：`CJG01-CJG07` は request を増やしすぎず、既存の child/parent request にぶら下げながら requirement / acceptance を増やす方が扱いやすい
-- 起票時点の仮説：移植後は `product_requirements_map` の missing を `0` か、それに近いところまで落とせる
+- 結論：`CJG01-CJG07` は request 増設なしで既存 request にぶら下げる設計で十分だった。map PRD の value は request 層より requirement / acceptance 層を厚くした方が読みやすい。
+- 結論：coverage report を red test に使ったのは正しかった。移植前後の差分を `product_requirements_map` の missing 数でそのまま確認できた。
+- 懸念：map requirement は manual verification を多く含むため、将来的に Code Maker の実機検証や screenshot-based deterministic checks が増えたら `verification.refs` をより強くできる。
+- 懸念：`customer_journeys` 側は map 7 件が移植されたが、まだ missing 24 件残っている。次は battle か remaining journeys をテーマごとに切る必要がある。
+- 次に起票すべき task note 1：`product-requirements-battle.md` の `CJG08/CJG10/CJG13/CJG29` を stakeholder voices へ移植する note
+- 次に起票すべき task note 2：`customer_journeys` の残り missing 24 件をテーマ分割して移植する note
 
 ---
 
 ### 反省とルール化
 
-- 次にやること：`writing-plans` で map 7 項目の exact migration shape を固定する
+- 次にやること：battle PRD migration note を起票し、coverage report の `product_requirements_battle 4 missing` を次の red にする
