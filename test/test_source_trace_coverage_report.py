@@ -208,6 +208,61 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         self.assertGreaterEqual(len(report["errors"]), 1)
         self.assertEqual(report["errors"][0]["kind"], "unknown_doc_id")
 
+    def test_build_report_counts_later_status_trace_refs(self):
+        report_module = load_report_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            (repo_root / "docs").mkdir(parents=True, exist_ok=True)
+            (repo_root / "docs" / "customer-journeys.md").write_text(
+                "# journeys\n\n## CJ14\n",
+                encoding="utf-8",
+            )
+            rules_path = repo_root / "stakeholder_voices.yml"
+            rules_path.write_text(
+                yaml.safe_dump(
+                    make_rules_document(
+                        source_documents=[
+                            {
+                                "id": "customer_journeys",
+                                "path": "docs/customer-journeys.md",
+                                "extraction": {
+                                    "regex": [r"\bCJ\d+\b"],
+                                },
+                            }
+                        ],
+                        requests=[],
+                        requirements=[
+                            {
+                                "id": "req_child_goal_guidance_visible",
+                                "status": "later",
+                                "kind": "experience",
+                                "priority": "p1",
+                                "derived_from_request_ids": [],
+                                "stakeholder_ids": [],
+                                "acceptance_ids": [],
+                                "summary": "goal guidance stays on backlog",
+                                "must": ["keep a trace even when deferred"],
+                                "must_not": ["drop the source ref"],
+                                "affected_paths": ["src/scenes/explore/view.py"],
+                                "verification_refs": ["tools/test_headless.py"],
+                                "source_refs": ["docs/customer-journeys.md"],
+                                "source_trace_refs": ["customer_journeys:CJ14"],
+                            }
+                        ],
+                    ),
+                    allow_unicode=True,
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            report = report_module.build_report(repo_root, rules_path)
+
+        self.assertEqual(report["status"], "OK")
+        self.assertEqual(report["documents"][0]["referenced_refs"], ["CJ14"])
+        self.assertEqual(report["documents"][0]["missing_refs"], [])
+
     def test_cli_runs_on_real_repo_and_returns_document_summaries(self):
         completed = subprocess.run(
             [sys.executable, str(ROOT / "tools" / "report_source_trace_coverage.py")],

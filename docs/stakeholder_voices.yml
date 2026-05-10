@@ -792,7 +792,7 @@ facts:
         - docs/product-requirements-platform.md
 
     - id: req_child_goal_guidance_visible
-      status: active
+      status: later
       kind: experience
       priority: p1
       derived_from_request_ids:
@@ -967,7 +967,7 @@ facts:
         - docs/product-requirements-av.md
 
     - id: req_scene_transition_polish_deferred
-      status: active
+      status: later
       kind: experience
       priority: p1
       derived_from_request_ids:
@@ -2125,7 +2125,7 @@ facts:
           - tools/test_web_compat.py
 
     - id: acc_child_goal_guidance_visible
-      status: active
+      status: later
       requirement_id: req_child_goal_guidance_visible
       priority: p1
       source_trace_refs:
@@ -2223,7 +2223,7 @@ facts:
           - test/test_damage_vfx.py
 
     - id: acc_scene_transition_polish_deferred
-      status: active
+      status: later
       requirement_id: req_scene_transition_polish_deferred
       priority: p1
       source_trace_refs:

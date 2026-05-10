@@ -346,6 +346,74 @@ class StakeholderVoicesCheckerTest(unittest.TestCase):
         self.assertTrue(result["has_warnings"])
         self.assertEqual(result["results"][0]["failed_checks"], ["acceptance_has_verification"])
 
+    def test_run_checker_warns_when_later_requirement_has_missing_source_trace(self):
+        checker = load_checker_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            (repo_root / "docs").mkdir(parents=True, exist_ok=True)
+            (repo_root / "docs" / "customer-journeys.md").write_text(
+                "# journeys\n\n## CJ14\n",
+                encoding="utf-8",
+            )
+            rules_path = repo_root / "stakeholder_voices.yml"
+            rules_path.write_text(
+                yaml.safe_dump(
+                    make_rules_document(
+                        requirements=[
+                            {
+                                "id": "req_child_goal_guidance_visible",
+                                "status": "later",
+                                "kind": "experience",
+                                "priority": "p1",
+                                "derived_from_request_ids": ["rq_dev_safe"],
+                                "stakeholder_ids": ["st_repo_developer"],
+                                "acceptance_ids": [],
+                                "summary": "goal guidance stays deferred",
+                                "must": ["keep its trace visible"],
+                                "must_not": ["drop trace refs on later items"],
+                                "affected_paths": ["src/scenes/explore/view.py"],
+                                "verification_refs": ["tools/test_headless.py"],
+                                "source_refs": ["docs/customer-journeys.md"],
+                                "source_trace_refs": [],
+                            }
+                        ],
+                        acceptance=[],
+                        source_documents=[
+                            {
+                                "id": "customer_journeys",
+                                "path": "docs/customer-journeys.md",
+                            }
+                        ],
+                        validation_rules=[
+                            {
+                                "id": "source_traceability_integrity",
+                                "summary": "tracked items keep live source trace refs",
+                                "severity": "warning",
+                                "enforcement": {"mode": "deterministic"},
+                                "scope": {"paths": ["stakeholder_voices.yml"]},
+                                "evidence": {"checks": ["source_traceability_integrity"]},
+                                "message": "tracked items need source trace refs",
+                                "suggested_actions": ["add source_trace_refs"],
+                                "coverage": coverage_metadata(
+                                    deterministic_review="implemented",
+                                    repair_autofix="not_recommended",
+                                ),
+                            }
+                        ],
+                    ),
+                    allow_unicode=True,
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            result = checker.run_checker(repo_root, rules_path)
+
+        self.assertTrue(result["run_ok"])
+        self.assertTrue(result["has_warnings"])
+        self.assertEqual(result["results"][0]["failed_checks"], ["source_traceability_integrity"])
+
     def test_run_checker_accepts_manual_verification_mode(self):
         checker = load_checker_module()
 

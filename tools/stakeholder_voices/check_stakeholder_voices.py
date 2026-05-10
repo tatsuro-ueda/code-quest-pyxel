@@ -24,6 +24,7 @@ VALID_REPAIR_AUTOFIX = {
     "not_recommended",
 }
 VALID_ACCEPTANCE_VERIFICATION_MODES = {"deterministic", "manual"}
+TRACKED_TRACE_STATUSES = {"active", "later", "wont"}
 
 
 @dataclass
@@ -414,7 +415,7 @@ def check_source_traceability_integrity(ctx: CheckContext, rule: dict[str, Any])
     for section_name in ("requests", "requirements", "acceptance"):
         section_errors: dict[str, Any] = {}
         for item in ctx.data["facts"][section_name]:
-            if item.get("status", "active") != "active":
+            if item.get("status", "active") not in TRACKED_TRACE_STATUSES:
                 continue
             trace_refs = list(item.get("source_trace_refs", []))
             item_errors: dict[str, Any] = {}
@@ -464,7 +465,7 @@ def check_source_traceability_integrity(ctx: CheckContext, rule: dict[str, Any])
             rule,
             checked_paths,
             "source_traceability_integrity",
-            reason="active items must keep live source_trace_refs",
+            reason="tracked items must keep live source_trace_refs",
             expected={
                 "source_documents": sorted(source_documents),
                 "trace_format": "doc_id:stable_ref",

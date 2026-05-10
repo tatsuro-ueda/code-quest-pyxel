@@ -12,6 +12,7 @@ from . import check_stakeholder_voices
 
 
 ROOT = Path(__file__).resolve().parents[2]
+TRACKED_TRACE_STATUSES = {"active", "later", "wont"}
 
 
 def _error(kind: str, **payload: Any) -> dict[str, Any]:
@@ -20,11 +21,11 @@ def _error(kind: str, **payload: Any) -> dict[str, Any]:
     return data
 
 
-def _iter_active_source_trace_refs(data: dict[str, Any]) -> list[dict[str, str]]:
+def _iter_tracked_source_trace_refs(data: dict[str, Any]) -> list[dict[str, str]]:
     trace_refs: list[dict[str, str]] = []
     for section_name in ("requests", "requirements", "acceptance"):
         for item in data["facts"][section_name]:
-            if item.get("status", "active") != "active":
+            if item.get("status", "active") not in TRACKED_TRACE_STATUSES:
                 continue
             for trace_ref in item.get("source_trace_refs", []):
                 trace_refs.append(
@@ -44,7 +45,7 @@ def _collect_referenced_refs(data: dict[str, Any]) -> tuple[dict[str, set[str]],
     referenced_refs: dict[str, set[str]] = {}
     errors: list[dict[str, Any]] = []
 
-    for usage in _iter_active_source_trace_refs(data):
+    for usage in _iter_tracked_source_trace_refs(data):
         trace_ref = usage["trace_ref"]
         if not isinstance(trace_ref, str) or ":" not in trace_ref:
             errors.append(_error("invalid_trace_ref_format", **usage))
