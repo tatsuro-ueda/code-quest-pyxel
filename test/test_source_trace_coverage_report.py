@@ -220,10 +220,11 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         payload = json.loads(completed.stdout)
         self.assertEqual(payload["status"], "OK")
-        self.assertGreaterEqual(payload["summary"]["total_documents"], 7)
+        self.assertGreaterEqual(payload["summary"]["total_documents"], 8)
         document_ids = {item["doc_id"] for item in payload["documents"]}
         self.assertIn("customer_jobs", document_ids)
         self.assertIn("framework_rule", document_ids)
+        self.assertIn("product_requirements_av", document_ids)
 
     def test_real_repo_report_covers_all_map_prd_refs(self):
         report_module = load_report_module()
@@ -272,6 +273,34 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
             ["CJG35", "CJG36", "CJG37", "CJG38", "CJG39", "CJG40", "CJG41", "CJG44"],
         )
         self.assertEqual(document["missing_refs"], [])
+
+    def test_real_repo_report_covers_all_av_prd_refs(self):
+        report_module = load_report_module()
+
+        payload = report_module.build_report(ROOT, ROOT / "docs" / "stakeholder_voices.yml")
+        document = next(item for item in payload["documents"] if item["doc_id"] == "product_requirements_av")
+
+        self.assertEqual(
+            document["referenced_refs"],
+            ["CJG15", "CJG16", "CJG17", "CJG18", "CJG19", "CJG20", "CJG24", "CJG44"],
+        )
+        self.assertEqual(document["missing_refs"], [])
+
+    def test_real_repo_report_reduces_customer_job_missing_refs_to_autonomy_only(self):
+        report_module = load_report_module()
+
+        payload = report_module.build_report(ROOT, ROOT / "docs" / "stakeholder_voices.yml")
+        document = next(item for item in payload["documents"] if item["doc_id"] == "customer_jobs")
+
+        self.assertEqual(document["missing_refs"], ["JOB:JIS_PARENT_AUTONOMY"])
+
+    def test_real_repo_report_reduces_customer_journey_missing_refs_to_story_tail(self):
+        report_module = load_report_module()
+
+        payload = report_module.build_report(ROOT, ROOT / "docs" / "stakeholder_voices.yml")
+        document = next(item for item in payload["documents"] if item["doc_id"] == "customer_journeys")
+
+        self.assertEqual(document["missing_refs"], ["CJ09", "CJ27", "CJ28", "CJ30", "CJ42"])
 
 
 if __name__ == "__main__":

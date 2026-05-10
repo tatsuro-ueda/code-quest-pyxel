@@ -184,6 +184,34 @@ facts:
         - product_requirements_platform:CJG21
         - product_requirements_platform:CJG43
 
+    - id: rq_child_keep_play_flow
+      stakeholder_id: st_child_user
+      status: active
+      summary: 迷わず気持ちよく遊び続けたい
+      source_refs:
+        - docs/customer-jobs.md
+        - docs/customer-journeys.md
+        - docs/product-requirements-av.md
+      source_trace_refs:
+        - customer_jobs:JOB:JPL_CHILD_PLAYER
+        - customer_journeys:CJ14
+        - customer_journeys:CJ16
+        - customer_journeys:CJ18
+
+    - id: rq_parent_natural_growth_support
+      stakeholder_id: st_parent_customer
+      status: active
+      summary: 子どもに合った成長機会を自然に足したい
+      source_refs:
+        - docs/customer-jobs.md
+        - docs/customer-journeys.md
+        - docs/product-requirements-av.md
+      source_trace_refs:
+        - customer_jobs:JOB:JSC_PARENT_GROWTH
+        - customer_journeys:CJ15
+        - customer_journeys:CJ17
+        - customer_journeys:CJ24
+
   source_documents:
     - id: customer_jobs
       path: docs/customer-jobs.md
@@ -211,6 +239,12 @@ facts:
 
     - id: product_requirements_platform
       path: docs/product-requirements-platform.md
+      extraction:
+        regex:
+          - '\bCJG\d+\b'
+
+    - id: product_requirements_av
+      path: docs/product-requirements-av.md
       extraction:
         regex:
           - '\bCJG\d+\b'
@@ -736,6 +770,254 @@ facts:
         - docs/customer-journeys.md
         - docs/product-requirements-platform.md
 
+    - id: req_child_goal_guidance_visible
+      status: later
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_keep_play_flow
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_child_goal_guidance_visible
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ14
+      summary: 迷った子どもが次の目的地を見つけやすい導線を持てる
+      must:
+        - 次に進む方向や目的地の手がかりをゲーム中で受け取れる
+        - ガイド導線は子どもの前進を助けても探索の主導権を奪わない
+      must_not:
+        - 行き先が分からないまま停滞を放置しない
+        - 親だけが口頭で説明して子どもを見ているだけに戻さない
+      affected_paths:
+        - src/scenes/explore/presenter.py
+        - src/scenes/explore/view.py
+        - src/shared/services/dialog_runner.py
+      verification_refs:
+        - docs/customer-journeys.md
+        - tools/test_headless.py
+      source_refs:
+        - docs/customer-journeys.md
+
+    - id: req_field_bgm_place_identity
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_natural_growth_support
+      acceptance_ids:
+        - acc_field_bgm_place_identity
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ15
+        - product_requirements_av:CJG15
+      summary: 場所の違いは BGM 切替で伝わり、Code Maker で整えた曲がそのまま鳴る
+      must:
+        - 町 フィールド ダンジョンなど場所の違いで曲の雰囲気が変わる
+        - 親子が Code Maker で整えた曲が pyxres 経由で本編に反映される
+      must_not:
+        - どこへ行っても同じ曲のままにしない
+        - Python 側の固定曲定義で Code Maker の編集内容を上書きしない
+      affected_paths:
+        - src/scenes/explore/scene.py
+        - src/scenes/explore/view.py
+        - src/shared/services/audio_system.py
+        - test/test_dialogue_integration.py
+        - tools/build_codemaker.py
+      verification_refs:
+        - docs/product-requirements-av.md
+        - test/test_dialogue_integration.py
+        - tools/build_codemaker.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-av.md
+
+    - id: req_battle_bgm_tension_switch
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_child_keep_play_flow
+      acceptance_ids:
+        - acc_battle_bgm_tension_switch
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ16
+        - product_requirements_av:CJG16
+      summary: 戦闘に入ると緊張感のある曲へ切り替わり、終わると元の冒険へ戻る
+      must:
+        - 戦闘開始時に戦闘またはボス BGM へ切り替わる
+        - 戦闘終了後に元の場所の BGM へ戻る
+      must_not:
+        - フィールドと戦闘で同じ曲のままにしない
+        - 戦闘後も戦闘曲のまま残し続けない
+      affected_paths:
+        - src/scenes/battle/scene.py
+        - src/scenes/battle/view.py
+        - src/shared/services/audio_system.py
+        - test/test_dialogue_integration.py
+      verification_refs:
+        - docs/product-requirements-av.md
+        - test/test_dialogue_integration.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-av.md
+
+    - id: req_event_sfx_feedback_binding
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_natural_growth_support
+      acceptance_ids:
+        - acc_event_sfx_feedback_binding
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ17
+        - product_requirements_av:CJG17
+      summary: 攻撃 回復 成長などの出来事は耳でも分かり、Code Maker の音づくりが本編へ続く
+      must:
+        - 攻撃 回復 レベルアップなど主要イベントに対応した SFX が鳴る
+        - Code Maker で作った SFX が固定定義に戻されずイベントへ結びつく
+      must_not:
+        - 行動しても無音のまま手ごたえを失わせない
+        - 取り込んだ音を runtime 側で別音へ戻さない
+      affected_paths:
+        - src/scenes/battle/scene.py
+        - src/shared/services/audio_system.py
+        - test/test_cj24_sound_editor_truth.py
+        - tools/build_codemaker.py
+      verification_refs:
+        - docs/product-requirements-av.md
+        - test/test_cj24_sound_editor_truth.py
+        - tools/build_codemaker.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-av.md
+
+    - id: req_damage_vfx_hit_feedback
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_keep_play_flow
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_damage_vfx_hit_feedback
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ18
+        - product_requirements_av:CJG18
+      summary: ダメージは白と赤の光で手ごたえが伝わり、戦闘が数字の引き算で終わらない
+      must:
+        - 与えたダメージと受けたダメージで見分けられる VFX がある
+        - VFX は戦闘フローを止めずに常時 ON で発火する
+      must_not:
+        - HP の数字だけ変わって手ごたえが消える状態にしない
+        - 被ダメージと与ダメージを同じ見え方で混同させない
+      affected_paths:
+        - src/scenes/battle/scene.py
+        - src/shared/services/vfx.py
+        - test/test_cjg_battle_enemy_attack.py
+        - test/test_cjg_vfx_system.py
+        - test/test_damage_vfx.py
+      verification_refs:
+        - docs/product-requirements-av.md
+        - test/test_cjg_battle_enemy_attack.py
+        - test/test_cjg_vfx_system.py
+        - test/test_damage_vfx.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-av.md
+
+    - id: req_scene_transition_polish_deferred
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_keep_play_flow
+        - rq_developer_safe_boundaries
+        - rq_parent_natural_growth_support
+      acceptance_ids:
+        - acc_scene_transition_polish_deferred
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ19
+        - product_requirements_av:CJG19
+      summary: 場面転換演出は作品感の要望として残しつつ、CJ44 の単純さを壊す実装は defer する
+      must:
+        - 場面転換の作品感を上げたい要望が backlog 上で消えない
+        - 実装するなら scene 局所で済む形だけを候補にする
+      must_not:
+        - フェード未実装をなかったことにしない
+        - 旧設定 UI や中央集権 manager を戻してまで演出を足さない
+      affected_paths:
+        - docs/product-requirements-av.md
+        - src/scenes/battle/view.py
+        - src/scenes/explore/view.py
+        - src/scenes/title/view.py
+      verification_refs:
+        - docs/product-requirements-av.md
+        - test/test_dialogue_integration.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-av.md
+
+    - id: req_sound_editor_runtime_truth
+      status: active
+      kind: product_guardrail
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_natural_growth_support
+      acceptance_ids:
+        - acc_sound_editor_runtime_truth
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ24
+        - product_requirements_av:CJG24
+      summary: Sound エディタで作った音はそのまま本編で鳴り、固定のコード定義へ戻らない
+      must:
+        - 子どもが Sound エディタで試した音が本編のイベントで鳴る
+        - pyxres にある音は runtime 側の fallback より優先される
+      must_not:
+        - import 後に固定の攻撃音や回復音へ silently 戻さない
+        - Sound エディタで聞いた音と本編で鳴る音をずらさない
+      affected_paths:
+        - dist/
+        - src/shared/services/audio_system.py
+        - test/test_build_codemaker.py
+        - test/test_cj24_sound_editor_truth.py
+        - test/test_codemaker_import_ui_server_import.py
+        - tools/build_codemaker.py
+      verification_refs:
+        - docs/product-requirements-av.md
+        - test/test_build_codemaker.py
+        - test/test_cj24_sound_editor_truth.py
+        - test/test_codemaker_import_ui_server_import.py
+        - tools/build_codemaker.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-av.md
+
     - id: req_effect_difference_playtestable
       status: active
       kind: experience
@@ -743,6 +1025,7 @@ facts:
       derived_from_request_ids:
         - rq_child_decision_power
         - rq_child_edit_ownership
+        - rq_parent_natural_growth_support
       acceptance_ids:
         - acc_effect_difference_playtestable
       stakeholder_ids:
@@ -750,6 +1033,7 @@ facts:
         - st_parent_customer
       source_trace_refs:
         - customer_journeys:CJ20
+        - product_requirements_av:CJG20
         - product_requirements_platform:CJG20
       summary: 演出は足す前と足したあとを実ゲームで体験し、子どもが差を判断できる
       must:
@@ -1033,6 +1317,7 @@ facts:
         - framework_rule:M1
         - framework_rule:M3
         - framework_rule:M5
+        - product_requirements_av:CJG44
         - product_requirements_guardrails:CJG44
       summary: 変更速度を落とす中央集権や不要 UI を残さず、scene 局所で変えられる形を保つ
       must:
@@ -1057,6 +1342,7 @@ facts:
         - test/test_dialogue_integration.py
       source_refs:
         - docs/framework-rule.md
+        - docs/product-requirements-av.md
         - docs/product-requirements-guardrails.md
 
     - id: req_child_keeps_decision_power
@@ -1617,12 +1903,149 @@ facts:
           - tools/test_save_compat.py
           - tools/test_web_compat.py
 
+    - id: acc_child_goal_guidance_visible
+      status: later
+      requirement_id: req_child_goal_guidance_visible
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ14
+      summary: 迷った子どもは次の目的地の手がかりをゲーム中で受け取れる
+      given: 子どもが広いマップで次にどこへ行けばいいか分からなくなった
+      when: ガイド導線つきの build を遊ぶ
+      then:
+        - 次の目的地や進行方向の手がかりをゲーム中で受け取れる
+        - 手がかりは前進を助けても探索の主導権までは奪わない
+      verification:
+        mode: manual
+        refs:
+          - docs/customer-journeys.md
+          - tools/test_headless.py
+
+    - id: acc_field_bgm_place_identity
+      status: active
+      requirement_id: req_field_bgm_place_identity
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ15
+        - product_requirements_av:CJG15
+      summary: 場所が変わると曲の雰囲気が変わり、Code Maker で整えた曲がそのまま鳴る
+      given: 親子が Code Maker の Music エディタで場面用 BGM を整えて取り込める
+      when: 町 フィールド ダンジョンを移動して遊ぶ
+      then:
+        - 場所の違いで曲の雰囲気が変わる
+        - 取り込んだ曲が pyxres の truth として再生される
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-av.md
+          - test/test_dialogue_integration.py
+          - tools/build_codemaker.py
+
+    - id: acc_battle_bgm_tension_switch
+      status: active
+      requirement_id: req_battle_bgm_tension_switch
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ16
+        - product_requirements_av:CJG16
+      summary: 戦闘に入ると曲が切り替わり、終わると元の冒険へ戻る
+      given: 親子が戦闘用またはボス用の曲を取り込んだ build がある
+      when: フィールドから戦闘へ入り、戦闘を終えて戻る
+      then:
+        - 戦闘開始時に緊張感のある曲へ切り替わる
+        - 戦闘終了後に元の場所の曲へ戻る
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-av.md
+          - test/test_dialogue_integration.py
+
+    - id: acc_event_sfx_feedback_binding
+      status: active
+      requirement_id: req_event_sfx_feedback_binding
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ17
+        - product_requirements_av:CJG17
+      summary: 主要イベントに音が紐づき、Code Maker の音づくりがそのまま効く
+      given: 親子が攻撃 回復 レベルアップ用の SFX を Sound エディタで整えて取り込んだ
+      when: 戦闘や成長イベントを実行する
+      then:
+        - 攻撃 回復 レベルアップなど主要イベントで対応した音が鳴る
+        - 取り込んだ音は runtime の固定定義で上書きされない
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_cj24_sound_editor_truth.py
+          - tools/build_codemaker.py
+
+    - id: acc_damage_vfx_hit_feedback
+      status: active
+      requirement_id: req_damage_vfx_hit_feedback
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ18
+        - product_requirements_av:CJG18
+      summary: ダメージは白と赤の光で見分けられ、手ごたえを失わない
+      given: ダメージ VFX を持つ build がある
+      when: 敵へ攻撃するか敵から攻撃を受ける
+      then:
+        - 与ダメージと被ダメージで異なる光の反応が起きる
+        - 戦闘は数字だけの引き算にならず手ごたえが残る
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_cjg_battle_enemy_attack.py
+          - test/test_cjg_vfx_system.py
+          - test/test_damage_vfx.py
+
+    - id: acc_scene_transition_polish_deferred
+      status: active
+      requirement_id: req_scene_transition_polish_deferred
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ19
+        - product_requirements_av:CJG19
+      summary: 場面転換演出は要望として残すが、CJ44 を壊す実装は採らない
+      given: 親子が場面転換をもっと作品っぽくしたいと感じている
+      when: 現行の AV 方針を見直す
+      then:
+        - フェード未実装は defer として明示される
+        - 単純さを壊す形の導入案は候補から外れる
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-av.md
+          - test/test_dialogue_integration.py
+
+    - id: acc_sound_editor_runtime_truth
+      status: active
+      requirement_id: req_sound_editor_runtime_truth
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ24
+        - product_requirements_av:CJG24
+      summary: Sound エディタで作った音はそのまま本編のイベントで鳴る
+      given: 子どもが Sound エディタで攻撃音や回復音を作って code-maker.zip を取り込める
+      when: 本編でそのイベントを実行する
+      then:
+        - Sound エディタで試した音が本編のイベントで鳴る
+        - 固定のコード定義で別音へ戻らない
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_build_codemaker.py
+          - test/test_cj24_sound_editor_truth.py
+          - test/test_codemaker_import_ui_server_import.py
+          - tools/build_codemaker.py
+
     - id: acc_effect_difference_playtestable
       status: active
       requirement_id: req_effect_difference_playtestable
       priority: p1
       source_trace_refs:
         - customer_journeys:CJ20
+        - product_requirements_av:CJG20
         - product_requirements_platform:CJG20
       summary: 演出を足す前と足したあとを実ゲームで比べて差を体験できる
       given: 攻撃音や画面フラッシュなどの演出を追加した前後の build がある
@@ -1766,6 +2189,7 @@ facts:
       priority: p1
       source_trace_refs:
         - customer_journeys:CJ44
+        - product_requirements_av:CJG44
         - product_requirements_guardrails:CJG44
       summary: 変更速度を落とす中央集権や旧設定 UI を戻さない
       given: 親や AI が BGM や演出や scene 挙動をすばやく変えたい
