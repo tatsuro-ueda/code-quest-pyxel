@@ -854,6 +854,211 @@ facts:
         - docs/customer-journeys.md
         - docs/product-requirements-platform.md
 
+    - id: req_data_ssot_consistency
+      status: active
+      kind: engineering_guardrail
+      priority: p1
+      derived_from_request_ids:
+        - rq_ai_small_safe_surface
+        - rq_developer_safe_boundaries
+      acceptance_ids:
+        - acc_data_ssot_consistency_regen
+      stakeholder_ids:
+        - st_coding_ai
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ36
+        - framework_rule:SSoT
+        - product_requirements_guardrails:CJG36
+      summary: データ改造は SSoT から再生成して参照漏れを起こさない
+      must:
+        - 新しいデータは assets 側の SSoT から src generated へ一方通行で反映する
+        - 生成物の手編集や参照漏れを guard で止める
+      must_not:
+        - src/generated を直接編集しない
+        - 散在した定数を手で同期する前提に戻さない
+      affected_paths:
+        - assets/
+        - src/game_data.py
+        - src/generated/
+        - test/test_cjg_battle_data_shape.py
+        - test/test_cjg_data_progressions.py
+        - test/test_cjg_framework_rule_guards.py
+        - tools/gen_data.py
+        - tools/hooks/guard_pre.sh
+      verification_refs:
+        - docs/product-requirements-guardrails.md
+        - test/test_cjg_battle_data_shape.py
+        - test/test_cjg_data_progressions.py
+        - test/test_cjg_framework_rule_guards.py
+        - tools/gen_data.py
+      source_refs:
+        - docs/framework-rule.md
+        - docs/product-requirements-guardrails.md
+
+    - id: req_event_change_safe
+      status: active
+      kind: engineering_guardrail
+      priority: p1
+      derived_from_request_ids:
+        - rq_ai_small_safe_surface
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_event_change_safe_walkthrough
+      stakeholder_ids:
+        - st_child_user
+        - st_coding_ai
+        - st_parent_customer
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ38
+        - product_requirements_guardrails:CJG38
+      summary: 新しいイベントを追加しても既存イベントやフラグを壊さず通し確認できる
+      must:
+        - イベント追加後に主要シナリオを通して進行不能を出さない
+        - 既存のフラグや遷移が衝突しないことをテストで確認する
+      must_not:
+        - 新イベント追加で会話無限ループや進行不能を子どもに見せない
+      affected_paths:
+        - src/scenes/explore/
+        - src/scenes/town/
+        - src/shared/services/dialog_runner.py
+        - test/test_cjg_map_tile_transitions.py
+        - test/test_cjg_town_entry_populates_current_town.py
+        - tools/test_headless.py
+      verification_refs:
+        - docs/product-requirements-guardrails.md
+        - test/test_cjg_map_tile_transitions.py
+        - test/test_cjg_town_entry_populates_current_town.py
+        - tools/test_headless.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-guardrails.md
+
+    - id: req_system_change_scenario_guard
+      status: active
+      kind: engineering_guardrail
+      priority: p1
+      derived_from_request_ids:
+        - rq_ai_small_safe_surface
+        - rq_developer_safe_boundaries
+        - rq_executive_real_done_only
+      acceptance_ids:
+        - acc_system_change_scenario_guard
+      stakeholder_ids:
+        - st_coding_ai
+        - st_product_executive
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ39
+        - framework_rule:Golden Path Test
+        - product_requirements_guardrails:CJG39
+      summary: システム変更は複数シナリオの headless verify を通らない限り出荷しない
+      must:
+        - 移動 戦闘 セーブなどの主要シナリオを変更後に自動で検証する
+        - 連鎖破壊があれば build と承認キュー前で止める
+      must_not:
+        - システム変更を単一操作だけで完了扱いしない
+      affected_paths:
+        - src/scenes/battle/
+        - src/scenes/explore/
+        - test/test_battle_run_logic.py
+        - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_world_generation.py
+        - tools/test_headless.py
+      verification_refs:
+        - docs/product-requirements-guardrails.md
+        - test/test_battle_run_logic.py
+        - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_world_generation.py
+        - tools/test_headless.py
+      source_refs:
+        - docs/framework-rule.md
+        - docs/product-requirements-guardrails.md
+
+    - id: req_mode_change_save_compat
+      status: active
+      kind: engineering_guardrail
+      priority: p1
+      derived_from_request_ids:
+        - rq_ai_small_safe_surface
+        - rq_executive_real_done_only
+      acceptance_ids:
+        - acc_mode_change_save_compat
+      stakeholder_ids:
+        - st_coding_ai
+        - st_parent_customer
+        - st_product_executive
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ40
+        - product_requirements_guardrails:CJG40
+      summary: 進行構造やモード追加は既存セーブ互換を壊した時点で止める
+      must:
+        - 既存セーブデータでのロード互換を検証する
+        - 構造変更時に save 互換が壊れたら build を止める
+      must_not:
+        - 既存データを silently 破壊したまま届けない
+      affected_paths:
+        - src/shared/services/player_state.py
+        - src/shared/services/save_store.py
+        - test/test_cjg_save_round_trip.py
+        - test/test_player_snapshot.py
+        - tools/test_save_compat.py
+      verification_refs:
+        - docs/product-requirements-guardrails.md
+        - test/test_cjg_save_round_trip.py
+        - test/test_player_snapshot.py
+        - tools/test_save_compat.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-guardrails.md
+
+    - id: req_simplicity_enables_change_speed
+      status: active
+      kind: engineering_guardrail
+      priority: p1
+      derived_from_request_ids:
+        - rq_ai_small_safe_surface
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_simplicity_enables_change_speed
+      stakeholder_ids:
+        - st_child_user
+        - st_coding_ai
+        - st_parent_customer
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ44
+        - framework_rule:M1
+        - framework_rule:M3
+        - framework_rule:M5
+        - product_requirements_guardrails:CJG44
+      summary: 変更速度を落とす中央集権や不要 UI を残さず、scene 局所で変えられる形を保つ
+      must:
+        - 変更点が scene 局所で説明できる単純な構造を保つ
+        - 旧 AudioManager や演出 ON OFF UI のような複雑性を戻さない
+      must_not:
+        - 変更速度を落とすだけの中央集権 abstractions を増やさない
+      affected_paths:
+        - src/runtime/app.py
+        - src/scenes/menu/presenter.py
+        - src/scenes/title/view.py
+        - src/shared/services/audio_system.py
+        - test/test_architecture_layout.py
+        - test/test_cjg_game_init_smoke.py
+        - test/test_cjg_menu_navigation.py
+        - test/test_dialogue_integration.py
+      verification_refs:
+        - docs/product-requirements-guardrails.md
+        - test/test_architecture_layout.py
+        - test/test_cjg_game_init_smoke.py
+        - test/test_cjg_menu_navigation.py
+        - test/test_dialogue_integration.py
+      source_refs:
+        - docs/framework-rule.md
+        - docs/product-requirements-guardrails.md
+
     - id: req_child_keeps_decision_power
       status: active
       kind: experience
@@ -1472,6 +1677,109 @@ facts:
           - test/test_cj24_sound_editor_truth.py
           - test/test_codemaker_import_ui_server_import.py
           - test/test_resolve_pyxres_path.py
+
+    - id: acc_data_ssot_consistency_regen
+      status: active
+      requirement_id: req_data_ssot_consistency
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ36
+        - product_requirements_guardrails:CJG36
+      summary: データ追加は SSoT から再生成され、生成物の手編集を通さない
+      given: AI が敵や呪文などのデータを追加または調整したい
+      when: assets 側を編集して自動生成と整合チェックを実行する
+      then:
+        - 生成物が再生成され参照整合が保たれる
+        - src generated の直接編集は guard に止められる
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_cjg_battle_data_shape.py
+          - test/test_cjg_data_progressions.py
+          - test/test_cjg_framework_rule_guards.py
+          - tools/gen_data.py
+
+    - id: acc_event_change_safe_walkthrough
+      status: active
+      requirement_id: req_event_change_safe
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ38
+        - product_requirements_guardrails:CJG38
+      summary: 新イベント追加後も主要導線を通して進行不能が出ない
+      given: AI が会話イベントやフラグ分岐や宝箱イベントを追加した
+      when: 主要導線を headless と回帰テストで通し確認する
+      then:
+        - 既存イベントや遷移が壊れていない
+        - 進行不能や無限ループは承認前に止まる
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_cjg_map_tile_transitions.py
+          - test/test_cjg_town_entry_populates_current_town.py
+          - tools/test_headless.py
+
+    - id: acc_system_change_scenario_guard
+      status: active
+      requirement_id: req_system_change_scenario_guard
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ39
+        - product_requirements_guardrails:CJG39
+      summary: システム変更は複数シナリオを通したときだけ承認候補になる
+      given: AI が戦闘や移動や装備などのシステム変更を入れた
+      when: 移動 戦闘 セーブの複数シナリオを headless で実行する
+      then:
+        - 1 つでも失敗した版は承認候補に出ない
+        - 成功した版だけが次の確認へ進む
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_battle_run_logic.py
+          - test/test_cjg_battle_flow_smoke.py
+          - test/test_cjg_world_generation.py
+          - tools/test_headless.py
+
+    - id: acc_mode_change_save_compat
+      status: active
+      requirement_id: req_mode_change_save_compat
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ40
+        - product_requirements_guardrails:CJG40
+      summary: 進行構造変更は既存セーブでのロード互換を失った時点で止まる
+      given: AI がゲームモードや進行構造や周回要素を変更した
+      when: 既存 save payload を使って互換テストを実行する
+      then:
+        - 既存 save を安全にロードできる
+        - 互換が壊れた版は配布前に失敗扱いになる
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_cjg_save_round_trip.py
+          - test/test_player_snapshot.py
+          - tools/test_save_compat.py
+
+    - id: acc_simplicity_enables_change_speed
+      status: active
+      requirement_id: req_simplicity_enables_change_speed
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ44
+        - product_requirements_guardrails:CJG44
+      summary: 変更速度を落とす中央集権や旧設定 UI を戻さない
+      given: 親や AI が BGM や演出や scene 挙動をすばやく変えたい
+      when: audio や scene view 周辺の構造を検査して回帰テストを実行する
+      then:
+        - 旧 AudioManager や settings_scene のような複雑性は復活しない
+        - scene 局所の変更で説明できる構造が保たれる
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_architecture_layout.py
+          - test/test_cjg_game_init_smoke.py
+          - test/test_cjg_menu_navigation.py
+          - test/test_dialogue_integration.py
 
     - id: acc_child_keeps_decision_power_review
       status: active
