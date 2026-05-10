@@ -220,11 +220,12 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         payload = json.loads(completed.stdout)
         self.assertEqual(payload["status"], "OK")
-        self.assertGreaterEqual(payload["summary"]["total_documents"], 8)
+        self.assertGreaterEqual(payload["summary"]["total_documents"], 9)
         document_ids = {item["doc_id"] for item in payload["documents"]}
         self.assertIn("customer_jobs", document_ids)
         self.assertIn("framework_rule", document_ids)
         self.assertIn("product_requirements_av", document_ids)
+        self.assertIn("product_requirements_narrative", document_ids)
 
     def test_real_repo_report_covers_all_map_prd_refs(self):
         report_module = load_report_module()
@@ -292,7 +293,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         payload = report_module.build_report(ROOT, ROOT / "docs" / "stakeholder_voices.yml")
         document = next(item for item in payload["documents"] if item["doc_id"] == "customer_jobs")
 
-        self.assertEqual(document["missing_refs"], ["JOB:JIS_PARENT_AUTONOMY"])
+        self.assertEqual(document["missing_refs"], [])
 
     def test_real_repo_report_reduces_customer_journey_missing_refs_to_story_tail(self):
         report_module = load_report_module()
@@ -300,7 +301,16 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         payload = report_module.build_report(ROOT, ROOT / "docs" / "stakeholder_voices.yml")
         document = next(item for item in payload["documents"] if item["doc_id"] == "customer_journeys")
 
-        self.assertEqual(document["missing_refs"], ["CJ09", "CJ27", "CJ28", "CJ30", "CJ42"])
+        self.assertEqual(document["missing_refs"], [])
+
+    def test_real_repo_report_covers_all_narrative_prd_refs(self):
+        report_module = load_report_module()
+
+        payload = report_module.build_report(ROOT, ROOT / "docs" / "stakeholder_voices.yml")
+        document = next(item for item in payload["documents"] if item["doc_id"] == "product_requirements_narrative")
+
+        self.assertEqual(document["referenced_refs"], ["CJG09", "CJG14", "CJG27", "CJG30"])
+        self.assertEqual(document["missing_refs"], [])
 
 
 if __name__ == "__main__":
