@@ -695,6 +695,165 @@ facts:
         - docs/customer-journeys.md
         - docs/product-requirements-battle.md
 
+    - id: req_bugfix_replay_safe
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_ai_small_safe_surface
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_bugfix_replay_safe_loop
+      stakeholder_ids:
+        - st_child_user
+        - st_coding_ai
+        - st_parent_customer
+        - st_repo_developer
+      source_trace_refs:
+        - customer_journeys:CJ12
+        - product_requirements_platform:CJG12
+      summary: バグを見つけても親子の流れを止めずに短いループで安全に試し直せる
+      must:
+        - バグ報告から再テストまでを短いループで回せる
+        - 修正後も移動 戦闘 セーブなどの既存機能を壊さない
+      must_not:
+        - 1 箇所の修正で別の既存機能を壊したまま渡さない
+        - 再確認まで長い停滞を前提にしない
+      affected_paths:
+        - src/scenes/explore/model.py
+        - src/scenes/explore/presenter.py
+        - test/test_cjg_map_tile_transitions.py
+        - tools/build_codemaker.py
+        - tools/test_headless.py
+        - tools/test_save_compat.py
+        - tools/test_web_compat.py
+      verification_refs:
+        - docs/product-requirements-platform.md
+        - tools/test_headless.py
+        - tools/test_save_compat.py
+        - tools/test_web_compat.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+
+    - id: req_effect_difference_playtestable
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_decision_power
+        - rq_child_edit_ownership
+      acceptance_ids:
+        - acc_effect_difference_playtestable
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ20
+        - product_requirements_platform:CJG20
+      summary: 演出は足す前と足したあとを実ゲームで体験し、子どもが差を判断できる
+      must:
+        - 演出を足した結果を実ゲームで体感できる
+        - 子どもが差を見て次に足す演出を自分で判断できる
+      must_not:
+        - ON OFF 設定の比較や口頭説明だけで体験したことにしない
+      affected_paths:
+        - src/scenes/battle/scene.py
+        - src/scenes/battle/view.py
+        - src/shared/services/audio_system.py
+        - src/shared/services/vfx.py
+        - test/test_cjg_battle_enemy_attack.py
+        - test/test_cjg_vfx_system.py
+        - test/test_damage_vfx.py
+      verification_refs:
+        - docs/product-requirements-av.md
+        - docs/product-requirements-platform.md
+        - test/test_cjg_vfx_system.py
+        - test/test_damage_vfx.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-av.md
+        - docs/product-requirements-platform.md
+
+    - id: req_role_swap_keeps_child_handle
+      status: active
+      kind: experience
+      priority: p1
+      derived_from_request_ids:
+        - rq_child_decision_power
+      acceptance_ids:
+        - acc_role_swap_keeps_child_handle
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ25
+        - product_requirements_platform:CJG25
+      summary: 親子で役割を交代しても、何を直すか決めるハンドルは子どもが持ち続ける
+      must:
+        - 編集役とテスト役を親子で交代できる
+        - 何を直すか どの順で直すかの判断は子どもが持つ
+      must_not:
+        - 親や AI が全部決めて子どもを見ているだけに戻さない
+      affected_paths:
+        - dist/
+        - index.html
+        - tools/build_codemaker.py
+        - tools/build_web_release.py
+        - tools/render_release_selector.py
+      verification_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+        - tools/build_codemaker.py
+        - tools/build_web_release.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+
+    - id: req_our_game_portable_truth
+      status: active
+      kind: product_guardrail
+      priority: p0
+      derived_from_request_ids:
+        - rq_child_edit_ownership
+        - rq_parent_fast_feedback
+      acceptance_ids:
+        - acc_our_game_portable_truth_roundtrip
+      stakeholder_ids:
+        - st_child_user
+        - st_parent_customer
+      source_trace_refs:
+        - customer_journeys:CJ26
+        - product_requirements_platform:CJG26
+      summary: 見えている編集面と持ち出した開発版が一致し、自分たちのゲーム感を保てる
+      must:
+        - 編集した内容が保存され、次回も維持される
+        - Code Maker へ持ち出した zip と取り込み後の play が同じ見た目と音を保つ
+        - 見えている編集面が実ゲームの真実として扱われる
+      must_not:
+        - 実行時だけ別の見た目や音へ補正しない
+        - code-maker zip の取り込みで現在の main source を勝手に置き換えない
+      affected_paths:
+        - dist/
+        - index.html
+        - src/shared/services/image_banks.py
+        - test/test_build_codemaker.py
+        - test/test_cj24_sound_editor_truth.py
+        - test/test_codemaker_import_ui_server_import.py
+        - test/test_resolve_pyxres_path.py
+        - tools/build_codemaker.py
+        - tools/build_web_release.py
+        - tools/render_release_selector.py
+      verification_refs:
+        - docs/product-requirements-platform.md
+        - test/test_build_codemaker.py
+        - test/test_cj24_sound_editor_truth.py
+        - test/test_codemaker_import_ui_server_import.py
+        - test/test_resolve_pyxres_path.py
+      source_refs:
+        - docs/customer-journeys.md
+        - docs/product-requirements-platform.md
+
     - id: req_child_keeps_decision_power
       status: active
       kind: experience
@@ -1232,6 +1391,87 @@ facts:
           - docs/product-requirements-battle.md
           - tools/build_web_release.py
           - tools/test_web_compat.py
+
+    - id: acc_bugfix_replay_safe_loop
+      status: active
+      requirement_id: req_bugfix_replay_safe
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ12
+        - product_requirements_platform:CJG12
+      summary: バグ報告から AI 修正と安全な再テストまで短いループで回せる
+      given: 子どもがテストプレイ中に壁ハマりなどのバグを見つけた
+      when: 親が状況を AI に伝えて修正し、Code Maker または build 後に再テストする
+      then:
+        - 見つけたバグが修正されている
+        - 移動 戦闘 セーブなどの既存機能は引き続き動く
+      verification:
+        mode: deterministic
+        refs:
+          - tools/test_headless.py
+          - tools/test_save_compat.py
+          - tools/test_web_compat.py
+
+    - id: acc_effect_difference_playtestable
+      status: active
+      requirement_id: req_effect_difference_playtestable
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ20
+        - product_requirements_platform:CJG20
+      summary: 演出を足す前と足したあとを実ゲームで比べて差を体験できる
+      given: 攻撃音や画面フラッシュなどの演出を追加した前後の build がある
+      when: 子どもが実際に遊んで違いを見比べる
+      then:
+        - 演出のある なしの差を体感して言葉にできる
+        - 次に何を足したいかを子どもが判断できる
+      verification:
+        mode: manual
+        refs:
+          - docs/product-requirements-av.md
+          - test/test_cjg_vfx_system.py
+          - test/test_damage_vfx.py
+
+    - id: acc_role_swap_keeps_child_handle
+      status: active
+      requirement_id: req_role_swap_keeps_child_handle
+      priority: p1
+      source_trace_refs:
+        - customer_journeys:CJ25
+        - product_requirements_platform:CJG25
+      summary: 親子で役割を交代しても子どもが修正優先度を決められる
+      given: 親が編集役、子どもがテスト役として一度遊んだあとに役割を交代したい
+      when: 親子が交代しながら Tilemap 編集とテストプレイを進める
+      then:
+        - 親と子どものどちらが触っても変更は反映される
+        - どれを直すかの判断は子どもが持ち続ける
+      verification:
+        mode: manual
+        refs:
+          - docs/customer-journeys.md
+          - docs/product-requirements-platform.md
+          - tools/build_codemaker.py
+
+    - id: acc_our_game_portable_truth_roundtrip
+      status: active
+      requirement_id: req_our_game_portable_truth
+      priority: p0
+      source_trace_refs:
+        - customer_journeys:CJ26
+        - product_requirements_platform:CJG26
+      summary: 持ち出した開発版と見えている編集面が同じゲームとして続く
+      given: 親子が Code Maker 用 zip を持ち出し、編集後に selector へ取り込める
+      when: zip を保存し、再度取り込み、次の play を開く
+      then:
+        - 編集した見た目と音が次の play に引き継がれる
+        - 取り込みで現在の main source は勝手に置き換わらない
+      verification:
+        mode: deterministic
+        refs:
+          - test/test_build_codemaker.py
+          - test/test_cj24_sound_editor_truth.py
+          - test/test_codemaker_import_ui_server_import.py
+          - test/test_resolve_pyxres_path.py
 
     - id: acc_child_keeps_decision_power_review
       status: active

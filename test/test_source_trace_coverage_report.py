@@ -249,6 +249,18 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         )
         self.assertEqual(document["missing_refs"], [])
 
+    def test_real_repo_report_covers_all_platform_prd_refs(self):
+        report_module = load_report_module()
+
+        payload = report_module.build_report(ROOT, ROOT / "docs" / "stakeholder_voices.yml")
+        document = next(item for item in payload["documents"] if item["doc_id"] == "product_requirements_platform")
+
+        self.assertEqual(
+            document["referenced_refs"],
+            ["CJG12", "CJG20", "CJG21", "CJG22", "CJG23", "CJG25", "CJG26", "CJG31", "CJG32", "CJG33", "CJG34", "CJG43"],
+        )
+        self.assertEqual(document["missing_refs"], [])
+
 
 if __name__ == "__main__":
     unittest.main()
