@@ -199,18 +199,42 @@ class TownPresenter:
 
         Policy:
             - 日本語フォントの有無で TOWN_MENU_LABELS / TOWN_MENU_LABELS_EN を切り替える。
+            - 「やどや」/「INN」ラベルだけ宿代を併記し、子どもが選ぶ前に費用が分かるようにする。
         """
         game = self.game
         import src.runtime.main_runtime as M
 
-        labels = M.TOWN_MENU_LABELS if game.has_jp_font else M.TOWN_MENU_LABELS_EN
+        base_labels = M.TOWN_MENU_LABELS if game.has_jp_font else M.TOWN_MENU_LABELS_EN
+        inn_cost = self._get_inn_cost()
+        labels = tuple(self._format_inn_label(label, inn_cost) for label in base_labels)
         title = game.text_fmt.t("まちメニュー", "TOWN MENU")
         return TownMenuViewModel(
             title=title,
-            labels=tuple(labels),
+            labels=labels,
             cursor=self.model.menu_cursor,
             gold=game.player_model.gold,
         )
+
+    def _format_inn_label(self, label: str, inn_cost: int) -> str:
+        """「やどや」/「INN」ラベルだけ宿代を併記する。
+
+        Args:
+            label: 元のメニューラベル文字列。
+            inn_cost: 現在の町の宿代。
+
+        Returns:
+            str: 「やどや」なら「やどや（{inn_cost}G）」、「INN」なら「INN ({inn_cost}G)」、
+                 それ以外は label をそのまま返す。
+
+        Policy:
+            - 日本語は全角括弧、英語は半角括弧で統一する。
+            - ぶきや等の他ラベルは複数アイテムで価格が一意でないため、ここでは整形しない。
+        """
+        if label == "やどや":
+            return f"やどや（{inn_cost}G）"
+        if label == "INN":
+            return f"INN ({inn_cost}G)"
+        return label
 
     def _enter_message(self, lines, callback=None) -> None:
         """町メニュー内で通知を出す。閉じたら town_menu に戻る。

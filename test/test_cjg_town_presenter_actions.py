@@ -78,6 +78,14 @@ class _FakeExploreScene:
 
 
 @dataclass
+class _FakeTextFmt:
+    jp: bool = True
+
+    def t(self, jp: str, en: str) -> str:
+        return jp if self.jp else en
+
+
+@dataclass
 class _FakeGame:
     state: str = "town_menu"
     prev_state: str = "map"
@@ -89,6 +97,8 @@ class _FakeGame:
     explore_scene: _FakeExploreScene = field(default_factory=_FakeExploreScene)
     current_town: Any = None
     _has_save: bool = False
+    has_jp_font: bool = True
+    text_fmt: _FakeTextFmt = field(default_factory=_FakeTextFmt)
 
 
 def _presenter_in_town(town_index: int = 0) -> tuple[TownPresenter, _FakeGame]:
@@ -182,6 +192,72 @@ class TownExitTest(unittest.TestCase):
         presenter._exit()
 
         self.assertEqual(game.state, "map")
+
+
+class TownMenuViewModelLabelTest(unittest.TestCase):
+    """まちメニューの「やどや」ラベルに宿代が併記される（シナリオ1〜4）。"""
+
+    def _inn_cost_for_index(self, index: int) -> int:
+        from src.shared.constants.game_config import INN_COST
+        from src.game_data import INN_PRICES
+
+        return INN_PRICES[index] if index < len(INN_PRICES) else INN_COST
+
+    def test_japanese_label_includes_inn_cost_with_fullwidth_brackets(self):
+        presenter, game = _presenter_in_town(0)
+        game.has_jp_font = True
+        game.text_fmt.jp = True
+        cost = self._inn_cost_for_index(0)
+
+        vm = presenter.build_menu_view_model()
+
+        expected_inn = f"やどや（{cost}G）"
+        self.assertIn(expected_inn, vm.labels)
+        self.assertEqual(vm.labels.count(expected_inn), 1)
+        for label in ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "セーブ", "でる"):
+            self.assertIn(label, vm.labels, f"{label} がそのまま含まれない")
+
+    def test_english_label_includes_inn_cost_with_halfwidth_brackets(self):
+        presenter, game = _presenter_in_town(0)
+        game.has_jp_font = False
+        game.text_fmt.jp = False
+        cost = self._inn_cost_for_index(0)
+
+        vm = presenter.build_menu_view_model()
+
+        expected_inn = f"INN ({cost}G)"
+        self.assertIn(expected_inn, vm.labels)
+        self.assertEqual(vm.labels.count(expected_inn), 1)
+        for label in ("TALK", "WEAPONS", "ARMOR", "ITEMS", "SAVE", "EXIT"):
+            self.assertIn(label, vm.labels)
+
+    def test_unregistered_town_position_falls_back_to_inn_cost(self):
+        from src.shared.constants.game_config import INN_COST
+
+        game = _FakeGame()
+        model = TownModel()
+        model.menu_pos = (99, 99)  # TOWN_INDEX_BY_POS に無い → index 0 扱い
+        presenter = TownPresenter(model=model, game=game)
+
+        vm = presenter.build_menu_view_model()
+
+        # index 0 で INN_PRICES[0] が引けるか、引けなければ INN_COST が使われる
+        from src.game_data import INN_PRICES
+
+        fallback_cost = INN_PRICES[0] if 0 < len(INN_PRICES) else INN_COST
+        self.assertIn(f"やどや（{fallback_cost}G）", vm.labels)
+
+    def test_label_count_preserved_and_cursor_gold_unchanged(self):
+        presenter, game = _presenter_in_town(0)
+        game.player_model.gold = 123
+        presenter.model.menu_cursor = 4
+
+        vm = presenter.build_menu_view_model()
+
+        self.assertEqual(len(vm.labels), 7, "メニュー項目数が変わってはいけない")
+        self.assertEqual(vm.cursor, 4)
+        self.assertEqual(vm.gold, 123)
+        self.assertEqual(vm.title, "まちメニュー")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,8 @@
 
 build_menu_view_model は:
 - title は "まちメニュー" (JP) or "TOWN MENU" (EN)
-- labels は TOWN_MENU_LABELS（JP）or TOWN_MENU_LABELS_EN（EN）
+- labels は TOWN_MENU_LABELS（JP）or TOWN_MENU_LABELS_EN（EN）を基底に、
+  「やどや」/「INN」のみ宿代を併記した形（やどや（{cost}G） / INN ({cost}G)）
 - cursor は TownModel.menu_cursor
 - gold は PlayerModel.gold
 """
@@ -42,17 +43,31 @@ class _FakeGame:
     text_fmt: _FakeTextFormat = field(default_factory=_FakeTextFormat)
 
 
+def _expected_labels(base: tuple[str, ...], inn_cost: int) -> tuple[str, ...]:
+    """基底ラベルから、「やどや」/「INN」だけ宿代併記した期待値を組み立てる。"""
+
+    def fmt(label: str) -> str:
+        if label == "やどや":
+            return f"やどや（{inn_cost}G）"
+        if label == "INN":
+            return f"INN ({inn_cost}G)"
+        return label
+
+    return tuple(fmt(label) for label in base)
+
+
 class TownMenuViewModelTest(unittest.TestCase):
     def test_jp_mode_uses_japanese_labels(self):
         from src.shared.constants.game_config import TOWN_MENU_LABELS
 
         game = _FakeGame()
         presenter = TownPresenter(model=TownModel(), game=game)
+        inn_cost = presenter._get_inn_cost()
 
         vm = presenter.build_menu_view_model()
 
         self.assertEqual(vm.title, "まちメニュー")
-        self.assertEqual(tuple(vm.labels), TOWN_MENU_LABELS)
+        self.assertEqual(tuple(vm.labels), _expected_labels(TOWN_MENU_LABELS, inn_cost))
 
     def test_en_mode_uses_english_labels(self):
         from src.shared.constants.game_config import TOWN_MENU_LABELS_EN
@@ -60,11 +75,12 @@ class TownMenuViewModelTest(unittest.TestCase):
         game = _FakeGame(has_jp_font=False)
         game.text_fmt.use_jp = False
         presenter = TownPresenter(model=TownModel(), game=game)
+        inn_cost = presenter._get_inn_cost()
 
         vm = presenter.build_menu_view_model()
 
         self.assertEqual(vm.title, "TOWN MENU")
-        self.assertEqual(tuple(vm.labels), TOWN_MENU_LABELS_EN)
+        self.assertEqual(tuple(vm.labels), _expected_labels(TOWN_MENU_LABELS_EN, inn_cost))
 
     def test_cursor_comes_from_model(self):
         game = _FakeGame()
