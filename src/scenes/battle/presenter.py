@@ -594,61 +594,99 @@ class BattlePresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        model = self.model
-        if model.phase == "menu":
-            labels = (
-                ["たたかう", "じゅもん", "アイテム", "にげる"]
-                if game.has_jp_font
-                else ["FIGHT", "SPELL", "ITEM", "RUN"]
-            )
-            rows: list[BattleRow] = []
-            for i, label in enumerate(labels):
-                color = 10 if i == model.menu else 6
-                # menu はマーカーが行頭ではなく座標で別描画。VM では純粋にラベル + color
-                rows.append(BattleRow(text=label, color=color))
-            return BattleSubPanel(is_grid=True, rows=rows)
-        if model.phase == "spell_select":
-            spells = game.player_model.spells
-            if not spells:
-                return BattleSubPanel(
-                    is_grid=False,
-                    empty_message=game.text_fmt.t(
-                        "じゅもんをおぼえていない", "No spells learned"
-                    ),
-                )
-            rows = []
-            for i, name in enumerate(spells[:4]):
-                spell = SPELL_BY_NAME.get(name)
-                if spell is None:
-                    continue
-                color = 10 if i == model.spell_select else 6
-                marker = ">" if i == model.spell_select else " "
-                spell_name = game.text_fmt.name(name)
-                rows.append(BattleRow(
-                    text=f"{marker} {spell_name}  MP{spell['mp']}",
-                    color=color,
-                ))
-            return BattleSubPanel(is_grid=False, rows=rows)
-        if model.phase == "item_select":
-            items = game.player_model.items
-            info_text = model.text if model.text else None
-            if not items:
-                return BattleSubPanel(
-                    is_grid=False,
-                    empty_message=game.text_fmt.t("アイテムがない", "No items"),
-                    info_message=info_text,
-                )
-            rows = []
-            for i, item in enumerate(items[:4]):
-                idata = ITEMS[item.id]
-                color = 10 if i == model.item_select else 6
-                marker = ">" if i == model.item_select else " "
-                item_name = game.text_fmt.name(idata["name"])
-                rows.append(BattleRow(
-                    text=f"{marker} {item_name} x{item.qty}",
-                    color=color,
-                ))
-            return BattleSubPanel(
-                is_grid=False, rows=rows, info_message=info_text
-            )
+        phase = self.model.phase
+        if phase == "menu":
+            return self._build_menu_panel(game)
+        if phase == "spell_select":
+            return self._build_spell_panel(game)
+        if phase == "item_select":
+            return self._build_item_panel(game)
         return None
+
+    def _build_menu_panel(self, game: Any) -> BattleSubPanel:
+        """menu phase の sub_panel を返す。
+
+        Args:
+            game: game の値。
+        Returns:
+            描画用 BattleSubPanel。
+        Policy:
+            - phase 単位で sub_panel を組み立てる。
+        """
+        model = self.model
+        labels = (
+            ["たたかう", "じゅもん", "アイテム", "にげる"]
+            if game.has_jp_font
+            else ["FIGHT", "SPELL", "ITEM", "RUN"]
+        )
+        rows: list[BattleRow] = []
+        for i, label in enumerate(labels):
+            color = 10 if i == model.menu else 6
+            rows.append(BattleRow(text=label, color=color))
+        return BattleSubPanel(is_grid=True, rows=rows)
+
+    def _build_spell_panel(self, game: Any) -> BattleSubPanel:
+        """spell_select phase の sub_panel を返す。
+
+        Args:
+            game: game の値。
+        Returns:
+            描画用 BattleSubPanel。
+        Policy:
+            - phase 単位で sub_panel を組み立てる。
+        """
+        model = self.model
+        spells = game.player_model.spells
+        if not spells:
+            return BattleSubPanel(
+                is_grid=False,
+                empty_message=game.text_fmt.t(
+                    "じゅもんをおぼえていない", "No spells learned"
+                ),
+            )
+        rows = []
+        for i, name in enumerate(spells[:4]):
+            spell = SPELL_BY_NAME.get(name)
+            if spell is None:
+                continue
+            color = 10 if i == model.spell_select else 6
+            marker = ">" if i == model.spell_select else " "
+            spell_name = game.text_fmt.name(name)
+            rows.append(BattleRow(
+                text=f"{marker} {spell_name}  MP{spell['mp']}",
+                color=color,
+            ))
+        return BattleSubPanel(is_grid=False, rows=rows)
+
+    def _build_item_panel(self, game: Any) -> BattleSubPanel:
+        """item_select phase の sub_panel を返す。
+
+        Args:
+            game: game の値。
+        Returns:
+            描画用 BattleSubPanel。
+        Policy:
+            - phase 単位で sub_panel を組み立てる。
+        """
+        model = self.model
+        items = game.player_model.items
+        info_text = model.text if model.text else None
+        if not items:
+            return BattleSubPanel(
+                is_grid=False,
+                empty_message=game.text_fmt.t("アイテムがない", "No items"),
+                info_message=info_text,
+            )
+        rows = []
+        for i, item in enumerate(items[:4]):
+            idata = ITEMS[item.id]
+            color = 10 if i == model.item_select else 6
+            marker = ">" if i == model.item_select else " "
+            item_name = game.text_fmt.name(idata["name"])
+            rows.append(BattleRow(
+                text=f"{marker} {item_name} x{item.qty}",
+                color=color,
+            ))
+        return BattleSubPanel(
+            is_grid=False, rows=rows, info_message=info_text
+        )
