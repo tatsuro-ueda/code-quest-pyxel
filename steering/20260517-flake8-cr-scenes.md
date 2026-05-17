@@ -12,8 +12,8 @@ tags:
 
 # 2026年5月17日 src/scenes に flake8-cr を適用して直す
 
-> 状態：③ Gherkin
-> 次のゲート：（CC）Gherkin を書いて approve commit する
+> 状態：④ Design
+> 次のゲート：（CC）Design を書いて approve commit する
 
 ---
 
@@ -79,7 +79,48 @@ tags:
 
 ## 3) Gherkin（完了条件）
 
-（USM 承認後に記入）
+> 委任度：🟢 Design・実装まで CC が進められる
+> 残る曖昧さ：なし
+
+### シナリオ一覧
+
+#### シナリオ1：最終状態（src/scenes が flake8-cr 的にクリーン）
+
+1. 🧱 src/scenes 配下の全 Python ファイルに対して、機械修正・docstring・構造リファクタが終わっている
+2. 🎬 `flake8-cr src/scenes/` を実行する
+3. ✅ 標準出力に指摘が 1 件も出ず、終了コードが 0
+
+---
+
+#### シナリオ2：既存挙動が壊れていない
+
+1. 🧱 src/scenes の修正が一段落している
+2. 🎬 `make verify` と `python -m pytest test/ -q` を順に実行する
+3. ✅ どちらも緑（verify が `81 files OK` / `CJ link OK` / `scene_to_cj map OK`、pytest が `742 passed` 相当）で終了する
+
+---
+
+#### シナリオ3：途中段階でも残件が読める
+
+1. 🧱 機械修正や docstring 追加など、一段落の作業が終わったところ
+2. 🎬 `flake8-cr src/scenes/` を流し、Result に残件のコード別件数を書く
+3. ✅ 件数が前回より減っており、次に潰す種別が一目でわかる
+
+---
+
+#### シナリオ4：構造リファクタで挙動が変わったときに止まる
+
+1. 🧱 重い構造系（CR202/CR203/CR301/CR303）の関数分割を 1 ファイル直したところ
+2. 🎬 `python -m pytest test/ -q` を流す
+3. ✅ 失敗したらそこで実装を止め、Result に失敗内容と該当ファイルを書き残してから次の判断へ進む
+
+---
+
+#### シナリオ5：ビルド成果物が作れる
+
+1. 🧱 src/scenes の修正が全部終わり、flake8-cr が 0 件、pytest が緑になっている
+2. 🎬 `make build`（= `verify gen test` ＋ `tools/build_web_release.py`）を実行する
+3. ✅ 終了コード 0 でビルドが完了し、配布物が更新される
 
 ---
 
