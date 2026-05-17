@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: done
 priority: normal
 scheduled: 2026-05-17T22:00:00.000+09:00
 dateCreated: 2026-05-17T22:00:00.000+09:00
-dateModified: 2026-05-17T22:30:00.000+09:00
+dateModified: 2026-05-17T23:00:00.000+09:00
 tags:
   - task
 ---
