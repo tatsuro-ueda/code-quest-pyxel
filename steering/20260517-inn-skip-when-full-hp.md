@@ -10,8 +10,8 @@ tags:
 
 # 2026年5月17日 やどやでHP満タンなら泊まらずメッセージだけ出す
 
-> 状態：② ユーザーストーリーマップ
-> 次のゲート：（ユーザー）USM 素案を修正・承認する
+> 状態：⑤ Tasklist 実行中
+> 次のゲート：（CC）pytest 全件パス + make build まで自走
 
 ---
 
@@ -74,19 +74,145 @@ tags:
 
 ## 3) Gherkin（完了条件）
 
-（フェーズ3で記入）
+> 委任度：🟢 自走で実装まで進められる
+> 残る曖昧さ：なし
+
+### シナリオ一覧
+
+#### シナリオ1：正常系（HP/MP満タンでやどやを選ぶと払わずメッセージだけ出る）
+
+1. 🧱 PlayerModel が `hp == max_hp`、`mp == max_mp`、`gold >= inn_cost`、`poisoned == False` の状態でやどやメニューを選択
+2. 🎬 `TownPresenter._stay_at_inn()` を呼ぶ
+3. ✅ `game.messages.lines == [INN_FULL_MSG]`（"すでに げんきまんたんだ！"）。`PlayerModel.gold` は変化しない。`PlayerModel.stay_at_inn` は呼ばれない
+
+---
+
+#### シナリオ2：再試行系（HPだけ満タンで MP が減っていれば通常泊まり）
+
+1. 🧱 PlayerModel が `hp == max_hp`、`mp < max_mp`、`gold >= inn_cost` の状態でやどやメニューを選択
+2. 🎬 `TownPresenter._stay_at_inn()` を呼ぶ
+3. ✅ `game.messages.lines == [INN_OK_MSG]`。`gold` は inn_cost 分減る。`mp` は `max_mp` まで回復する
+
+---
+
+#### シナリオ3：境界条件（HP/MP満タンでも毒残りなら通常泊まり）
+
+1. 🧱 PlayerModel が `hp == max_hp`、`mp == max_mp`、`poisoned == True`、`gold >= inn_cost` の状態でやどやメニューを選択
+2. 🎬 `TownPresenter._stay_at_inn()` を呼ぶ
+3. ✅ `game.messages.lines == [INN_OK_MSG]`。`gold` は inn_cost 分減る。`poisoned == False` になる
+
+---
+
+#### シナリオ4：異常系（HP/MP満タンでコイン不足でも INN_FULL_MSG を優先）
+
+1. 🧱 PlayerModel が `hp == max_hp`、`mp == max_mp`、`gold < inn_cost` の状態でやどやメニューを選択
+2. 🎬 `TownPresenter._stay_at_inn()` を呼ぶ
+3. ✅ `game.messages.lines == [INN_FULL_MSG]`（INN_LACK_MSG ではなく）。`gold` は変化しない
+
+---
+
+#### シナリオ5：既存挙動の維持（HP/MP どちらも減＋コインあり）
+
+1. 🧱 PlayerModel が `hp < max_hp`、`mp < max_mp`、`gold >= inn_cost` の状態でやどやメニューを選択
+2. 🎬 `TownPresenter._stay_at_inn()` を呼ぶ
+3. ✅ `game.messages.lines == [INN_OK_MSG]`。`gold` 減算、`hp/mp` 全回復、`poisoned` 解除という既存挙動を維持。既存 pytest 738 件が全て通る
 
 ---
 
 ## 4) Design（どうやるか）
 
-（フェーズ4で記入）
+### 責務分担概要
+
+| 親ディレクトリ | 責務概要 |
+|---|---|
+| `src/scenes/town/` | やどやアクションの分岐判定（満タン時は払わず・回復させずメッセージのみ） |
+| `src/shared/state/` | `PlayerModel` に「HP/MP 満タン」判定 API を追加（state は Model に集約） |
+| `src/shared/constants/` | `INN_FULL_MSG` 文言定数の SSoT |
+| `test/` | TownPresenter の `_stay_at_inn` 分岐と PlayerModel の判定 API を検証 |
+
+### 責務分担概要図
+
+```mermaid
+flowchart TD
+    MENU[TownPresenter._dispatch_confirm やどや選択]
+    STAY[TownPresenter._stay_at_inn]
+    FULL[PlayerModel.is_full_hp_mp]
+    PAY[PlayerModel.stay_at_inn]
+    MSG[game.messages.lines]
+    CONST[game_config.INN_FULL_MSG / INN_OK_MSG / INN_LACK_MSG]
+
+    MENU --> STAY
+    STAY --> FULL
+    FULL -->|True| MSG
+    FULL -->|False| PAY
+    PAY --> MSG
+    CONST --> MSG
+```
+
+### 責務分担詳細
+
+#### 親ディレクトリ: `src/shared/constants`
+
+- ファイル名: `game_config.py`
+- 既存/新規: 既存
+- 責務内容:
+  - `INN_FULL_MSG` (新規定数, 値 `"すでに げんきまんたんだ！"`): HP/MP 満タン時のスキップメッセージ SSoT
+- 置く理由: やどや系メッセージは `INN_OK_MSG` / `INN_LACK_MSG` と同じファイルに集約する原則
+
+#### 親ディレクトリ: `src/shared/state`
+
+- ファイル名: `player_model.py`
+- 既存/新規: 既存
+- 責務内容:
+  - `is_full_hp_mp()` (新規 method, 戻り値 `bool`): `hp == max_hp and mp == max_mp` を返す（毒は対象外）
+- 置く理由: 「満タンかどうか」は PlayerModel が持つ state からの導出。Presenter で生 attribute を読んで条件を組み立てるのは責務漏れになるため、Model に判定 API を置く（M4-1）
+
+#### 親ディレクトリ: `src/scenes/town`
+
+- ファイル名: `presenter.py`
+- 既存/新規: 既存
+- 責務内容:
+  - `_stay_at_inn`: 冒頭で `game.player_model.is_full_hp_mp()` をチェック。True なら `INN_FULL_MSG` を `_enter_message` で出して return。False なら既存ロジック（`stay_at_inn(cost)` → 成功 INN_OK / 失敗 INN_LACK）に進む
+  - docstring の Policy も「満タン時は INN_FULL_MSG / それ以外は既存」に更新
+- 置く理由: 表示文字列の組み立てと分岐は Presenter の責務（M3-1）。Model（state 判定）と View（描画）に染み出させない
+
+#### 親ディレクトリ: `test`
+
+- ファイル名: `test_cjg_town_presenter_actions.py`
+- 既存/新規: 既存
+- 責務内容:
+  - シナリオ1〜4 を `_stay_at_inn` に対する fake game で検証する 4 ケース追加
+  - シナリオ5（既存挙動維持）は既存の `_stay_at_inn` テストでカバー済みかを確認し、不足あれば追加
+- 置く理由: 既存の TownPresenter アクション系テスト群（`_talk` / `_stay_at_inn` / `_save` / `_exit`）と同じファイルに並べる
+
+- **関連スキル・MCP**：`manage-tasknotes` のみ。他は不要
 
 ---
 
 ## 5) Tasklist
 
-（フェーズ5で記入）
+```mermaid
+flowchart TD
+    T1[INN_FULL_MSG を game_config.py に追加]
+    T2[PlayerModel.is_full_hp_mp を追加]
+    T3[TownPresenter._stay_at_inn に満タン分岐を追加]
+    T4[既存テスト確認 + シナリオ1〜4 を追加]
+    T5{pytest 全件パス?}
+    T6[make build で配布物を再生成]
+    T7[Result / Discussion 更新 + Close待ちへ]
+
+    T1 --> T2 --> T3 --> T4 --> T5
+    T5 -->|NG| T3
+    T5 -->|OK| T6 --> T7
+```
+
+- [ ] （CC）`INN_FULL_MSG` を `game_config.py` に追加
+- [ ] （CC）`PlayerModel.is_full_hp_mp()` を追加
+- [ ] （CC）`TownPresenter._stay_at_inn` に満タン分岐を追加し docstring 更新
+- [ ] （CC）シナリオ1〜4 のテストを `test_cjg_town_presenter_actions.py` に追加
+- [ ] （CC）`pytest test/` で全件パス
+- [ ] （CC）`make build` で dist artifacts を再生成
+- [ ] （CC）Result / Discussion を更新し Close待ちへ進む
 
 ---
 
