@@ -162,6 +162,77 @@ class TownInnTest(unittest.TestCase):
         self.assertEqual(game.state, "message")
 
 
+class TownInnFullMessageTest(unittest.TestCase):
+    """HP/MP満タン時はやどやで払わずメッセージだけ出すシナリオ群。"""
+
+    def test_full_hp_mp_skips_payment_and_shows_full_message(self):
+        from src.shared.constants.game_config import INN_FULL_MSG
+
+        presenter, game = _presenter_in_town(0)
+        p = game.player_model
+        p.hp = p.max_hp
+        p.mp = p.max_mp
+        p.gold = 1000
+        gold_before = p.gold
+
+        presenter._stay_at_inn()
+
+        self.assertEqual(game.messages.lines, [INN_FULL_MSG])
+        self.assertEqual(p.gold, gold_before, "満タンなのに gold が減った")
+        self.assertEqual(game.state, "message")
+
+    def test_full_hp_only_with_low_mp_proceeds_to_normal_stay(self):
+        from src.shared.constants.game_config import INN_OK_MSG
+
+        presenter, game = _presenter_in_town(0)
+        p = game.player_model
+        p.hp = p.max_hp
+        p.mp = 0
+        p.gold = 1000
+        gold_before = p.gold
+
+        presenter._stay_at_inn()
+
+        self.assertEqual(game.messages.lines, [INN_OK_MSG])
+        self.assertLess(p.gold, gold_before, "通常泊まりなのに gold が減らなかった")
+        self.assertEqual(p.mp, p.max_mp, "通常泊まりなのに MP が回復しなかった")
+
+    def test_full_hp_mp_with_poisoned_still_shows_full_message(self):
+        """毒は満タン判定に含めないため、HP/MP満タンなら毒残りでも INN_FULL_MSG が優先。
+
+        毒解除はどくけしのきのみ等の別ルートに任せる（Discussion 参照）。
+        """
+        from src.shared.constants.game_config import INN_FULL_MSG
+
+        presenter, game = _presenter_in_town(0)
+        p = game.player_model
+        p.hp = p.max_hp
+        p.mp = p.max_mp
+        p.poisoned = True
+        p.gold = 1000
+        gold_before = p.gold
+
+        presenter._stay_at_inn()
+
+        self.assertEqual(game.messages.lines, [INN_FULL_MSG])
+        self.assertEqual(p.gold, gold_before, "満タンなのに gold が減った")
+        self.assertTrue(p.poisoned, "毒は宿屋スキップ時に解除されない仕様")
+
+    def test_full_hp_mp_with_insufficient_gold_prefers_full_message(self):
+        from src.shared.constants.game_config import INN_FULL_MSG
+
+        presenter, game = _presenter_in_town(0)
+        p = game.player_model
+        p.hp = p.max_hp
+        p.mp = p.max_mp
+        p.gold = 0
+
+        presenter._stay_at_inn()
+
+        self.assertEqual(game.messages.lines, [INN_FULL_MSG])
+        self.assertEqual(p.gold, 0, "コイン不足でも満タン判定優先で gold は減らない")
+
+
 class TownSaveTest(unittest.TestCase):
     def test_save_calls_save_store_and_sets_has_save_flag(self):
         presenter, game = _presenter_in_town(1)  # (30, 22)

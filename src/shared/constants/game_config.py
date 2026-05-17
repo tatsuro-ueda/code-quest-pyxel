@@ -68,6 +68,7 @@ SAVE_FAIL_MSG_DESKTOP = "セーブにしっぱいしました（けんげん/よ
 SAVE_FAIL_MSG_WEB = "セーブにしっぱいしました（ブラウザのほぞんりょういきをかくにんしてください）"
 INN_OK_MSG = "あんぜんなばしょでやすんだ。しこうがさえる。HPとMPが かいふくした！"
 INN_LACK_MSG = "コインが たりません"
+INN_FULL_MSG = "すでに げんきまんたんだ！"
 SHOP_WIP_MSG = "こうじちゅう：ほんきのうはフォローアップでじっそうよてい"
 
 TOWN_DIALOG_SCENES = {

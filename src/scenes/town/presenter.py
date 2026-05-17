@@ -281,11 +281,15 @@ class TownPresenter:
         """宿屋泊まり（PlayerModel.stay_at_inn 経由）。
 
         Policy:
-            - 所持金が宿代に満たなければ INN_LACK_MSG、足りれば INN_OK_MSG を出す。
+            - HP/MP がともに満タンなら払わずに INN_FULL_MSG を出す（コイン不足より優先）。
+            - そうでなければ所持金チェック、足りなければ INN_LACK_MSG、足りれば INN_OK_MSG。
         """
         game = self.game
         import src.runtime.main_runtime as M
 
+        if game.player_model.is_full_hp_mp():
+            self._enter_message([M.INN_FULL_MSG])
+            return
         if not game.player_model.stay_at_inn(self._get_inn_cost()):
             self._enter_message([M.INN_LACK_MSG])
             return

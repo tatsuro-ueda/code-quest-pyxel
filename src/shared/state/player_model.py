@@ -207,6 +207,10 @@ class PlayerModel:
     def can_afford(self, cost: int) -> bool:
         return self.gold >= int(cost)
 
+    def is_full_hp_mp(self) -> bool:
+        """HP と MP がともに最大値か。毒状態は判定に含めない。"""
+        return self.hp >= self.max_hp and self.mp >= self.max_mp
+
     def stay_at_inn(self, cost: int) -> bool:
         """宿代を払って HP/MP 全回復＋毒解除。支払えないと False。"""
         if not self.can_afford(cost):
