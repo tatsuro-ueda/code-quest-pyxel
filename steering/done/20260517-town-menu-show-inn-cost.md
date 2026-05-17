@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 priority: normal
 scheduled: 2026-05-17T20:00:00.000+09:00
 dateCreated: 2026-05-17T20:00:00.000+09:00
