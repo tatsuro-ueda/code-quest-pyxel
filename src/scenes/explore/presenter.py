@@ -1,3 +1,15 @@
+"""explore scene の入力解釈・遷移決定・ViewModel 組立て。
+
+Problems:
+    - シーン固有の入力解釈・遷移決定・ViewModel 組立てが Scene に直書き
+      されると、責務が混ざってテストしづらい。
+    - 同じ入力でも phase によって意味が変わるロジックが分散すると、
+      仕様変更時に直し漏れが起きやすい。
+
+Solutions:
+    - explore の Presenter に入力解釈と遷移決定を集約し、Scene は
+      生成と配線だけを担う。
+"""
 from __future__ import annotations
 
 import random
@@ -21,14 +33,28 @@ from src.shared.services.landmark_events import find_landmark_at
 class ExplorePresenter:
     """探索シーンの入力解釈・遷移決定・ViewModel 組立て（M3-1 / M2-2）。"""
 
+    # === Public API ===
+
     model: ExploreModel
 
     def change_mode(self, mode: str) -> None:
-        """探索モードを指定値（map / menu など）に差し替える。"""
+        """探索モードを指定値（map / menu など）に差し替える。
+
+        Args:
+            mode: mode の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         self.model.mode = mode
 
     def update(self, game: Any) -> None:
-        """プレイヤー移動とタイルイベント・ランドマーク判定。"""
+        """プレイヤー移動とタイルイベント・ランドマーク判定。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         import src.runtime.main_runtime as M
 
         if self.model.move_cooldown > 0:
@@ -37,11 +63,11 @@ class ExplorePresenter:
 
         # A-button cooldown: 「でる」直後やロード直後の1フレーム目に
         # 残っている A 押下を1回だけ捨てて、町メニューが暴発しないようにする。
-        if self.model.a_cooldown:
+        if self.model.has_a_cooldown:
             if game.input_state.btnp(CONFIRM_BUTTONS):
-                self.model.a_cooldown = False
+                self.model.has_a_cooldown = False
                 return
-            self.model.a_cooldown = False
+            self.model.has_a_cooldown = False
 
         # Open menu
         if game.input_state.btnp(CANCEL_BUTTONS):
@@ -50,30 +76,35 @@ class ExplorePresenter:
             game.menu_sub = None
             return
 
-        p = game.player_model
+        player = game.player_model
         dx, dy = 0, 0
-        if game.input_state.btn(UP_BUTTONS): dy = -1
-        elif game.input_state.btn(DOWN_BUTTONS): dy = 1
-        elif game.input_state.btn(LEFT_BUTTONS): dx = -1
-        elif game.input_state.btn(RIGHT_BUTTONS): dx = 1
+        if game.input_state.btn(UP_BUTTONS):
+            dy = -1
+        elif game.input_state.btn(DOWN_BUTTONS):
+            dy = 1
+        elif game.input_state.btn(LEFT_BUTTONS):
+            dx = -1
+        elif game.input_state.btn(RIGHT_BUTTONS):
+            dx = 1
 
         if dx != 0 or dy != 0:
-            nx, ny = p.x + dx, p.y + dy
-            if p.in_dungeon:
+            nx, ny = player.x + dx, player.y + dy
+            if player.in_dungeon:
                 mw, mh = M.DUNGEON_W, M.DUNGEON_H
             else:
                 mw, mh = M.MAP_W, M.MAP_H
 
             if 0 <= nx < mw and 0 <= ny < mh:
-                tile = self.model.get_tile(nx, ny, in_dungeon=p.in_dungeon)
+                tile = self.model.get_tile(nx, ny, in_dungeon=player.in_dungeon)
                 if tile not in M.IMPASSABLE:
-                    old_zone = M.get_zone(p.y, p.in_dungeon)
-                    p.x = nx; p.y = ny
+                    old_zone = M.get_zone(player.y, player.in_dungeon)
+                    player.x = nx
+                    player.y = ny
                     game.sfx.play("step")
                     self.model.move_cooldown = 4
                     self.model.walk_timer += 1
-                    new_zone = M.get_zone(p.y, p.in_dungeon)
-                    p.max_zone_reached = max(p.max_zone_reached, new_zone)
+                    new_zone = M.get_zone(player.y, player.in_dungeon)
+                    player.max_zone_reached = max(player.max_zone_reached, new_zone)
                     if new_zone != old_zone:
                         game.sfx.play("zone_change")
                     if self.model.walk_timer >= 2:
@@ -81,46 +112,164 @@ class ExplorePresenter:
                         self.model.walk_timer = 0
 
                     # Poison tick
-                    if p.poisoned:
-                        game._poison_step_counter = getattr(game, "_poison_step_counter", 0) + 1
+                    if player.poisoned:
+                        game._poison_step_counter = (
+                            getattr(game, "_poison_step_counter", 0) + 1
+                        )
                         if game._poison_step_counter >= 4:
                             game._poison_step_counter = 0
-                            p.hp = max(1, p.hp - 2)
+                            player.hp = max(1, player.hp - 2)
                             game.sfx.play("poison_tick")
 
                     # Check events after move
                     if self._check_landmark_events(game):
                         return
                     self._check_tile_events(game, tile, nx, ny)
-            elif p.in_dungeon:
+            elif player.in_dungeon:
                 # Exit dungeon at edges
-                p.in_dungeon = False
-                p.x = game.world_return_x
-                p.y = game.world_return_y
+                player.in_dungeon = False
+                player.x = game.world_return_x
+                player.y = game.world_return_y
                 game.messages.enter(
                     game.messages.dialog_lines("dungeon.glitch.exit"),
-                    callback=self._dungeon_exit_callback(game),
+                    callback=self._build_dungeon_exit_callback(game),
                 )
                 return
 
-    def _check_tile_events(self, game: Any, tile, nx, ny) -> None:
-        """タイル上のイベント（ダンジョン階段・町・城・洞窟・エンカウント）を処理する。"""
-        import src.runtime.main_runtime as M
-        p = game.player_model
+    def build_view_model(self, game: Any) -> ExploreViewModel:
+        """カメラ計算 + bltm 引数組み立て + landmark / boss marker 解決を行い VM を返す。
 
-        if p.in_dungeon and tile == M.T_STAIR_UP:
-            p.in_dungeon = False
-            p.x = game.world_return_x
-            p.y = game.world_return_y
+        副作用として self.model.cam_x / self.model.cam_y を更新する
+        （M4-3: カメラは Explore 専用なので ExploreModel に持つ）。
+
+        2026-05-05 改訂：world_map / dungeon_map のリスト走査をやめ、必要な
+        マップ寸法・タイル ID 探索は ExploreModel.get_tile（pyxel.tilemaps
+        直読）に問い合わせる。bltm 1 回呼びの引数を ViewModel に詰める。
+
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        import src.runtime.main_runtime as M
+        from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
+        from src.shared.constants.tile_data import T_GLITCH_LORD_TRIGGER
+
+        player = game.player_model
+
+        # マップ寸法は constant から取る（world=50x50 / dungeon=20x20）。
+        if player.in_dungeon:
+            mw, mh = M.DUNGEON_W, M.DUNGEON_H
+        else:
+            mw, mh = M.MAP_W, M.MAP_H
+        view_w = 256
+        view_h = 232
+        self.model.cam_x = player.x * 16 - view_w // 2 + 8
+        self.model.cam_y = player.y * 16 - view_h // 2 + 8
+        self.model.cam_x = max(0, min(mw * 16 - view_w, self.model.cam_x))
+        self.model.cam_y = max(0, min(mh * 16 - view_h, self.model.cam_y))
+
+        # bltm 引数（tilemap[0] からカメラ位置に対応するピクセル領域を切り出す）。
+        # 1 ゲームタイル (16x16 px) = 2x2 cells (8x8 px) なので、cam_x / cam_y は
+        # ピクセル単位そのままで bltm_u / bltm_v に渡せる。
+        # dungeon 領域は cell 単位で DUNGEON_TM_OFFSET_Y、ピクセルに直すと *8。
+        oy_px = DUNGEON_TM_OFFSET_Y * 8 if player.in_dungeon else 0
+        bltm_u = self.model.cam_x
+        bltm_v = oy_px + self.model.cam_y
+        bltm_w = view_w
+        bltm_h = view_h
+        bltm_x = 0
+        bltm_y = 24  # 上部 24px は HUD 領域
+
+        hero_sx = player.x * 16 - self.model.cam_x
+        hero_sy = player.y * 16 - self.model.cam_y + 24
+        sprite_key = "hero_walk" if self.model.walk_frame == 1 else "hero_down"
+
+        landmarks: list[ExploreLandmark] = []
+        if not player.in_dungeon:
+            for tx, ty, color, enabled in (
+                (32, 9, 11, True),
+                (40, 32, 2, True),
+                (25, 6, 10, player.glitch_lord_defeated),
+            ):
+                if enabled:
+                    landmarks.append(
+                        ExploreLandmark(tx=tx, ty=ty, color=color)
+                    )
+
+        # ボスマーカー：dungeon 内かつ未撃破のとき、画面内の
+        # T_GLITCH_LORD_TRIGGER タイルを探す（ExploreModel.get_tile 経由）。
+        is_boss_marker_active = player.in_dungeon and not player.glitch_lord_defeated
+        boss_marker_screen_xy: tuple[int, int] | None = None
+        if is_boss_marker_active:
+            tx_start = max(0, self.model.cam_x // 16)
+            ty_start = max(0, self.model.cam_y // 16)
+            tx_end = min(mw, (self.model.cam_x + view_w) // 16 + 2)
+            ty_end = min(mh, (self.model.cam_y + view_h) // 16 + 2)
+            for ty in range(ty_start, ty_end):
+                for tx in range(tx_start, tx_end):
+                    tile = self.model.get_tile(tx, ty, in_dungeon=True)
+                    if tile == T_GLITCH_LORD_TRIGGER:
+                        sx = tx * 16 - self.model.cam_x
+                        sy = ty * 16 - self.model.cam_y + 24
+                        if -16 < sx < 256 and 8 < sy < 256:
+                            boss_marker_screen_xy = (sx, sy)
+                        break
+                if boss_marker_screen_xy is not None:
+                    break
+
+        return ExploreViewModel(
+            is_in_dungeon=player.in_dungeon,
+            cam_x=self.model.cam_x,
+            cam_y=self.model.cam_y,
+            tm=self.model.get_current_tilemap_id(in_dungeon=player.in_dungeon),
+            bltm_u=bltm_u,
+            bltm_v=bltm_v,
+            bltm_w=bltm_w,
+            bltm_h=bltm_h,
+            bltm_x=bltm_x,
+            bltm_y=bltm_y,
+            boss_marker_screen_xy=boss_marker_screen_xy,
+            hero_screen_xy=(hero_sx, hero_sy),
+            hero_sprite_key=sprite_key,
+            landmarks=landmarks,
+            is_boss_marker_active=is_boss_marker_active,
+            image_banks=game.image_banks,
+        )
+
+    # === Internal helpers (private) ===
+
+    def _check_tile_events(self, game: Any, tile, nx, ny) -> None:
+        """タイル上のイベント（ダンジョン階段・町・城・洞窟・エンカウント）を処理する。
+
+        Args:
+            game: game の値。
+            tile: tile の値。
+            nx: nx の値。
+            ny: ny の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        import src.runtime.main_runtime as M
+        player = game.player_model
+
+        if player.in_dungeon and tile == M.T_STAIR_UP:
+            player.in_dungeon = False
+            player.x = game.world_return_x
+            player.y = game.world_return_y
             game.messages.enter(
                 game.messages.dialog_lines("dungeon.glitch.exit"),
-                callback=self._dungeon_exit_callback(game),
+                callback=self._build_dungeon_exit_callback(game),
             )
             return
 
-        if p.in_dungeon and tile == M.T_GLITCH_LORD_TRIGGER:
-            if not p.glitch_lord_defeated:
-                game.battle_scene.start(M.GLITCH_LORD_DATA, is_glitch_lord=True)
+        if player.in_dungeon and tile == M.T_GLITCH_LORD_TRIGGER:
+            if not player.glitch_lord_defeated:
+                game.battle_scene.start(
+                    M.GLITCH_LORD_DATA, is_glitch_lord=True
+                )
             return
 
         if tile == M.T_TOWN:
@@ -143,42 +292,59 @@ class ExplorePresenter:
             if scene_name is None:
                 lines = ["..."]
             else:
-                lines = game.messages.dialog_lines(scene_name, ProfessorPhase=game.professor_scene.phase())
+                lines = game.messages.dialog_lines(
+                    scene_name,
+                    ProfessorPhase=game.professor_scene.phase(),
+                )
             game.messages.show(lines)
             game.state = "town"
             return
 
-        if tile == M.T_CAVE and not p.in_dungeon:
-            if not p.towerNoiseCleared:
-                game.messages.enter(game.messages.dialog_lines("cave.blocked"))
+        if tile == M.T_CAVE and not player.in_dungeon:
+            if not player.towerNoiseCleared:
+                game.messages.enter(
+                    game.messages.dialog_lines("cave.blocked")
+                )
                 return
             if not getattr(game, "_cave_unblock_shown", False):
                 game._cave_unblock_shown = True
-                game.messages.enter(game.messages.dialog_lines("cave.unblocked"))
+                game.messages.enter(
+                    game.messages.dialog_lines("cave.unblocked")
+                )
                 return
             game.sfx.play("dungeon_in")
             game.world_return_x = nx
             game.world_return_y = ny
-            p.in_dungeon = True
+            player.in_dungeon = True
             sx, sy = game.dungeon_spawn
-            p.x = sx
-            p.y = sy
-            game.messages.enter(game.messages.dialog_lines("dungeon.glitch.enter"))
+            player.x = sx
+            player.y = sy
+            game.messages.enter(
+                game.messages.dialog_lines("dungeon.glitch.enter")
+            )
             return
 
         # Random encounter
         if not game.debug_mode:
-            if p.in_dungeon and p.glitch_lord_defeated:
+            if player.in_dungeon and player.glitch_lord_defeated:
                 return
             rate = M.ENCOUNTER_RATES.get(tile, 0)
             if rate > 0 and random.random() < rate:
-                zone = M.get_zone(p.y, p.in_dungeon)
+                zone = M.get_zone(player.y, player.in_dungeon)
                 enemies = M.ZONE_ENEMIES.get(zone, M.ZONE_ENEMIES[0])
                 enemy_template = random.choice(enemies)
                 game.battle_scene.start(enemy_template, is_glitch_lord=False)
 
     def _check_landmark_events(self, game: Any) -> bool:
-        """ランドマークイベントを判定し、発生したら True を返す。"""
+        """ランドマークイベントを判定し、発生したら True を返す。
+
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         if game.player_model.in_dungeon:
             return False
 
@@ -186,18 +352,18 @@ class ExplorePresenter:
         if landmark is None:
             return False
 
-        p = game.player_model
+        player = game.player_model
         scene_name = self._resolve_landmark_scene(game, landmark)
         if scene_name is None:
             return False
 
         if landmark.flag_name == "landmarkTreeSeen":
-            if not p.landmarkTreeSeen:
-                p.landmarkTreeSeen = True
-                p.treeAsked = True
+            if not player.landmarkTreeSeen:
+                player.landmarkTreeSeen = True
+                player.treeAsked = True
         elif landmark.flag_name == "landmarkTowerSeen":
-            if not p.landmarkTowerSeen:
-                p.landmarkTowerSeen = True
+            if not player.landmarkTowerSeen:
+                player.landmarkTowerSeen = True
 
         if scene_name == "landmark.tower.quest":
             game.messages.enter(
@@ -207,19 +373,28 @@ class ExplorePresenter:
             return True
 
         if landmark.epilogue_flag and scene_name == landmark.epilogue_scene:
-            setattr(p, landmark.epilogue_flag, True)
+            setattr(player, landmark.epilogue_flag, True)
 
         game.messages.enter(game.messages.dialog_lines(scene_name))
         return True
 
     def _resolve_landmark_scene(self, game: Any, landmark):
-        """洞窟ミッションのフラグに応じてランドマークのシーンを決定する。"""
-        p = game.player_model
-        cleared = p.towerNoiseCleared
-        tree_asked = p.treeAsked
+        """洞窟ミッションのフラグに応じてランドマークのシーンを決定する。
+
+        Args:
+            game: game の値。
+            landmark: landmark の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        player = game.player_model
+        cleared = player.towerNoiseCleared
+        tree_asked = player.treeAsked
 
         if landmark.flag_name == "landmarkTreeSeen":
-            if not p.landmarkTreeSeen:
+            if not player.landmarkTreeSeen:
                 return "landmark.tree.first"
             if cleared:
                 if not getattr(game, "_tree_cleared_shown", False):
@@ -233,13 +408,13 @@ class ExplorePresenter:
             return "landmark.tree.waiting"
 
         if landmark.flag_name == "landmarkTowerSeen":
-            if not p.landmarkTowerSeen:
+            if not player.landmarkTowerSeen:
                 return "landmark.tower.first"
             if cleared:
                 if (
-                    p.glitch_lord_defeated
+                    player.glitch_lord_defeated
                     and landmark.epilogue_scene
-                    and not getattr(p, landmark.epilogue_flag, False)
+                    and not getattr(player, landmark.epilogue_flag, False)
                 ):
                     return landmark.epilogue_scene
                 return random.choice([
@@ -253,101 +428,16 @@ class ExplorePresenter:
 
         return None
 
-    def _dungeon_exit_callback(self, game: Any):
-        """ダンジョン脱出時のコールバック（ボス撃破済みならエンディングへ）。"""
+    def _build_dungeon_exit_callback(self, game: Any):
+        """ダンジョン脱出時のコールバック（ボス撃破済みならエンディングへ）。
+
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         if game.player_model.glitch_lord_defeated:
             return game.ending_scene.enter
         return None
-
-    def build_view_model(self, game: Any) -> ExploreViewModel:
-        """カメラ計算 + bltm 引数組み立て + landmark / boss marker 解決を行い VM を返す。
-
-        副作用として self.model.cam_x / self.model.cam_y を更新する
-        （M4-3: カメラは Explore 専用なので ExploreModel に持つ）。
-
-        2026-05-05 改訂：world_map / dungeon_map のリスト走査をやめ、必要な
-        マップ寸法・タイル ID 探索は ExploreModel.get_tile（pyxel.tilemaps
-        直読）に問い合わせる。bltm 1 回呼びの引数を ViewModel に詰める。
-        """
-        import src.runtime.main_runtime as M
-        from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
-        from src.shared.constants.tile_data import T_GLITCH_LORD_TRIGGER
-
-        p = game.player_model
-
-        # マップ寸法は constant から取る（world=50x50 / dungeon=20x20）。
-        if p.in_dungeon:
-            mw, mh = M.DUNGEON_W, M.DUNGEON_H
-        else:
-            mw, mh = M.MAP_W, M.MAP_H
-        view_w = 256; view_h = 232
-        self.model.cam_x = p.x * 16 - view_w // 2 + 8
-        self.model.cam_y = p.y * 16 - view_h // 2 + 8
-        self.model.cam_x = max(0, min(mw * 16 - view_w, self.model.cam_x))
-        self.model.cam_y = max(0, min(mh * 16 - view_h, self.model.cam_y))
-
-        # bltm 引数（tilemap[0] からカメラ位置に対応するピクセル領域を切り出す）。
-        # 1 ゲームタイル (16x16 px) = 2x2 cells (8x8 px) なので、cam_x / cam_y は
-        # ピクセル単位そのままで bltm_u / bltm_v に渡せる。
-        # dungeon 領域は cell 単位で DUNGEON_TM_OFFSET_Y、ピクセルに直すと *8。
-        oy_px = DUNGEON_TM_OFFSET_Y * 8 if p.in_dungeon else 0
-        bltm_u = self.model.cam_x
-        bltm_v = oy_px + self.model.cam_y
-        bltm_w = view_w
-        bltm_h = view_h
-        bltm_x = 0
-        bltm_y = 24  # 上部 24px は HUD 領域
-
-        hero_sx = p.x * 16 - self.model.cam_x
-        hero_sy = p.y * 16 - self.model.cam_y + 24
-        sprite_key = "hero_walk" if self.model.walk_frame == 1 else "hero_down"
-
-        landmarks: list[ExploreLandmark] = []
-        if not p.in_dungeon:
-            for tx, ty, color, enabled in (
-                (32, 9, 11, True),
-                (40, 32, 2, True),
-                (25, 6, 10, p.glitch_lord_defeated),
-            ):
-                if enabled:
-                    landmarks.append(ExploreLandmark(tx=tx, ty=ty, color=color))
-
-        # ボスマーカー：dungeon 内かつ未撃破のとき、画面内の
-        # T_GLITCH_LORD_TRIGGER タイルを探す（ExploreModel.get_tile 経由）。
-        boss_marker_active = p.in_dungeon and not p.glitch_lord_defeated
-        boss_marker_screen_xy: tuple[int, int] | None = None
-        if boss_marker_active:
-            tx_start = max(0, self.model.cam_x // 16)
-            ty_start = max(0, self.model.cam_y // 16)
-            tx_end = min(mw, (self.model.cam_x + view_w) // 16 + 2)
-            ty_end = min(mh, (self.model.cam_y + view_h) // 16 + 2)
-            for ty in range(ty_start, ty_end):
-                for tx in range(tx_start, tx_end):
-                    tile = self.model.get_tile(tx, ty, in_dungeon=True)
-                    if tile == T_GLITCH_LORD_TRIGGER:
-                        sx = tx * 16 - self.model.cam_x
-                        sy = ty * 16 - self.model.cam_y + 24
-                        if -16 < sx < 256 and 8 < sy < 256:
-                            boss_marker_screen_xy = (sx, sy)
-                        break
-                if boss_marker_screen_xy is not None:
-                    break
-
-        return ExploreViewModel(
-            in_dungeon=p.in_dungeon,
-            cam_x=self.model.cam_x,
-            cam_y=self.model.cam_y,
-            tm=self.model.current_tilemap_id(in_dungeon=p.in_dungeon),
-            bltm_u=bltm_u,
-            bltm_v=bltm_v,
-            bltm_w=bltm_w,
-            bltm_h=bltm_h,
-            bltm_x=bltm_x,
-            bltm_y=bltm_y,
-            boss_marker_screen_xy=boss_marker_screen_xy,
-            hero_screen_xy=(hero_sx, hero_sy),
-            hero_sprite_key=sprite_key,
-            landmarks=landmarks,
-            boss_marker_active=boss_marker_active,
-            image_banks=game.image_banks,
-        )

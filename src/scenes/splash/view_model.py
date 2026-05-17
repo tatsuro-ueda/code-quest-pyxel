@@ -1,11 +1,16 @@
-from __future__ import annotations
+"""splash scene の ViewModel（描画用解釈済みデータ）。
 
-"""splash シーンの ViewModel（M2-2：解釈済みの描画用データ）。
+Problems:
+    - View が Model や Presenter の内部状態を直接参照すると、
+      描画と意思決定が混ざってテストしづらくなる。
+    - 描画に必要なデータが暗黙に決まっていると、画面追加・文言変更時に
+      View 側で都度判定が必要になる。
 
-View には Model や Game を直接渡さず、本 ViewModel に「解釈済み」の値
-（色・表示文字列・可視フラグ等）だけを乗せて渡す。フレーム数や i18n の
-分岐判断は Presenter / Scene 側で済ませる。
+Solutions:
+    - 描画に必要な値を SplashViewModel に集約し、View はこの dataclass
+      だけを受け取って描く。
 """
+from __future__ import annotations
 
 from dataclasses import dataclass
 
@@ -14,8 +19,10 @@ from dataclasses import dataclass
 class SplashViewModel:
     """splash シーンの 1 フレーム描画用解釈済みデータ。"""
 
+    # === Public API ===
+
     block_color: int
     title_color: int
     subtitle_text: str | None
     presenter_text: str | None
-    prompt_eligible: bool  # 表示候補時間帯かどうか。実際の点滅判定は View が pyxel.frame_count で行う
+    is_prompt_eligible: bool  # 表示候補時間帯かどうか。実際の点滅判定は View が pyxel.frame_count で行う

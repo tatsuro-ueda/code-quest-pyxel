@@ -199,7 +199,7 @@ class Game:
         if pyxel.btnp(pyxel.KEY_F1):
             self.state = "map"
             self.explore_scene.model.move_cooldown = 0
-            self.explore_scene.model.a_cooldown = False
+            self.explore_scene.model.has_a_cooldown = False
             self.messages.lines = []
             self.messages.index = 0
             self.messages.callback = None

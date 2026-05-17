@@ -65,13 +65,13 @@ def test_get_tile_returns_underlying_tile_id():
 def test_current_tilemap_id_world_is_0():
     """ワールドマップ用 tilemap 番号は 0。"""
     model = ExploreModel(image_banks=_StubImageBanks({}))
-    assert model.current_tilemap_id(in_dungeon=False) == 0
+    assert model.get_current_tilemap_id(in_dungeon=False) == 0
 
 
 def test_current_tilemap_id_dungeon_is_0():
     """ダンジョンも tilemap[0] の Y オフセット領域を使うので tm=0。"""
     model = ExploreModel(image_banks=_StubImageBanks({}))
-    assert model.current_tilemap_id(in_dungeon=True) == 0
+    assert model.get_current_tilemap_id(in_dungeon=True) == 0
 
 
 def test_get_tile_does_not_read_game_world_map():

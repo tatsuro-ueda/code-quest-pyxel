@@ -1,3 +1,15 @@
+"""explore scene 本体（Model / View / Presenter の配線）。
+
+Problems:
+    - Scene に入力解釈と描画ロジックを直書きすると、レイヤが崩れて
+      テスト時に Pyxel まで起動する必要が出る。
+    - シーンごとに生成・配線手順がばらばらだと、新しいシーンを
+      追加する時に何を持たせるか毎回考え直すことになる。
+
+Solutions:
+    - explore の Scene は Model / View / Presenter を保持し、
+      update / draw を Presenter / View へ委譲する薄い配線に保つ。
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -15,26 +27,27 @@ class ExploreScene:
     Phase 4（M3-2）でロジックを Presenter に集約済み。Scene は配線のみ。
     """
 
+    # === Public API ===
+
     name: str = "explore"
     model: ExploreModel = field(default_factory=ExploreModel)
     view: ExploreView = field(default_factory=ExploreView)
     game: Any = None
 
     def __post_init__(self) -> None:
-        """model を共有する presenter を生成する。"""
+        """model を共有する presenter を生成する。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         self.presenter = ExplorePresenter(self.model)
 
-    def _attach_image_banks(self) -> None:
-        """Model に game.image_banks を注入する（DB 読み取り用、M4-1 改訂）。"""
-        game = self.game
-        if game is None:
-            return
-        ib = getattr(game, "image_banks", None)
-        if ib is not None and self.model.image_banks is not ib:
-            self.model.image_banks = ib
-
     def update(self) -> None:
-        """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。"""
+        """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         game = self.game
         if game is None:
             return
@@ -42,9 +55,15 @@ class ExploreScene:
         self.presenter.update(game)
 
     def draw(self) -> dict[str, str] | None:
-        """フィールド地図を Pyxel に描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。
+        """フィールド地図を Pyxel に描画する。
 
+        Presenter が VM を組み立て、View に委譲する（M1-1 / M2-2 準拠）。
         game が未設定（単体テスト）時は既存 view.render dict を返して互換維持。
+
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
         """
         game = self.game
         if game is None:
@@ -57,24 +76,63 @@ class ExploreScene:
         self.view.draw(vm, text_writer)
         return None
 
+    # === Internal helpers (private) ===
+
+    def _attach_image_banks(self) -> None:
+        """Model に game.image_banks を注入する（DB 読み取り用、M4-1 改訂）。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game is None:
+            return
+        ib = getattr(game, "image_banks", None)
+        if ib is not None and self.model.image_banks is not ib:
+            self.model.image_banks = ib
+
     # ----- 既存テスト互換のための薄いラッパ -----
 
     def _check_tile_events(self, tile, nx, ny):
-        """既存テスト互換：Presenter._check_tile_events に委譲。"""
+        """既存テスト互換：Presenter._check_tile_events に委譲。
+
+        Args:
+            tile: tile の値。
+            nx: nx の値。
+            ny: ny の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         game = self.game
         if game is None:
             return
         return self.presenter._check_tile_events(game, tile, nx, ny)
 
     def _check_landmark_events(self) -> bool:
-        """既存テスト互換：Presenter._check_landmark_events に委譲。"""
+        """既存テスト互換：Presenter._check_landmark_events に委譲。
+
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         game = self.game
         if game is None:
             return False
         return self.presenter._check_landmark_events(game)
 
     def _resolve_landmark_scene(self, landmark):
-        """既存テスト互換：Presenter._resolve_landmark_scene に委譲。"""
+        """既存テスト互換：Presenter._resolve_landmark_scene に委譲。
+
+        Args:
+            landmark: landmark の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         game = self.game
         if game is None:
             return None

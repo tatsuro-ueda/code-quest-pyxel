@@ -21,7 +21,10 @@ from src.shared.services.input_bindings import (
     DOWN_BUTTONS,
     UP_BUTTONS,
 )
-from src.shared.services.save_store import LocalStorageSaveStore, SaveStoreError
+from src.shared.services.save_store import (
+    LocalStorageSaveStore,
+    SaveStoreError,
+)
 
 
 @dataclass
@@ -204,9 +207,15 @@ class TownPresenter:
         game = self.game
         import src.runtime.main_runtime as M
 
-        base_labels = M.TOWN_MENU_LABELS if game.has_jp_font else M.TOWN_MENU_LABELS_EN
+        base_labels = (
+            M.TOWN_MENU_LABELS
+            if game.has_jp_font
+            else M.TOWN_MENU_LABELS_EN
+        )
         inn_cost = self._get_inn_cost()
-        labels = tuple(self._format_inn_label(label, inn_cost) for label in base_labels)
+        labels = tuple(
+            self._format_inn_label(label, inn_cost) for label in base_labels
+        )
         title = game.text_fmt.t("まちメニュー", "TOWN MENU")
         return TownMenuViewModel(
             title=title,

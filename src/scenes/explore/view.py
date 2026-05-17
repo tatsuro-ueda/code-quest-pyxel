@@ -1,3 +1,15 @@
+"""explore scene の描画。
+
+Problems:
+    - 描画コードに状態判定が混ざると、見た目を変えるだけのつもりが
+      Model 整合性まで考えることになる。
+    - Pyxel API が Presenter / Model 側に染み出すとレイヤ境界が崩れ、
+      テストでモックしづらくなる。
+
+Solutions:
+    - explore の View は ViewModel と Pyxel API だけを扱い、
+      判断は Presenter 側に閉じ込める。
+"""
 from __future__ import annotations
 
 from typing import Any
@@ -16,7 +28,15 @@ DUNGEON_BGM_INDEX = 3
 
 
 def _select_explore_bgm(game) -> int:
-    """game 状態から探索 BGM の musics index を決める純粋関数。"""
+    """game 状態から探索 BGM の musics index を決める純粋関数。
+
+    Args:
+        game: game の値。
+    Returns:
+        関数の戻り値。
+    Postconditions:
+        - 副作用とモデル更新は実装どおり。
+    """
     if game is None:
         return TOWN_BGM_INDEX
     # 町メニュー (state == "town") を開いている間は town BGM を維持する。
@@ -40,6 +60,11 @@ def play_bgm(game) -> None:
     """探索シーンの BGM を冪等に発火する（town/overworld/dungeon を分岐選択）。
 
     CJ44 確定版（追加整理）：冪等性は ``audio_system.play_bgm_track`` に集約。
+
+    Args:
+        game: game の値。
+    Postconditions:
+        - 副作用とモデル更新は実装どおり。
     """
     if game is None:
         return
@@ -55,12 +80,29 @@ class ExploreView:
     に刻まれたタイルがそのまま見える）。
     """
 
+    # === Public API ===
+
     def render(self, *, mode: str) -> dict[str, str]:
-        """現在の探索モードを描画に必要な辞書として返す（snapshot 用）。"""
+        """現在の探索モードを描画に必要な辞書として返す（snapshot 用）。
+
+        Args:
+            mode: mode の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         return {"mode": mode}
 
     def draw(self, vm: ExploreViewModel, text_writer: Any = None) -> None:
-        """ExploreViewModel を画面に描く。"""
+        """ExploreViewModel を画面に描く。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         ib = vm.image_banks
         cam_x, cam_y = vm.cam_x, vm.cam_y
 
@@ -83,7 +125,10 @@ class ExploreView:
                             18 + pulse * 2, 18 + pulse * 2, lm.color)
 
         # ボス目印（ダンジョン内かつ未撃破。Presenter が画面内座標を解決済み）
-        if vm.boss_marker_active and vm.boss_marker_screen_xy is not None:
+        if (
+            vm.is_boss_marker_active
+            and vm.boss_marker_screen_xy is not None
+        ):
             bp = ib.sprite_bank.get("hero_down") if ib else None
             if bp is not None:
                 sx, sy = vm.boss_marker_screen_xy

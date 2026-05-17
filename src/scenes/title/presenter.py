@@ -1,3 +1,15 @@
+"""title scene の入力解釈・遷移決定・ViewModel 組立て。
+
+Problems:
+    - シーン固有の入力解釈・遷移決定・ViewModel 組立てが Scene に直書き
+      されると、責務が混ざってテストしづらい。
+    - 同じ入力でも phase によって意味が変わるロジックが分散すると、
+      仕様変更時に直し漏れが起きやすい。
+
+Solutions:
+    - title の Presenter に入力解釈と遷移決定を集約し、Scene は
+      生成と配線だけを担う。
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -22,10 +34,19 @@ NO_RECORD_MSG = "まだなにもかきとめていない…"
 class TitlePresenter:
     """title シーンの入力解釈・遷移決定・ViewModel 組立て（M3-1 / M2-2）。"""
 
+    # === Public API ===
+
     model: TitleModel
 
     def move(self, delta: int, item_count: int) -> None:
-        """カーソルを相対移動し、項目数で wrap する。"""
+        """カーソルを相対移動し、項目数で wrap する。
+
+        Args:
+            delta: delta の値。
+            item_count: item_count の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         self.model.cursor = (self.model.cursor + delta) % item_count
 
     def update(self, game: Any) -> None:
@@ -33,6 +54,11 @@ class TitlePresenter:
 
         2026-05-07 改訂（CJ44 確定版）：「せってい」項目を撤去（演出 ON/OFF
         機構ごと撤去）。残るのは「はじめから」「つづきから」の 2 項目のみ。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
         """
         if game.input_state.btnp(UP_BUTTONS):
             self.move(-1, 2)
@@ -42,7 +68,10 @@ class TitlePresenter:
             self.move(1, 2)
             game.sfx.play("cursor")
             return
-        if game.input_state.btnp(CONFIRM_BUTTONS) or game.input_state.btnp(TITLE_START_BUTTONS):
+        if (
+            game.input_state.btnp(CONFIRM_BUTTONS)
+            or game.input_state.btnp(TITLE_START_BUTTONS)
+        ):
             game.sfx.play("select")
             if self.model.cursor == 0:
                 # はじめから: プレイヤー状態をクリーンに作り直す
@@ -55,7 +84,13 @@ class TitlePresenter:
             self.do_load(game)
 
     def do_load(self, game: Any) -> None:
-        """セーブデータを読み出して player / state を復元する。"""
+        """セーブデータを読み出して player / state を復元する。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         snap = game.save_store.load()
         if snap is None:
             # 破損やバージョン未来のセーフティネット
@@ -76,7 +111,15 @@ class TitlePresenter:
         game.state = "message"
 
     def build_view_model(self, game: Any) -> TitleViewModel:
-        """Model + i18n + has_save を解釈してタイトル画面 VM を組み立てる。"""
+        """Model + i18n + has_save を解釈してタイトル画面 VM を組み立てる。
+
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         cursor = self.model.cursor
         labels = [
             game.text_fmt.t("はじめから", "NEW GAME"),
@@ -84,17 +127,20 @@ class TitlePresenter:
         ]
         rows: list[TitleMenuRow] = []
         for i, label in enumerate(labels):
-            enabled = (i != 1) or game._has_save
-            base_color = 7 if enabled else 5
-            color = 10 if (i == cursor and enabled) else base_color
+            is_enabled = (i != 1) or game._has_save
+            base_color = 7 if is_enabled else 5
+            color = 10 if (i == cursor and is_enabled) else base_color
             marker = ">" if i == cursor else " "
             rows.append(TitleMenuRow(label=f"{marker} {label}", color=color))
         no_save_msg: str | None = None
         if cursor == 1 and not game._has_save:
             no_save_msg = game.text_fmt.t("(まだなにもかきとめていない)", "(no save yet)")
+        subtitle = game.text_fmt.t(
+            "- コードのぼうけん -", "- A Coding Quest -"
+        )
         return TitleViewModel(
             title_text="BLOCK QUEST",
-            subtitle_text=game.text_fmt.t("- コードのぼうけん -", "- A Coding Quest -"),
+            subtitle_text=subtitle,
             menu_rows=rows,
             no_save_message=no_save_msg,
         )

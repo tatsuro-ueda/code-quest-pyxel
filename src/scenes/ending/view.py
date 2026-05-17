@@ -1,3 +1,15 @@
+"""ending scene の描画。
+
+Problems:
+    - 描画コードに状態判定が混ざると、見た目を変えるだけのつもりが
+      Model 整合性まで考えることになる。
+    - Pyxel API が Presenter / Model 側に染み出すとレイヤ境界が崩れ、
+      テストでモックしづらくなる。
+
+Solutions:
+    - ending の View は ViewModel と Pyxel API だけを扱い、
+      判断は Presenter 側に閉じ込める。
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -17,6 +29,11 @@ def play_bgm(game) -> None:
     """ending BGM を冪等に発火する。
 
     CJ44 確定版（追加整理）：冪等性は ``audio_system.play_bgm_track`` に集約。
+
+    Args:
+        game: game の値。
+    Postconditions:
+        - 副作用とモデル更新は実装どおり。
     """
     play_bgm_track(BGM_MUSIC_INDEX)
 
@@ -25,8 +42,17 @@ def play_bgm(game) -> None:
 class EndingView:
     """ending シーンの描画担当（M1-1 / M2-2：解釈済み ViewModel を受け取って描画のみ）。"""
 
+    # === Public API ===
+
     def render(self, vm: EndingViewModel, text_writer: Any) -> None:
-        """EndingViewModel を画面に描く。``text_writer`` は描画専用文字列出力。"""
+        """EndingViewModel を画面に描く。``text_writer`` は描画専用文字列出力。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         pyxel.cls(1)
         if vm.head_line is not None:
             text_writer.text(60, 60, vm.head_line, 10)
@@ -35,4 +61,6 @@ class EndingView:
         text_writer.text(40, 180, vm.prompt_text, 6)
         # 経過時間は frame_count から view 側で計算（presenter で pyxel 参照は M1-1 違反）
         elapsed_min = pyxel.frame_count // 30 // 60
-        text_writer.text(30, 200, f"レベル{vm.level_value} Time:{elapsed_min}m", 6)
+        text_writer.text(
+            30, 200, f"レベル{vm.level_value} Time:{elapsed_min}m", 6
+        )

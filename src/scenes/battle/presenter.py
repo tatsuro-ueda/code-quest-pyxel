@@ -1,3 +1,15 @@
+"""battle scene の入力解釈・遷移決定・ViewModel 組立て。
+
+Problems:
+    - シーン固有の入力解釈・遷移決定・ViewModel 組立てが Scene に直書き
+      されると、責務が混ざってテストしづらい。
+    - 同じ入力でも phase によって意味が変わるロジックが分散すると、
+      仕様変更時に直し漏れが起きやすい。
+
+Solutions:
+    - battle の Presenter に入力解釈と遷移決定を集約し、Scene は
+      生成と配線だけを担う。
+"""
 from __future__ import annotations
 
 import random
@@ -19,7 +31,21 @@ from src.shared.services.input_bindings import (
 )
 
 
-def _item_use_message(game: Any, item_data: dict, result: str) -> str:
+def _build_item_use_message(game: Any, item_data: dict, result: str) -> str:
+    """アイテム使用結果メッセージを組み立てる。
+
+    Args:
+        game: ``messages`` を持つ Game オブジェクト。
+        item_data: 使ったアイテムのデータ。``name`` / ``value`` を参照する。
+        result: ``use_item`` の戻り値（``heal`` / ``mp_heal`` /
+            ``cure_poison_ok`` / ``cure_poison_none`` のいずれか）。
+
+    Returns:
+        プレイヤー向け日本語メッセージ。未知の result なら空文字列。
+
+    Postconditions:
+        - 副作用なし。
+    """
     if result == "heal":
         return game.messages.dialog_text(
             "battle.normal.item.heal",
@@ -49,10 +75,18 @@ class BattlePresenter:
     移管する案件は判断待ち）。
     """
 
+    # === Public API ===
+
     model: BattleModel
 
     def change_phase(self, phase: str) -> None:
-        """バトルの現在フェーズを指定値に差し替える。"""
+        """バトルの現在フェーズを指定値に差し替える。
+
+        Args:
+            phase: phase の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         self.model.phase = phase
 
     def update(self, game: Any, scene: Any) -> None:
@@ -60,201 +94,508 @@ class BattlePresenter:
 
         ``scene`` はルール本体を持つ BattleScene。do_player_attack /
         do_enemy_attack / victory / defeat / apply_spell_effect /
-        on_noise_guardian_defeated を呼び戻すために必要。
+        handle_noise_guardian_defeated を呼び戻すために必要。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
         """
-        import src.runtime.main_runtime as M
-        m = self.model
-        if game.vfx.timer > 0:
-            game.vfx.timer -= 1
-        if m.phase == "menu":
-            if game.input_state.btnp(UP_BUTTONS):
-                m.menu = (m.menu - 1) % 4
-                game.sfx.play("cursor")
-            if game.input_state.btnp(DOWN_BUTTONS):
-                m.menu = (m.menu + 1) % 4
-                game.sfx.play("cursor")
-            if game.input_state.btnp(CONFIRM_BUTTONS):
-                game.sfx.play("select")
-                if m.menu == 0:  # Attack
-                    scene.do_player_attack()
-                elif m.menu == 1:  # じゅもん
-                    if game.player_model.spells:
-                        m.phase = "spell_select"
-                        m.spell_select = 0
-                    else:
-                        m.text = "まだ じゅもんを おぼえていない"
-                elif m.menu == 2:  # Item
-                    m.phase = "item_select"
-                    m.item_select = 0
-                elif m.menu == 3:  # Run
-                    if not m.is_glitch_lord and random.random() < 0.5:
-                        m.text = game.messages.dialog_text("battle.normal.run.success")
-                        m.phase = "result"
-                        m.text_timer = 60
-                    else:
-                        scene_name = (
-                            "boss.glitch.run.fail"
-                            if m.is_glitch_lord
-                            else "battle.normal.run.fail"
-                        )
-                        m.text = game.messages.dialog_text(scene_name)
-                        m.phase = "player_attack"
-                        m.text_timer = 30
-
-        elif m.phase == "spell_select":
-            spells = game.player_model.spells
-            if not spells:
-                m.phase = "menu"
-                return
-            if game.input_state.btnp(UP_BUTTONS):
-                m.spell_select = max(0, m.spell_select - 1)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(DOWN_BUTTONS):
-                m.spell_select = min(len(spells) - 1, m.spell_select + 1)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(CANCEL_BUTTONS):
-                game.sfx.play("cancel")
-                m.phase = "menu"
-            if game.input_state.btnp(CONFIRM_BUTTONS):
-                game.sfx.play("select")
-                spell_name = spells[m.spell_select]
-                spell = SPELL_BY_NAME.get(spell_name)
-                if spell is None:
-                    m.phase = "menu"
-                    return
-                if game.player_model.mp < spell["mp"]:
-                    m.text = "MPが たりない！"
-                    return
-                game.player_model.mp -= spell["mp"]
-                game.sfx.play("magic")
-                game.vfx.start("flash_white")
-                m.text = scene.apply_spell_effect(spell)
-                m.phase = "player_attack"
-                m.text_timer = 30
-
-        elif m.phase == "item_select":
-            items = game.player_model.items
-            if not items:
-                m.phase = "menu"
-                return
-            if game.input_state.btnp(UP_BUTTONS):
-                m.item_select = max(0, m.item_select - 1)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(DOWN_BUTTONS):
-                m.item_select = min(len(items) - 1, m.item_select + 1)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(CANCEL_BUTTONS):
-                game.sfx.play("cancel")
-                m.phase = "menu"
-            if game.input_state.btnp(CONFIRM_BUTTONS):
-                game.sfx.play("select")
-                item = items[m.item_select]
-                item_data = ITEMS[item.id]
-                if item_data["type"] == "warp":
-                    m.text = "せんとうちゅうはつかえない…"
-                    m.phase = "enemy_attack"
-                    m.text_timer = 30
-                else:
-                    result = game.player_model.use_item(item_data)
-                    if not result:
-                        m.text = "HPがまんたんで つかえない"
-                        m.text_timer = 30
-                    else:
-                        if result in {"heal", "mp_heal"}:
-                            game.sfx.play("heal")
-                        elif result == "cure_poison_ok":
-                            game.sfx.play("cure")
-                        m.text = _item_use_message(game, item_data, result)
-                        item.qty -= 1
-                        if item.qty <= 0:
-                            items.pop(m.item_select)
-                        m.phase = "enemy_attack"
-                        m.text_timer = 30
-
-        elif m.phase == "player_attack":
-            if game.input_state.btn(CONFIRM_BUTTONS) and m.text_timer > 12:
-                m.text_timer = 12
-            m.text_timer -= 1
-            if m.text_timer <= 0:
-                if m.enemy_hp <= 0:
-                    scene.victory()
-                else:
-                    scene.do_enemy_attack()
-
-        elif m.phase == "enemy_attack":
-            if game.input_state.btn(CONFIRM_BUTTONS) and m.text_timer > 12:
-                m.text_timer = 12
-            m.text_timer -= 1
-            if m.text_timer <= 0:
-                if game.player_model.hp <= 0:
-                    scene.defeat()
-                else:
-                    m.phase = "menu"
-
-        elif m.phase == "result":
-            if game.input_state.btn(CONFIRM_BUTTONS) and m.text_timer > 12:
-                m.text_timer = 12
-            m.text_timer -= 1
-            if m.text_timer <= 0:
-                if game.input_state.btn(CONFIRM_BUTTONS) or game.input_state.btnp(CONFIRM_BUTTONS) or m.text_timer < -30:
-                    if game.player_model.hp <= 0:
-                        game.player_model.gold = game.player_model.gold // 2
-                        game.player_model.hp = game.player_model.max_hp
-                        game.player_model.x, game.player_model.y = M.CASTLE_POS
-                        game.player_model.in_dungeon = False
-                        game.state = "map"
-                    elif m.is_professor and m.enemy_hp <= 0:
-                        game.player_model.professor_defeated = True
-                        game.professor_scene.enter_ending_main()
-                    else:
-                        if m.is_glitch_lord and m.enemy_hp <= 0:
-                            game.sfx.play("boss_defeat")
-                            game.player_model.glitch_lord_defeated = True
-                        if m.noise_guardian and m.enemy_hp <= 0:
-                            scene.on_noise_guardian_defeated()
-                            return
-                        game.state = "map"
+        self._tick_vfx_timer(game)
+        self._dispatch_phase(game, scene)
 
     def build_view_model(self, game: Any) -> BattleViewModel:
-        """Model + GameState を解釈して battle VM を組み立てる。"""
-        m = self.model
-        e = m.enemy
-        if not e:
-            # enemy なし時は描画を実質スキップする最小 VM
-            return BattleViewModel(
-                enemy_sprite_key=None,
-                enemy_name_text="",
-                enemy_hp_label="",
-                enemy_hp_ratio=0.0,
-                player_status_line1="",
-                player_status_line2="",
-                player_hp_ratio=0.0,
-                player_hp_color=11,
-                main_text=None,
-                sub_panel=None,
-                image_banks=game.image_banks,
-            )
+        """Model + GameState を解釈して battle VM を組み立てる。
 
-        p = game.player_model
-        hp_r = p.hp / max(1, p.max_hp)
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._resolve_view_model(game)
+
+    # === Internal helpers (private) ===
+
+    def _resolve_view_model(self, game: Any) -> BattleViewModel:
+        """敵の有無に応じた VM を返すディスパッチャ。
+
+        Args:
+            game: game の値。
+        Returns:
+            描画用 BattleViewModel。
+        Policy:
+            - 敵未設定なら空 VM、設定済みなら完全 VM を返す。
+        """
+        enemy = self.model.enemy
+        if not enemy:
+            return self._build_empty_view_model(game)
+        return self._build_full_view_model(game, enemy)
+
+    @staticmethod
+    def _build_empty_view_model(game: Any) -> BattleViewModel:
+        """敵が未設定の最小 VM を返す。
+
+        Args:
+            game: game の値。
+        Returns:
+            描画を実質スキップする BattleViewModel。
+        Policy:
+            - 文字列はすべて空、色はデフォルト 11 のまま。
+        """
         return BattleViewModel(
-            enemy_sprite_key=e.get("sprite", "slime"),
-            enemy_name_text=game.text_fmt.name(e["name"]),
-            enemy_hp_label=f"HP {m.enemy_hp}/{e['hp']}",
-            enemy_hp_ratio=m.enemy_hp / max(1, e["hp"]),
-            player_status_line1=f"{game.text_fmt.t('プログラマー', 'PROGRAMMER')}  レベル{p.lv}",
-            player_status_line2=f"HP {p.hp}/{p.max_hp}  MP {p.mp}/{p.max_mp}",
-            player_hp_ratio=hp_r,
-            player_hp_color=11 if hp_r > 0.3 else 8,
-            main_text=m.text or None,
+            enemy_sprite_key=None,
+            enemy_name_text="",
+            enemy_hp_label="",
+            enemy_hp_ratio=0.0,
+            player_status_line1="",
+            player_status_line2="",
+            player_hp_ratio=0.0,
+            player_hp_color=11,
+            main_text=None,
+            sub_panel=None,
+            image_banks=game.image_banks,
+        )
+
+    def _build_full_view_model(
+        self, game: Any, enemy: dict
+    ) -> BattleViewModel:
+        """敵が設定済みのときの BattleViewModel を返す。
+
+        Args:
+            game: game の値。
+            enemy: 戦闘中の敵データ。
+        Returns:
+            描画用 BattleViewModel。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        player = game.player_model
+        hp_ratio = player.hp / max(1, player.max_hp)
+        line1 = (
+            f"{game.text_fmt.t('プログラマー', 'PROGRAMMER')}"
+            f"  レベル{player.lv}"
+        )
+        line2 = (
+            f"HP {player.hp}/{player.max_hp}"
+            f"  MP {player.mp}/{player.max_mp}"
+        )
+        return BattleViewModel(
+            enemy_sprite_key=enemy.get("sprite", "slime"),
+            enemy_name_text=game.text_fmt.name(enemy["name"]),
+            enemy_hp_label=f"HP {model.enemy_hp}/{enemy['hp']}",
+            enemy_hp_ratio=model.enemy_hp / max(1, enemy["hp"]),
+            player_status_line1=line1,
+            player_status_line2=line2,
+            player_hp_ratio=hp_ratio,
+            player_hp_color=11 if hp_ratio > 0.3 else 8,
+            main_text=model.text or None,
             sub_panel=self._build_sub_panel(game),
             image_banks=game.image_banks,
         )
 
+    @staticmethod
+    def _tick_vfx_timer(game: Any) -> None:
+        """VFX タイマーを 1 減らす。0 以下なら何もしない。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if game.vfx.timer > 0:
+            game.vfx.timer -= 1
+
+    def _dispatch_phase(self, game: Any, scene: Any) -> None:
+        """現在 phase のハンドラを呼ぶ。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        handler = self._PHASE_HANDLERS.get(self.model.phase)
+        if handler is None:
+            return
+        handler(self, game, scene)
+
+    def _handle_phase_menu(self, game: Any, scene: Any) -> None:
+        """menu フェーズの入力処理。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        if game.input_state.btnp(UP_BUTTONS):
+            model.menu = (model.menu - 1) % 4
+            game.sfx.play("cursor")
+        if game.input_state.btnp(DOWN_BUTTONS):
+            model.menu = (model.menu + 1) % 4
+            game.sfx.play("cursor")
+        if not game.input_state.btnp(CONFIRM_BUTTONS):
+            return
+        game.sfx.play("select")
+        if model.menu == 0:
+            scene.do_player_attack()
+            return
+        if model.menu == 1:
+            self._select_spell_menu(game)
+            return
+        if model.menu == 2:
+            model.phase = "item_select"
+            model.item_select = 0
+            return
+        if model.menu == 3:
+            self._select_run(game)
+
+    def _select_spell_menu(self, game: Any) -> None:
+        """じゅもんメニューを選んだときの遷移。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        if game.player_model.spells:
+            model.phase = "spell_select"
+            model.spell_select = 0
+            return
+        model.text = "まだ じゅもんを おぼえていない"
+
+    def _select_run(self, game: Any) -> None:
+        """にげる選択時の処理。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        if self._can_escape_normally(model):
+            model.text = game.messages.dialog_text("battle.normal.run.success")
+            model.phase = "result"
+            model.text_timer = 60
+            return
+        scene_name = (
+            "boss.glitch.run.fail"
+            if model.is_glitch_lord
+            else "battle.normal.run.fail"
+        )
+        model.text = game.messages.dialog_text(scene_name)
+        model.phase = "player_attack"
+        model.text_timer = 30
+
+    @staticmethod
+    def _can_escape_normally(model: BattleModel) -> bool:
+        """通常戦で逃走判定に成功するかを返す。
+
+        Args:
+            model: model の値。
+        Returns:
+            通常戦かつ確率判定に成功なら True。
+        Policy:
+            - グリッチ卿戦と確率判定の失敗は False を返す。
+        """
+        if model.is_glitch_lord:
+            return False
+        return random.random() < 0.5
+
+    def _handle_phase_spell_select(self, game: Any, scene: Any) -> None:
+        """spell_select フェーズの入力処理。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        spells = game.player_model.spells
+        if not spells:
+            model.phase = "menu"
+            return
+        if game.input_state.btnp(UP_BUTTONS):
+            model.spell_select = max(0, model.spell_select - 1)
+            game.sfx.play("cursor")
+        if game.input_state.btnp(DOWN_BUTTONS):
+            model.spell_select = min(len(spells) - 1, model.spell_select + 1)
+            game.sfx.play("cursor")
+        if game.input_state.btnp(CANCEL_BUTTONS):
+            game.sfx.play("cancel")
+            model.phase = "menu"
+        if not game.input_state.btnp(CONFIRM_BUTTONS):
+            return
+        game.sfx.play("select")
+        spell_name = spells[model.spell_select]
+        spell = SPELL_BY_NAME.get(spell_name)
+        if spell is None:
+            model.phase = "menu"
+            return
+        if game.player_model.mp < spell["mp"]:
+            model.text = "MPが たりない！"
+            return
+        game.player_model.mp -= spell["mp"]
+        game.sfx.play("magic")
+        game.vfx.start("flash_white")
+        model.text = scene.apply_spell_effect(spell)
+        model.phase = "player_attack"
+        model.text_timer = 30
+
+    def _handle_phase_item_select(self, game: Any, scene: Any) -> None:
+        """item_select フェーズの入力処理。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        items = game.player_model.items
+        if not items:
+            model.phase = "menu"
+            return
+        if game.input_state.btnp(UP_BUTTONS):
+            model.item_select = max(0, model.item_select - 1)
+            game.sfx.play("cursor")
+        if game.input_state.btnp(DOWN_BUTTONS):
+            model.item_select = min(len(items) - 1, model.item_select + 1)
+            game.sfx.play("cursor")
+        if game.input_state.btnp(CANCEL_BUTTONS):
+            game.sfx.play("cancel")
+            model.phase = "menu"
+        if not game.input_state.btnp(CONFIRM_BUTTONS):
+            return
+        game.sfx.play("select")
+        item = items[model.item_select]
+        item_data = ITEMS[item.id]
+        if item_data["type"] == "warp":
+            model.text = "せんとうちゅうはつかえない…"
+            model.phase = "enemy_attack"
+            model.text_timer = 30
+            return
+        result = game.player_model.use_item(item_data)
+        if not result:
+            model.text = "HPがまんたんで つかえない"
+            model.text_timer = 30
+            return
+        if result in {"heal", "mp_heal"}:
+            game.sfx.play("heal")
+        elif result == "cure_poison_ok":
+            game.sfx.play("cure")
+        model.text = _build_item_use_message(game, item_data, result)
+        item.qty -= 1
+        if item.qty <= 0:
+            items.pop(model.item_select)
+        model.phase = "enemy_attack"
+        model.text_timer = 30
+
+    def _handle_phase_player_attack(self, game: Any, scene: Any) -> None:
+        """player_attack フェーズの入力処理。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        if self._can_fastforward_text(game, model):
+            model.text_timer = 12
+        model.text_timer -= 1
+        if model.text_timer > 0:
+            return
+        if model.enemy_hp <= 0:
+            scene.apply_victory()
+            return
+        scene.do_enemy_attack()
+
+    def _handle_phase_enemy_attack(self, game: Any, scene: Any) -> None:
+        """enemy_attack フェーズの入力処理。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        if self._can_fastforward_text(game, model):
+            model.text_timer = 12
+        model.text_timer -= 1
+        if model.text_timer > 0:
+            return
+        if game.player_model.hp <= 0:
+            scene.apply_defeat()
+            return
+        model.phase = "menu"
+
+    def _handle_phase_result(self, game: Any, scene: Any) -> None:
+        """result フェーズの入力処理。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        if self._can_fastforward_text(game, model):
+            model.text_timer = 12
+        model.text_timer -= 1
+        if model.text_timer > 0:
+            return
+        if not self._can_advance_result(game, model):
+            return
+        if game.player_model.hp <= 0:
+            self._resolve_player_dead(game)
+            return
+        if self._is_professor_victory(model):
+            game.player_model.professor_defeated = True
+            game.professor_scene.enter_ending_main()
+            return
+        self._resolve_normal_victory(game, scene)
+
+    @staticmethod
+    def _can_fastforward_text(game: Any, model: BattleModel) -> bool:
+        """CONFIRM 押下中かつ text_timer > 12 ならテキスト送り早送りを返す。
+
+        Args:
+            game: game の値。
+            model: model の値。
+        Returns:
+            条件を満たすなら True。
+        Policy:
+            - text_timer は呼び出し側で 12 にセットする。
+        """
+        if not game.input_state.btn(CONFIRM_BUTTONS):
+            return False
+        return model.text_timer > 12
+
+    @staticmethod
+    def _can_advance_result(game: Any, model: BattleModel) -> bool:
+        """result phase の確定タイミングかを返す。
+
+        Args:
+            game: game の値。
+            model: model の値。
+        Returns:
+            CONFIRM 入力中か、待ち時間超過なら True。
+        Policy:
+            - btn 押下 / btnp 押下 / text_timer < -30 を OR でまとめる。
+        """
+        return (
+            game.input_state.btn(CONFIRM_BUTTONS)
+            or game.input_state.btnp(CONFIRM_BUTTONS)
+            or model.text_timer < -30
+        )
+
+    @staticmethod
+    def _is_professor_victory(model: BattleModel) -> bool:
+        """professor 戦の勝利状態かを返す。
+
+        Args:
+            model: model の値。
+        Returns:
+            professor 戦で敵 HP 0 なら True。
+        Policy:
+            - 通常戦・ボス戦・ノイズ戦は False を返す。
+        """
+        return model.is_professor and model.enemy_hp <= 0
+
+    @staticmethod
+    def _resolve_player_dead(game: Any) -> None:
+        """プレイヤー死亡時の復活処理。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        import src.runtime.main_runtime as M
+        game.player_model.gold = game.player_model.gold // 2
+        game.player_model.hp = game.player_model.max_hp
+        game.player_model.x, game.player_model.y = M.CASTLE_POS
+        game.player_model.in_dungeon = False
+        game.state = "map"
+
+    def _resolve_normal_victory(self, game: Any, scene: Any) -> None:
+        """通常/ボス戦勝利時の戻り遷移。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        if self._has_glitch_lord_been_defeated(model):
+            game.sfx.play("boss_defeat")
+            game.player_model.glitch_lord_defeated = True
+        if self._has_noise_guardian_been_defeated(model):
+            scene.handle_noise_guardian_defeated()
+            return
+        game.state = "map"
+
+    @staticmethod
+    def _has_glitch_lord_been_defeated(model: BattleModel) -> bool:
+        """グリッチ卿戦で敵 HP 0 かを返す。
+
+        Args:
+            model: model の値。
+        Returns:
+            True のとき glitch_lord_defeated を立てるべき。
+        Policy:
+            - is_glitch_lord と enemy_hp <= 0 の AND を確認する。
+        """
+        if not model.is_glitch_lord:
+            return False
+        return model.enemy_hp <= 0
+
+    @staticmethod
+    def _has_noise_guardian_been_defeated(model: BattleModel) -> bool:
+        """ノイズガーディアン戦で敵 HP 0 かを返す。
+
+        Args:
+            model: model の値。
+        Returns:
+            True のとき noise_guardian 撃破処理が必要。
+        Policy:
+            - is_noise_guardian と enemy_hp <= 0 の AND を確認する。
+        """
+        if not model.is_noise_guardian:
+            return False
+        return model.enemy_hp <= 0
+
+    _PHASE_HANDLERS = {
+        "menu": _handle_phase_menu,
+        "spell_select": _handle_phase_spell_select,
+        "item_select": _handle_phase_item_select,
+        "player_attack": _handle_phase_player_attack,
+        "enemy_attack": _handle_phase_enemy_attack,
+        "result": _handle_phase_result,
+    }
+
     def _build_sub_panel(self, game: Any) -> BattleSubPanel | None:
-        """phase に応じた sub_panel を組み立てる。"""
-        m = self.model
-        if m.phase == "menu":
+        """phase に応じた sub_panel を組み立てる。
+
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
+        if model.phase == "menu":
             labels = (
                 ["たたかう", "じゅもん", "アイテム", "にげる"]
                 if game.has_jp_font
@@ -262,46 +603,52 @@ class BattlePresenter:
             )
             rows: list[BattleRow] = []
             for i, label in enumerate(labels):
-                color = 10 if i == m.menu else 6
+                color = 10 if i == model.menu else 6
                 # menu はマーカーが行頭ではなく座標で別描画。VM では純粋にラベル + color
                 rows.append(BattleRow(text=label, color=color))
             return BattleSubPanel(is_grid=True, rows=rows)
-        if m.phase == "spell_select":
+        if model.phase == "spell_select":
             spells = game.player_model.spells
             if not spells:
                 return BattleSubPanel(
                     is_grid=False,
-                    empty_message=game.text_fmt.t("じゅもんをおぼえていない", "No spells learned"),
+                    empty_message=game.text_fmt.t(
+                        "じゅもんをおぼえていない", "No spells learned"
+                    ),
                 )
             rows = []
             for i, name in enumerate(spells[:4]):
                 spell = SPELL_BY_NAME.get(name)
                 if spell is None:
                     continue
-                color = 10 if i == m.spell_select else 6
-                marker = ">" if i == m.spell_select else " "
+                color = 10 if i == model.spell_select else 6
+                marker = ">" if i == model.spell_select else " "
+                spell_name = game.text_fmt.name(name)
                 rows.append(BattleRow(
-                    text=f"{marker} {game.text_fmt.name(name)}  MP{spell['mp']}",
+                    text=f"{marker} {spell_name}  MP{spell['mp']}",
                     color=color,
                 ))
             return BattleSubPanel(is_grid=False, rows=rows)
-        if m.phase == "item_select":
+        if model.phase == "item_select":
             items = game.player_model.items
-            info = m.text or None
+            info_text = model.text if model.text else None
             if not items:
                 return BattleSubPanel(
                     is_grid=False,
                     empty_message=game.text_fmt.t("アイテムがない", "No items"),
-                    info_message=info,
+                    info_message=info_text,
                 )
             rows = []
             for i, item in enumerate(items[:4]):
                 idata = ITEMS[item.id]
-                color = 10 if i == m.item_select else 6
-                marker = ">" if i == m.item_select else " "
+                color = 10 if i == model.item_select else 6
+                marker = ">" if i == model.item_select else " "
+                item_name = game.text_fmt.name(idata["name"])
                 rows.append(BattleRow(
-                    text=f"{marker} {game.text_fmt.name(idata['name'])} x{item.qty}",
+                    text=f"{marker} {item_name} x{item.qty}",
                     color=color,
                 ))
-            return BattleSubPanel(is_grid=False, rows=rows, info_message=info)
+            return BattleSubPanel(
+                is_grid=False, rows=rows, info_message=info_text
+            )
         return None

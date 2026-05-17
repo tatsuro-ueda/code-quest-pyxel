@@ -1,3 +1,15 @@
+"""splash scene の描画。
+
+Problems:
+    - 描画コードに状態判定が混ざると、見た目を変えるだけのつもりが
+      Model 整合性まで考えることになる。
+    - Pyxel API が Presenter / Model 側に染み出すとレイヤ境界が崩れ、
+      テストでモックしづらくなる。
+
+Solutions:
+    - splash の View は ViewModel と Pyxel API だけを扱い、
+      判断は Presenter 側に閉じ込める。
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,8 +24,19 @@ from src.scenes.splash.view_model import SplashViewModel
 class SplashView:
     """splash シーンの描画担当（M1-1 / M2-2：解釈済み ViewModel を受け取って描画のみ）。"""
 
+    # === Public API ===
+
     def render(self, vm: SplashViewModel, text_writer: Any) -> None:
-        """SplashViewModel を画面に描く。``text_writer`` は描画専用の文字列出力（例：``game.messages``）。"""
+        """SplashViewModel を画面に描く。
+
+        ``text_writer`` は描画専用の文字列出力（例：``game.messages``）。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         pyxel.cls(0)
         for i in range(8):
             x = 16 + i * 28
@@ -23,5 +46,5 @@ class SplashView:
             text_writer.text(50, 130, vm.subtitle_text, 10)
         if vm.presenter_text is not None:
             text_writer.text(70, 160, vm.presenter_text, 6)
-        if vm.prompt_eligible and (pyxel.frame_count // 8) % 2 == 1:
+        if vm.is_prompt_eligible and (pyxel.frame_count // 8) % 2 == 1:
             text_writer.text(60, 220, "PRESS ANY KEY", 7)

@@ -49,10 +49,10 @@ class _FakeSfx:
 
 @dataclass
 class _FakeExploreModel:
-    a_cooldown: bool = False
+    has_a_cooldown: bool = False
 
     def start_a_cooldown(self) -> None:
-        self.a_cooldown = True
+        self.has_a_cooldown = True
 
 
 @dataclass
@@ -176,7 +176,7 @@ class TitleContinueTest(unittest.TestCase):
         self.assertEqual((game.player_model.x, game.player_model.y), (30, 22))
         self.assertEqual(game.state, "message")
         self.assertEqual(game.prev_state, "map")
-        self.assertTrue(game.explore_scene.model.a_cooldown, "ロード直後は a_cooldown が立つ")
+        self.assertTrue(game.explore_scene.model.has_a_cooldown, "ロード直後は has_a_cooldown が立つ")
 
     def test_continue_with_broken_save_falls_back_to_no_record_message(self):
         from src.shared.services.input_bindings import CONFIRM_BUTTONS

@@ -6,7 +6,7 @@
 
 EndingScene.enter はエンディング台詞をロードして state="ending" に。
 update の CONFIRM で map に戻り、同時に in_dungeon=False / dungeon_map=None /
-explore a_cooldown=True をセットする。これが抜けるとエンディング直後に
+explore has_a_cooldown=True をセットする。これが抜けるとエンディング直後に
 ダンジョン内扱いで戻って壁にハマる。
 """
 
@@ -40,10 +40,10 @@ class _FakeInputState:
 
 @dataclass
 class _FakeExploreModel:
-    a_cooldown: bool = False
+    has_a_cooldown: bool = False
 
     def start_a_cooldown(self) -> None:
-        self.a_cooldown = True
+        self.has_a_cooldown = True
 
 
 @dataclass
@@ -92,7 +92,7 @@ class EndingUpdateTest(unittest.TestCase):
 
         self.assertEqual(game.state, "map")
         self.assertFalse(game.player_model.in_dungeon)
-        self.assertTrue(game.explore_scene.model.a_cooldown)
+        self.assertTrue(game.explore_scene.model.has_a_cooldown)
 
     def test_no_input_keeps_state_ending(self):
         game = _FakeGame(state="ending")

@@ -1,11 +1,16 @@
-from __future__ import annotations
+"""battle scene の ViewModel（描画用解釈済みデータ）。
 
-"""battle シーンの ViewModel（M2-2：解釈済みの描画用データ）。
+Problems:
+    - View が Model や Presenter の内部状態を直接参照すると、
+      描画と意思決定が混ざってテストしづらくなる。
+    - 描画に必要なデータが暗黙に決まっていると、画面追加・文言変更時に
+      View 側で都度判定が必要になる。
 
-3 つの sub-panel (menu / spell_select / item_select) を BattleSubPanel に
-統一し、view 側を単一描画ループに縮退する。enemy sprite は 3x 拡大 blit
-が必要なので image_banks 参照を VM 経由で渡す（M2-1 描画専用アセット例外）。
+Solutions:
+    - 描画に必要な値を BattleRow に集約し、View はこの dataclass
+      だけを受け取って描く。
 """
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any
@@ -15,6 +20,8 @@ from typing import Any
 class BattleRow:
     """sub-panel の 1 行（marker 込み完成形）。"""
 
+    # === Public API ===
+
     text: str
     color: int
 
@@ -22,6 +29,8 @@ class BattleRow:
 @dataclass(frozen=True)
 class BattleSubPanel:
     """バトル画面下部 sub-panel。phase に応じて中身を差し替える。"""
+
+    # === Public API ===
 
     is_grid: bool = False  # True: 2x2 grid (menu), False: 縦 list
     rows: list[BattleRow] = field(default_factory=list)
@@ -32,6 +41,8 @@ class BattleSubPanel:
 @dataclass(frozen=True)
 class BattleViewModel:
     """battle 画面 1 フレームの解釈済みデータ。"""
+
+    # === Public API ===
 
     enemy_sprite_key: str | None  # None なら enemy なし→ render skip
     enemy_name_text: str

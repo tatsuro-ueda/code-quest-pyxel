@@ -66,10 +66,10 @@ class _FakeSaveStore:
 
 @dataclass
 class _FakeExploreModel:
-    a_cooldown: bool = False
+    has_a_cooldown: bool = False
 
     def start_a_cooldown(self) -> None:
-        self.a_cooldown = True
+        self.has_a_cooldown = True
 
 
 @dataclass

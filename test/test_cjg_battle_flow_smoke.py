@@ -145,7 +145,7 @@ class VictoryAwardsExpAndGoldTest(unittest.TestCase):
         scene = BattleScene(game=game)
         scene.start(ENEMY_FIXTURE)
 
-        scene.victory()
+        scene.apply_victory()
 
         self.assertEqual(pm.exp, before_exp + ENEMY_FIXTURE["exp"])
         self.assertEqual(pm.gold, before_gold + ENEMY_FIXTURE["gold"])
@@ -159,7 +159,7 @@ class VictoryAwardsExpAndGoldTest(unittest.TestCase):
 
         # is_professor なので exp/gold 付与ではなく silent_victory 分岐
         before_gold = game.player_model.gold
-        scene.victory()
+        scene.apply_victory()
 
         self.assertEqual(game.player_model.gold, before_gold)
         self.assertEqual(scene.model.phase, "result")
@@ -174,7 +174,7 @@ class DefeatDoesNotCrashTest(unittest.TestCase):
         scene = BattleScene(game=game)
         scene.start(ENEMY_FIXTURE)
 
-        scene.defeat()
+        scene.apply_defeat()
 
         self.assertEqual(scene.model.phase, "result")
         self.assertIn("dead", game.sfx.played)

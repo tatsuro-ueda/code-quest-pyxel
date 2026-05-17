@@ -45,7 +45,7 @@ class CurrentNoiseGuardianTest(unittest.TestCase):
             self.main.NOISE_GUARDIAN_DATA,
             is_glitch_lord=False,
         )
-        self.assertTrue(game.battle_scene.model.noise_guardian)
+        self.assertTrue(game.battle_scene.model.is_noise_guardian)
         self.assertEqual(game.battle_scene.model.text, "boss.noise_guardian.intro")
 
 

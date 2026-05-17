@@ -105,7 +105,7 @@ class DialoguePagingTest(unittest.TestCase):
         game = self.make_game()
         game.professor_scene.model.intro_lines = ["first line\nsecond line", "later page"]
         game.professor_scene.model.intro_idx = 0
-        game.professor_scene.model.choice_active = False
+        game.professor_scene.model.is_choice_active = False
         captured: list[tuple[int, int, str, int]] = []
         game.messages.text = lambda x, y, s, col: captured.append((x, y, s, col))
 
@@ -120,16 +120,16 @@ class DialoguePagingTest(unittest.TestCase):
         game = self.make_game()
         game.professor_scene.model.intro_lines = ["page 1", "page 2"]
         game.professor_scene.model.intro_idx = 0
-        game.professor_scene.model.choice_active = False
+        game.professor_scene.model.is_choice_active = False
         game.input_state.btnp = lambda *_args, **_kwargs: True
 
         game.professor_scene.update_intro()
         self.assertEqual(game.professor_scene.model.intro_idx, 1)
-        self.assertFalse(game.professor_scene.model.choice_active)
+        self.assertFalse(game.professor_scene.model.is_choice_active)
 
         game.professor_scene.update_intro()
         self.assertEqual(game.professor_scene.model.intro_idx, 2)
-        self.assertTrue(game.professor_scene.model.choice_active)
+        self.assertTrue(game.professor_scene.model.is_choice_active)
 
     def test_update_ending_returns_post_boss_clear_to_map(self):
         game = self.make_game()
@@ -141,7 +141,7 @@ class DialoguePagingTest(unittest.TestCase):
             "x": 40,
             "y": 32,
         })
-        game.explore_scene.model.a_cooldown = False
+        game.explore_scene.model.has_a_cooldown = False
         game.input_state.btnp = lambda buttons: buttons == self.main.CONFIRM_BUTTONS
         game.state = "ending"
 
@@ -150,7 +150,7 @@ class DialoguePagingTest(unittest.TestCase):
         self.assertEqual(game.state, "map")
         self.assertFalse(game.player_model.in_dungeon)
         self.assertEqual((game.player_model.x, game.player_model.y), (40, 32))
-        self.assertTrue(game.explore_scene.model.a_cooldown)
+        self.assertTrue(game.explore_scene.model.has_a_cooldown)
 
 
 if __name__ == "__main__":

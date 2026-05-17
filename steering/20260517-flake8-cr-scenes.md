@@ -263,13 +263,66 @@ flowchart TD
 
 ## 5) Tasklist
 
-（Design 承認後に記入）
+- [ ] Phase 0: ベースライン記録（flake8-cr src/scenes/ の現件数を Result へ）
+- [ ] Phase A: 機械修正
+  - [ ] A1: F401（未使用 import 削除）2 件
+  - [ ] A2: E701/E702（複文）10 件
+  - [ ] A3: W391（末尾改行）1 件
+  - [ ] A4: E501（行長 80 超）51 件
+  - [ ] A5: 再スキャン + pytest
+- [ ] Phase B: モジュール docstring（CR601）40 件
+  - [ ] B1: 各ファイルの先頭 docstring に Problems: セクション追加
+  - [ ] B2: 再スキャン + make verify + pytest
+- [ ] Phase C: 関数 docstring（CR501/CR502）約 180 件
+  - [ ] C1: CR501（docstring 無し）2 件追加
+  - [ ] C2: CR502（契約情報不足）を各関数で埋める
+  - [ ] C3: 再スキャン + pytest
+- [ ] Phase D: 軽い構造系
+  - [ ] D1: CR201（クラスにセクション区切り）38 件
+  - [ ] D2: CR100（関数名の動詞化）10 件
+  - [ ] D3: CR101（bool 名の is_/has_/can_）13 件
+  - [ ] D4: CR102（1 文字変数の命名）37 件
+  - [ ] D5: 再スキャン + pytest
+- [ ] Phase E: 重い構造系
+  - [ ] E1: CR301（elif チェーン）14 件 → early return / dispatch
+  - [ ] E2: CR302/CR303（複合条件）38 件 → 述語関数化
+  - [ ] E3: CR202/CR203（長い関数・public に制御フロー）72 件 → private 関数分割
+  - [ ] E4: 再スキャン + pytest
+- [ ] Phase F: 最終検証
+  - [ ] F1: flake8-cr src/scenes/ が 0 件
+  - [ ] F2: make verify が緑
+  - [ ] F3: pytest が緑
+- [ ] Phase G: ビルド
+  - [ ] G1: make build が終了コード 0
 
 ---
 
 ## 6) Result（成果物）
 
-（実行後に記入）
+### Phase 0: ベースライン
+
+`flake8-cr src/scenes/` 初回スキャン（2026-05-17）：
+
+| コード | 件数 | 種類 |
+|---|---|---|
+| CR502 | 179 | docstring 契約情報不足 |
+| CR203 | 53 | public 関数に制御フロー直書き |
+| E501 | 51 | 行長 > 79 |
+| CR601 | 40 | モジュール docstring 形式不一致 |
+| CR201 | 38 | クラスにセクション区切りなし |
+| CR102 | 37 | 1 文字変数 |
+| CR303 | 33 | 複合条件→述語関数 |
+| CR202 | 19 | 関数 20 行超 |
+| CR301 | 14 | elif チェーン |
+| CR101 | 13 | bool 名 |
+| CR100 | 10 | 関数名動詞化 |
+| E702 | 6 | 複文 |
+| CR302 | 5 | 複合条件オペランド多 |
+| E701 | 4 | 複文 |
+| F401 | 2 | 未使用 import |
+| CR501 | 2 | docstring 無し |
+| W391 | 1 | 末尾改行 |
+| **合計** | **508** | |
 
 ---
 

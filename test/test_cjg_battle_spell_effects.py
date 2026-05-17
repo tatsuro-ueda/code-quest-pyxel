@@ -133,7 +133,7 @@ class EnemyHitSceneNameTest(unittest.TestCase):
         scene = BattleScene(game=game)
         scene.start(ENEMY, is_glitch_lord=True)
 
-        name = scene.enemy_hit_scene_name()
+        name = scene.get_enemy_hit_scene_name()
 
         self.assertEqual(name, "boss.glitch.enemy_hit")
 
@@ -143,7 +143,7 @@ class EnemyHitSceneNameTest(unittest.TestCase):
         scene = BattleScene(game=game)
         scene.start({**ENEMY, "category": "unknown_category"})
 
-        name = scene.enemy_hit_scene_name()
+        name = scene.get_enemy_hit_scene_name()
 
         self.assertTrue(name)  # 何かしらのキーが返る
 

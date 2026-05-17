@@ -122,7 +122,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         game.world_return_x = 40
         game.world_return_y = 32
         game.explore_scene.model.move_cooldown = 0
-        game.explore_scene.model.a_cooldown = False
+        game.explore_scene.model.has_a_cooldown = False
         game.explore_scene.model.walk_timer = 0
         game.explore_scene.model.walk_frame = 0
         game.sfx = MagicMock()
