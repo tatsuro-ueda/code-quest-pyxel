@@ -1,3 +1,13 @@
+"""town メニューの描画。
+
+Problems:
+    - 描画コードに状態判定が混ざると、見た目を変えるだけのつもりが Model 整合性まで考えることになる。
+    - Pyxel API が Presenter / Model 側に染み出すとレイヤ境界が崩れ、テストでモックしづらくなる。
+
+Solutions:
+    - TownView は ViewModel と Pyxel API だけを扱い、判断は Presenter 側に閉じ込める。
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -16,10 +26,35 @@ class TownView:
     Presenter から渡された ``TownMenuViewModel`` だけを見て描く。
     """
 
+    # === Public API ===
+
     game: Any = None
 
     def render_menu(self, vm: TownMenuViewModel) -> None:
-        """町メニュー画面を描画する。"""
+        """町メニュー画面を描画する。
+
+        Args:
+            vm: 描画に必要なデータを保持する ViewModel。
+
+        Policy:
+            - 探索画面の上にウィンドウを重ねて描く。
+        """
+        self._render_menu_window(vm)
+
+    # === Internal helpers (private) ===
+
+    def _render_menu_window(self, vm: TownMenuViewModel) -> None:
+        """ウィンドウ・ラベル・GOLD表示を一括描画する。
+
+        Args:
+            vm: 描画に必要なデータを保持する ViewModel。
+
+        Boundary:
+            - game が未設定なら何もしない（テスト時のショートサーキット）。
+
+        Policy:
+            - 探索画面の上に半透明ウィンドウを重ねて出す。
+        """
         game = self.game
         if game is None:
             return

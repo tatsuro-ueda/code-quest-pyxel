@@ -5,7 +5,7 @@
 - docs/product-requirements-map.md（町→セーブ・やどや）
 - docs/customer-jobs.md Make3（crash で好循環が途絶）
 
-TownPresenter の _talk / _inn / _save / _exit を fake game で回す。
+TownPresenter の _talk / _stay_at_inn / _save / _exit を fake game で回す。
 hp 回復 / gold 減算 / save_store.save の呼び出し / state 遷移を検証する。
 """
 
@@ -135,7 +135,7 @@ class TownInnTest(unittest.TestCase):
         game.player_model.mp = 0
         game.player_model.gold = 1000
 
-        presenter._inn()
+        presenter._stay_at_inn()
 
         self.assertEqual(game.player_model.hp, game.player_model.max_hp)
         self.assertEqual(game.player_model.mp, game.player_model.max_mp)
@@ -146,7 +146,7 @@ class TownInnTest(unittest.TestCase):
         game.player_model.hp = 1
         game.player_model.gold = 0
 
-        presenter._inn()
+        presenter._stay_at_inn()
 
         self.assertEqual(game.player_model.hp, 1, "gold 不足なのに回復してしまった")
         self.assertEqual(game.state, "message")
