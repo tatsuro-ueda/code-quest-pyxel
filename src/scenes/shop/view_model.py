@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 class ShopRow:
     """商品 1 行の解釈済みデータ。"""
 
-    label: str  # marker + 名前 + 効果値 + 価格 + [もっています]
+    label: str  # marker + 名前 + 効果値 + 価格（[もっています] は下部 message に分離）
     color: int
 
 

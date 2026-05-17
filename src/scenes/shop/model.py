@@ -11,3 +11,4 @@ class ShopModel:
     inventory: list[int] = field(default_factory=list)
     cursor: int = 0
     message: str = ""
+    message_ttl: int = 0  # 下部メッセージの残り表示フレーム数（0 でカーソル装備判定にフォールバック）
