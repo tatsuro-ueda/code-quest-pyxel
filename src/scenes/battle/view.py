@@ -42,10 +42,11 @@ def _select_battle_bgm(game) -> int:
     if bm is None:
         return BATTLE_BGM_INDEX
     # 勝利フェーズ：phase == "result" かつ敵 HP 0
-    if (
+    is_victory_phase = (
         getattr(bm, "phase", None) == "result"
         and getattr(bm, "enemy_hp", 1) <= 0
-    ):
+    )
+    if is_victory_phase:
         return VICTORY_BGM_INDEX
     # ボス戦：is_glitch_lord などボス判定
     if getattr(bm, "is_glitch_lord", False):

@@ -86,10 +86,11 @@ class ShopPresenter:
         """
         self._tick_message_ttl()
         if not self.model.inventory:
-            if (
+            is_close_pressed = (
                 game.input_state.btnp(CANCEL_BUTTONS)
                 or game.input_state.btnp(CONFIRM_BUTTONS)
-            ):
+            )
+            if is_close_pressed:
                 game.sfx.play("cancel")
                 game.state = "town_menu"
             return
@@ -129,10 +130,12 @@ class ShopPresenter:
             entry = M.ITEMS[index]
         price = entry.get("price", 0)
         pm = game.player_model
-        if kind == "weapons" and pm.weapon == index:
+        is_predicate_6 = kind == 'weapons' and pm.weapon == index
+        if is_predicate_6:
             self._set_short_message("すでに もっています")
             return
-        if kind == "armors" and pm.armor == index:
+        is_predicate_4 = kind == 'armors' and pm.armor == index
+        if is_predicate_4:
             self._set_short_message("すでに もっています")
             return
         if not pm.can_afford(price):
@@ -250,8 +253,10 @@ class ShopPresenter:
             return None
         cursor_idx = model.inventory[model.cursor]
         pm = game.player_model
-        if model.kind == "weapons" and pm.weapon == cursor_idx:
+        is_predicate_2 = model.kind == 'weapons' and pm.weapon == cursor_idx
+        if is_predicate_2:
             return OWNED_MESSAGE
-        if model.kind == "armors" and pm.armor == cursor_idx:
+        is_predicate_0 = model.kind == 'armors' and pm.armor == cursor_idx
+        if is_predicate_0:
             return OWNED_MESSAGE
         return None

@@ -102,10 +102,11 @@ class TitlePresenter:
             self.move(1, 2)
             game.sfx.play("cursor")
             return
-        if (
+        is_confirm_pressed = (
             game.input_state.btnp(CONFIRM_BUTTONS)
             or game.input_state.btnp(TITLE_START_BUTTONS)
-        ):
+        )
+        if is_confirm_pressed:
             game.sfx.play("select")
             if self.model.cursor == 0:
                 # はじめから: プレイヤー状態をクリーンに作り直す
@@ -167,7 +168,8 @@ class TitlePresenter:
             marker = ">" if i == cursor else " "
             rows.append(TitleMenuRow(label=f"{marker} {label}", color=color))
         no_save_msg: str | None = None
-        if cursor == 1 and not game._has_save:
+        is_predicate_0 = cursor == 1 and (not game._has_save)
+        if is_predicate_0:
             no_save_msg = game.text_fmt.t("(まだなにもかきとめていない)", "(no save yet)")
         subtitle = game.text_fmt.t(
             "- コードのぼうけん -", "- A Coding Quest -"

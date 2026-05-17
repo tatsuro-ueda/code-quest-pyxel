@@ -106,7 +106,8 @@ class ExploreScene:
         if game is None:
             return
         ib = getattr(game, "image_banks", None)
-        if ib is not None and self.model.image_banks is not ib:
+        is_predicate_0 = ib is not None and self.model.image_banks is not ib
+        if is_predicate_0:
             self.model.image_banks = ib
 
     def _check_tile_events(self, tile, nx, ny):

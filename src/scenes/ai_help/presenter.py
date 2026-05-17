@@ -78,9 +78,10 @@ class AiHelpPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        if (
+        is_close_pressed = (
             game.input_state.btnp(CANCEL_BUTTONS)
             or game.input_state.btnp(CONFIRM_BUTTONS)
-        ):
+        )
+        if is_close_pressed:
             game.sfx.play("cancel")
             game.state = "menu"

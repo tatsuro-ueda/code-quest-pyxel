@@ -61,7 +61,10 @@ class ProfessorView:
         pyxel.cls(0)
         for i, line in enumerate(vm.page_lines):
             text_writer.text(16, vm.text_y + i * 14, line, vm.text_color)
-        if vm.prompt_xy is not None and (pyxel.frame_count // 15) % 2:
+        is_predicate_0 = (
+            vm.prompt_xy is not None and pyxel.frame_count // 15 % 2
+        )
+        if is_predicate_0:
             text_writer.text(vm.prompt_xy[0], vm.prompt_xy[1], "v", 7)
         for i, choice in enumerate(vm.choices):
             text_writer.text(96, 180 + i * 16, choice.label, choice.color)

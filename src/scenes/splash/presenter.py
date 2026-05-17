@@ -76,9 +76,10 @@ class SplashPresenter:
             - 副作用とモデル更新は実装どおり。
         """
         self.model.frame += 1
-        if (
+        is_advance_triggered = (
             self.model.frame >= 90
             or game.input_state.btnp(CONFIRM_BUTTONS)
             or game.input_state.btnp(CANCEL_BUTTONS)
-        ):
+        )
+        if is_advance_triggered:
             game.state = "title"

@@ -59,5 +59,8 @@ class SplashView:
             text_writer.text(50, 130, vm.subtitle_text, 10)
         if vm.presenter_text is not None:
             text_writer.text(70, 160, vm.presenter_text, 6)
-        if vm.is_prompt_eligible and (pyxel.frame_count // 8) % 2 == 1:
+        is_predicate_0 = (
+            vm.is_prompt_eligible and pyxel.frame_count // 8 % 2 == 1
+        )
+        if is_predicate_0:
             text_writer.text(60, 220, "PRESS ANY KEY", 7)

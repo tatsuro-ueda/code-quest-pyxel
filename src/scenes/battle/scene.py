@@ -208,7 +208,9 @@ class BattleScene:
 
     # === Internal helpers (private) ===
 
-    def _run_start(self, enemy_template, is_glitch_lord=False, is_professor=False):
+    def _run_start(
+        self, enemy_template, is_glitch_lord=False, is_professor=False
+    ):
         """_run_start() の実装本体。
 
         Args:
@@ -254,7 +256,8 @@ class BattleScene:
                 break
         else:
             new_phase = "100"
-        if new_phase != model.boss_phase and new_phase != "100":
+        is_predicate_4 = new_phase != model.boss_phase and new_phase != '100'
+        if is_predicate_4:
             model.boss_phase = new_phase
             msg = self.game.messages.dialog_text(
                 f"boss.noise_guardian.phase_{new_phase}"
@@ -284,7 +287,10 @@ class BattleScene:
         model = self.model
         player = game.player_model
         e = model.enemy
-        weapon_atk = WEAPONS[player.weapon]["atk"] if player.weapon < len(WEAPONS) else 0
+        weapon_atk = (
+            WEAPONS[player.weapon]["atk"]
+            if player.weapon < len(WEAPONS) else 0
+        )
         atk = player.atk + weapon_atk
         dmg = max(1, atk - e["def"] // 2 + random.randint(-2, 2))
         if game.debug_mode:
@@ -350,7 +356,10 @@ class BattleScene:
         model = self.model
         player = game.player_model
         e = model.enemy
-        armor_def = ARMORS[player.armor]["def"] if player.armor < len(ARMORS) else 0
+        armor_def = (
+            ARMORS[player.armor]["def"]
+            if player.armor < len(ARMORS) else 0
+        )
         total_def = player.defense + armor_def
         dmg = max(1, e["atk"] - total_def // 2 + random.randint(-2, 2))
         if game.debug_mode:
@@ -363,7 +372,12 @@ class BattleScene:
             enemy=e["name"],
             dmg=dmg,
         )
-        if e.get("can_poison") and not player.poisoned and random.random() < 0.25:
+        is_predicate_2 = (
+            e.get("can_poison")
+            and (not player.poisoned)
+            and (random.random() < 0.25)
+        )
+        if is_predicate_2:
             player.poisoned = True
             game.sfx.play("poison")
             model.text += " バグに汚染された！"
@@ -410,7 +424,10 @@ class BattleScene:
         game = self.game
         import src.runtime.main_runtime as M
         player = game.player_model
-        while player.lv < MAX_LEVEL and player.exp >= exp_for_level(player.lv + 1):
+        while (
+            player.lv < MAX_LEVEL
+            and player.exp >= exp_for_level(player.lv + 1)
+        ):
             game.sfx.play("levelup")
             player.lv += 1
             stats = stats_for_level(player.lv)
@@ -422,7 +439,11 @@ class BattleScene:
             player.defense = stats["defense"]
             player.agi = stats["agi"]
             for spell in M.SPELLS:
-                if spell["learn_lv"] == player.lv and spell["name"] not in player.spells:
+                is_predicate_0 = (
+                    spell["learn_lv"] == player.lv
+                    and spell["name"] not in player.spells
+                )
+                if is_predicate_0:
                     player.spells.append(spell["name"])
 
     def _run_apply_spell_effect(self, spell) -> str:

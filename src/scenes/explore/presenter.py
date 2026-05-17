@@ -78,6 +78,27 @@ class ExplorePresenter:
 
     # === Internal helpers (private) ===
 
+    @staticmethod
+    def _read_move_input(game: Any) -> tuple[int, int]:
+        """方向キー入力から (dx, dy) を返す。
+
+        Args:
+            game: game の値。
+        Returns:
+            (dx, dy) の組。何も押されていなければ (0, 0)。
+        Policy:
+            - 入力検出は上下左右のいずれか 1 軸のみ。
+        """
+        if game.input_state.btn(UP_BUTTONS):
+            return 0, -1
+        if game.input_state.btn(DOWN_BUTTONS):
+            return 0, 1
+        if game.input_state.btn(LEFT_BUTTONS):
+            return -1, 0
+        if game.input_state.btn(RIGHT_BUTTONS):
+            return 1, 0
+        return 0, 0
+
     def _run_update(self, game: Any) -> None:
         """_run_update() の実装本体。
 
@@ -108,25 +129,21 @@ class ExplorePresenter:
             return
 
         player = game.player_model
-        dx, dy = 0, 0
-        if game.input_state.btn(UP_BUTTONS):
-            dy = -1
-        elif game.input_state.btn(DOWN_BUTTONS):
-            dy = 1
-        elif game.input_state.btn(LEFT_BUTTONS):
-            dx = -1
-        elif game.input_state.btn(RIGHT_BUTTONS):
-            dx = 1
+        dx, dy = self._read_move_input(game)
 
-        if dx != 0 or dy != 0:
+        is_predicate_19 = dx != 0 or dy != 0
+        if is_predicate_19:
             nx, ny = player.x + dx, player.y + dy
             if player.in_dungeon:
                 mw, mh = M.DUNGEON_W, M.DUNGEON_H
             else:
                 mw, mh = M.MAP_W, M.MAP_H
 
-            if 0 <= nx < mw and 0 <= ny < mh:
-                tile = self.model.get_tile(nx, ny, in_dungeon=player.in_dungeon)
+            is_predicate_17 = 0 <= nx < mw and 0 <= ny < mh
+            if is_predicate_17:
+                tile = self.model.get_tile(
+                    nx, ny, in_dungeon=player.in_dungeon
+                )
                 if tile not in M.IMPASSABLE:
                     old_zone = M.get_zone(player.y, player.in_dungeon)
                     player.x = nx
@@ -135,7 +152,9 @@ class ExplorePresenter:
                     self.model.move_cooldown = 4
                     self.model.walk_timer += 1
                     new_zone = M.get_zone(player.y, player.in_dungeon)
-                    player.max_zone_reached = max(player.max_zone_reached, new_zone)
+                    player.max_zone_reached = max(
+                        player.max_zone_reached, new_zone
+                    )
                     if new_zone != old_zone:
                         game.sfx.play("zone_change")
                     if self.model.walk_timer >= 2:
@@ -225,7 +244,9 @@ class ExplorePresenter:
 
         # ボスマーカー：dungeon 内かつ未撃破のとき、画面内の
         # T_GLITCH_LORD_TRIGGER タイルを探す（ExploreModel.get_tile 経由）。
-        is_boss_marker_active = player.in_dungeon and not player.glitch_lord_defeated
+        is_boss_marker_active = (
+            player.in_dungeon and not player.glitch_lord_defeated
+        )
         boss_marker_screen_xy: tuple[int, int] | None = None
         if is_boss_marker_active:
             tx_start = max(0, self.model.cam_x // 16)
@@ -238,7 +259,8 @@ class ExplorePresenter:
                     if tile == T_GLITCH_LORD_TRIGGER:
                         sx = tx * 16 - self.model.cam_x
                         sy = ty * 16 - self.model.cam_y + 24
-                        if -16 < sx < 256 and 8 < sy < 256:
+                        is_predicate_15 = -16 < sx < 256 and 8 < sy < 256
+                        if is_predicate_15:
                             boss_marker_screen_xy = (sx, sy)
                         break
                 if boss_marker_screen_xy is not None:
@@ -277,7 +299,8 @@ class ExplorePresenter:
         import src.runtime.main_runtime as M
         player = game.player_model
 
-        if player.in_dungeon and tile == M.T_STAIR_UP:
+        is_predicate_13 = player.in_dungeon and tile == M.T_STAIR_UP
+        if is_predicate_13:
             player.in_dungeon = False
             player.x = game.world_return_x
             player.y = game.world_return_y
@@ -287,7 +310,8 @@ class ExplorePresenter:
             )
             return
 
-        if player.in_dungeon and tile == M.T_GLITCH_LORD_TRIGGER:
+        is_predicate_11 = player.in_dungeon and tile == M.T_GLITCH_LORD_TRIGGER
+        if is_predicate_11:
             if not player.glitch_lord_defeated:
                 game.battle_scene.start(
                     M.GLITCH_LORD_DATA, is_glitch_lord=True
@@ -307,7 +331,11 @@ class ExplorePresenter:
             return
 
         if tile == M.T_CASTLE:
-            if game.player_model.glitch_lord_defeated and (nx, ny) == (25, 6):
+            is_predicate_9 = (
+                game.player_model.glitch_lord_defeated
+                and (nx, ny) == (25, 6)
+            )
+            if is_predicate_9:
                 game.professor_scene.enter_intro()
                 return
             scene_name = M.TOWN_DIALOG_SCENES.get((nx, ny))
@@ -322,7 +350,8 @@ class ExplorePresenter:
             game.state = "town"
             return
 
-        if tile == M.T_CAVE and not player.in_dungeon:
+        is_predicate_7 = tile == M.T_CAVE and (not player.in_dungeon)
+        if is_predicate_7:
             if not player.towerNoiseCleared:
                 game.messages.enter(
                     game.messages.dialog_lines("cave.blocked")
@@ -348,10 +377,12 @@ class ExplorePresenter:
 
         # Random encounter
         if not game.debug_mode:
-            if player.in_dungeon and player.glitch_lord_defeated:
+            is_predicate_5 = player.in_dungeon and player.glitch_lord_defeated
+            if is_predicate_5:
                 return
             rate = M.ENCOUNTER_RATES.get(tile, 0)
-            if rate > 0 and random.random() < rate:
+            is_predicate_3 = rate > 0 and random.random() < rate
+            if is_predicate_3:
                 zone = M.get_zone(player.y, player.in_dungeon)
                 enemies = M.ZONE_ENEMIES.get(zone, M.ZONE_ENEMIES[0])
                 enemy_template = random.choice(enemies)
@@ -394,7 +425,11 @@ class ExplorePresenter:
             )
             return True
 
-        if landmark.epilogue_flag and scene_name == landmark.epilogue_scene:
+        is_predicate_1 = (
+            landmark.epilogue_flag
+            and scene_name == landmark.epilogue_scene
+        )
+        if is_predicate_1:
             setattr(player, landmark.epilogue_flag, True)
 
         game.messages.enter(game.messages.dialog_lines(scene_name))
@@ -433,11 +468,12 @@ class ExplorePresenter:
             if not player.landmarkTowerSeen:
                 return "landmark.tower.first"
             if cleared:
-                if (
+                is_epilogue_ready = (
                     player.glitch_lord_defeated
                     and landmark.epilogue_scene
                     and not getattr(player, landmark.epilogue_flag, False)
-                ):
+                )
+                if is_epilogue_ready:
                     return landmark.epilogue_scene
                 return random.choice([
                     "landmark.tower.repeat",

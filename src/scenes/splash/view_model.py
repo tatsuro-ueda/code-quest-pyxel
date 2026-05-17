@@ -25,4 +25,5 @@ class SplashViewModel:
     title_color: int
     subtitle_text: str | None
     presenter_text: str | None
-    is_prompt_eligible: bool  # 表示候補時間帯かどうか。実際の点滅判定は View が pyxel.frame_count で行う
+    # 表示候補時間帯かどうか。実際の点滅判定は View が pyxel.frame_count で行う
+    is_prompt_eligible: bool

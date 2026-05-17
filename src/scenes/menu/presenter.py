@@ -113,6 +113,178 @@ class MenuPresenter:
 
     # === Internal helpers (private) ===
 
+    def _handle_sub_main(
+        self, game: Any, model: MenuModel, menu_items: list[str]
+    ) -> None:
+        """メインメニュー（sub=None）の入力処理。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            menu_items: 表示中のメニュー項目数。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if game.input_state.btnp(UP_BUTTONS):
+            model.cursor = (model.cursor - 1) % len(menu_items)
+            game.sfx.play("cursor")
+        if game.input_state.btnp(DOWN_BUTTONS):
+            model.cursor = (model.cursor + 1) % len(menu_items)
+            game.sfx.play("cursor")
+        if game.input_state.btnp(CANCEL_BUTTONS):
+            game.sfx.play("cancel")
+            game.state = "map"
+            return
+        if game.input_state.btnp(CONFIRM_BUTTONS):
+            game.sfx.play("select")
+            self._invoke_main_menu(game, model)
+
+    def _handle_sub_status(
+        self, game: Any, model: MenuModel, menu_items: list[str]
+    ) -> None:
+        """status sub の入力処理（任意キーで閉じる）。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            menu_items: 表示中のメニュー項目数。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        is_close_pressed = (
+            game.input_state.btnp(CANCEL_BUTTONS)
+            or game.input_state.btnp(CONFIRM_BUTTONS)
+        )
+        if is_close_pressed:
+            game.sfx.play("cancel")
+            model.sub = None
+
+    def _handle_sub_items(
+        self, game: Any, model: MenuModel, menu_items: list[str]
+    ) -> None:
+        """items sub の入力処理。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            menu_items: 表示中のメニュー項目数。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        items = game.player_model.items
+        if game.input_state.btnp(CANCEL_BUTTONS):
+            game.sfx.play("cancel")
+            model.sub = None
+            return
+        if not items:
+            return
+        if game.input_state.btnp(UP_BUTTONS):
+            model.item_cursor = max(0, model.item_cursor - 1)
+            model.message = ""
+            game.sfx.play("cursor")
+        if game.input_state.btnp(DOWN_BUTTONS):
+            model.item_cursor = min(
+                len(items) - 1, model.item_cursor + 1
+            )
+            model.message = ""
+            game.sfx.play("cursor")
+        if game.input_state.btnp(CONFIRM_BUTTONS):
+            game.sfx.play("select")
+            self._use_selected_item(game, model, items)
+
+    def _use_selected_item(
+        self, game: Any, model: MenuModel, items: list
+    ) -> None:
+        """選択中アイテムを使用する。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            items: items の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        import src.runtime.main_runtime as M
+        item = items[model.item_cursor]
+        item_data = M.ITEMS[item.id]
+        result = game.player_model.use_item(
+            item_data,
+            town_pos=(
+                getattr(game, "last_town_pos", None) or (25, 6)
+            ),
+        )
+        if not result:
+            model.message = "HPがまんたんで つかえない"
+            return
+        if result in {"heal", "mp_heal"}:
+            game.sfx.play("heal")
+        elif result == "cure_poison_ok":
+            game.sfx.play("cure")
+        _build_item_use_message(game, item_data, result)
+        model.message = ""
+        item.qty -= 1
+        if item.qty <= 0:
+            items.pop(model.item_cursor)
+            model.item_cursor = max(
+                0, min(model.item_cursor, len(items) - 1)
+            )
+
+    def _handle_sub_equip(
+        self, game: Any, model: MenuModel, menu_items: list[str]
+    ) -> None:
+        """equip sub の入力処理。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            menu_items: 表示中のメニュー項目数。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if game.input_state.btnp(CANCEL_BUTTONS):
+            game.sfx.play("cancel")
+            model.sub = None
+            return
+        if game.input_state.btnp(UP_BUTTONS):
+            model.item_cursor = (model.item_cursor - 1) % 2
+            game.sfx.play("cursor")
+        if game.input_state.btnp(DOWN_BUTTONS):
+            model.item_cursor = (model.item_cursor + 1) % 2
+            game.sfx.play("cursor")
+
+    _SUB_HANDLERS = {
+        None: _handle_sub_main,
+        "status": _handle_sub_status,
+        "items": _handle_sub_items,
+        "equip": _handle_sub_equip,
+    }
+
+    def _invoke_main_menu(self, game: Any, model: MenuModel) -> None:
+        """メインメニューのカーソル位置に応じた遷移を実行する。
+
+        Args:
+            game: game の値。
+            model: model の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if model.cursor == 0:
+            model.sub = "status"
+            return
+        if model.cursor == 1:
+            model.sub = "items"
+            model.item_cursor = 0
+            return
+        if model.cursor == 2:
+            model.sub = "equip"
+            model.item_cursor = 0
+            return
+        if model.cursor == 3:
+            game.ai_help_scene.enter()
+            return
+        if model.cursor == 4:
+            game.state = "map"
+
     def _run_build_labels(self, game: Any) -> list[str]:
         """_run_build_labels() の実装本体。
 
@@ -135,92 +307,10 @@ class MenuPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        import src.runtime.main_runtime as M
         menu_items = self.build_labels(game)
         model = self.model
-        if model.sub is None:
-            if game.input_state.btnp(UP_BUTTONS):
-                model.cursor = (model.cursor - 1) % len(menu_items)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(DOWN_BUTTONS):
-                model.cursor = (model.cursor + 1) % len(menu_items)
-                game.sfx.play("cursor")
-            if game.input_state.btnp(CANCEL_BUTTONS):
-                game.sfx.play("cancel")
-                game.state = "map"
-                return
-            if game.input_state.btnp(CONFIRM_BUTTONS):
-                game.sfx.play("select")
-                if model.cursor == 0:
-                    model.sub = "status"
-                elif model.cursor == 1:
-                    model.sub = "items"
-                    model.item_cursor = 0
-                elif model.cursor == 2:
-                    model.sub = "equip"
-                    model.item_cursor = 0
-                elif model.cursor == 3:
-                    game.ai_help_scene.enter()
-                elif model.cursor == 4:
-                    game.state = "map"
-        elif model.sub == "status":
-            if (
-                game.input_state.btnp(CANCEL_BUTTONS)
-                or game.input_state.btnp(CONFIRM_BUTTONS)
-            ):
-                game.sfx.play("cancel")
-                model.sub = None
-        elif model.sub == "items":
-            items = game.player_model.items
-            if game.input_state.btnp(CANCEL_BUTTONS):
-                game.sfx.play("cancel")
-                model.sub = None
-                return
-            if items:
-                if game.input_state.btnp(UP_BUTTONS):
-                    model.item_cursor = max(0, model.item_cursor - 1)
-                    model.message = ""
-                    game.sfx.play("cursor")
-                if game.input_state.btnp(DOWN_BUTTONS):
-                    model.item_cursor = min(len(items) - 1, model.item_cursor + 1)
-                    model.message = ""
-                    game.sfx.play("cursor")
-                if game.input_state.btnp(CONFIRM_BUTTONS):
-                    game.sfx.play("select")
-                    item = items[model.item_cursor]
-                    item_data = M.ITEMS[item.id]
-                    result = game.player_model.use_item(
-                        item_data,
-                        town_pos=(
-                            getattr(game, "last_town_pos", None) or (25, 6)
-                        ),
-                    )
-                    if not result:
-                        model.message = "HPがまんたんで つかえない"
-                    else:
-                        if result in {"heal", "mp_heal"}:
-                            game.sfx.play("heal")
-                        elif result == "cure_poison_ok":
-                            game.sfx.play("cure")
-                        _build_item_use_message(game, item_data, result)
-                        model.message = ""
-                        item.qty -= 1
-                        if item.qty <= 0:
-                            items.pop(model.item_cursor)
-                            model.item_cursor = max(
-                                0, min(model.item_cursor, len(items) - 1)
-                            )
-        elif model.sub == "equip":
-            if game.input_state.btnp(CANCEL_BUTTONS):
-                game.sfx.play("cancel")
-                model.sub = None
-                return
-            if game.input_state.btnp(UP_BUTTONS):
-                model.item_cursor = (model.item_cursor - 1) % 2
-                game.sfx.play("cursor")
-            if game.input_state.btnp(DOWN_BUTTONS):
-                model.item_cursor = (model.item_cursor + 1) % 2
-                game.sfx.play("cursor")
+        handler = self._SUB_HANDLERS.get(model.sub, self._handle_sub_main)
+        handler(self, game, model, menu_items)
 
     def _run_build_view_model(
         self, labels: list[str], game: Any
@@ -246,62 +336,127 @@ class MenuPresenter:
             marker = ">" if is_highlighted else " "
             main_rows.append(MenuRow(text=f"{marker} {label}", color=color))
 
-        sub_panel: MenuSubPanel | None = None
+        sub_panel = self._build_sub_panel(game, model, player, M)
+        return MenuViewModel(main_rows=main_rows, sub_panel=sub_panel)
+
+    def _build_sub_panel(
+        self, game: Any, model: MenuModel, player: Any, M: Any
+    ) -> MenuSubPanel | None:
+        """sub 値に応じた sub_panel を組み立てる。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            player: PlayerModel。
+            M: runtime データ参照。
+        Returns:
+            sub_panel または None。
+        Policy:
+            - sub が None なら何も返さない。
+        """
         if model.sub == "status":
-            total_atk = player.atk + M.WEAPONS[player.weapon]["atk"]
-            total_def = player.defense + M.ARMORS[player.armor]["def"]
-            stat_lines = [
-                f"レベル {player.lv}  けいけん {player.exp}",
-                f"HP {player.hp}/{player.max_hp}",
-                f"MP {player.mp}/{player.max_mp}",
-                f"こうげき {total_atk}  ぼうぎょ {total_def}",
-                f"すばやさ {player.agi}",
-                f"コイン {player.gold}",
-            ]
-            sub_panel = MenuSubPanel(
-                height=120,
-                rows=[MenuRow(text=line, color=7) for line in stat_lines],
-            )
-        elif model.sub == "items":
-            items = player.items
-            rows: list[MenuRow] = []
-            empty_message: str | None = None
-            if not items:
-                empty_message = game.text_fmt.t("アイテムがない", "No items")
-            else:
-                for i, item in enumerate(items[:8]):
-                    idata = M.ITEMS[item.id]
-                    is_highlighted = (i == model.item_cursor)
-                    color = 10 if is_highlighted else 6
-                    marker = ">" if is_highlighted else " "
-                    item_name = game.text_fmt.name(idata["name"])
-                    rows.append(MenuRow(
-                        text=f"{marker} {item_name} x{item.qty}",
-                        color=color,
-                    ))
-            sub_panel = MenuSubPanel(
-                height=120,
-                rows=rows,
-                empty_message=empty_message,
-                info_message=model.message or None,
-            )
-        elif model.sub == "equip":
-            wlbl = game.text_fmt.t("ぶき", "WPN")
-            albl = game.text_fmt.t("ぼうぐ", "ARM")
-            weapon = M.WEAPONS[player.weapon]
-            armor = M.ARMORS[player.armor]
-            weapon_name = game.text_fmt.name(weapon["name"])
-            armor_name = game.text_fmt.name(armor["name"])
-            equip_lines = [
-                f"{wlbl}: {weapon_name} (こうげき+{weapon['atk']})",
-                f"{albl}: {armor_name} (ぼうぎょ+{armor['def']})",
-            ]
-            rows = []
-            for i, label in enumerate(equip_lines):
+            return self._build_status_panel(player, M)
+        if model.sub == "items":
+            return self._build_items_panel(game, model, player, M)
+        if model.sub == "equip":
+            return self._build_equip_panel(game, model, player, M)
+        return None
+
+    def _build_items_panel(
+        self, game: Any, model: MenuModel, player: Any, M: Any
+    ) -> MenuSubPanel:
+        """items sub_panel を組み立てる。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            player: PlayerModel。
+            M: runtime データ参照。
+        Returns:
+            描画用 MenuSubPanel。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        items = player.items
+        rows: list[MenuRow] = []
+        empty_message: str | None = None
+        if not items:
+            empty_message = game.text_fmt.t("アイテムがない", "No items")
+        else:
+            for i, item in enumerate(items[:8]):
+                idata = M.ITEMS[item.id]
                 is_highlighted = (i == model.item_cursor)
                 color = 10 if is_highlighted else 6
                 marker = ">" if is_highlighted else " "
-                rows.append(MenuRow(text=f"{marker} {label}", color=color))
-            sub_panel = MenuSubPanel(height=80, rows=rows)
+                item_name = game.text_fmt.name(idata["name"])
+                rows.append(MenuRow(
+                    text=f"{marker} {item_name} x{item.qty}",
+                    color=color,
+                ))
+        return MenuSubPanel(
+            height=120,
+            rows=rows,
+            empty_message=empty_message,
+            info_message=model.message or None,
+        )
 
-        return MenuViewModel(main_rows=main_rows, sub_panel=sub_panel)
+    def _build_equip_panel(
+        self, game: Any, model: MenuModel, player: Any, M: Any
+    ) -> MenuSubPanel:
+        """equip sub_panel を組み立てる。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            player: PlayerModel。
+            M: runtime データ参照。
+        Returns:
+            描画用 MenuSubPanel。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        wlbl = game.text_fmt.t("ぶき", "WPN")
+        albl = game.text_fmt.t("ぼうぐ", "ARM")
+        weapon = M.WEAPONS[player.weapon]
+        armor = M.ARMORS[player.armor]
+        weapon_name = game.text_fmt.name(weapon["name"])
+        armor_name = game.text_fmt.name(armor["name"])
+        equip_lines = [
+            f"{wlbl}: {weapon_name} (こうげき+{weapon['atk']})",
+            f"{albl}: {armor_name} (ぼうぎょ+{armor['def']})",
+        ]
+        rows: list[MenuRow] = []
+        for i, label in enumerate(equip_lines):
+            is_highlighted = (i == model.item_cursor)
+            color = 10 if is_highlighted else 6
+            marker = ">" if is_highlighted else " "
+            rows.append(MenuRow(text=f"{marker} {label}", color=color))
+        return MenuSubPanel(height=80, rows=rows)
+
+    def _build_status_panel(
+        self, player: Any, M: Any
+    ) -> MenuSubPanel:
+        """status sub_panel を組み立てる。
+
+        Args:
+            player: PlayerModel。
+            M: runtime データ参照。
+        Returns:
+            描画用 MenuSubPanel。
+        Policy:
+            - 装備込みのこうげき/ぼうぎょ合計を表示する。
+        """
+        total_atk = player.atk + M.WEAPONS[player.weapon]["atk"]
+        total_def = player.defense + M.ARMORS[player.armor]["def"]
+        stat_lines = [
+            f"レベル {player.lv}  けいけん {player.exp}",
+            f"HP {player.hp}/{player.max_hp}",
+            f"MP {player.mp}/{player.max_mp}",
+            f"こうげき {total_atk}  ぼうぎょ {total_def}",
+            f"すばやさ {player.agi}",
+            f"コイン {player.gold}",
+        ]
+        return MenuSubPanel(
+            height=120,
+            rows=[MenuRow(text=line, color=7) for line in stat_lines],
+        )

@@ -43,7 +43,8 @@ def _select_explore_bgm(game) -> int:
     if getattr(game, "state", None) == "town":
         return TOWN_BGM_INDEX
     pm = getattr(game, "player_model", None)
-    if pm is not None and getattr(pm, "in_dungeon", False):
+    is_predicate_3 = pm is not None and getattr(pm, 'in_dungeon', False)
+    if is_predicate_3:
         return DUNGEON_BGM_INDEX
     # zone 判定（旧 sync_audio と同じく runtime の get_zone を使う）。
     try:
@@ -143,16 +144,18 @@ class ExploreView:
             for lm in vm.landmarks:
                 sx = lm.tx * 16 - cam_x
                 sy = lm.ty * 16 - cam_y + 24
-                if sx < -16 or sx > 256 or sy < 8 or sy > 256:
+                is_predicate_1 = sx < -16 or sx > 256 or sy < 8 or (sy > 256)
+                if is_predicate_1:
                     continue
                 pyxel.rectb(sx - 1 - pulse, sy - 1 - pulse,
                             18 + pulse * 2, 18 + pulse * 2, lm.color)
 
         # ボス目印（ダンジョン内かつ未撃破。Presenter が画面内座標を解決済み）
-        if (
+        has_boss_marker = (
             vm.is_boss_marker_active
             and vm.boss_marker_screen_xy is not None
-        ):
+        )
+        if has_boss_marker:
             bp = ib.sprite_bank.get("hero_down") if ib else None
             if bp is not None:
                 sx, sy = vm.boss_marker_screen_xy

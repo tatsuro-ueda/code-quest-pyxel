@@ -92,9 +92,12 @@ class ProfessorPresenter:
             - 副作用とモデル更新は実装どおり。
         """
         model = self.model
-        page_lines = self._page_lines(game, model.ending_lines, model.ending_idx)
+        page_lines = self._page_lines(
+            game, model.ending_lines, model.ending_idx
+        )
         is_prompt_eligible = (
-            bool(model.ending_lines) and model.ending_idx < len(model.ending_lines)
+            bool(model.ending_lines)
+            and model.ending_idx < len(model.ending_lines)
         )
         return ProfessorViewModel(
             page_lines=page_lines,
@@ -116,9 +119,12 @@ class ProfessorPresenter:
             - 副作用とモデル更新は実装どおり。
         """
         model = self.model
-        page_lines = self._page_lines(game, model.ending_lines, model.ending_idx)
+        page_lines = self._page_lines(
+            game, model.ending_lines, model.ending_idx
+        )
         is_prompt_eligible = (
-            bool(model.ending_lines) and model.ending_idx < len(model.ending_lines)
+            bool(model.ending_lines)
+            and model.ending_idx < len(model.ending_lines)
         )
         return ProfessorViewModel(
             page_lines=page_lines,
@@ -149,10 +155,11 @@ class ProfessorPresenter:
                     model.is_choice_active = True
             return
         # choice mode
-        if (
+        is_axis_pressed = (
             game.input_state.btnp(UP_BUTTONS)
             or game.input_state.btnp(DOWN_BUTTONS)
-        ):
+        )
+        if is_axis_pressed:
             model.choice_cursor = 1 - model.choice_cursor
             game.sfx.play("cursor")
             return
@@ -253,7 +260,8 @@ class ProfessorPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        if not lines or idx < 0 or idx >= len(lines):
+        is_predicate_0 = not lines or idx < 0 or idx >= len(lines)
+        if is_predicate_0:
             return []
         return list(
             game.messages.current_page_lines(
