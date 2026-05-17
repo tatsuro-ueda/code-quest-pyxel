@@ -12,8 +12,8 @@ tags:
 
 # 2026年5月17日 src/scenes に flake8-cr を適用して直す
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）Journey を確認して承認するか直しの希望を伝える
+> 状態：③ Gherkin
+> 次のゲート：（CC）Gherkin を書いて approve commit する
 
 ---
 
@@ -58,11 +58,22 @@ tags:
 
 ## 2) ユーザーストーリーマップ
 
-> Gherkin の前に、今回の仕事をどの順番で進めるかだけをそろえる。
-> 委任度：🔴 まだ Journey 段階。スコープ確定が先
-> 残る曖昧さ：今回の範囲を 11 シーン全部にするか、優先順位を付けて段階的にやるか
+> ユーザー：src/scenes を直したい AI / 大人（自分）
+> 委任度：🟢 機械修正と docstring 雛形までは CC が進められる。構造系の関数分割は実装中に都度判断
+> 残る曖昧さ：なし
 
-（Journey 承認後に記入）
+1. 👀 `tasknote確認済み`：`steering/done/20260507-src-header-functions-for-all-files.md` と `steering/done/20260507-gen-module-docstring-template.md` を読み、モジュール docstring の方針と雛形生成 CLI の存在を再確認する
+2. 👀 `skill・tool・MCP確認済み`：`flake8-cr`（CLI）、`tools/gen_module_docstring_template.py`、`make verify`、`pytest`、`manage-tasknotes` Skill。MCP は 0件
+3. 👀 `flake8-cr src/scenes/` を初めて流し、500 件超の指摘とコード別件数（CR502・CR203・E501・CR601…）が並ぶのを見る
+4. 💦 件数の多さに圧倒されるが、種別ごとに難易度が違うことに気付く
+5. 📝 ベースライン（コード別件数）を tasknote に控え、ゴールを「0 件」に固定する
+6. 🎬 まずは機械修正できる種別（F401・E501・E701・E702・W391）をシーン横断で一気に直し、件数が大きく減る手応えを得る
+7. 🎬 次にモジュール docstring（CR601）を雛形 CLI で生成し、Problems: セクションを各ファイルに足す
+8. 🎬 続いて関数 docstring（CR501・CR502）を実装に合わせて埋める
+9. 🎬 軽い構造系（CR201・CR100・CR101・CR102）を、挙動を変えないリネームだけで片付ける
+10. 🎬 重い構造系（CR202・CR203・CR301・CR302・CR303）は、シーンごとに 1 つずつ関数を分割し、その都度 `pytest` で挙動が変わっていないかを確認する
+11. 🔁 段落の節目に `flake8-cr src/scenes/` を流し、残り件数が減っていくのを Result に書き残す
+12. ❤️ `flake8-cr src/scenes/` が 0 件、`make verify` 緑、`pytest` 緑になり、上から読めるシーンになったところでスッキリと終わる
 
 ---
 
