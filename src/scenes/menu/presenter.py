@@ -82,12 +82,53 @@ class MenuPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        return self._run_build_labels(game)
+
+    def update(self, game: Any) -> None:
+        """メニュー操作を処理する。sub-state に応じて分岐。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_update(game)
+
+    def build_view_model(
+        self, labels: list[str], game: Any
+    ) -> MenuViewModel:
+        """labels と Model + PlayerModel を解釈して VM を組み立てる。
+
+        labels は Scene が i18n 解決済みの表示文字列リスト。
+
+        Args:
+            labels: labels の値。
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_build_view_model(labels, game)
+
+    # === Internal helpers (private) ===
+
+    def _run_build_labels(self, game: Any) -> list[str]:
+        """_run_build_labels() の実装本体。
+
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         if game.has_jp_font:
             return ["ステータス", "アイテム", "そうび", "AIでしゅうせい", "とじる"]
         return ["STATUS", "ITEMS", "EQUIP", "AI HELP", "CLOSE"]
 
-    def update(self, game: Any) -> None:
-        """メニュー操作を処理する。sub-state に応じて分岐。
+    def _run_update(self, game: Any) -> None:
+        """_run_update() の実装本体。
 
         Args:
             game: game の値。
@@ -181,12 +222,10 @@ class MenuPresenter:
                 model.item_cursor = (model.item_cursor + 1) % 2
                 game.sfx.play("cursor")
 
-    def build_view_model(
+    def _run_build_view_model(
         self, labels: list[str], game: Any
     ) -> MenuViewModel:
-        """labels と Model + PlayerModel を解釈して VM を組み立てる。
-
-        labels は Scene が i18n 解決済みの表示文字列リスト。
+        """_run_build_view_model() の実装本体。
 
         Args:
             labels: labels の値。

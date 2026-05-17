@@ -62,23 +62,7 @@ class BattleScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        model = self.model
-        game.sfx.play("encounter")
-        model.enemy = dict(enemy_template)
-        model.enemy_hp = enemy_template["hp"]
-        model.menu = 0
-        model.phase = "menu"
-        model.text = ""
-        model.text_timer = 0
-        model.item_select = 0
-        model.spell_select = 0
-        model.is_glitch_lord = is_glitch_lord
-        model.is_professor = is_professor
-        model.boss_phase = "phase1" if not is_professor else "100"
-        if is_glitch_lord:
-            model.text = game.messages.dialog_text("boss.glitch.intro")
-        game.state = "battle"
+        self._run_start(enemy_template, is_glitch_lord, is_professor)
 
     def start_noise_guardian(self):
         """ノイズガーディアン強制戦闘を開始する。
@@ -111,6 +95,153 @@ class BattleScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_check_noise_guardian_phase()
+
+    def update(self):
+        """配線：phase 遷移・入力解釈は Presenter に委譲（M3-2 準拠）。
+
+        Presenter は phase 切り替え時にルール本体（do_player_attack /
+        do_enemy_attack / victory / defeat / apply_spell_effect /
+        handle_noise_guardian_defeated）を呼び戻す必要があるため、self を渡す。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_update()
+
+    def do_player_attack(self):
+        """たたかう選択時のプレイヤー攻撃処理。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_do_player_attack()
+
+    def check_glitch_lord_phase_transition(self):
+        """ボスのHPが閾値を跨いだら phase を更新し、移行メッセージを差し込む。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_check_glitch_lord_phase_transition()
+
+    def do_enemy_attack(self):
+        """敵の反撃処理。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_do_enemy_attack()
+
+    def apply_victory(self):
+        """勝利処理。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_apply_victory()
+
+    def apply_defeat(self):
+        """敗北処理。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        model = self.model
+        game.sfx.play("dead")
+        model.text = game.messages.dialog_text("battle.normal.defeat")
+        model.phase = "result"
+        model.text_timer = 60
+
+    def check_level_up(self):
+        """経験値を元にレベルアップと呪文習得を行う。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_check_level_up()
+
+    def apply_spell_effect(self, spell) -> str:
+        """呪文効果を適用する（MP消費は呼び出し側）。
+
+        Args:
+            spell: spell の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_apply_spell_effect(spell)
+
+    def get_enemy_hit_scene_name(self):
+        """敵攻撃時のダイアログ scene 名を返す。
+
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_get_enemy_hit_scene_name()
+
+    def get_victory_scene_name(self):
+        """勝利時のダイアログ scene 名を返す。
+
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_get_victory_scene_name()
+
+    def draw(self) -> dict | None:
+        """バトル画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。
+
+        テスト用に game 未設定なら phase snapshot を返す。
+
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_draw()
+
+    # === Internal helpers (private) ===
+
+    def _run_start(self, enemy_template, is_glitch_lord=False, is_professor=False):
+        """_run_start() の実装本体。
+
+        Args:
+            enemy_template: enemy_template の値。
+            is_glitch_lord: is_glitch_lord の値。
+            is_professor: is_professor の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        model = self.model
+        game.sfx.play("encounter")
+        model.enemy = dict(enemy_template)
+        model.enemy_hp = enemy_template["hp"]
+        model.menu = 0
+        model.phase = "menu"
+        model.text = ""
+        model.text_timer = 0
+        model.item_select = 0
+        model.spell_select = 0
+        model.is_glitch_lord = is_glitch_lord
+        model.is_professor = is_professor
+        model.boss_phase = "phase1" if not is_professor else "100"
+        if is_glitch_lord:
+            model.text = game.messages.dialog_text("boss.glitch.intro")
+        game.state = "battle"
+
+    def _run_check_noise_guardian_phase(self):
+        """_run_check_noise_guardian_phase() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         model = self.model
         max_hp = model.enemy["hp"]
         if max_hp <= 0:
@@ -131,12 +262,8 @@ class BattleScene:
             if msg:
                 model.text = (model.text + " " + msg).strip()
 
-    def update(self):
-        """配線：phase 遷移・入力解釈は Presenter に委譲（M3-2 準拠）。
-
-        Presenter は phase 切り替え時にルール本体（do_player_attack /
-        do_enemy_attack / victory / defeat / apply_spell_effect /
-        handle_noise_guardian_defeated）を呼び戻す必要があるため、self を渡す。
+    def _run_update(self):
+        """_run_update() の実装本体。
 
         Postconditions:
             - 副作用とモデル更新は実装どおり。
@@ -146,8 +273,8 @@ class BattleScene:
             return
         self.presenter.update(game, self)
 
-    def do_player_attack(self):
-        """たたかう選択時のプレイヤー攻撃処理。
+    def _run_do_player_attack(self):
+        """_run_do_player_attack() の実装本体。
 
         Postconditions:
             - 副作用とモデル更新は実装どおり。
@@ -174,8 +301,8 @@ class BattleScene:
         model.phase = "player_attack"
         model.text_timer = 40
 
-    def check_glitch_lord_phase_transition(self):
-        """ボスのHPが閾値を跨いだら phase を更新し、移行メッセージを差し込む。
+    def _run_check_glitch_lord_phase_transition(self):
+        """_run_check_glitch_lord_phase_transition() の実装本体。
 
         Postconditions:
             - 副作用とモデル更新は実装どおり。
@@ -213,8 +340,8 @@ class BattleScene:
             if transition_msg:
                 model.text = (model.text + " " + transition_msg).strip()
 
-    def do_enemy_attack(self):
-        """敵の反撃処理。
+    def _run_do_enemy_attack(self):
+        """_run_do_enemy_attack() の実装本体。
 
         Postconditions:
             - 副作用とモデル更新は実装どおり。
@@ -243,8 +370,8 @@ class BattleScene:
         model.phase = "enemy_attack"
         model.text_timer = 40
 
-    def apply_victory(self):
-        """勝利処理。
+    def _run_apply_victory(self):
+        """_run_apply_victory() の実装本体。
 
         Postconditions:
             - 副作用とモデル更新は実装どおり。
@@ -274,21 +401,8 @@ class BattleScene:
         model.text_timer = 60
         self.check_level_up()
 
-    def apply_defeat(self):
-        """敗北処理。
-
-        Postconditions:
-            - 副作用とモデル更新は実装どおり。
-        """
-        game = self.game
-        model = self.model
-        game.sfx.play("dead")
-        model.text = game.messages.dialog_text("battle.normal.defeat")
-        model.phase = "result"
-        model.text_timer = 60
-
-    def check_level_up(self):
-        """経験値を元にレベルアップと呪文習得を行う。
+    def _run_check_level_up(self):
+        """_run_check_level_up() の実装本体。
 
         Postconditions:
             - 副作用とモデル更新は実装どおり。
@@ -311,8 +425,8 @@ class BattleScene:
                 if spell["learn_lv"] == player.lv and spell["name"] not in player.spells:
                     player.spells.append(spell["name"])
 
-    def apply_spell_effect(self, spell) -> str:
-        """呪文効果を適用する（MP消費は呼び出し側）。
+    def _run_apply_spell_effect(self, spell) -> str:
+        """_run_apply_spell_effect() の実装本体。
 
         Args:
             spell: spell の値。
@@ -332,8 +446,8 @@ class BattleScene:
         model.enemy_hp = max(0, model.enemy_hp - damage)
         return f'{spell["name"]}！ {damage}のダメージ！'
 
-    def get_enemy_hit_scene_name(self):
-        """敵攻撃時のダイアログ scene 名を返す。
+    def _run_get_enemy_hit_scene_name(self):
+        """_run_get_enemy_hit_scene_name() の実装本体。
 
         Returns:
             関数の戻り値。
@@ -349,8 +463,8 @@ class BattleScene:
             category, M.ENEMY_HIT_SCENES["sequential"]
         )
 
-    def get_victory_scene_name(self):
-        """勝利時のダイアログ scene 名を返す。
+    def _run_get_victory_scene_name(self):
+        """_run_get_victory_scene_name() の実装本体。
 
         Returns:
             関数の戻り値。
@@ -367,10 +481,8 @@ class BattleScene:
             zone, "battle.normal.victory.early"
         )
 
-    def draw(self) -> dict | None:
-        """バトル画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。
-
-        テスト用に game 未設定なら phase snapshot を返す。
+    def _run_draw(self) -> dict | None:
+        """_run_draw() の実装本体。
 
         Returns:
             関数の戻り値。

@@ -47,15 +47,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        if game.player_model.glitch_lord_defeated:
-            return "late"
-        max_zone = game.player_model.max_zone_reached
-        if max_zone >= 3:
-            return "late"
-        if max_zone >= 1:
-            return "mid"
-        return "early"
+        return self._run_phase()
 
     def battle_phase(self, ratio: float) -> str:
         """HP比率から Professor battle phase キーを返す。
@@ -67,11 +59,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        pct = ratio * 100
-        for thr in (10, 25, 40, 55, 70, 85):
-            if pct < thr:
-                return str(thr)
-        return "100"
+        return self._run_battle_phase(ratio)
 
     def enter_intro(self) -> None:
         """Professor 会話イベントに入る。
@@ -79,18 +67,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        player = game.player_model
-        if player.professor_intro_seen:
-            scene = "castle.professor.revisit_intro_01"
-        else:
-            scene = "castle.professor.intro_01"
-        player.professor_intro_seen = True
-        self.model.intro_lines = game.messages.dialog_lines(scene)
-        self.model.intro_idx = 0
-        self.model.is_choice_active = False
-        self.model.choice_cursor = 1
-        game.state = "professor_intro"
+        self._run_enter_intro()
 
     def update_intro(self) -> None:
         """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。
@@ -98,10 +75,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        if game is None:
-            return
-        self.presenter.update_intro(game, self)
+        self._run_update_intro()
 
     def draw_intro(self) -> None:
         """Professor intro 画面を描画する。
@@ -111,11 +85,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        if game is None:
-            return
-        vm = self.presenter.build_intro_view_model(game)
-        self.view.draw(vm, game.messages)
+        self._run_draw_intro()
 
     def enter_ending_main(self) -> None:
         """Professor ending（撃破後）に入る。
@@ -123,16 +93,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        player = game.player_model
-        if player.professor_ending_seen:
-            scene = "castle.professor.revisit_epilogue_01"
-        else:
-            scene = "castle.professor.epilogue_01"
-        player.professor_ending_seen = True
-        self.model.ending_lines = game.messages.dialog_lines(scene)
-        self.model.ending_idx = 0
-        game.state = "professor_ending_main"
+        self._run_enter_ending_main()
 
     def update_ending_main(self) -> None:
         """配線：Presenter に委譲（M3-2 準拠）。
@@ -140,10 +101,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        if game is None:
-            return
-        self.presenter.update_ending_main(game)
+        self._run_update_ending_main()
 
     def draw_ending_main(self) -> None:
         """Professor ending main 画面を描画する。Presenter が VM 組立て、View に委譲。
@@ -151,11 +109,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        if game is None:
-            return
-        vm = self.presenter.build_ending_main_view_model(game)
-        self.view.draw(vm, game.messages)
+        self._run_draw_ending_main()
 
     def enter_ending_accepted(self) -> None:
         """Professor 受諾エンドに入る。
@@ -176,10 +130,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        if game is None:
-            return
-        self.presenter.update_ending_accepted(game)
+        self._run_update_ending_accepted()
 
     def draw_ending_accepted(self) -> None:
         """Professor 受諾エンド画面を描画する。Presenter が VM 組立て、View に委譲。
@@ -187,11 +138,7 @@ class ProfessorScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        if game is None:
-            return
-        vm = self.presenter.build_ending_accepted_view_model(game)
-        self.view.draw(vm, game.messages)
+        self._run_draw_ending_accepted()
 
     def update(self) -> None:
         """Scene Protocol 互換。P1-G10 では個別 update_* を Game dispatcher が呼ぶ。
@@ -208,3 +155,144 @@ class ProfessorScene:
             - 副作用とモデル更新は実装どおり。
         """
         return None
+
+    # === Internal helpers (private) ===
+
+    def _run_phase(self) -> str:
+        """_run_phase() の実装本体。
+
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game.player_model.glitch_lord_defeated:
+            return "late"
+        max_zone = game.player_model.max_zone_reached
+        if max_zone >= 3:
+            return "late"
+        if max_zone >= 1:
+            return "mid"
+        return "early"
+
+    def _run_battle_phase(self, ratio: float) -> str:
+        """_run_battle_phase() の実装本体。
+
+        Args:
+            ratio: ratio の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        pct = ratio * 100
+        for thr in (10, 25, 40, 55, 70, 85):
+            if pct < thr:
+                return str(thr)
+        return "100"
+
+    def _run_enter_intro(self) -> None:
+        """_run_enter_intro() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        player = game.player_model
+        if player.professor_intro_seen:
+            scene = "castle.professor.revisit_intro_01"
+        else:
+            scene = "castle.professor.intro_01"
+        player.professor_intro_seen = True
+        self.model.intro_lines = game.messages.dialog_lines(scene)
+        self.model.intro_idx = 0
+        self.model.is_choice_active = False
+        self.model.choice_cursor = 1
+        game.state = "professor_intro"
+
+    def _run_update_intro(self) -> None:
+        """_run_update_intro() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game is None:
+            return
+        self.presenter.update_intro(game, self)
+
+    def _run_draw_intro(self) -> None:
+        """_run_draw_intro() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game is None:
+            return
+        vm = self.presenter.build_intro_view_model(game)
+        self.view.draw(vm, game.messages)
+
+    def _run_enter_ending_main(self) -> None:
+        """_run_enter_ending_main() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        player = game.player_model
+        if player.professor_ending_seen:
+            scene = "castle.professor.revisit_epilogue_01"
+        else:
+            scene = "castle.professor.epilogue_01"
+        player.professor_ending_seen = True
+        self.model.ending_lines = game.messages.dialog_lines(scene)
+        self.model.ending_idx = 0
+        game.state = "professor_ending_main"
+
+    def _run_update_ending_main(self) -> None:
+        """_run_update_ending_main() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game is None:
+            return
+        self.presenter.update_ending_main(game)
+
+    def _run_draw_ending_main(self) -> None:
+        """_run_draw_ending_main() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game is None:
+            return
+        vm = self.presenter.build_ending_main_view_model(game)
+        self.view.draw(vm, game.messages)
+
+    def _run_update_ending_accepted(self) -> None:
+        """_run_update_ending_accepted() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game is None:
+            return
+        self.presenter.update_ending_accepted(game)
+
+    def _run_draw_ending_accepted(self) -> None:
+        """_run_draw_ending_accepted() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game is None:
+            return
+        vm = self.presenter.build_ending_accepted_view_model(game)
+        self.view.draw(vm, game.messages)

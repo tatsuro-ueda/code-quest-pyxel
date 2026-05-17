@@ -48,17 +48,37 @@ class ExploreScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        if game is None:
-            return
-        self._attach_image_banks()
-        self.presenter.update(game)
+        self._run_update()
 
     def draw(self) -> dict[str, str] | None:
         """フィールド地図を Pyxel に描画する。
 
         Presenter が VM を組み立て、View に委譲する（M1-1 / M2-2 準拠）。
         game が未設定（単体テスト）時は既存 view.render dict を返して互換維持。
+
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_draw()
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self) -> None:
+        """_run_update() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game is None:
+            return
+        self._attach_image_banks()
+        self.presenter.update(game)
+
+    def _run_draw(self) -> dict[str, str] | None:
+        """_run_draw() の実装本体。
 
         Returns:
             関数の戻り値。
@@ -76,8 +96,6 @@ class ExploreScene:
         self.view.draw(vm, text_writer)
         return None
 
-    # === Internal helpers (private) ===
-
     def _attach_image_banks(self) -> None:
         """Model に game.image_banks を注入する（DB 読み取り用、M4-1 改訂）。
 
@@ -90,8 +108,6 @@ class ExploreScene:
         ib = getattr(game, "image_banks", None)
         if ib is not None and self.model.image_banks is not ib:
             self.model.image_banks = ib
-
-    # ----- 既存テスト互換のための薄いラッパ -----
 
     def _check_tile_events(self, tile, nx, ny):
         """既存テスト互換：Presenter._check_tile_events に委譲。

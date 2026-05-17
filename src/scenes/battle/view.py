@@ -63,6 +63,17 @@ def play_bgm(game) -> None:
     Postconditions:
         - 副作用とモデル更新は実装どおり。
     """
+    _run_play_bgm(game)
+
+
+def _run_play_bgm(game) -> None:
+    """_run_play_bgm() の実装本体。
+
+    Args:
+        game: game の値。
+    Postconditions:
+        - 副作用とモデル更新は実装どおり。
+    """
     if game is None:
         return
     play_bgm_track(_select_battle_bgm(game))
@@ -92,6 +103,22 @@ class BattleView:
 
         ``vfx`` は draw_overlay() を持つ画面エフェクトサービス（描画専用アセット
         参照、M2-1 例外）。None なら overlay スキップ（test 互換）。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+            vfx: vfx の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_draw(vm, text_writer, vfx)
+
+    # === Internal helpers (private) ===
+
+    def _run_draw(
+        self, vm: BattleViewModel, text_writer: Any, vfx: Any = None
+    ) -> None:
+        """_run_draw() の実装本体。
 
         Args:
             vm: vm の値。

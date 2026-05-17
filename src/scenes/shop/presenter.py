@@ -47,6 +47,43 @@ class ShopPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_update(game)
+
+    def try_purchase(self, game: Any) -> None:
+        """購入を試みる。所持／資金不足／購入成功の各分岐で message を更新。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_try_purchase(game)
+
+    def build_view_model(self, game: Any) -> ShopViewModel:
+        """Model + ゲームデータを解釈してショップ画面 VM を組み立てる。
+
+        Policy:
+            - 行内に `[もっています]` は出さない（横幅が 256px を超えて切れるため）。
+            - 下部メッセージは「短期 message > カーソル位置の owned 自動表示」の優先で出す。
+            - owned 自動表示は weapons / armors のみ。items は装備中概念が無いため対象外。
+
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        """
+        return self._run_build_view_model(game)
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self, game: Any) -> None:
+        """_run_update() の実装本体。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         self._tick_message_ttl()
         if not self.model.inventory:
             if (
@@ -73,8 +110,8 @@ class ShopPresenter:
             game.sfx.play("select")
             self.try_purchase(game)
 
-    def try_purchase(self, game: Any) -> None:
-        """購入を試みる。所持／資金不足／購入成功の各分岐で message を更新。
+    def _run_try_purchase(self, game: Any) -> None:
+        """_run_try_purchase() の実装本体。
 
         Args:
             game: game の値。
@@ -115,18 +152,15 @@ class ShopPresenter:
             pm.buy_item(index, price)
             self._set_short_message(f"{entry['name']}を てにいれた！")
 
-    def build_view_model(self, game: Any) -> ShopViewModel:
-        """Model + ゲームデータを解釈してショップ画面 VM を組み立てる。
-
-        Policy:
-            - 行内に `[もっています]` は出さない（横幅が 256px を超えて切れるため）。
-            - 下部メッセージは「短期 message > カーソル位置の owned 自動表示」の優先で出す。
-            - owned 自動表示は weapons / armors のみ。items は装備中概念が無いため対象外。
+    def _run_build_view_model(self, game: Any) -> ShopViewModel:
+        """_run_build_view_model() の実装本体。
 
         Args:
             game: game の値。
         Returns:
             関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
         """
         import src.runtime.main_runtime as M
         model = self.model
@@ -170,8 +204,6 @@ class ShopPresenter:
             empty_message=empty_message,
             message=message,
         )
-
-    # === Internal helpers (private) ===
 
     def _tick_message_ttl(self) -> None:
         """短期メッセージの残り表示フレーム数を 1 減らし、0 以下なら message をクリアする。

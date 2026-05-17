@@ -66,6 +66,17 @@ def play_bgm(game) -> None:
     Postconditions:
         - 副作用とモデル更新は実装どおり。
     """
+    _run_play_bgm(game)
+
+
+def _run_play_bgm(game) -> None:
+    """_run_play_bgm() の実装本体。
+
+    Args:
+        game: game の値。
+    Postconditions:
+        - 副作用とモデル更新は実装どおり。
+    """
     if game is None:
         return
     play_bgm_track(_select_explore_bgm(game))
@@ -96,6 +107,19 @@ class ExploreView:
 
     def draw(self, vm: ExploreViewModel, text_writer: Any = None) -> None:
         """ExploreViewModel を画面に描く。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_draw(vm, text_writer)
+
+    # === Internal helpers (private) ===
+
+    def _run_draw(self, vm: ExploreViewModel, text_writer: Any = None) -> None:
+        """_run_draw() の実装本体。
 
         Args:
             vm: vm の値。

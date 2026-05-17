@@ -36,13 +36,7 @@ class SplashPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        self.model.frame += 1
-        if (
-            self.model.frame >= 90
-            or game.input_state.btnp(CONFIRM_BUTTONS)
-            or game.input_state.btnp(CANCEL_BUTTONS)
-        ):
-            game.state = "title"
+        self._run_update(game)
 
     def build_view_model(self, game: Any) -> SplashViewModel:
         """Model + i18n を解釈して SplashViewModel を組み立てる。
@@ -70,3 +64,21 @@ class SplashPresenter:
             ),
             is_prompt_eligible=(f >= 75),
         )
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self, game: Any) -> None:
+        """_run_update() の実装本体。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self.model.frame += 1
+        if (
+            self.model.frame >= 90
+            or game.input_state.btnp(CONFIRM_BUTTONS)
+            or game.input_state.btnp(CANCEL_BUTTONS)
+        ):
+            game.state = "title"

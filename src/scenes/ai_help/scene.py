@@ -55,16 +55,34 @@ class AiHelpScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        game = self.game
-        if game is None:
-            return
-        self.presenter.update(game)
+        self._run_update()
 
     def draw(self) -> None:
         """AI ヘルプ画面を描画する。
 
         背景の重ね描きは scene が指揮し、パネル本体は Presenter→View で
         描画する（M1-1 / M2-2 準拠）。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_draw()
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self) -> None:
+        """_run_update() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game = self.game
+        if game is None:
+            return
+        self.presenter.update(game)
+
+    def _run_draw(self) -> None:
+        """_run_draw() の実装本体。
 
         Postconditions:
             - 副作用とモデル更新は実装どおり。
@@ -76,8 +94,6 @@ class AiHelpScene:
         game.status_bar.draw()
         vm = self.presenter.build_view_model(game)
         self.view.render(vm, game.messages)
-
-    # === Internal helpers (private) ===
 
     def _try_open_ai_chat(self) -> str:
         """環境に応じて AI を呼ぶ手段を試す。

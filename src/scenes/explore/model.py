@@ -77,13 +77,7 @@ class ExploreModel:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
-        oy = DUNGEON_TM_OFFSET_Y if in_dungeon else 0
-        tu, tv = pyxel.tilemaps[0].pget(2 * x, oy + 2 * y)
-        key = (tu * 8, tv * 8)
-        if self.image_banks is None:
-            return T_GRASS
-        return self.image_banks.tile_id_by_pixel.get(key, T_GRASS)
+        return self._run_get_tile(x, y, in_dungeon=in_dungeon)
 
     def is_walkable(self, x: int, y: int, *, in_dungeon: bool) -> bool:
         """マス (x, y) が通行可能か。IMPASSABLE 集合に含まれなければ True。
@@ -98,3 +92,25 @@ class ExploreModel:
             - 副作用とモデル更新は実装どおり。
         """
         return self.get_tile(x, y, in_dungeon=in_dungeon) not in IMPASSABLE
+
+    # === Internal helpers (private) ===
+
+    def _run_get_tile(self, x: int, y: int, *, in_dungeon: bool) -> int:
+        """_run_get_tile() の実装本体。
+
+        Args:
+            x: x の値。
+            y: y の値。
+            in_dungeon: in_dungeon の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
+        oy = DUNGEON_TM_OFFSET_Y if in_dungeon else 0
+        tu, tv = pyxel.tilemaps[0].pget(2 * x, oy + 2 * y)
+        key = (tu * 8, tv * 8)
+        if self.image_banks is None:
+            return T_GRASS
+        return self.image_banks.tile_id_by_pixel.get(key, T_GRASS)

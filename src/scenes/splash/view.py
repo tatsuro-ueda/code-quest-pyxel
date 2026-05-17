@@ -37,6 +37,19 @@ class SplashView:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_render(vm, text_writer)
+
+    # === Internal helpers (private) ===
+
+    def _run_render(self, vm: SplashViewModel, text_writer: Any) -> None:
+        """_run_render() の実装本体。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         pyxel.cls(0)
         for i in range(8):
             x = 16 + i * 28

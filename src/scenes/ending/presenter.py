@@ -36,10 +36,7 @@ class EndingPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            game.player_model.in_dungeon = False
-            game.explore_scene.model.start_a_cooldown()
-            game.state = "map"
+        self._run_update(game)
 
     def build_view_model(self, game: Any) -> EndingViewModel:
         """Model + 現在の player level から EndingViewModel を組み立てる。
@@ -59,3 +56,18 @@ class EndingPresenter:
             body_lines=body,
             level_value=game.player_model.lv,
         )
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self, game: Any) -> None:
+        """_run_update() の実装本体。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if game.input_state.btnp(CONFIRM_BUTTONS):
+            game.player_model.in_dungeon = False
+            game.explore_scene.model.start_a_cooldown()
+            game.state = "map"

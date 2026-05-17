@@ -45,7 +45,20 @@ class MenuView:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_draw(vm, text_writer)
+
+    # === Internal helpers (private) ===
+
+    def _run_draw(self, vm: MenuViewModel, text_writer: Any) -> None:
         # メインメニュー枠
+        """_run_draw() の実装本体。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         pyxel.rect(20, 30, 216, 200, 1)
         pyxel.rectb(20, 30, 216, 200, 7)
         for i, row in enumerate(vm.main_rows):

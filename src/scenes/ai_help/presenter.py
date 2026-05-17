@@ -36,12 +36,7 @@ class AiHelpPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        if (
-            game.input_state.btnp(CANCEL_BUTTONS)
-            or game.input_state.btnp(CONFIRM_BUTTONS)
-        ):
-            game.sfx.play("cancel")
-            game.state = "menu"
+        self._run_update(game)
 
     def build_view_model(self, game: Any) -> AiHelpViewModel:
         """Model.status から AI ヘルプパネルの解釈済みデータを組み立てる。
@@ -72,3 +67,20 @@ class AiHelpPresenter:
                 f"  -> {self.model.status}",
             ],
         )
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self, game: Any) -> None:
+        """_run_update() の実装本体。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if (
+            game.input_state.btnp(CANCEL_BUTTONS)
+            or game.input_state.btnp(CONFIRM_BUTTONS)
+        ):
+            game.sfx.play("cancel")
+            game.state = "menu"

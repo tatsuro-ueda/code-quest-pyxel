@@ -60,6 +60,40 @@ class TitlePresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_update(game)
+
+    def do_load(self, game: Any) -> None:
+        """セーブデータを読み出して player / state を復元する。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_do_load(game)
+
+    def build_view_model(self, game: Any) -> TitleViewModel:
+        """Model + i18n + has_save を解釈してタイトル画面 VM を組み立てる。
+
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_build_view_model(game)
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self, game: Any) -> None:
+        """_run_update() の実装本体。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         if game.input_state.btnp(UP_BUTTONS):
             self.move(-1, 2)
             game.sfx.play("cursor")
@@ -83,8 +117,8 @@ class TitlePresenter:
                 return
             self.do_load(game)
 
-    def do_load(self, game: Any) -> None:
-        """セーブデータを読み出して player / state を復元する。
+    def _run_do_load(self, game: Any) -> None:
+        """_run_do_load() の実装本体。
 
         Args:
             game: game の値。
@@ -110,8 +144,8 @@ class TitlePresenter:
         game.prev_state = "map"
         game.state = "message"
 
-    def build_view_model(self, game: Any) -> TitleViewModel:
-        """Model + i18n + has_save を解釈してタイトル画面 VM を組み立てる。
+    def _run_build_view_model(self, game: Any) -> TitleViewModel:
+        """_run_build_view_model() の実装本体。
 
         Args:
             game: game の値。

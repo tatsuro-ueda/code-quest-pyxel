@@ -45,13 +45,33 @@ class MenuScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_update()
+
+    def draw(self) -> None:
+        """メニュー画面を描画する。描画本体は View に委譲（M1-1 準拠）。
+
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_draw()
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self) -> None:
+        """_run_update() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         game = self.game
         if game is None:
             return
         self.presenter.update(game)
 
-    def draw(self) -> None:
-        """メニュー画面を描画する。描画本体は View に委譲（M1-1 準拠）。
+    def _run_draw(self) -> None:
+        """_run_draw() の実装本体。
 
         Returns:
             関数の戻り値。
@@ -65,8 +85,6 @@ class MenuScene:
             self.presenter.build_labels(game), game
         )
         self.view.draw(vm, game.messages)
-
-    # === Internal helpers (private) ===
 
     def _get_labels(self) -> list[str]:
         """既存テスト互換：Presenter.build_labels に委譲。

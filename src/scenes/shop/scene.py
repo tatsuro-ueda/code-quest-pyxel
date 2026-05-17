@@ -47,6 +47,36 @@ class ShopScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_enter(kind)
+
+    def update(self) -> None:
+        """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_update()
+
+    def draw(self) -> None:
+        """ショップ画面を描画する。描画本体は View に委譲（M1-1 準拠）。
+
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_draw()
+
+    # === Internal helpers (private) ===
+
+    def _run_enter(self, kind: str) -> None:
+        """_run_enter() の実装本体。
+
+        Args:
+            kind: kind の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         game = self.game
         import src.runtime.main_runtime as M
         # 町情報は GameState.current_town から受け取る（framework-rule.md M4-3）。
@@ -65,8 +95,8 @@ class ShopScene:
         self.model.message = ""
         game.state = "shop"
 
-    def update(self) -> None:
-        """配線：入力解釈・遷移決定は Presenter に委譲（M3-2 準拠）。
+    def _run_update(self) -> None:
+        """_run_update() の実装本体。
 
         Postconditions:
             - 副作用とモデル更新は実装どおり。
@@ -76,8 +106,8 @@ class ShopScene:
             return
         self.presenter.update(game)
 
-    def draw(self) -> None:
-        """ショップ画面を描画する。描画本体は View に委譲（M1-1 準拠）。
+    def _run_draw(self) -> None:
+        """_run_draw() の実装本体。
 
         Returns:
             関数の戻り値。
@@ -89,8 +119,6 @@ class ShopScene:
             return self.view.render()
         vm = self.presenter.build_view_model(game)
         self.view.draw(vm, game.messages)
-
-    # === Internal helpers (private) ===
 
     def _try_purchase(self) -> None:
         """既存テスト互換：購入処理を Presenter に委譲。

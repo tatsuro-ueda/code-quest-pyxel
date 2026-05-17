@@ -53,6 +53,19 @@ class EndingView:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_render(vm, text_writer)
+
+    # === Internal helpers (private) ===
+
+    def _run_render(self, vm: EndingViewModel, text_writer: Any) -> None:
+        """_run_render() の実装本体。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         pyxel.cls(1)
         if vm.head_line is not None:
             text_writer.text(60, 60, vm.head_line, 10)

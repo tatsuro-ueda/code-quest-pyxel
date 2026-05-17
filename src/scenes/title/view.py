@@ -96,6 +96,19 @@ class TitleView:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_draw(vm, text_writer)
+
+    # === Internal helpers (private) ===
+
+    def _run_draw(self, vm: TitleViewModel, text_writer: Any) -> None:
+        """_run_draw() の実装本体。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         pyxel.cls(1)
         text_writer.text(70, 80, vm.title_text, 7)
         text_writer.text(50, 110, vm.subtitle_text, 10)

@@ -55,6 +55,37 @@ class ExplorePresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_update(game)
+
+    def build_view_model(self, game: Any) -> ExploreViewModel:
+        """カメラ計算 + bltm 引数組み立て + landmark / boss marker 解決を行い VM を返す。
+
+        副作用として self.model.cam_x / self.model.cam_y を更新する
+        （M4-3: カメラは Explore 専用なので ExploreModel に持つ）。
+
+        2026-05-05 改訂：world_map / dungeon_map のリスト走査をやめ、必要な
+        マップ寸法・タイル ID 探索は ExploreModel.get_tile（pyxel.tilemaps
+        直読）に問い合わせる。bltm 1 回呼びの引数を ViewModel に詰める。
+
+        Args:
+            game: game の値。
+        Returns:
+            関数の戻り値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        return self._run_build_view_model(game)
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self, game: Any) -> None:
+        """_run_update() の実装本体。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         import src.runtime.main_runtime as M
 
         if self.model.move_cooldown > 0:
@@ -136,15 +167,8 @@ class ExplorePresenter:
                 )
                 return
 
-    def build_view_model(self, game: Any) -> ExploreViewModel:
-        """カメラ計算 + bltm 引数組み立て + landmark / boss marker 解決を行い VM を返す。
-
-        副作用として self.model.cam_x / self.model.cam_y を更新する
-        （M4-3: カメラは Explore 専用なので ExploreModel に持つ）。
-
-        2026-05-05 改訂：world_map / dungeon_map のリスト走査をやめ、必要な
-        マップ寸法・タイル ID 探索は ExploreModel.get_tile（pyxel.tilemaps
-        直読）に問い合わせる。bltm 1 回呼びの引数を ViewModel に詰める。
+    def _run_build_view_model(self, game: Any) -> ExploreViewModel:
+        """_run_build_view_model() の実装本体。
 
         Args:
             game: game の値。
@@ -238,8 +262,6 @@ class ExplorePresenter:
             is_boss_marker_active=is_boss_marker_active,
             image_banks=game.image_banks,
         )
-
-    # === Internal helpers (private) ===
 
     def _check_tile_events(self, game: Any, tile, nx, ny) -> None:
         """タイル上のイベント（ダンジョン階段・町・城・洞窟・エンカウント）を処理する。

@@ -55,13 +55,31 @@ class EndingScene:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_update()
+
+    def draw(self) -> None:
+        """エンディング画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._run_draw()
+
+    # === Internal helpers (private) ===
+
+    def _run_update(self) -> None:
+        """_run_update() の実装本体。
+
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         game = self.game
         if game is None:
             return
         self.presenter.update(game)
 
-    def draw(self) -> None:
-        """エンディング画面を描画する。Presenter が VM 組立て、View に委譲（M1-1 / M2-2 準拠）。
+    def _run_draw(self) -> None:
+        """_run_draw() の実装本体。
 
         Postconditions:
             - 副作用とモデル更新は実装どおり。

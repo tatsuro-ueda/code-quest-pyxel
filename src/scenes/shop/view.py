@@ -45,6 +45,19 @@ class ShopView:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._run_draw(vm, text_writer)
+
+    # === Internal helpers (private) ===
+
+    def _run_draw(self, vm: ShopViewModel, text_writer: Any) -> None:
+        """_run_draw() の実装本体。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         pyxel.cls(0)
         text_writer.text(8, 6, vm.title, 7)
         text_writer.text(160, 6, vm.gold_label, 10)
