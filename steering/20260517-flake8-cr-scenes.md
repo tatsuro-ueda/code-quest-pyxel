@@ -12,8 +12,8 @@ tags:
 
 # 2026年5月17日 src/scenes に flake8-cr を適用して直す
 
-> 状態：④ Design
-> 次のゲート：（CC）Design を書いて approve commit する
+> 状態：⑤ Tasklist
+> 次のゲート：（CC）Phase A〜G を順に実行する
 
 ---
 
@@ -126,7 +126,138 @@ tags:
 
 ## 4) Design（どうやるか）
 
-（Gherkin 承認後に記入）
+### 責務分担概要
+
+| 親ディレクトリ | 責務概要 |
+|---|---|
+| `src/scenes/` | 11 シーンの MVP（model/view/view_model/presenter/scene）の入れ物。今回の修正対象 |
+| `src/scenes/<name>/` | 各シーンの 5 ファイル（model/view/view_model/presenter/scene）と `__init__.py`。flake8-cr 指摘の発生源 |
+| `tools/` | 既存の `gen_module_docstring_template.py` を使ってモジュール docstring の雛形を作る |
+| `test/` | 既存のテストを回して挙動が壊れていないことを保証する（書き換えない） |
+
+### 責務分担概要図
+
+```mermaid
+flowchart TD
+    SCAN[flake8-cr src/scenes/]
+    MACHINE[機械修正<br>F401 / E501 / E70x / W391]
+    DOCMOD[モジュール docstring<br>CR601]
+    DOCFN[関数 docstring<br>CR501 / CR502]
+    NAMING[軽い構造系<br>CR201 / CR100 / CR101 / CR102]
+    REFAC[重い構造系<br>CR202 / CR203 / CR301 / CR302 / CR303]
+    VERIFY[pytest + make verify]
+    BUILD[make build]
+
+    SCAN --> MACHINE --> DOCMOD --> DOCFN --> NAMING --> REFAC --> VERIFY --> BUILD
+    MACHINE -. 再スキャン .-> SCAN
+    DOCMOD -. 再スキャン .-> SCAN
+    DOCFN -. 再スキャン .-> SCAN
+    NAMING -. 再スキャン .-> SCAN
+    REFAC -. 再スキャン .-> SCAN
+```
+
+### 責務分担詳細
+
+#### 親ディレクトリ: `src/scenes/<scene>/`
+
+- ファイル名: `__init__.py`
+- 既存/新規: 既存
+- 責務内容:
+  - モジュール docstring に `Problems:` セクションを追加して `CR601` を解消する
+  - 既存の 1 行 docstring の意図（「Phase 1 skeleton」「P1-G で中身を埋める」など）は保持する
+- 置く理由: 各シーンの入口ファイルなので、シーンが何を解くかをここで宣言できる
+
+- ファイル名: `model.py`
+- 既存/新規: 既存
+- 責務内容:
+  - モジュール docstring を `Problems:` 形式に揃える
+  - クラスに `# === Public API ===` セクション区切り（`CR201`）を追加
+  - `dataclass` フィールドの bool 命名（`CR101`）を `is_/has_/can_` に揃える
+- 置く理由: 状態保持のクラスは命名と区切りが見やすさに直結する
+
+- ファイル名: `view_model.py`
+- 既存/新規: 既存
+- 責務内容:
+  - モジュール docstring を `Problems:` 形式に揃える
+  - 必要に応じてクラスに `# === Public API ===` を追加
+- 置く理由: ViewModel は薄いデータクラスなので、修正は docstring と区切りのみ
+
+- ファイル名: `presenter.py`
+- 既存/新規: 既存
+- 責務内容:
+  - モジュール docstring と関数 docstring（Args/Returns/Preconditions/Postconditions など）を整える（`CR501`/`CR502`/`CR601`）
+  - `update()` / `build_view_model()` などの public 関数に直書きされた制御フロー（`CR203`）を、`_handle_xxx()` などの private メソッドに切り出す
+  - 20 行超の関数（`CR202`）を分割
+  - elif チェーン（`CR301`）はディスパッチ辞書または early return に書き換える
+  - 複合条件（`CR302`/`CR303`）は `_is_xxx()` / `_has_xxx()` の述語関数に切り出す
+  - 1 文字変数（`CR102`：`m` → `message_state`、`p` → `participant` など）を意味のある名前に
+  - 行長 80 超（`E501`）は改行で揃える
+- 置く理由: シーンの分岐ロジックの中心地。改善余地が最も多い
+
+- ファイル名: `view.py`
+- 既存/新規: 既存
+- 責務内容:
+  - モジュール docstring と関数 docstring を整える（`CR501`/`CR502`/`CR601`）
+  - `render()` に直書きされた制御フロー（`CR203`）を、描画ヘルパー（`_draw_panel()` など）に切り出す
+  - 行長 80 超（`E501`）を改行
+- 置く理由: 描画ロジックは細分化することで読みやすくなる
+
+- ファイル名: `scene.py`
+- 既存/新規: 既存
+- 責務内容:
+  - モジュール docstring と関数 docstring を整える（`CR501`/`CR502`/`CR601`）
+  - `update()` / `draw()` などの薄いラッパーに残る制御フロー（`CR203`）は、可能なら早期 return で吸収する
+  - 未使用 import（`F401`）を削除
+  - 1 文字変数（`CR102`）を意味のある名前に
+  - 行長 80 超（`E501`）を改行
+- 置く理由: シーンの入口ファイルとして役割を保持しつつ、責務の薄さを担保する
+
+#### 親ディレクトリ: `src/scenes/`
+
+- ファイル名: `__init__.py`
+- 既存/新規: 既存
+- 責務内容:
+  - モジュール docstring に `Problems:` セクションを追加
+- 置く理由: シーン一覧の入口
+
+#### 親ディレクトリ: `tools/`
+
+- ファイル名: `gen_module_docstring_template.py`
+- 既存/新規: 既存（呼ぶだけで書き換えない）
+- 責務内容:
+  - 各シーンのモジュール docstring 雛形を生成する CLI として使う
+- 置く理由: 既存の雛形生成スクリプトを再利用する
+
+- **関連スキル・MCP**：`manage-tasknotes`（このノートの運用）。MCP は 0件
+
+### 手順フロー
+
+```mermaid
+flowchart TD
+    P0[ベースライン記録<br>flake8-cr src/scenes/]
+    P1[Phase A: 機械修正<br>F401 / E501 / E70x / W391]
+    P2[Phase B: モジュール docstring<br>CR601]
+    P3[Phase C: 関数 docstring<br>CR501 / CR502]
+    P4[Phase D: 軽い構造系<br>CR201 / CR100 / CR101 / CR102]
+    P5[Phase E: 重い構造系<br>CR202 / CR203 / CR301 / CR302 / CR303]
+    P6[Phase F: 最終検証<br>flake8-cr 0 + pytest + make verify]
+    P7[Phase G: ビルド<br>make build]
+
+    P0 --> P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7
+    P1 -. pytest .-> P1
+    P2 -. pytest .-> P2
+    P3 -. pytest .-> P3
+    P4 -. pytest .-> P4
+    P5 -. pytest .-> P5
+```
+
+### 設計判断メモ
+
+- **docstring の埋め方**：実装に対応する Args/Returns/Preconditions/Postconditions を、現コードから読み取れる事実だけで書く。推測は避ける。`Boundary:` / `Policy:` は必要なときだけ
+- **関数分割の境界線**：20 行超は分割するが、ループ本体が単一責務で意味のかたまりになっているなら 30 行までは許容して内部で `_helper()` に切り出す
+- **public→private 切り出し**：`update()` の本体は 1 つの `if/elif` 分岐に絞り、各分岐先は `_handle_<state>()` に寄せる
+- **挙動を変えない**：すべてのリファクタは挙動同値性を維持する。pytest が落ちたら止める
+- **dataclass 内 bool 命名**：`noise_guardian: bool` のような既存属性名は外部から参照されている可能性があるので、参照箇所を grep して安全に置換する
 
 ---
 
