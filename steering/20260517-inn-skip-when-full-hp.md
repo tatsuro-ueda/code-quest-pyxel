@@ -3,15 +3,15 @@ status: in-progress
 priority: normal
 scheduled: 2026-05-17T22:00:00.000+09:00
 dateCreated: 2026-05-17T22:00:00.000+09:00
-dateModified: 2026-05-17T22:00:00.000+09:00
+dateModified: 2026-05-17T22:30:00.000+09:00
 tags:
   - task
 ---
 
 # 2026年5月17日 やどやでHP満タンなら泊まらずメッセージだけ出す
 
-> 状態：① Journey 素案
-> 次のゲート：（ユーザー）Journey 素案を修正・承認する
+> 状態：② ユーザーストーリーマップ
+> 次のゲート：（ユーザー）USM 素案を修正・承認する
 
 ---
 
@@ -37,24 +37,38 @@ tags:
    3. ❤️ 安心
 
 4. 例外
-   1. HPは満タンだが MP が減っている場合に、回復させたいかスキップしたいか
-   2. HP/MP 満タンでも毒状態が残っているケース（宿で毒解除されるため、スキップすると治せなくなる）
-   3. 英語フォント表示時の文言（`ALREADY FULL HP!` 等）も併せて足すか
+   1. HP/MP は満タンだが毒状態が残っているケース：満タン判定には毒を含めないので通常通り宿に泊まる（毒解除される）
+   2. 所持金が宿代に足りない場合は、満タン判定より先に「げんきまんたん」を返す（払えなくても損しない）
 
 5. 境界条件
-   1. 「げんきまんたん」の定義を `hp == max_hp` だけにするか、`mp == max_mp` と `not poisoned` まで含めるか
-   2. メッセージ表示後の遷移は既存の `_enter_message` 経路に乗せ、まちメニューへの戻り方は INN_OK_MSG と揃える
+   1. 「げんきまんたん」の判定は `hp == max_hp and mp == max_mp`（毒は対象外）
+   2. メッセージ表示は既存の `_enter_message` 経路に乗せ、まちメニューへの戻り方は INN_OK_MSG と同じ
+   3. 文言は日本語固定（既存 INN_OK_MSG / INN_LACK_MSG も日本語固定なので英語版は作らない）
 
 6. 委任度
-   1. 🟡 全体としては一部判断要：満タン判定の条件と英語文言の扱いをユーザー確認したい
-   2. 🟢 CCのみで可：判定条件と文言が決まれば、Presenter / PlayerModel / テスト追加までは自走できる
-   3. 🔴 人の判断：満タン判定の範囲（HPのみ／HP+MP／HP+MP+毒）と、英語フォント時の表示
+   1. 🟢 全体として CC 単独で進められる
+   2. 🟢 CCのみで可：`INN_FULL_MSG = "すでに げんきまんたんだ！"` 追加・`PlayerModel` に判定 API 追加・`TownPresenter._stay_at_inn` 分岐追加・テスト追加
+   3. 🔴 人の判断：なし（判定条件は HP+MP 両方満タンで確定、英語版は不要で確定）
 
 ---
 
 ## 2) ユーザーストーリーマップ
 
-（フェーズ2で記入）
+> Gherkin の前に、今回の仕事をどの順で進めるかをそろえる。
+> 委任度：🟢 ユーザー指示で自走実装まで継続
+> 残る曖昧さ：なし
+
+1. 👀 tasknote確認済み：`steering/done/20260517-town-menu-show-inn-cost.md`、`steering/20260517-shop-owned-marker-clipping.md`
+2. 👀 skill・tool・MCP確認済み：`manage-tasknotes` skill / `rg` / `pytest`
+3. 👀 `PlayerModel.stay_at_inn` と `TownPresenter._stay_at_inn` の責務境界を確認する
+4. 📝 `INN_FULL_MSG = "すでに げんきまんたんだ！"` を `game_config.py` に追加する
+5. 📝 `PlayerModel` に `is_full_hp_mp()` のような判定プロパティ/メソッドを追加する
+6. 📝 `TownPresenter._stay_at_inn` の冒頭で満タン判定し、満タンなら `INN_FULL_MSG` を出して return（gold を減らさず stay_at_inn を呼ばない）
+7. 📝 既存テストに影響が無いことを確認しつつ、新シナリオ（満タン時スキップ／満タン×コイン不足／HPだけ満タンで MP 減／毒残りで満タン）を追加する
+8. ✅ `pytest test/` 全件パスで CoVe する
+9. 📝 Result / Discussion を更新し、Close待ちへ進む
+
+---
 
 ---
 
