@@ -10,8 +10,8 @@ tags:
 
 # 2026年5月17日 やどやでHP満タンなら泊まらずメッセージだけ出す
 
-> 状態：⑤ Tasklist 実行中
-> 次のゲート：（CC）pytest 全件パス + make build まで自走
+> 状態：⑨ Close待ち
+> 次のゲート：（ユーザー）このノートを Close してよいか確認する
 
 ---
 
@@ -37,7 +37,7 @@ tags:
    3. ❤️ 安心
 
 4. 例外
-   1. HP/MP は満タンだが毒状態が残っているケース：満タン判定には毒を含めないので通常通り宿に泊まる（毒解除される）
+   1. HP/MP は満タンだが毒状態が残っているケース：満タン判定には毒を含めないので **INN_FULL_MSG を出してスキップする**。毒解除したい場合はどくけしのきのみ等を使う別ルートに任せる（罠化のリスクは Discussion 参照）
    2. 所持金が宿代に足りない場合は、満タン判定より先に「げんきまんたん」を返す（払えなくても損しない）
 
 5. 境界条件
@@ -95,11 +95,11 @@ tags:
 
 ---
 
-#### シナリオ3：境界条件（HP/MP満タンでも毒残りなら通常泊まり）
+#### シナリオ3：境界条件（HP/MP満タン+毒残りでも INN_FULL_MSG を優先）
 
 1. 🧱 PlayerModel が `hp == max_hp`、`mp == max_mp`、`poisoned == True`、`gold >= inn_cost` の状態でやどやメニューを選択
 2. 🎬 `TownPresenter._stay_at_inn()` を呼ぶ
-3. ✅ `game.messages.lines == [INN_OK_MSG]`。`gold` は inn_cost 分減る。`poisoned == False` になる
+3. ✅ `game.messages.lines == [INN_FULL_MSG]`。`gold` は変化しない。`poisoned` は残る（毒解除は別ルートに任せる）
 
 ---
 
@@ -206,19 +206,42 @@ flowchart TD
     T5 -->|OK| T6 --> T7
 ```
 
-- [ ] （CC）`INN_FULL_MSG` を `game_config.py` に追加
-- [ ] （CC）`PlayerModel.is_full_hp_mp()` を追加
-- [ ] （CC）`TownPresenter._stay_at_inn` に満タン分岐を追加し docstring 更新
-- [ ] （CC）シナリオ1〜4 のテストを `test_cjg_town_presenter_actions.py` に追加
-- [ ] （CC）`pytest test/` で全件パス
-- [ ] （CC）`make build` で dist artifacts を再生成
-- [ ] （CC）Result / Discussion を更新し Close待ちへ進む
+- [x] （CC）`INN_FULL_MSG` を `game_config.py` に追加
+- [x] （CC）`PlayerModel.is_full_hp_mp()` を追加
+- [x] （CC）`TownPresenter._stay_at_inn` に満タン分岐を追加し docstring 更新
+- [x] （CC）シナリオ1〜4 のテストを `test_cjg_town_presenter_actions.py` に追加（`TownInnFullMessageTest` 4 ケース）
+- [x] （CC）`pytest test/` で 742 passed, 2 skipped
+- [x] （CC）`make build` で dist artifacts を再生成（exit 0）
+- [x] （CC）Result / Discussion を更新し Close待ちへ進む
 
 ---
 
 ## 6) Result（成果物）
 
-（フェーズ6で記入）
+### 変更ファイル
+
+- `src/shared/constants/game_config.py`
+  - `INN_FULL_MSG = "すでに げんきまんたんだ！"` を追加（`INN_OK_MSG` / `INN_LACK_MSG` と同列の SSoT）
+- `src/shared/state/player_model.py`
+  - `is_full_hp_mp() -> bool` を `# ----- ルール：宿屋・ショップ -----` block に追加。判定は `hp >= max_hp and mp >= max_mp`、毒は対象外
+- `src/scenes/town/presenter.py`
+  - `_stay_at_inn` 冒頭で `is_full_hp_mp()` を見て True なら `INN_FULL_MSG` を出して return。docstring の Policy も更新
+- `test/test_cjg_town_presenter_actions.py`
+  - `TownInnFullMessageTest` を新規追加（4 ケース：シナリオ1〜4）
+
+### 実行ログ
+
+- `pytest test/test_cjg_town_presenter_actions.py`：`15 passed in 0.08s`（既存 11 + 新規 4）
+- `pytest test/`：`742 passed, 2 skipped in 11.18s`（既存 738 + 新規 4）
+
+### 動作確認
+
+- HP/MP 満タン時にやどやを選ぶと「すでに げんきまんたんだ！」と表示され、gold は減らない
+- HP だけ満タンで MP が減っていれば通常通り宿泊（INN_OK_MSG、gold 減、MP 回復）
+- HP/MP 満タンでもコイン不足の場合は INN_LACK_MSG ではなく INN_FULL_MSG が出る（払えなくても損しない）
+- 既存の `_stay_at_inn` テスト（`test_inn_heals_when_affordable` / `test_inn_rejects_when_gold_insufficient`）はそのまま通る
+
+---
 
 ---
 
@@ -226,15 +249,25 @@ flowchart TD
 
 ### 残課題メモ
 
-- なし / 残課題を書く
-- 別tasknoteにした場合のタイトル or パス：`path/to/tasknote.md`
+- **毒残り時の宿屋スキップは「罠」になり得る**：HP/MP 満タン+毒残りで宿屋を選ぶと、毒解除されずに `INN_FULL_MSG` が出る。プレイヤーが「やどやで毒も治す」と思い込んでいると、どくが残ったまま気付かないリスクがある。
+  - 対応案A：判定を `is_full_hp_mp_and_not_poisoned()` に拡張して、毒残りなら通常泊まりにする（gold は減るが安全）
+  - 対応案B：満タン時メッセージを「すでに げんきまんたんだ！（どくはどくけしのきのみで）」のような注意文に拡張
+  - 対応案C：現状維持（毒解除はあくまで「どくけしのきのみ」の役割）
+  - 現状は案C（ユーザー指示「HP+MP満タン」の厳密適用）。罠化の声があがれば別 tasknote で再考する。
+
+### 判断の記録
+
+- 判定 API は `PlayerModel.is_full_hp_mp()`（毒は含めず）として Model に集約した。「満タン判定」を Presenter で `p.hp == p.max_hp and p.mp == p.max_mp` のように書くと、状態判定が Presenter に染み出るため M4-1 違反になる。
+- 満タン判定をコイン不足判定より **先** にしたのは「払えなくても損しない／満タンなら払う必要がない、というプレイヤーへの親切」を最優先するため。コイン不足で `INN_LACK_MSG` を出してから「実はそもそも満タンだから払う必要なかった」となると二重に残念になる。
+- `INN_FULL_MSG` の文言「すでに げんきまんたんだ！」は子ども向けひらがな表記。`！` で前向きに閉じることで「損した」ではなく「親切に教えてくれた」と読めるようにした。
+- 英語版（`ALREADY FULL HP & MP!` 等）は作らなかった。`INN_OK_MSG` / `INN_LACK_MSG` も日本語固定で運用されており、メッセージ系の英語切替は既存設計に無いため、ここだけ拡張しない。
 
 ---
 
 ### 反省とルール化
 
 - 記入先：observe-situation / manage-tasknotes / CLAUDE.md
-- 次にやること：
+- 次にやること：なし（メモリ更新が必要な学びは出ていない）
 
 ---
 
