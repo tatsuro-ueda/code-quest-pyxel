@@ -12,8 +12,8 @@ tags:
 
 # 2026年5月17日 src/scenes の CR202 大物 3 件を AI で個別リファクタ（タスク A）
 
-> 状態：④ Design
-> 次のゲート：（ユーザー）Design を確認して承認するか直しの希望を伝える
+> 状態：⑤ Tasklist
+> 次のゲート：（自律）Tasklist を埋め、実装に進む
 
 ---
 
@@ -170,13 +170,139 @@ And 既存の `pytest` テストで副作用順序が記録されている場合
 
 ## 4) Design（どうやるか）
 
-（Gherkin 承認後に記入）
+### 責務分担概要
+
+| 親ディレクトリ | 責務概要 |
+|---|---|
+| `src/scenes/explore/` | プレイヤー探索フレームを presenter / model / view / view_model に分け、責務単位で読めるサイズに保つ。3 関数の分割もここに閉じる |
+| `tests/` | 既存 pytest が副作用順序・ViewModel 出力・イベント発火を固定し、分割の回帰を検出する |
+| `tools/` | `tools/test_headless.py`（既存）を補助的に使い、`_check_tile_events` のような副作用順序敏感処理は描画レベルで挙動回帰を確認できる |
+
+### 責務分担概要図
+
+```mermaid
+flowchart TD
+    A[scene.update] --> B[presenter.update]
+    B --> C[_run_update<br/>ステップ列のみ]
+    C --> D[_tick_cooldowns]
+    C --> E[_handle_menu_open]
+    C --> F[_apply_move]
+    F --> G[_check_landmark_events]
+    F --> H[_check_tile_events<br/>早期return述語列]
+    H --> I[_handle_stair_up]
+    H --> J[_handle_glitch_lord_trigger]
+    H --> K[_handle_town]
+    H --> L[_handle_castle]
+    H --> M[_handle_cave]
+    H --> N[_check_random_encounter]
+    B --> O[presenter.build_view_model]
+    O --> P[_run_build_view_model<br/>計算合成のみ]
+    P --> Q[_compute_camera]
+    P --> R[_compute_bltm]
+    P --> S[_compute_hero_sprite]
+    P --> T[_collect_landmarks]
+    P --> U[_locate_boss_marker]
+```
+
+### 責務分担詳細
+
+#### 親ディレクトリ: `src/scenes/explore/`
+
+- ファイル名: `presenter.py`
+- 既存/新規: 既存
+- 責務内容:
+  - public `update` / `build_view_model` はステップ列と委譲だけを書く（既存どおり）
+  - `_run_update`（79 行 → 20 行以下）: 述語列で `_tick_cooldowns` → `_handle_menu_open` → `_apply_move` を順に呼ぶ
+  - `_tick_cooldowns(game)`: `move_cooldown` の減算と `has_a_cooldown` の捨て処理だけを担う private
+  - `_handle_menu_open(game) -> bool`: メニュー開閉判定。開いたら True を返し、呼び出し側が `return` する
+  - `_apply_move(game)`: 境界判定 → タイル取得 → 移動 → ゾーン更新 → 毒 → イベント検知 をこの順で実行する private
+  - `_run_build_view_model`（89 行 → 20 行以下）: `_compute_camera` → `_compute_bltm` → `_compute_hero_sprite` → `_collect_landmarks` → `_locate_boss_marker` を呼び、結果を `ExploreViewModel` に詰める
+  - `_compute_camera(player, mw, mh) -> tuple[int,int]`: `self.model.cam_x/cam_y` を計算（純粋）して self に書き戻す
+  - `_compute_bltm(cam, in_dungeon) -> tuple[int,int,int,int,int,int]`: bltm 引数 6 値を返す純粋関数
+  - `_compute_hero_sprite(player, cam, walk_frame) -> tuple[tuple[int,int], str]`: ヒーロー画面座標とスプライトキー
+  - `_collect_landmarks(player) -> list[ExploreLandmark]`: ランドマーク列
+  - `_locate_boss_marker(player, cam, mw, view_w, view_h) -> tuple[int,int]|None`: ボスマーカー画面座標
+  - `_check_tile_events`（92 行 → 20 行以下）: タイル種別の早期 return 述語列で `_handle_stair_up` / `_handle_glitch_lord_trigger` / `_handle_town` / `_handle_castle` / `_handle_cave` / `_check_random_encounter` を呼ぶ
+  - 各 `_handle_xxx` は副作用順序を完全保存。dispatch dict・match/case は導入しない
+- 置く理由: 1 ファイルに全関数が同居していた構造を維持しつつ、責務単位で読める粒度に切る。新規ファイル抽出（別モジュール化）は本タスクのスコープ外（タスク B のルール案出力後に再判断）
+
+### 実装原則
+
+1. **rule 先行**: `flake8-cr src/scenes/explore/presenter.py` の CR202 警告 0 件を機械的ゴールにする
+2. **deterministic check へ昇格**: 各分割後に `pytest` / `make verify` / `make build` / `flake8-cr` の 4 つが緑であることを最小コミットの前提にする
+3. **guardian は安全な正規化だけ**: 副作用順序は変えない、private 切り出しと述語抽出のみ、dispatch dict は導入しない
+
+### 関連スキル・MCP・参考
+
+- `check-python-coding-guide` Skill（CR202 ルール解釈）
+- `manage-pyxel` Skill（`tools/test_headless.py` でのヘッドレス挙動回帰チェック、`_check_tile_events` の副作用順序検証に補助利用）
+- `flake8-cr`（`/home/exedev/.local/bin/flake8-cr`）
+- `pytest` / `make verify` / `make build`
+- 後続タスク B `steering/20260518-flake8-cr-rule-extension.md`（本タスクで得た構造を CR204 候補へ）
+
+### 委任度
+
+🟡 機械的な private 切り出しと述語抽出は CC のみで可、副作用順序・分割境界の最終承認はユーザー
 
 ---
 
 ## 5) Tasklist
 
-（Design 承認後に記入）
+```mermaid
+flowchart TD
+    T1[Step 1<br/>_run_build_view_model<br/>を 5 private に分割]
+    T2[Step 2<br/>_run_update<br/>を 3 private に分割]
+    T3[Step 3<br/>_check_tile_events<br/>を 6 private に分割]
+    T4[Step 4<br/>flake8-cr CR202<br/>0 件を確認]
+    T5[Step 5<br/>タスクB 向け<br/>望ましい構造メモを抽出]
+    T1 --> T2 --> T3 --> T4 --> T5
+    classDef done fill:#d4edda,stroke:#155724,color:#000000;
+    classDef wip fill:#fff3cd,stroke:#856404,color:#000000;
+    classDef todo fill:#f8d7da,stroke:#721c24,color:#000000;
+    class T1,T2,T3,T4,T5 todo;
+```
+
+### Step 1: `_run_build_view_model` を 5 private に分割
+
+- [ ] `_compute_camera(player, mw, mh)` を切り出し、`self.model.cam_x/cam_y` を更新する
+- [ ] `_compute_bltm(in_dungeon)` を切り出し、bltm 引数 6 値（u/v/w/h/x/y）を返す
+- [ ] `_compute_hero_sprite(player)` を切り出し、画面座標とスプライトキーを返す
+- [ ] `_collect_landmarks(player)` を切り出し、`list[ExploreLandmark]` を返す
+- [ ] `_locate_boss_marker(player, mw, mh)` を切り出し、画面座標 or None を返す
+- [ ] `_run_build_view_model` 本体を 20 行以下にし、上記 5 つを順に呼ぶだけにする
+- [ ] `pytest` / `make verify` / `make build` / `flake8-cr src/scenes/explore/presenter.py` の 4 つが緑
+- [ ] 最小コミット `refactor(scenes): split _run_build_view_model into 5 pure helpers`
+
+### Step 2: `_run_update` を 3 private に分割
+
+- [ ] `_tick_cooldowns(game) -> bool` を切り出し、消費したら True を返す
+- [ ] `_handle_menu_open(game) -> bool` を切り出し、開いたら True を返す
+- [ ] `_apply_move(game)` を切り出し、移動・ゾーン・毒・イベント検知を順に実行する
+- [ ] `_run_update` 本体を 20 行以下にし、述語列で順に呼ぶだけにする
+- [ ] `pytest` / `make verify` / `make build` / `flake8-cr` の 4 つが緑
+- [ ] 最小コミット `refactor(scenes): split _run_update into 3 phase helpers`
+
+### Step 3: `_check_tile_events` を 6 private に分割
+
+- [ ] `_handle_stair_up(game) -> bool` を切り出し
+- [ ] `_handle_glitch_lord_trigger(game) -> bool` を切り出し
+- [ ] `_handle_town(game, nx, ny) -> bool` を切り出し
+- [ ] `_handle_castle(game, nx, ny) -> bool` を切り出し
+- [ ] `_handle_cave(game, nx, ny) -> bool` を切り出し
+- [ ] `_check_random_encounter(game, tile) -> bool` を切り出し
+- [ ] `_check_tile_events` 本体を 20 行以下にし、早期 return 述語列で呼ぶだけにする
+- [ ] `pytest` / `make verify` / `make build` / `flake8-cr` の 4 つが緑
+- [ ] 最小コミット `refactor(scenes): split _check_tile_events into 6 tile handlers`
+
+### Step 4: `flake8-cr` CR202 0 件を確認
+
+- [ ] `~/.local/bin/flake8-cr src/scenes/explore/presenter.py` で対象 3 関数の CR202 警告が消えている
+- [ ] `~/.local/bin/flake8-cr src/scenes/` で他ファイルの CR202 が増えていない
+
+### Step 5: タスクB 向け「望ましい構造」メモ抽出
+
+- [ ] Discussion に分割後の共通パターン（早期 return 述語列、計算 helper、ハンドラ private）を箇条書きで残す
+- [ ] タスクB tasknote の参考文献から参照できる位置に置く（本 tasknote の Discussion を参照リンクとする）
 
 ---
 
