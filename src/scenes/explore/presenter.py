@@ -366,7 +366,10 @@ class ExplorePresenter:
         """
         from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
         oy_px = DUNGEON_TM_OFFSET_Y * 8 if player.in_dungeon else 0
-        return self.model.cam_x, oy_px + self.model.cam_y, view_w, view_h, 0, 24
+        return (
+            self.model.cam_x, oy_px + self.model.cam_y,
+            view_w, view_h, 0, 24,
+        )
 
     def _compute_hero_sprite(self, player) -> tuple[tuple[int, int], str]:
         """ヒーローの画面座標とスプライトキーを返す。
@@ -704,40 +707,74 @@ class ExplorePresenter:
         """
         if game.player_model.in_dungeon:
             return False
-
         landmark = find_landmark_at(game.player_model.x, game.player_model.y)
         if landmark is None:
             return False
-
-        player = game.player_model
         scene_name = self._resolve_landmark_scene(game, landmark)
         if scene_name is None:
             return False
+        self._mark_landmark_seen(game.player_model, landmark)
+        if scene_name == "landmark.tower.quest":
+            self._enter_tower_quest(game, scene_name)
+            return True
+        self._set_epilogue_flag_when_match(
+            game.player_model, landmark, scene_name
+        )
+        game.messages.enter(game.messages.dialog_lines(scene_name))
+        return True
 
+    @staticmethod
+    def _mark_landmark_seen(player: Any, landmark: Any) -> None:
+        """ランドマーク初回到達フラグを立てる。
+
+        Args:
+            player: プレイヤーモデル。
+            landmark: ランドマーク定義。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         if landmark.flag_name == "landmarkTreeSeen":
             if not player.landmarkTreeSeen:
                 player.landmarkTreeSeen = True
                 player.treeAsked = True
-        elif landmark.flag_name == "landmarkTowerSeen":
+            return
+        if landmark.flag_name == "landmarkTowerSeen":
             if not player.landmarkTowerSeen:
                 player.landmarkTowerSeen = True
 
-        if scene_name == "landmark.tower.quest":
-            game.messages.enter(
-                game.messages.dialog_lines(scene_name),
-                callback=game.battle_scene.start_noise_guardian,
-            )
-            return True
+    @staticmethod
+    def _enter_tower_quest(game: Any, scene_name: str) -> None:
+        """ノイズガーディアン戦への遷移メッセージを開始する。
 
-        is_predicate_1 = (
-            landmark.epilogue_flag
-            and scene_name == landmark.epilogue_scene
+        Args:
+            game: game の値。
+            scene_name: 対話シーンキー。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        game.messages.enter(
+            game.messages.dialog_lines(scene_name),
+            callback=game.battle_scene.start_noise_guardian,
         )
-        if is_predicate_1:
-            setattr(player, landmark.epilogue_flag, True)
 
-        game.messages.enter(game.messages.dialog_lines(scene_name))
-        return True
+    @staticmethod
+    def _set_epilogue_flag_when_match(
+        player: Any, landmark: Any, scene_name: str
+    ) -> None:
+        """エピローグ scene のとき該当フラグを True にする。
+
+        Args:
+            player: プレイヤーモデル。
+            landmark: ランドマーク定義。
+            scene_name: 対話シーンキー。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if not landmark.epilogue_flag:
+            return
+        if scene_name != landmark.epilogue_scene:
+            return
+        setattr(player, landmark.epilogue_flag, True)
 
     def _resolve_landmark_scene(self, game: Any, landmark):
         """洞窟ミッションのフラグに応じてランドマークのシーンを決定する。
@@ -750,45 +787,68 @@ class ExplorePresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        player = game.player_model
-        cleared = player.towerNoiseCleared
-        tree_asked = player.treeAsked
-
         if landmark.flag_name == "landmarkTreeSeen":
-            if not player.landmarkTreeSeen:
-                return "landmark.tree.first"
-            if cleared:
-                if not getattr(game, "_tree_cleared_shown", False):
-                    game._tree_cleared_shown = True
-                    return "landmark.tree.cleared"
-                return random.choice([
-                    "landmark.tree.repeat",
-                    "landmark.tree.repeat_02",
-                    "landmark.tree.repeat_03",
-                ])
-            return "landmark.tree.waiting"
-
+            return self._resolve_tree_scene(game)
         if landmark.flag_name == "landmarkTowerSeen":
-            if not player.landmarkTowerSeen:
-                return "landmark.tower.first"
-            if cleared:
-                is_epilogue_ready = (
-                    player.glitch_lord_defeated
-                    and landmark.epilogue_scene
-                    and not getattr(player, landmark.epilogue_flag, False)
-                )
-                if is_epilogue_ready:
-                    return landmark.epilogue_scene
-                return random.choice([
-                    "landmark.tower.repeat",
-                    "landmark.tower.repeat_02",
-                    "landmark.tower.repeat_03",
-                ])
-            if tree_asked:
-                return "landmark.tower.quest"
-            return "landmark.tower.repeat"
-
+            return self._resolve_tower_scene(game, landmark)
         return None
+
+    @staticmethod
+    def _resolve_tree_scene(game: Any) -> str:
+        """tree ランドマークのシーンキーを返す。
+
+        Args:
+            game: game の値。
+        Returns:
+            対話シーンキー。
+        Policy:
+            - cleared 後は repeat 系 3 種を切り替える。
+        """
+        player = game.player_model
+        if not player.landmarkTreeSeen:
+            return "landmark.tree.first"
+        if player.towerNoiseCleared:
+            if not getattr(game, "_tree_cleared_shown", False):
+                game._tree_cleared_shown = True
+                return "landmark.tree.cleared"
+            return random.choice([
+                "landmark.tree.repeat",
+                "landmark.tree.repeat_02",
+                "landmark.tree.repeat_03",
+            ])
+        return "landmark.tree.waiting"
+
+    @staticmethod
+    def _resolve_tower_scene(game: Any, landmark: Any) -> str:
+        """tower ランドマークのシーンキーを返す。
+
+        Args:
+            game: game の値。
+            landmark: ランドマーク定義。
+        Returns:
+            対話シーンキー。
+        Policy:
+            - cleared 後は epilogue or repeat 系 3 種を切り替える。
+        """
+        player = game.player_model
+        if not player.landmarkTowerSeen:
+            return "landmark.tower.first"
+        if player.towerNoiseCleared:
+            is_epilogue_ready = (
+                player.glitch_lord_defeated
+                and landmark.epilogue_scene
+                and not getattr(player, landmark.epilogue_flag, False)
+            )
+            if is_epilogue_ready:
+                return landmark.epilogue_scene
+            return random.choice([
+                "landmark.tower.repeat",
+                "landmark.tower.repeat_02",
+                "landmark.tower.repeat_03",
+            ])
+        if player.treeAsked:
+            return "landmark.tower.quest"
+        return "landmark.tower.repeat"
 
     def _build_dungeon_exit_callback(self, game: Any):
         """ダンジョン脱出時のコールバック（ボス撃破済みならエンディングへ）。

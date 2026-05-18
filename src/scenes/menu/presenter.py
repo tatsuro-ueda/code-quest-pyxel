@@ -178,6 +178,22 @@ class MenuPresenter:
             return
         if not items:
             return
+        self._move_item_cursor(game, model, items)
+        if game.input_state.btnp(CONFIRM_BUTTONS):
+            game.sfx.play("select")
+            self._use_selected_item(game, model, items)
+
+    @staticmethod
+    def _move_item_cursor(game: Any, model: MenuModel, items: list) -> None:
+        """items sub のカーソル移動を処理する。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            items: 所持アイテム一覧。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         if game.input_state.btnp(UP_BUTTONS):
             model.item_cursor = max(0, model.item_cursor - 1)
             model.message = ""
@@ -188,9 +204,6 @@ class MenuPresenter:
             )
             model.message = ""
             game.sfx.play("cursor")
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            game.sfx.play("select")
-            self._use_selected_item(game, model, items)
 
     def _use_selected_item(
         self, game: Any, model: MenuModel, items: list
@@ -216,12 +229,37 @@ class MenuPresenter:
         if not result:
             model.message = "HPがまんたんで つかえない"
             return
+        self._play_item_sfx(game, result)
+        _build_item_use_message(game, item_data, result)
+        model.message = ""
+        self._consume_item(model, items, item)
+
+    @staticmethod
+    def _play_item_sfx(game: Any, result: str) -> None:
+        """アイテム使用結果に応じた SFX を再生する。
+
+        Args:
+            game: game の値。
+            result: 使用結果コード。
+        Policy:
+            - 該当しない結果は何も鳴らさない。
+        """
         if result in {"heal", "mp_heal"}:
             game.sfx.play("heal")
         elif result == "cure_poison_ok":
             game.sfx.play("cure")
-        _build_item_use_message(game, item_data, result)
-        model.message = ""
+
+    @staticmethod
+    def _consume_item(model: MenuModel, items: list, item: Any) -> None:
+        """アイテム残数を 1 減らし、0 なら除去する。
+
+        Args:
+            model: model の値。
+            items: 所持アイテム一覧。
+            item: 使用したアイテムインスタンス。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         item.qty -= 1
         if item.qty <= 0:
             items.pop(model.item_cursor)
@@ -378,27 +416,49 @@ class MenuPresenter:
             - 副作用とモデル更新は実装どおり。
         """
         items = player.items
-        rows: list[MenuRow] = []
-        empty_message: str | None = None
         if not items:
-            empty_message = game.text_fmt.t("アイテムがない", "No items")
-        else:
-            for i, item in enumerate(items[:8]):
-                idata = M.ITEMS[item.id]
-                is_highlighted = (i == model.item_cursor)
-                color = 10 if is_highlighted else 6
-                marker = ">" if is_highlighted else " "
-                item_name = game.text_fmt.name(idata["name"])
-                rows.append(MenuRow(
-                    text=f"{marker} {item_name} x{item.qty}",
-                    color=color,
-                ))
+            return MenuSubPanel(
+                height=120,
+                rows=[],
+                empty_message=game.text_fmt.t("アイテムがない", "No items"),
+                info_message=model.message or None,
+            )
+        rows = self._build_item_rows(game, model, items, M)
         return MenuSubPanel(
             height=120,
             rows=rows,
-            empty_message=empty_message,
+            empty_message=None,
             info_message=model.message or None,
         )
+
+    @staticmethod
+    def _build_item_rows(
+        game: Any, model: MenuModel, items: list, M: Any
+    ) -> list[MenuRow]:
+        """items panel 用の行リストを組み立てる。
+
+        Args:
+            game: game の値。
+            model: model の値。
+            items: 所持アイテム一覧。
+            M: runtime データ参照。
+        Returns:
+            MenuRow のリスト。
+        Policy:
+            - 先頭 8 件まで表示する。
+        """
+        rows: list[MenuRow] = []
+        for i, item in enumerate(items[:8]):
+            idata = M.ITEMS[item.id]
+            is_highlighted = (i == model.item_cursor)
+            color = 10 if is_highlighted else 6
+            marker = ">" if is_highlighted else " "
+            item_name = game.text_fmt.name(idata["name"])
+            rows.append(MenuRow(
+                text=f"{marker} {item_name} x{item.qty}",
+                color=color,
+            ))
+        return rows
 
     def _build_equip_panel(
         self, game: Any, model: MenuModel, player: Any, M: Any

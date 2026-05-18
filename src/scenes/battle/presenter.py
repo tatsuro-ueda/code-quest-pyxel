@@ -173,16 +173,7 @@ class BattlePresenter:
             - 副作用とモデル更新は実装どおり。
         """
         model = self.model
-        player = game.player_model
-        hp_ratio = player.hp / max(1, player.max_hp)
-        line1 = (
-            f"{game.text_fmt.t('プログラマー', 'PROGRAMMER')}"
-            f"  レベル{player.lv}"
-        )
-        line2 = (
-            f"HP {player.hp}/{player.max_hp}"
-            f"  MP {player.mp}/{player.max_mp}"
-        )
+        line1, line2, hp_ratio = self._build_player_status(game)
         return BattleViewModel(
             enemy_sprite_key=enemy.get("sprite", "slime"),
             enemy_name_text=game.text_fmt.name(enemy["name"]),
@@ -196,6 +187,29 @@ class BattlePresenter:
             sub_panel=self._build_sub_panel(game),
             image_banks=game.image_banks,
         )
+
+    @staticmethod
+    def _build_player_status(game: Any) -> tuple[str, str, float]:
+        """player の status 2 行と HP 比率を返す。
+
+        Args:
+            game: game の値。
+        Returns:
+            (line1, line2, hp_ratio) の組。
+        Policy:
+            - HP 比率は 0 除算を避けて max(1, max_hp) で割る。
+        """
+        player = game.player_model
+        hp_ratio = player.hp / max(1, player.max_hp)
+        line1 = (
+            f"{game.text_fmt.t('プログラマー', 'PROGRAMMER')}"
+            f"  レベル{player.lv}"
+        )
+        line2 = (
+            f"HP {player.hp}/{player.max_hp}"
+            f"  MP {player.mp}/{player.max_mp}"
+        )
+        return line1, line2, hp_ratio
 
     @staticmethod
     def _tick_vfx_timer(game: Any) -> None:
@@ -232,6 +246,20 @@ class BattlePresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        self._move_menu_cursor(game)
+        if not game.input_state.btnp(CONFIRM_BUTTONS):
+            return
+        game.sfx.play("select")
+        self._confirm_menu(game, scene)
+
+    def _move_menu_cursor(self, game: Any) -> None:
+        """menu フェーズの上下移動を処理する。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         model = self.model
         if game.input_state.btnp(UP_BUTTONS):
             model.menu = (model.menu - 1) % 4
@@ -239,9 +267,17 @@ class BattlePresenter:
         if game.input_state.btnp(DOWN_BUTTONS):
             model.menu = (model.menu + 1) % 4
             game.sfx.play("cursor")
-        if not game.input_state.btnp(CONFIRM_BUTTONS):
-            return
-        game.sfx.play("select")
+
+    def _confirm_menu(self, game: Any, scene: Any) -> None:
+        """menu フェーズで決定を押したときの遷移。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
         if model.menu == 0:
             scene.do_player_attack()
             return
@@ -322,18 +358,54 @@ class BattlePresenter:
         if not spells:
             model.phase = "menu"
             return
+        self._move_spell_cursor(game, spells)
+        self._handle_spell_cancel(game)
+        if not game.input_state.btnp(CONFIRM_BUTTONS):
+            return
+        game.sfx.play("select")
+        self._confirm_spell(game, scene, spells)
+
+    def _move_spell_cursor(self, game: Any, spells: list) -> None:
+        """spell カーソル移動を処理する。
+
+        Args:
+            game: game の値。
+            spells: 利用可能なじゅもん一覧。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
         if game.input_state.btnp(UP_BUTTONS):
             model.spell_select = max(0, model.spell_select - 1)
             game.sfx.play("cursor")
         if game.input_state.btnp(DOWN_BUTTONS):
             model.spell_select = min(len(spells) - 1, model.spell_select + 1)
             game.sfx.play("cursor")
-        if game.input_state.btnp(CANCEL_BUTTONS):
-            game.sfx.play("cancel")
-            model.phase = "menu"
-        if not game.input_state.btnp(CONFIRM_BUTTONS):
+
+    def _handle_spell_cancel(self, game: Any) -> None:
+        """spell_select でキャンセル入力を処理する。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if not game.input_state.btnp(CANCEL_BUTTONS):
             return
-        game.sfx.play("select")
+        game.sfx.play("cancel")
+        self.model.phase = "menu"
+
+    def _confirm_spell(self, game: Any, scene: Any, spells: list) -> None:
+        """spell 決定時の MP 消費と効果適用を処理する。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+            spells: 利用可能なじゅもん一覧。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
         spell_name = spells[model.spell_select]
         spell = SPELL_BY_NAME.get(spell_name)
         if spell is None:
@@ -363,40 +435,131 @@ class BattlePresenter:
         if not items:
             model.phase = "menu"
             return
+        self._move_item_cursor(game, items)
+        self._handle_item_cancel(game)
+        if not game.input_state.btnp(CONFIRM_BUTTONS):
+            return
+        game.sfx.play("select")
+        self._confirm_item(game, items)
+
+    def _move_item_cursor(self, game: Any, items: list) -> None:
+        """item カーソル移動を処理する。
+
+        Args:
+            game: game の値。
+            items: 所持アイテム一覧。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
         if game.input_state.btnp(UP_BUTTONS):
             model.item_select = max(0, model.item_select - 1)
             game.sfx.play("cursor")
         if game.input_state.btnp(DOWN_BUTTONS):
             model.item_select = min(len(items) - 1, model.item_select + 1)
             game.sfx.play("cursor")
-        if game.input_state.btnp(CANCEL_BUTTONS):
-            game.sfx.play("cancel")
-            model.phase = "menu"
-        if not game.input_state.btnp(CONFIRM_BUTTONS):
+
+    def _handle_item_cancel(self, game: Any) -> None:
+        """item_select でキャンセル入力を処理する。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if not game.input_state.btnp(CANCEL_BUTTONS):
             return
-        game.sfx.play("select")
+        game.sfx.play("cancel")
+        self.model.phase = "menu"
+
+    def _confirm_item(self, game: Any, items: list) -> None:
+        """item 決定時の使用処理と SFX 再生。
+
+        Args:
+            game: game の値。
+            items: 所持アイテム一覧。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
         item = items[model.item_select]
         item_data = ITEMS[item.id]
         if item_data["type"] == "warp":
-            model.text = "せんとうちゅうはつかえない…"
-            model.phase = "enemy_attack"
-            model.text_timer = 30
+            self._reject_warp_item(model)
             return
         result = game.player_model.use_item(item_data)
         if not result:
-            model.text = "HPがまんたんで つかえない"
-            model.text_timer = 30
+            self._reject_full_hp_item(model)
             return
-        if result in {"heal", "mp_heal"}:
-            game.sfx.play("heal")
-        elif result == "cure_poison_ok":
-            game.sfx.play("cure")
+        self._play_item_sfx(game, result)
+        self._apply_item_use(game, items, item, item_data, result)
+
+    @staticmethod
+    def _reject_warp_item(model: BattleModel) -> None:
+        """戦闘中の warp アイテム使用を拒否する。
+
+        Args:
+            model: model の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model.text = "せんとうちゅうはつかえない…"
+        model.phase = "enemy_attack"
+        model.text_timer = 30
+
+    @staticmethod
+    def _reject_full_hp_item(model: BattleModel) -> None:
+        """HP 満タンで回復アイテムを拒否する。
+
+        Args:
+            model: model の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model.text = "HPがまんたんで つかえない"
+        model.text_timer = 30
+
+    def _apply_item_use(
+        self,
+        game: Any,
+        items: list,
+        item: Any,
+        item_data: dict,
+        result: str,
+    ) -> None:
+        """アイテム使用結果を model と所持リストに反映する。
+
+        Args:
+            game: game の値。
+            items: 所持アイテム一覧。
+            item: 使用したアイテムインスタンス。
+            item_data: アイテム定義データ。
+            result: 使用結果コード。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        model = self.model
         model.text = _build_item_use_message(game, item_data, result)
         item.qty -= 1
         if item.qty <= 0:
             items.pop(model.item_select)
         model.phase = "enemy_attack"
         model.text_timer = 30
+
+    @staticmethod
+    def _play_item_sfx(game: Any, result: str) -> None:
+        """アイテム使用結果に応じた SFX を鳴らす。
+
+        Args:
+            game: game の値。
+            result: 使用結果コード（"heal" 等）。
+        Policy:
+            - 該当しない結果は何も鳴らさない。
+        """
+        if result in {"heal", "mp_heal"}:
+            game.sfx.play("heal")
+        elif result == "cure_poison_ok":
+            game.sfx.play("cure")
 
     def _handle_phase_player_attack(self, game: Any, scene: Any) -> None:
         """player_attack フェーズの入力処理。
@@ -635,7 +798,6 @@ class BattlePresenter:
         Policy:
             - phase 単位で sub_panel を組み立てる。
         """
-        model = self.model
         spells = game.player_model.spells
         if not spells:
             return BattleSubPanel(
@@ -644,7 +806,22 @@ class BattlePresenter:
                     "じゅもんをおぼえていない", "No spells learned"
                 ),
             )
-        rows = []
+        rows = self._build_spell_rows(game, spells)
+        return BattleSubPanel(is_grid=False, rows=rows)
+
+    def _build_spell_rows(self, game: Any, spells: list) -> list:
+        """spell_select 用の行リストを組み立てる。
+
+        Args:
+            game: game の値。
+            spells: 利用可能なじゅもん一覧。
+        Returns:
+            BattleRow のリスト。
+        Policy:
+            - 未登録じゅもんは行に出さない。
+        """
+        model = self.model
+        rows: list[BattleRow] = []
         for i, name in enumerate(spells[:4]):
             spell = SPELL_BY_NAME.get(name)
             if spell is None:
@@ -656,7 +833,7 @@ class BattlePresenter:
                 text=f"{marker} {spell_name}  MP{spell['mp']}",
                 color=color,
             ))
-        return BattleSubPanel(is_grid=False, rows=rows)
+        return rows
 
     def _build_item_panel(self, game: Any) -> BattleSubPanel:
         """item_select phase の sub_panel を返す。
@@ -677,7 +854,24 @@ class BattlePresenter:
                 empty_message=game.text_fmt.t("アイテムがない", "No items"),
                 info_message=info_text,
             )
-        rows = []
+        rows = self._build_item_rows(game, items)
+        return BattleSubPanel(
+            is_grid=False, rows=rows, info_message=info_text
+        )
+
+    def _build_item_rows(self, game: Any, items: list) -> list:
+        """item_select 用の行リストを組み立てる。
+
+        Args:
+            game: game の値。
+            items: 所持アイテム一覧。
+        Returns:
+            BattleRow のリスト。
+        Policy:
+            - 先頭 4 件まで表示する。
+        """
+        model = self.model
+        rows: list[BattleRow] = []
         for i, item in enumerate(items[:4]):
             idata = ITEMS[item.id]
             color = 10 if i == model.item_select else 6
@@ -687,6 +881,4 @@ class BattlePresenter:
                 text=f"{marker} {item_name} x{item.qty}",
                 color=color,
             ))
-        return BattleSubPanel(
-            is_grid=False, rows=rows, info_message=info_text
-        )
+        return rows

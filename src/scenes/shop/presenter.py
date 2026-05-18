@@ -86,14 +86,34 @@ class ShopPresenter:
         """
         self._tick_message_ttl()
         if not self.model.inventory:
-            is_close_pressed = (
-                game.input_state.btnp(CANCEL_BUTTONS)
-                or game.input_state.btnp(CONFIRM_BUTTONS)
-            )
-            if is_close_pressed:
-                game.sfx.play("cancel")
-                game.state = "town_menu"
+            self._handle_empty_inventory(game)
             return
+        self._handle_inventory_input(game)
+
+    def _handle_empty_inventory(self, game: Any) -> None:
+        """在庫無し時のクローズ入力を処理する。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        is_close_pressed = (
+            game.input_state.btnp(CANCEL_BUTTONS)
+            or game.input_state.btnp(CONFIRM_BUTTONS)
+        )
+        if is_close_pressed:
+            game.sfx.play("cancel")
+            game.state = "town_menu"
+
+    def _handle_inventory_input(self, game: Any) -> None:
+        """在庫ありの場合のカーソル移動・確定・キャンセル入力を処理する。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         inventory_size = len(self.model.inventory)
         if game.input_state.btnp(UP_BUTTONS):
             self.model.cursor = (self.model.cursor - 1) % inventory_size
@@ -119,28 +139,71 @@ class ShopPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        import src.runtime.main_runtime as M
         index = self.model.inventory[self.model.cursor]
         kind = self.model.kind
-        if kind == "weapons":
-            entry = M.WEAPONS[index]
-        elif kind == "armors":
-            entry = M.ARMORS[index]
-        else:
-            entry = M.ITEMS[index]
+        entry = self._get_entry(kind, index)
         price = entry.get("price", 0)
         pm = game.player_model
-        is_predicate_6 = kind == 'weapons' and pm.weapon == index
-        if is_predicate_6:
-            self._set_short_message("すでに もっています")
-            return
-        is_predicate_4 = kind == 'armors' and pm.armor == index
-        if is_predicate_4:
+        if self._is_already_owned(kind, pm, index):
             self._set_short_message("すでに もっています")
             return
         if not pm.can_afford(price):
             self._set_short_message("コインが たりません")
             return
+        self._apply_purchase(pm, kind, index, price, entry)
+
+    @staticmethod
+    def _get_entry(kind: str, index: int) -> dict:
+        """kind に応じて runtime データから entry を返す。
+
+        Args:
+            kind: ショップ種別 ("weapons" / "armors" / "items")。
+            index: inventory のインデックス。
+        Returns:
+            runtime データの entry dict。
+        Policy:
+            - kind が weapons / armors 以外は ITEMS を見る。
+        """
+        import src.runtime.main_runtime as M
+        if kind == "weapons":
+            return M.WEAPONS[index]
+        if kind == "armors":
+            return M.ARMORS[index]
+        return M.ITEMS[index]
+
+    @staticmethod
+    def _is_already_owned(kind: str, pm: Any, index: int) -> bool:
+        """すでに装備済みかを判定する。
+
+        Args:
+            kind: ショップ種別。
+            pm: PlayerModel。
+            index: 装備インデックス。
+        Returns:
+            装備済みなら True。
+        Policy:
+            - items 種別は所持量で扱うため、ここでは常に False を返す。
+        """
+        if kind == "weapons":
+            return pm.weapon == index
+        if kind == "armors":
+            return pm.armor == index
+        return False
+
+    def _apply_purchase(
+        self, pm: Any, kind: str, index: int, price: int, entry: dict
+    ) -> None:
+        """購入処理を pm に適用し、メッセージを設定する。
+
+        Args:
+            pm: PlayerModel。
+            kind: ショップ種別。
+            index: 購入対象インデックス。
+            price: 価格。
+            entry: runtime データの entry dict。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         custom_msg = entry.get("buy_msg")
         bought_text = (
             custom_msg if custom_msg else f"{entry['name']}を てにいれた！"
@@ -148,12 +211,13 @@ class ShopPresenter:
         if kind == "weapons":
             pm.buy_weapon(index, price)
             self._set_short_message(bought_text)
-        elif kind == "armors":
+            return
+        if kind == "armors":
             pm.buy_armor(index, price)
             self._set_short_message(bought_text)
-        else:
-            pm.buy_item(index, price)
-            self._set_short_message(f"{entry['name']}を てにいれた！")
+            return
+        pm.buy_item(index, price)
+        self._set_short_message(f"{entry['name']}を てにいれた！")
 
     def _run_build_view_model(self, game: Any) -> ShopViewModel:
         """_run_build_view_model() の実装本体。
@@ -165,40 +229,15 @@ class ShopPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        import src.runtime.main_runtime as M
         model = self.model
-        if game.has_jp_font:
-            title_map = {"weapons": "ぶきや", "armors": "ぼうぐや", "items": "どうぐや"}
-            title = title_map.get(model.kind, "ショップ")
-        else:
-            title_map = {
-                "weapons": "WEAPONS",
-                "armors": "ARMOR",
-                "items": "ITEMS",
-            }
-            title = title_map.get(model.kind, "SHOP")
+        title = self._resolve_shop_title(game, model.kind)
         gold_label = f"G:{game.player_model.gold}"
         empty_message: str | None = None
         rows: list[ShopRow] = []
         if not model.inventory:
             empty_message = game.text_fmt.t("(ざいこなし)", "(no stock)")
         else:
-            for i, index in enumerate(model.inventory):
-                if model.kind == "weapons":
-                    e = M.WEAPONS[index]
-                    name = game.text_fmt.name(e["name"])
-                    line = f"{name}  こうげき+{e['atk']}  {e['price']}G"
-                elif model.kind == "armors":
-                    e = M.ARMORS[index]
-                    name = game.text_fmt.name(e["name"])
-                    line = f"{name}  ぼうぎょ+{e['def']}  {e['price']}G"
-                else:
-                    e = M.ITEMS[index]
-                    name = game.text_fmt.name(e["name"])
-                    line = f"{name}  {e['price']}G"
-                color = 10 if i == model.cursor else 7
-                marker = ">" if i == model.cursor else " "
-                rows.append(ShopRow(label=f"{marker} {line}", color=color))
+            rows = self._build_shop_rows(game)
         message = self._resolve_display_message(game)
         return ShopViewModel(
             title=title,
@@ -207,6 +246,73 @@ class ShopPresenter:
             empty_message=empty_message,
             message=message,
         )
+
+    @staticmethod
+    def _resolve_shop_title(game: Any, kind: str) -> str:
+        """ショップ画面のタイトル文字列を返す。
+
+        Args:
+            game: game の値。
+            kind: ショップ種別。
+        Returns:
+            JP / EN ラベル文字列。
+        Policy:
+            - has_jp_font の有無でラベル辞書を切り替える。
+        """
+        if game.has_jp_font:
+            title_map = {"weapons": "ぶきや", "armors": "ぼうぐや", "items": "どうぐや"}
+            return title_map.get(kind, "ショップ")
+        title_map = {
+            "weapons": "WEAPONS",
+            "armors": "ARMOR",
+            "items": "ITEMS",
+        }
+        return title_map.get(kind, "SHOP")
+
+    def _build_shop_rows(self, game: Any) -> list[ShopRow]:
+        """インベントリ行を組み立てる。
+
+        Args:
+            game: game の値。
+        Returns:
+            ShopRow のリスト。
+        Policy:
+            - kind に応じて行フォーマットを切り替える。
+        """
+        model = self.model
+        rows: list[ShopRow] = []
+        for i, index in enumerate(model.inventory):
+            line = self._format_shop_line(game, model.kind, index)
+            color = 10 if i == model.cursor else 7
+            marker = ">" if i == model.cursor else " "
+            rows.append(ShopRow(label=f"{marker} {line}", color=color))
+        return rows
+
+    @staticmethod
+    def _format_shop_line(game: Any, kind: str, index: int) -> str:
+        """1 行分のショップ表示文字列を返す。
+
+        Args:
+            game: game の値。
+            kind: ショップ種別。
+            index: inventory のインデックス。
+        Returns:
+            「名前 + 属性 + 価格」の文字列。
+        Policy:
+            - weapons / armors はステータス値を付け、items は価格だけにする。
+        """
+        import src.runtime.main_runtime as M
+        if kind == "weapons":
+            e = M.WEAPONS[index]
+            name = game.text_fmt.name(e["name"])
+            return f"{name}  こうげき+{e['atk']}  {e['price']}G"
+        if kind == "armors":
+            e = M.ARMORS[index]
+            name = game.text_fmt.name(e["name"])
+            return f"{name}  ぼうぎょ+{e['def']}  {e['price']}G"
+        e = M.ITEMS[index]
+        name = game.text_fmt.name(e["name"])
+        return f"{name}  {e['price']}G"
 
     def _tick_message_ttl(self) -> None:
         """短期メッセージの残り表示フレーム数を 1 減らし、0 以下なら message をクリアする。

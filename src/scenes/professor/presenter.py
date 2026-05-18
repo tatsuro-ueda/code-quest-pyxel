@@ -144,17 +144,40 @@ class ProfessorPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        import src.runtime.main_runtime as M
         model = self.model
         if not model.is_choice_active:
-            if game.input_state.btnp(CONFIRM_BUTTONS):
-                model.intro_idx, done = game.messages.advance_page(
-                    model.intro_idx, model.intro_lines
-                )
-                if done:
-                    model.is_choice_active = True
+            self._advance_intro_page(game)
             return
-        # choice mode
+        self._handle_intro_choice(game, scene)
+
+    def _advance_intro_page(self, game: Any) -> None:
+        """intro のページ送り入力を処理する。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if not game.input_state.btnp(CONFIRM_BUTTONS):
+            return
+        model = self.model
+        model.intro_idx, done = game.messages.advance_page(
+            model.intro_idx, model.intro_lines
+        )
+        if done:
+            model.is_choice_active = True
+
+    def _handle_intro_choice(self, game: Any, scene: Any) -> None:
+        """intro の選択肢入力を処理する。
+
+        Args:
+            game: game の値。
+            scene: scene の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        import src.runtime.main_runtime as M
+        model = self.model
         is_axis_pressed = (
             game.input_state.btnp(UP_BUTTONS)
             or game.input_state.btnp(DOWN_BUTTONS)
@@ -163,14 +186,13 @@ class ProfessorPresenter:
             model.choice_cursor = 1 - model.choice_cursor
             game.sfx.play("cursor")
             return
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            game.sfx.play("select")
-            if model.choice_cursor == 0:
-                scene.enter_ending_accepted()
-            else:
-                game.battle_scene.start(
-                    M.PROFESSOR_DATA, is_professor=True
-                )
+        if not game.input_state.btnp(CONFIRM_BUTTONS):
+            return
+        game.sfx.play("select")
+        if model.choice_cursor == 0:
+            scene.enter_ending_accepted()
+            return
+        game.battle_scene.start(M.PROFESSOR_DATA, is_professor=True)
 
     def _run_update_ending_main(self, game: Any) -> None:
         """_run_update_ending_main() の実装本体。
@@ -218,22 +240,7 @@ class ProfessorPresenter:
         """
         model = self.model
         page_lines = self._page_lines(game, model.intro_lines, model.intro_idx)
-        choices: list[ProfessorChoiceRow] = []
-        if model.is_choice_active:
-            labels = (
-                ["うけいれる", "ことわる"]
-                if game.has_jp_font
-                else ["ACCEPT", "REFUSE"]
-            )
-            for i, label in enumerate(labels):
-                color = 10 if i == model.choice_cursor else 7
-                marker = ">" if i == model.choice_cursor else " "
-                choices.append(
-                    ProfessorChoiceRow(
-                        label=f"{marker} {label}", color=color
-                    )
-                )
-        # intro: prompt は is_choice_active でない時かつ page 範囲内のみ表示候補
+        choices = self._build_intro_choices(game)
         is_prompt_eligible = (
             (not model.is_choice_active)
             and bool(model.intro_lines)
@@ -246,6 +253,33 @@ class ProfessorPresenter:
             prompt_xy=(228, 200) if is_prompt_eligible else None,
             choices=choices,
         )
+
+    def _build_intro_choices(self, game: Any) -> list[ProfessorChoiceRow]:
+        """choice mode 時の選択肢行を組み立てる。
+
+        Args:
+            game: game の値。
+        Returns:
+            ProfessorChoiceRow のリスト（非 choice mode は空）。
+        Policy:
+            - JP / EN ラベルは game.has_jp_font で切り替える。
+        """
+        model = self.model
+        if not model.is_choice_active:
+            return []
+        labels = (
+            ["うけいれる", "ことわる"]
+            if game.has_jp_font
+            else ["ACCEPT", "REFUSE"]
+        )
+        choices: list[ProfessorChoiceRow] = []
+        for i, label in enumerate(labels):
+            color = 10 if i == model.choice_cursor else 7
+            marker = ">" if i == model.choice_cursor else " "
+            choices.append(
+                ProfessorChoiceRow(label=f"{marker} {label}", color=color)
+            )
+        return choices
 
     @staticmethod
     def _page_lines(game: Any, lines: list[str], idx: int) -> list[str]:

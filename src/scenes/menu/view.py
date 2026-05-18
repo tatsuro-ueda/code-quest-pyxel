@@ -50,8 +50,20 @@ class MenuView:
     # === Internal helpers (private) ===
 
     def _run_draw(self, vm: MenuViewModel, text_writer: Any) -> None:
-        # メインメニュー枠
         """_run_draw() の実装本体。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        self._draw_main_panel(vm, text_writer)
+        self._draw_sub_panel(vm, text_writer)
+
+    @staticmethod
+    def _draw_main_panel(vm: MenuViewModel, text_writer: Any) -> None:
+        """メインメニュー枠と行を描画する。
 
         Args:
             vm: vm の値。
@@ -65,7 +77,16 @@ class MenuView:
             cy = 40 + i * 16
             text_writer.text(36, cy, row.text, row.color)
 
-        # サブパネル
+    @staticmethod
+    def _draw_sub_panel(vm: MenuViewModel, text_writer: Any) -> None:
+        """サブパネルを描画する。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         sp = vm.sub_panel
         if sp is None:
             return

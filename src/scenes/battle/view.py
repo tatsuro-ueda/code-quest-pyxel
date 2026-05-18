@@ -48,7 +48,6 @@ def _select_battle_bgm(game) -> int:
     )
     if is_victory_phase:
         return VICTORY_BGM_INDEX
-    # ボス戦：is_glitch_lord などボス判定
     if getattr(bm, "is_glitch_lord", False):
         return BOSS_BGM_INDEX
     return BATTLE_BGM_INDEX
@@ -131,25 +130,52 @@ class BattleView:
         pyxel.cls(1)
         if vm.enemy_sprite_key is None:
             return
+        self._draw_enemy_sprite(vm)
+        self._draw_enemy_hp_bar(vm, text_writer)
+        self._draw_player_status(vm, text_writer)
+        self._draw_main_message(vm, text_writer)
+        self._draw_sub_panel(vm, text_writer)
+        if vfx is not None:
+            vfx.draw_overlay()
 
-        # 敵スプライトを 3x 拡大して中央に
-        if vm.image_banks is not None:
-            bp = vm.image_banks.sprite_bank.get(vm.enemy_sprite_key)
-            if bp:
-                sx, sy = bp
-                for py in range(16):
-                    for px in range(16):
-                        color = pyxel.images[1].pget(sx + px, sy + py)
-                        if color != 0:
-                            for dy in range(3):
-                                for dx2 in range(3):
-                                    pyxel.pset(
-                                        104 + px * 3 + dx2,
-                                        30 + py * 3 + dy,
-                                        color,
-                                    )
+    @staticmethod
+    def _draw_enemy_sprite(vm: BattleViewModel) -> None:
+        """敵スプライトを 3x 拡大して描画する。
 
-        # 敵名 + 敵 HP バー
+        Args:
+            vm: vm の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if vm.image_banks is None:
+            return
+        bp = vm.image_banks.sprite_bank.get(vm.enemy_sprite_key)
+        if not bp:
+            return
+        sx, sy = bp
+        for py in range(16):
+            for px in range(16):
+                color = pyxel.images[1].pget(sx + px, sy + py)
+                if color == 0:
+                    continue
+                for dy in range(3):
+                    for dx2 in range(3):
+                        pyxel.pset(
+                            104 + px * 3 + dx2,
+                            30 + py * 3 + dy,
+                            color,
+                        )
+
+    @staticmethod
+    def _draw_enemy_hp_bar(vm: BattleViewModel, text_writer: Any) -> None:
+        """敵名と HP バーを描画する。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         text_writer.text(80, 10, vm.enemy_name_text, 7)
         bar_x = 80
         bar_w = 96
@@ -157,7 +183,16 @@ class BattleView:
         pyxel.rect(bar_x, 85, int(bar_w * vm.enemy_hp_ratio), 8, 8)
         text_writer.text(bar_x + 2, 86, vm.enemy_hp_label, 7)
 
-        # プレイヤーステータス枠
+    @staticmethod
+    def _draw_player_status(vm: BattleViewModel, text_writer: Any) -> None:
+        """プレイヤーステータス枠と HP バーを描画する。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         pyxel.rect(10, 100, 236, 40, 0)
         pyxel.rectb(10, 100, 236, 40, 7)
         text_writer.text(16, 104, vm.player_status_line1, 7)
@@ -167,33 +202,75 @@ class BattleView:
             170, 116, int(60 * vm.player_hp_ratio), 6, vm.player_hp_color
         )
 
-        # メッセージ枠
-        if vm.main_text is not None:
-            pyxel.rect(10, 148, 236, 30, 0)
-            pyxel.rectb(10, 148, 236, 30, 7)
-            text_writer.text(16, 154, vm.main_text, 7)
+    @staticmethod
+    def _draw_main_message(vm: BattleViewModel, text_writer: Any) -> None:
+        """メインメッセージ枠を描画する。
 
-        # sub_panel（menu / spell_select / item_select）
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if vm.main_text is None:
+            return
+        pyxel.rect(10, 148, 236, 30, 0)
+        pyxel.rectb(10, 148, 236, 30, 7)
+        text_writer.text(16, 154, vm.main_text, 7)
+
+    def _draw_sub_panel(
+        self, vm: BattleViewModel, text_writer: Any
+    ) -> None:
+        """sub_panel（menu / spell_select / item_select）を描画する。
+
+        Args:
+            vm: vm の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
         sp = vm.sub_panel
-        if sp is not None:
-            pyxel.rect(10, 190, 236, 56, 0)
-            pyxel.rectb(10, 190, 236, 56, 7)
-            if sp.info_message is not None:
-                text_writer.text(16, 192, sp.info_message, 8)
-            if sp.empty_message is not None:
-                text_writer.text(16, 200, sp.empty_message, 6)
-            elif sp.is_grid:
-                # menu: 2x2 grid + cursor を別文字描画
-                for i, row in enumerate(sp.rows):
-                    cx = 30 + (i % 2) * 110
-                    cy = 198 + (i // 2) * 18
-                    text_writer.text(cx, cy, row.text, row.color)
-                    if row.color == 10:
-                        text_writer.text(cx - 12, cy, ">", 10)
-            else:
-                for i, row in enumerate(sp.rows):
-                    cy = 196 + i * 12
-                    text_writer.text(30, cy, row.text, row.color)
+        if sp is None:
+            return
+        pyxel.rect(10, 190, 236, 56, 0)
+        pyxel.rectb(10, 190, 236, 56, 7)
+        if sp.info_message is not None:
+            text_writer.text(16, 192, sp.info_message, 8)
+        if sp.empty_message is not None:
+            text_writer.text(16, 200, sp.empty_message, 6)
+            return
+        if sp.is_grid:
+            self._draw_sub_panel_grid(sp, text_writer)
+            return
+        self._draw_sub_panel_list(sp, text_writer)
 
-        if vfx is not None:
-            vfx.draw_overlay()
+    @staticmethod
+    def _draw_sub_panel_grid(sp: Any, text_writer: Any) -> None:
+        """menu フェーズの 2x2 グリッド + カーソルを描画する。
+
+        Args:
+            sp: sp の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        for i, row in enumerate(sp.rows):
+            cx = 30 + (i % 2) * 110
+            cy = 198 + (i // 2) * 18
+            text_writer.text(cx, cy, row.text, row.color)
+            if row.color == 10:
+                text_writer.text(cx - 12, cy, ">", 10)
+
+    @staticmethod
+    def _draw_sub_panel_list(sp: Any, text_writer: Any) -> None:
+        """spell_select / item_select の一覧を描画する。
+
+        Args:
+            sp: sp の値。
+            text_writer: text_writer の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        for i, row in enumerate(sp.rows):
+            cy = 196 + i * 12
+            text_writer.text(30, cy, row.text, row.color)

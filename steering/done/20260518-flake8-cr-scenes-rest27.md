@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-18T00:00:00.000+09:00
 dateCreated: 2026-05-18T00:00:00.000+09:00
@@ -12,8 +12,8 @@ tags:
 
 # 2026年5月18日 src/scenes 残 27 件に flake8-cr 新ルールを適用（タスク C）
 
-> 状態：⑤ Tasklist
-> 次のゲート：（CC）Step 1 から順次実行（ユーザー確認なし）
+> 状態：⑨ Closing（完了、flake8-cr 0 件）
+> 次のゲート：なし（done へ退避済み）
 
 ---
 
@@ -312,31 +312,81 @@ flowchart TD
 
 ---
 
-## 6) Result（成果物）
+## 6) 作業ログ
 
-### 残対象（27 件想定 — A の 3 件を除く 27 件）
+### 件数推移
 
-カテゴリ分け（A の 3 件は除外済）：
+| 段階 | CR202 | CR204 | その他 |
+|---|---|---|---|
+| 開始時（Task B 完了直後） | 27 | 0 | CM001 × 1 / E501 × 1 |
+| Step 1 完了（battle/presenter 6件） | 22 | 0 | 同上 |
+| Step 2 完了（battle/scene 6件） | 16 | 0 | 同上 |
+| Step 3 完了（battle/view 1件 + CM001） | 15 | 0 | E501 × 1 |
+| Step 4 完了（explore/presenter 2件 + E501） | 13 | 0 | 0 |
+| Step 5 完了（explore/view 1件） | 12 | 0 | 0 |
+| Step 6 完了（menu/presenter 3件 + view 1件） | 8 | 0 | 0 |
+| Step 7 完了（professor 2 + shop 3 + title 2） | 0 | 0 | CR100/CR302/CR303/CR502 × 16（リファクタ副産物）|
+| Step 8 完了（副産物 16 件解消） | 0 | 0 | 0 |
 
-| カテゴリ | 件数 | パターン |
-|---|---|---|
-| A'. 分岐 → 個別処理（タイル・フェーズ判定型） | 約 16 | 述語切り出し + 早期 return + private 切り出し |
-| B'. ViewModel 組み立て（純粋関数化） | 約 5 | 行・パネルを `_build_xxx_panel` に分解 |
-| C'. 描画関数 | 3 | 領域単位で `_draw_xxx` に切り出し |
-| D'. 線形ロジック（例外候補） | 2 | 乱数順を実テストで検証 |
+### 分割パターン（実適用）
 
-合計 26 件目安（実数はタスク B 完了時の flake8-cr 出力で再確定）。
+- 入力分岐系（presenter）: `_handle_X` → `_move_X_cursor` / `_handle_X_cancel` / `_confirm_X` の 3 委譲に分割
+- ViewModel 組み立て系: `_build_X_view_model` → `_build_X_rows` / `_resolve_X_title` などの行・部品関数に分解
+- 描画系（view）: `_run_draw` → `_draw_X` を領域単位（`_draw_enemy_sprite` / `_draw_player_status` / `_draw_sub_panel` / ...）で切り出し
+- D 該当（乱数順保持）:
+  - `_run_do_player_attack` → `_compute_player_dmg` + `_play_attack_fx`（randint 順保持）
+  - `_run_do_enemy_attack` → `_compute_enemy_dmg` + `_play_enemy_attack_fx` + `_try_apply_poison`（randint → random 順保持）
+
+### 確認コマンドと結果
+
+- `uv run flake8-cr src/scenes/` → 0 件
+- `make verify` → 全 OK（モジュール docstring・CJ リンク・CJob カテゴリ・scene_to_cj マップ）
+- `python3 -m pytest test/` → 742 passed, 2 skipped
+- `make build` → dist/ アーティファクト（code-maker.zip / pyxel.html / pyxel.pyxapp / play.html / index.html）生成成功
+
+### リファクタ副産物として発生した違反（Step 8 で解消）
+
+- CR100（命名）: `_maybe_apply_poison` → `_try_apply_poison`, `_maybe_set_epilogue_flag` → `_set_epilogue_flag_when_match`, `_lookup_entry` → `_get_entry`
+- CR302/CR303（複合条件）: explore/view.py の画面外判定を述語化（`_is_offscreen` 内部も chained comparison に変換）
+- CR502（docstring 契約欠落）: 新規 helper に Policy 行を追加
 
 ---
 
-## 7) Discussion（残課題の起票）
+## 7) 評価と成果物
 
-（適用完了後に記入）
+> 評価：🟢 期待通り
+
+### 成果物
+
+- `src/scenes/` 配下の CR202 違反 27 件 / CM001 1 件 / E501 1 件をすべて解消
+- 全 11 シーンの presenter / view / scene が「述語 + 早期 return + private 委譲」で揃った
+- D 該当 2 件（プレイヤー / 敵攻撃）の乱数順は変えず、既存テストの乱数依存挙動を保持
+- 742 件の pytest 全緑、make verify / make build 緑
 
 ---
 
-## 8) 参考文献
+## 8) Discussion
 
-- 先行タスク A: `steering/20260517-flake8-cr-scenes-cr202.md`
-- 先行タスク B: `steering/20260518-flake8-cr-rule-extension.md`
+### 懸念事項
+
+- リファクタ副産物として新規 helper で 16 件の違反が一旦増えた。今後同様の分割をするときは「述語名は動詞接頭辞」「helper の docstring に Policy 行を必ず置く」を先に意識する
+- `_is_offscreen` のように述語名でも内部の `or` 連鎖は CR303 を踏むので、chained comparison（`a <= x <= b`）を選ぶ
+
+### 残課題のルール化
+
+- なし（親タスクノートが達成した「flake8-cr src/scenes/ 0 件」を完了）
+
+---
+
+## 9) Closing
+
+- 状態：⑨ Closing
+- 残課題のハンドオフ：なし
+
+---
+
+## 10) 参考資料
+
+- 先行タスク A: `steering/done/20260517-flake8-cr-scenes-cr202.md`
+- 先行タスク B: `steering/done/20260518-flake8-cr-rule-extension.md`
 - 親タスクノート（完了済）: `steering/done/20260517-flake8-cr-scenes.md`

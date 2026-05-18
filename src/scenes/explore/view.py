@@ -27,6 +27,22 @@ OVERWORLD_BGM_INDEX = 2
 DUNGEON_BGM_INDEX = 3
 
 
+def _is_offscreen(sx: int, sy: int) -> bool:
+    """画面外スクリーン座標かを判定する。
+
+    Args:
+        sx: スクリーン x 座標。
+        sy: スクリーン y 座標。
+    Returns:
+        x が [-16, 256] / y が [8, 256] の範囲外なら True。
+    Policy:
+        - ランドマーク強調枠を画面外で描かないためのガード。
+    """
+    if not -16 <= sx <= 256:
+        return True
+    return not 8 <= sy <= 256
+
+
 def _select_explore_bgm(game) -> int:
     """game 状態から探索 BGM の musics index を決める純粋関数。
 
@@ -128,41 +144,80 @@ class ExploreView:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        ib = vm.image_banks
-        cam_x, cam_y = vm.cam_x, vm.cam_y
+        self._draw_tilemap(vm)
+        self._draw_landmarks(vm)
+        self._draw_boss_marker(vm)
+        self._draw_hero(vm)
 
-        # タイル本体：bltm 1 回。tilemap[0] からカメラ位置に対応するピクセル
-        # 領域を切り出してそのまま画面に貼る（A 案：動的 variant 計算なし）。
+    @staticmethod
+    def _draw_tilemap(vm: ExploreViewModel) -> None:
+        """tilemap[0] からカメラ位置に対応するピクセル領域を貼る。
+
+        Args:
+            vm: vm の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        Policy:
+            - A 案: 動的 variant 計算なし。
+        """
         pyxel.bltm(
             vm.bltm_x, vm.bltm_y, vm.tm,
             vm.bltm_u, vm.bltm_v, vm.bltm_w, vm.bltm_h,
         )
 
-        # ランドマーク強調（pulse は frame_count から view 側で）
-        if vm.landmarks:
-            pulse = (pyxel.frame_count // 8) % 4
-            for lm in vm.landmarks:
-                sx = lm.tx * 16 - cam_x
-                sy = lm.ty * 16 - cam_y + 24
-                is_predicate_1 = sx < -16 or sx > 256 or sy < 8 or (sy > 256)
-                if is_predicate_1:
-                    continue
-                pyxel.rectb(sx - 1 - pulse, sy - 1 - pulse,
-                            18 + pulse * 2, 18 + pulse * 2, lm.color)
+    @staticmethod
+    def _draw_landmarks(vm: ExploreViewModel) -> None:
+        """ランドマーク強調枠（pulse 付き）を描画する。
 
-        # ボス目印（ダンジョン内かつ未撃破。Presenter が画面内座標を解決済み）
-        has_boss_marker = (
-            vm.is_boss_marker_active
-            and vm.boss_marker_screen_xy is not None
-        )
-        if has_boss_marker:
-            bp = ib.sprite_bank.get("hero_down") if ib else None
-            if bp is not None:
-                sx, sy = vm.boss_marker_screen_xy
-                pyxel.blt(sx, sy, 1, bp[0], bp[1], 16, 16, 0)
+        Args:
+            vm: vm の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if not vm.landmarks:
+            return
+        cam_x, cam_y = vm.cam_x, vm.cam_y
+        pulse = (pyxel.frame_count // 8) % 4
+        for lm in vm.landmarks:
+            sx = lm.tx * 16 - cam_x
+            sy = lm.ty * 16 - cam_y + 24
+            if _is_offscreen(sx, sy):
+                continue
+            pyxel.rectb(sx - 1 - pulse, sy - 1 - pulse,
+                        18 + pulse * 2, 18 + pulse * 2, lm.color)
 
-        # ヒーロー
+    @staticmethod
+    def _draw_boss_marker(vm: ExploreViewModel) -> None:
+        """ダンジョン内未撃破時のボス目印を描画する。
+
+        Args:
+            vm: vm の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if not vm.is_boss_marker_active:
+            return
+        if vm.boss_marker_screen_xy is None:
+            return
+        ib = vm.image_banks
+        bp = ib.sprite_bank.get("hero_down") if ib else None
+        if bp is None:
+            return
+        sx, sy = vm.boss_marker_screen_xy
+        pyxel.blt(sx, sy, 1, bp[0], bp[1], 16, 16, 0)
+
+    @staticmethod
+    def _draw_hero(vm: ExploreViewModel) -> None:
+        """ヒーロースプライトを描画する。
+
+        Args:
+            vm: vm の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        ib = vm.image_banks
         bp = ib.sprite_bank.get(vm.hero_sprite_key) if ib else None
-        if bp:
-            hero_sx, hero_sy = vm.hero_screen_xy
-            pyxel.blt(hero_sx, hero_sy, 1, bp[0], bp[1], 16, 16, 0)
+        if bp is None:
+            return
+        hero_sx, hero_sy = vm.hero_screen_xy
+        pyxel.blt(hero_sx, hero_sy, 1, bp[0], bp[1], 16, 16, 0)

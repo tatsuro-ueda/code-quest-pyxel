@@ -102,21 +102,41 @@ class TitlePresenter:
             self.move(1, 2)
             game.sfx.play("cursor")
             return
-        is_confirm_pressed = (
+        if self._is_confirm_pressed(game):
+            game.sfx.play("select")
+            self._confirm_title_menu(game)
+
+    @staticmethod
+    def _is_confirm_pressed(game: Any) -> bool:
+        """確定入力（CONFIRM または START）かを判定する。
+
+        Args:
+            game: game の値。
+        Returns:
+            いずれかが押されていれば True。
+        Policy:
+            - タイトル画面では START も確定ボタンとして扱う。
+        """
+        return (
             game.input_state.btnp(CONFIRM_BUTTONS)
             or game.input_state.btnp(TITLE_START_BUTTONS)
         )
-        if is_confirm_pressed:
-            game.sfx.play("select")
-            if self.model.cursor == 0:
-                # はじめから: プレイヤー状態をクリーンに作り直す
-                game.player_model = PlayerModel.new_game()
-                game.state = "map"
-                return
-            # つづきから — has_save が False ならグレーアウト
-            if not game._has_save:
-                return
-            self.do_load(game)
+
+    def _confirm_title_menu(self, game: Any) -> None:
+        """カーソル位置に応じて新規 / ロードを実行する。
+
+        Args:
+            game: game の値。
+        Postconditions:
+            - 副作用とモデル更新は実装どおり。
+        """
+        if self.model.cursor == 0:
+            game.player_model = PlayerModel.new_game()
+            game.state = "map"
+            return
+        if not game._has_save:
+            return
+        self.do_load(game)
 
     def _run_do_load(self, game: Any) -> None:
         """_run_do_load() の実装本体。
@@ -156,6 +176,30 @@ class TitlePresenter:
             - 副作用とモデル更新は実装どおり。
         """
         cursor = self.model.cursor
+        rows = self._build_title_rows(game, cursor)
+        no_save_msg = self._build_no_save_message(game, cursor)
+        subtitle = game.text_fmt.t(
+            "- コードのぼうけん -", "- A Coding Quest -"
+        )
+        return TitleViewModel(
+            title_text="BLOCK QUEST",
+            subtitle_text=subtitle,
+            menu_rows=rows,
+            no_save_message=no_save_msg,
+        )
+
+    @staticmethod
+    def _build_title_rows(game: Any, cursor: int) -> list[TitleMenuRow]:
+        """タイトルメニューの行リストを返す。
+
+        Args:
+            game: game の値。
+            cursor: カーソル位置。
+        Returns:
+            TitleMenuRow のリスト。
+        Policy:
+            - CONTINUE は has_save=False のときグレーアウト。
+        """
         labels = [
             game.text_fmt.t("はじめから", "NEW GAME"),
             game.text_fmt.t("つづきから", "CONTINUE"),
@@ -167,16 +211,22 @@ class TitlePresenter:
             color = 10 if (i == cursor and is_enabled) else base_color
             marker = ">" if i == cursor else " "
             rows.append(TitleMenuRow(label=f"{marker} {label}", color=color))
-        no_save_msg: str | None = None
-        is_predicate_0 = cursor == 1 and (not game._has_save)
-        if is_predicate_0:
-            no_save_msg = game.text_fmt.t("(まだなにもかきとめていない)", "(no save yet)")
-        subtitle = game.text_fmt.t(
-            "- コードのぼうけん -", "- A Coding Quest -"
-        )
-        return TitleViewModel(
-            title_text="BLOCK QUEST",
-            subtitle_text=subtitle,
-            menu_rows=rows,
-            no_save_message=no_save_msg,
-        )
+        return rows
+
+    @staticmethod
+    def _build_no_save_message(game: Any, cursor: int) -> str | None:
+        """CONTINUE 上で save が無いときの注意メッセージを返す。
+
+        Args:
+            game: game の値。
+            cursor: カーソル位置。
+        Returns:
+            該当時のみメッセージ、そうでなければ None。
+        Policy:
+            - cursor=1（CONTINUE）かつ has_save=False のときだけ JP/EN メッセージを返す。
+        """
+        if cursor != 1:
+            return None
+        if game._has_save:
+            return None
+        return game.text_fmt.t("(まだなにもかきとめていない)", "(no save yet)")
