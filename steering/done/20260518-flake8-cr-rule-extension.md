@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 priority: normal
 scheduled: 2026-05-18T00:00:00.000+09:00
 dateCreated: 2026-05-18T00:00:00.000+09:00
@@ -12,8 +12,8 @@ tags:
 
 # 2026年5月18日 flake8-cr に構造化リファクタ誘導ルールを追加（タスク B）
 
-> 状態：⑨ Closing
-> 次のゲート：（ユーザー）dotfiles への commit / push を承認するか、本ノートを Close するか判断する
+> 状態：⑨ Closing（完了、dotfiles push 済 `49556d5`）
+> 次のゲート：なし（done へ退避済み）
 
 ---
 
