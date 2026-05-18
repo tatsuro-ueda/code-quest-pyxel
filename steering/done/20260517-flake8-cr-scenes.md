@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-17T00:00:00.000+09:00
 dateCreated: 2026-05-17T00:00:00.000+09:00
-dateModified: 2026-05-17T00:00:00.000+09:00
+dateModified: 2026-05-17T17:00:00.000+09:00
 tags:
   - task
   - lint
@@ -12,8 +12,7 @@ tags:
 
 # 2026年5月17日 src/scenes に flake8-cr を適用して直す
 
-> 状態：⑨ Close待ち
-> 次のゲート：（ユーザー）このノートを Close してよいか確認する
+> 状態：⑩ Close 済（CR202 残課題は子ノート `20260517-flake8-cr-scenes-cr202.md` へ引き継ぎ）
 
 ---
 
