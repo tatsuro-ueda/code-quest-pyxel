@@ -187,103 +187,185 @@ class ExplorePresenter:
                 return
 
     def _run_build_view_model(self, game: Any) -> ExploreViewModel:
-        """_run_build_view_model() の実装本体。
+        """ExploreViewModel を組み立てる。
 
         Args:
-            game: game の値。
+            game: ゲーム本体。
         Returns:
-            関数の戻り値。
+            ExploreViewModel: view 用の純粋データ。
         Postconditions:
-            - 副作用とモデル更新は実装どおり。
+            - self.model.cam_x / cam_y はマップ境界内にクランプされる。
+        """
+        player = game.player_model
+        mw, mh, view_w, view_h = self._compute_dimensions(player)
+        self._compute_camera(player, mw, mh, view_w, view_h)
+        return self._assemble_view_model(game, player, mw, mh, view_w, view_h)
+
+    def _compute_dimensions(self, player) -> tuple[int, int, int, int]:
+        """マップ寸法とビュー寸法を返す。
+
+        Args:
+            player: プレイヤーモデル。
+        Returns:
+            (mw, mh, view_w, view_h): タイル数とピクセル寸法。
+        Postconditions:
+            - view 寸法は 256x232 固定。
         """
         import src.runtime.main_runtime as M
-        from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
-        from src.shared.constants.tile_data import T_GLITCH_LORD_TRIGGER
-
-        player = game.player_model
-
-        # マップ寸法は constant から取る（world=50x50 / dungeon=20x20）。
         if player.in_dungeon:
-            mw, mh = M.DUNGEON_W, M.DUNGEON_H
-        else:
-            mw, mh = M.MAP_W, M.MAP_H
-        view_w = 256
-        view_h = 232
+            return M.DUNGEON_W, M.DUNGEON_H, 256, 232
+        return M.MAP_W, M.MAP_H, 256, 232
+
+    def _assemble_view_model(
+        self, game, player, mw: int, mh: int, view_w: int, view_h: int
+    ) -> ExploreViewModel:
+        """副作用なしの計算 helper を呼び ExploreViewModel に詰める。
+
+        Args:
+            game, player, mw, mh, view_w, view_h: 呼び出し側で確定済み。
+        Returns:
+            ExploreViewModel: view 用の純粋データ。
+        Postconditions:
+            - 副作用は内部 helper（_compute_camera 等）に閉じる。
+        """
+        u, v, w, h, x, y = self._compute_bltm(player, view_w, view_h)
+        hxy, key = self._compute_hero_sprite(player)
+        boss = self._locate_boss_marker(player, mw, mh, view_w, view_h)
+        is_active = player.in_dungeon and not player.glitch_lord_defeated
+        return ExploreViewModel(
+            is_in_dungeon=player.in_dungeon,
+            cam_x=self.model.cam_x, cam_y=self.model.cam_y,
+            tm=self.model.get_current_tilemap_id(in_dungeon=player.in_dungeon),
+            bltm_u=u, bltm_v=v, bltm_w=w, bltm_h=h, bltm_x=x, bltm_y=y,
+            boss_marker_screen_xy=boss,
+            hero_screen_xy=hxy, hero_sprite_key=key,
+            landmarks=self._collect_landmarks(player),
+            is_boss_marker_active=is_active,
+            image_banks=game.image_banks,
+        )
+
+    def _compute_camera(
+        self, player, mw: int, mh: int, view_w: int, view_h: int
+    ) -> None:
+        """カメラ位置 (self.model.cam_x/cam_y) を player に追従させる。
+
+        Args:
+            player: プレイヤーモデル。
+            mw, mh: マップ寸法（タイル数）。
+            view_w, view_h: ビュー寸法（ピクセル）。
+        Postconditions:
+            - self.model.cam_x / cam_y がマップ境界内にクランプされる。
+        """
         self.model.cam_x = player.x * 16 - view_w // 2 + 8
         self.model.cam_y = player.y * 16 - view_h // 2 + 8
         self.model.cam_x = max(0, min(mw * 16 - view_w, self.model.cam_x))
         self.model.cam_y = max(0, min(mh * 16 - view_h, self.model.cam_y))
 
-        # bltm 引数（tilemap[0] からカメラ位置に対応するピクセル領域を切り出す）。
-        # 1 ゲームタイル (16x16 px) = 2x2 cells (8x8 px) なので、cam_x / cam_y は
-        # ピクセル単位そのままで bltm_u / bltm_v に渡せる。
-        # dungeon 領域は cell 単位で DUNGEON_TM_OFFSET_Y、ピクセルに直すと *8。
-        oy_px = DUNGEON_TM_OFFSET_Y * 8 if player.in_dungeon else 0
-        bltm_u = self.model.cam_x
-        bltm_v = oy_px + self.model.cam_y
-        bltm_w = view_w
-        bltm_h = view_h
-        bltm_x = 0
-        bltm_y = 24  # 上部 24px は HUD 領域
+    def _compute_bltm(
+        self, player, view_w: int, view_h: int
+    ) -> tuple[int, int, int, int, int, int]:
+        """bltm 引数 6 値 (u, v, w, h, x, y) を返す。
 
+        1 ゲームタイル (16x16 px) = 2x2 cells (8x8 px)。cam_x / cam_y は
+        ピクセル単位のままで bltm_u / bltm_v に渡せる。dungeon 領域は
+        cell 単位で DUNGEON_TM_OFFSET_Y、ピクセルに直すと *8。
+
+        Args:
+            player: プレイヤーモデル。
+            view_w, view_h: ビュー寸法。
+        Returns:
+            (u, v, w, h, x, y): bltm 用の整数 6 値。
+        Postconditions:
+            - 純粋関数（副作用なし）。
+        """
+        from src.shared.services.image_banks import DUNGEON_TM_OFFSET_Y
+        oy_px = DUNGEON_TM_OFFSET_Y * 8 if player.in_dungeon else 0
+        return self.model.cam_x, oy_px + self.model.cam_y, view_w, view_h, 0, 24
+
+    def _compute_hero_sprite(self, player) -> tuple[tuple[int, int], str]:
+        """ヒーローの画面座標とスプライトキーを返す。
+
+        Args:
+            player: プレイヤーモデル。
+        Returns:
+            ((sx, sy), sprite_key): 画面座標と sprite 名。
+        Postconditions:
+            - 純粋関数（副作用なし）。
+        """
         hero_sx = player.x * 16 - self.model.cam_x
         hero_sy = player.y * 16 - self.model.cam_y + 24
-        sprite_key = "hero_walk" if self.model.walk_frame == 1 else "hero_down"
+        key = "hero_walk" if self.model.walk_frame == 1 else "hero_down"
+        return (hero_sx, hero_sy), key
 
+    def _collect_landmarks(self, player) -> list[ExploreLandmark]:
+        """ワールドマップ上のランドマーク列を返す（dungeon 内は空）。
+
+        Args:
+            player: プレイヤーモデル。
+        Returns:
+            list[ExploreLandmark]: 表示すべきランドマーク列。
+        Postconditions:
+            - 純粋関数（副作用なし）。
+        """
+        if player.in_dungeon:
+            return []
         landmarks: list[ExploreLandmark] = []
-        if not player.in_dungeon:
-            for tx, ty, color, enabled in (
-                (32, 9, 11, True),
-                (40, 32, 2, True),
-                (25, 6, 10, player.glitch_lord_defeated),
-            ):
-                if enabled:
-                    landmarks.append(
-                        ExploreLandmark(tx=tx, ty=ty, color=color)
-                    )
+        for tx, ty, color, enabled in (
+            (32, 9, 11, True),
+            (40, 32, 2, True),
+            (25, 6, 10, player.glitch_lord_defeated),
+        ):
+            if enabled:
+                landmarks.append(ExploreLandmark(tx=tx, ty=ty, color=color))
+        return landmarks
 
-        # ボスマーカー：dungeon 内かつ未撃破のとき、画面内の
-        # T_GLITCH_LORD_TRIGGER タイルを探す（ExploreModel.get_tile 経由）。
-        is_boss_marker_active = (
-            player.in_dungeon and not player.glitch_lord_defeated
-        )
-        boss_marker_screen_xy: tuple[int, int] | None = None
-        if is_boss_marker_active:
-            tx_start = max(0, self.model.cam_x // 16)
-            ty_start = max(0, self.model.cam_y // 16)
-            tx_end = min(mw, (self.model.cam_x + view_w) // 16 + 2)
-            ty_end = min(mh, (self.model.cam_y + view_h) // 16 + 2)
-            for ty in range(ty_start, ty_end):
-                for tx in range(tx_start, tx_end):
-                    tile = self.model.get_tile(tx, ty, in_dungeon=True)
-                    if tile == T_GLITCH_LORD_TRIGGER:
-                        sx = tx * 16 - self.model.cam_x
-                        sy = ty * 16 - self.model.cam_y + 24
-                        is_predicate_15 = -16 < sx < 256 and 8 < sy < 256
-                        if is_predicate_15:
-                            boss_marker_screen_xy = (sx, sy)
-                        break
-                if boss_marker_screen_xy is not None:
-                    break
+    def _locate_boss_marker(
+        self, player, mw: int, mh: int, view_w: int, view_h: int
+    ) -> tuple[int, int] | None:
+        """dungeon 内・未撃破時のみ画面内 T_GLITCH_LORD_TRIGGER 座標を返す。
 
-        return ExploreViewModel(
-            is_in_dungeon=player.in_dungeon,
-            cam_x=self.model.cam_x,
-            cam_y=self.model.cam_y,
-            tm=self.model.get_current_tilemap_id(in_dungeon=player.in_dungeon),
-            bltm_u=bltm_u,
-            bltm_v=bltm_v,
-            bltm_w=bltm_w,
-            bltm_h=bltm_h,
-            bltm_x=bltm_x,
-            bltm_y=bltm_y,
-            boss_marker_screen_xy=boss_marker_screen_xy,
-            hero_screen_xy=(hero_sx, hero_sy),
-            hero_sprite_key=sprite_key,
-            landmarks=landmarks,
-            is_boss_marker_active=is_boss_marker_active,
-            image_banks=game.image_banks,
-        )
+        Args:
+            player: プレイヤーモデル。
+            mw, mh: マップ寸法。
+            view_w, view_h: ビュー寸法。
+        Returns:
+            (sx, sy) or None: 画面内座標、無ければ None。
+        Postconditions:
+            - self.model は不変（読み取りのみ）。
+        """
+        if not (player.in_dungeon and not player.glitch_lord_defeated):
+            return None
+        return self._scan_boss_trigger(mw, mh, view_w, view_h)
+
+    def _scan_boss_trigger(
+        self, mw: int, mh: int, view_w: int, view_h: int
+    ) -> tuple[int, int] | None:
+        """カメラ範囲を走査して T_GLITCH_LORD_TRIGGER 座標を返す。
+
+        Args:
+            mw, mh: マップ寸法。
+            view_w, view_h: ビュー寸法。
+        Returns:
+            (sx, sy) or None: 画面内座標、無ければ None。
+        Postconditions:
+            - self.model は不変。最初に見つかった行で内側ループも止める。
+        """
+        from src.shared.constants.tile_data import T_GLITCH_LORD_TRIGGER
+        tx_start = max(0, self.model.cam_x // 16)
+        ty_start = max(0, self.model.cam_y // 16)
+        tx_end = min(mw, (self.model.cam_x + view_w) // 16 + 2)
+        ty_end = min(mh, (self.model.cam_y + view_h) // 16 + 2)
+        for ty in range(ty_start, ty_end):
+            for tx in range(tx_start, tx_end):
+                tile = self.model.get_tile(tx, ty, in_dungeon=True)
+                if tile != T_GLITCH_LORD_TRIGGER:
+                    continue
+                sx = tx * 16 - self.model.cam_x
+                sy = ty * 16 - self.model.cam_y + 24
+                if -16 < sx < 256 and 8 < sy < 256:
+                    return (sx, sy)
+                break
+        return None
 
     def _check_tile_events(self, game: Any, tile, nx, ny) -> None:
         """タイル上のイベント（ダンジョン階段・町・城・洞窟・エンカウント）を処理する。
