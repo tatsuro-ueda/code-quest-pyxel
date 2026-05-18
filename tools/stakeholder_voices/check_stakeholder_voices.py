@@ -89,11 +89,15 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
     contracts = facts["tasknote_contracts"]
     if not isinstance(contracts, dict):
         raise TypeError("facts.tasknote_contracts must be a dict")
-    for key in ("note_glob", "opt_in_frontmatter_key", "required_frontmatter_keys"):
+    for key in (
+        "note_glob",
+        "opt_in_frontmatter_key",
+            "required_frontmatter_keys"):
         if key not in contracts:
             raise KeyError(f"tasknote_contracts missing key: {key}")
     if not isinstance(contracts["required_frontmatter_keys"], list):
-        raise TypeError("tasknote_contracts.required_frontmatter_keys must be a list")
+        raise TypeError(
+            "tasknote_contracts.required_frontmatter_keys must be a list")
 
     required_rule_keys = {
         "id",
@@ -109,29 +113,46 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
     for rule in data["validation_rules"]:
         missing = required_rule_keys - set(rule)
         if missing:
-            raise KeyError(f"rule {rule.get('id', '<unknown>')} missing keys: {sorted(missing)}")
+            raise KeyError(
+                f"rule {
+                    rule.get(
+                        'id',
+                        '<unknown>')} missing keys: {
+                    sorted(missing)}")
         if not isinstance(rule["suggested_actions"], list):
-            raise TypeError(f"rule {rule['id']} suggested_actions must be a list")
+            raise TypeError(
+                f"rule {
+                    rule['id']} suggested_actions must be a list")
         if "mode" not in rule["enforcement"]:
             raise KeyError(f"rule {rule['id']} missing enforcement.mode")
         if rule["enforcement"]["mode"] != "deterministic":
-            raise ValueError(f"rule {rule['id']} only deterministic mode is supported")
+            raise ValueError(
+                f"rule {
+                    rule['id']} only deterministic mode is supported")
         if not isinstance(rule.get("scope", {}).get("paths"), list):
             raise TypeError(f"rule {rule['id']} scope.paths must be a list")
         checks = rule.get("evidence", {}).get("checks")
         if not isinstance(checks, list) or not checks:
-            raise TypeError(f"rule {rule['id']} evidence.checks must be a non-empty list")
+            raise TypeError(
+                f"rule {
+                    rule['id']} evidence.checks must be a non-empty list")
         coverage = rule.get("coverage")
         if not isinstance(coverage, dict):
             raise TypeError(f"rule {rule['id']} coverage must be a dict")
-        for key in ("deterministic_review", "next_checker_unit", "repair_autofix", "rationale"):
+        for key in (
+            "deterministic_review",
+            "next_checker_unit",
+            "repair_autofix",
+                "rationale"):
             if key not in coverage:
-                raise KeyError(f"rule {rule['id']} coverage missing key: {key}")
+                raise KeyError(
+                    f"rule {
+                        rule['id']} coverage missing key: {key}")
         if coverage["deterministic_review"] not in VALID_DETERMINISTIC_REVIEWS:
             raise ValueError(
-                f"rule {rule['id']} coverage.deterministic_review must be one of "
-                f"{sorted(VALID_DETERMINISTIC_REVIEWS)}"
-            )
+                f"rule {
+                    rule['id']} coverage.deterministic_review must be one of " f"{
+                    sorted(VALID_DETERMINISTIC_REVIEWS)}")
         if coverage["repair_autofix"] not in VALID_REPAIR_AUTOFIX:
             raise ValueError(
                 f"rule {rule['id']} coverage.repair_autofix must be one of "
@@ -142,13 +163,19 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
             str,
         ):
             raise TypeError(
-                f"rule {rule['id']} coverage.next_checker_unit must be a string or null"
-            )
-        if not isinstance(coverage["rationale"], str) or not coverage["rationale"].strip():
-            raise TypeError(f"rule {rule['id']} coverage.rationale must be a non-empty string")
+                f"rule {
+                    rule['id']} coverage.next_checker_unit must be a string or null")
+        if not isinstance(
+                coverage["rationale"],
+                str) or not coverage["rationale"].strip():
+            raise TypeError(
+                f"rule {
+                    rule['id']} coverage.rationale must be a non-empty string")
         for check_name in checks:
             if check_name not in CHECK_REGISTRY:
-                raise KeyError(f"rule {rule['id']} references unknown deterministic check: {check_name}")
+                raise KeyError(
+                    f"rule {
+                        rule['id']} references unknown deterministic check: {check_name}")
 
 
 def _scope_paths(rule: dict[str, Any]) -> list[str]:
@@ -209,7 +236,8 @@ def _ok(rule: dict[str, Any], checked_paths: list[str]) -> CheckOutcome:
     return CheckOutcome(status="ok", checked_paths=checked_paths)
 
 
-def check_id_uniqueness(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_id_uniqueness(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     facts = ctx.data["facts"]
     id_sources = {
@@ -220,8 +248,12 @@ def check_id_uniqueness(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome
         "source_documents": [item["id"] for item in facts["source_documents"]],
         "validation_rules": [item["id"] for item in ctx.data["validation_rules"]],
     }
-    duplicates = {name: _list_duplicates(values) for name, values in id_sources.items()}
-    duplicates = {name: values for name, values in duplicates.items() if values}
+    duplicates = {
+        name: _list_duplicates(values) for name,
+        values in id_sources.items()}
+    duplicates = {
+        name: values for name,
+        values in duplicates.items() if values}
     if duplicates:
         return _warning(
             rule,
@@ -234,7 +266,8 @@ def check_id_uniqueness(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome
     return _ok(rule, checked_paths)
 
 
-def check_stakeholder_reference_integrity(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_stakeholder_reference_integrity(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     facts = ctx.data["facts"]
     stakeholder_ids = set(_id_map(facts["stakeholders"]))
@@ -244,17 +277,20 @@ def check_stakeholder_reference_integrity(ctx: CheckContext, rule: dict[str, Any
         if item.get("stakeholder_id") not in stakeholder_ids
     ]
     missing_requirements = {
-        item["id"]: [sid for sid in item.get("stakeholder_ids", []) if sid not in stakeholder_ids]
-        for item in facts["requirements"]
-    }
-    missing_requirements = {key: value for key, value in missing_requirements.items() if value}
+        item["id"]: [
+            sid for sid in item.get(
+                "stakeholder_ids",
+                []) if sid not in stakeholder_ids] for item in facts["requirements"]}
+    missing_requirements = {key: value for key,
+                            value in missing_requirements.items() if value}
     if missing_requests or missing_requirements:
         return _warning(
             rule,
             checked_paths,
             "stakeholder_reference_integrity",
             reason="missing stakeholder definitions",
-            expected={"known_stakeholder_ids": sorted(stakeholder_ids)},
+            expected={
+                "known_stakeholder_ids": sorted(stakeholder_ids)},
             observed={
                 "request_ids_with_missing_stakeholders": missing_requests,
                 "requirement_ids_with_missing_stakeholders": missing_requirements,
@@ -263,7 +299,8 @@ def check_stakeholder_reference_integrity(ctx: CheckContext, rule: dict[str, Any
     return _ok(rule, checked_paths)
 
 
-def check_request_reference_integrity(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_request_reference_integrity(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     facts = ctx.data["facts"]
     request_ids = set(_id_map(facts["requests"]))
@@ -288,7 +325,8 @@ def check_request_reference_integrity(ctx: CheckContext, rule: dict[str, Any]) -
     return _ok(rule, checked_paths)
 
 
-def check_requirement_has_code_hints(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_requirement_has_code_hints(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     missing: dict[str, list[str]] = {}
     for requirement in ctx.data["facts"]["requirements"]:
@@ -307,13 +345,19 @@ def check_requirement_has_code_hints(ctx: CheckContext, rule: dict[str, Any]) ->
             checked_paths,
             "requirement_has_code_hints",
             reason="active requirements are missing code hint fields",
-            expected={"required_keys": ["affected_paths", "verification_refs", "source_refs"]},
-            observed={"missing_keys_by_requirement": missing},
+            expected={
+                "required_keys": [
+                    "affected_paths",
+                    "verification_refs",
+                    "source_refs"]},
+            observed={
+                "missing_keys_by_requirement": missing},
         )
     return _ok(rule, checked_paths)
 
 
-def check_requirement_acceptance_integrity(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_requirement_acceptance_integrity(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     acceptance_map = _id_map(ctx.data["facts"]["acceptance"])
     requirement_ids = set(_id_map(ctx.data["facts"]["requirements"]))
@@ -330,7 +374,8 @@ def check_requirement_acceptance_integrity(ctx: CheckContext, rule: dict[str, An
         acceptance_ids = list(requirement.get("acceptance_ids", []))
         if not acceptance_ids:
             requirement_errors["missing_acceptance_ids"] = True
-        unresolved = [item for item in acceptance_ids if item not in acceptance_map]
+        unresolved = [
+            item for item in acceptance_ids if item not in acceptance_map]
         if unresolved:
             requirement_errors["unknown_acceptance_ids"] = unresolved
 
@@ -341,10 +386,13 @@ def check_requirement_acceptance_integrity(ctx: CheckContext, rule: dict[str, An
             if acceptance is None:
                 continue
             if acceptance.get("requirement_id") != requirement["id"]:
-                mismatched_links[acceptance_id] = acceptance.get("requirement_id")
+                mismatched_links[acceptance_id] = acceptance.get(
+                    "requirement_id")
             acceptance_missing = [
-                key for key in ("given", "when", "then") if not acceptance.get(key)
-            ]
+                key for key in (
+                    "given",
+                    "when",
+                    "then") if not acceptance.get(key)]
             if acceptance_missing:
                 missing_fields[acceptance_id] = acceptance_missing
         if mismatched_links:
@@ -366,7 +414,8 @@ def check_requirement_acceptance_integrity(ctx: CheckContext, rule: dict[str, An
             checked_paths,
             "requirement_acceptance_integrity",
             reason="acceptance linkage is incomplete or points at the wrong requirement",
-            expected={"tracked_priorities": sorted(tracked_priorities)},
+            expected={
+                "tracked_priorities": sorted(tracked_priorities)},
             observed={
                 "acceptance_errors_by_requirement": missing,
                 "acceptance_with_unknown_requirement": orphan_acceptance,
@@ -375,7 +424,8 @@ def check_requirement_acceptance_integrity(ctx: CheckContext, rule: dict[str, An
     return _ok(rule, checked_paths)
 
 
-def check_acceptance_has_verification(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_acceptance_has_verification(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     missing: dict[str, dict[str, Any]] = {}
     for acceptance in ctx.data["facts"]["acceptance"]:
@@ -400,13 +450,16 @@ def check_acceptance_has_verification(ctx: CheckContext, rule: dict[str, Any]) -
             checked_paths,
             "acceptance_has_verification",
             reason="acceptance scenarios must declare verification mode and refs",
-            expected={"valid_modes": sorted(VALID_ACCEPTANCE_VERIFICATION_MODES)},
-            observed={"acceptance_verification_errors": missing},
+            expected={
+                "valid_modes": sorted(VALID_ACCEPTANCE_VERIFICATION_MODES)},
+            observed={
+                "acceptance_verification_errors": missing},
         )
     return _ok(rule, checked_paths)
 
 
-def check_source_traceability_integrity(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_source_traceability_integrity(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     source_documents = _id_map(ctx.data["facts"]["source_documents"])
     text_cache: dict[str, str] = {}
@@ -444,17 +497,21 @@ def check_source_traceability_integrity(ctx: CheckContext, rule: dict[str, Any])
                         missing_doc_paths.append(doc_path_str)
                         continue
                     if doc_path_str not in text_cache:
-                        text_cache[doc_path_str] = doc_path.read_text(encoding="utf-8")
+                        text_cache[doc_path_str] = doc_path.read_text(
+                            encoding="utf-8")
                     if trace_token not in text_cache[doc_path_str]:
                         missing_trace_tokens.append(trace_ref)
                 if invalid_format:
                     item_errors["invalid_format"] = invalid_format
                 if unknown_doc_ids:
-                    item_errors["unknown_doc_ids"] = sorted(dict.fromkeys(unknown_doc_ids))
+                    item_errors["unknown_doc_ids"] = sorted(
+                        dict.fromkeys(unknown_doc_ids))
                 if missing_doc_paths:
-                    item_errors["missing_doc_paths"] = sorted(dict.fromkeys(missing_doc_paths))
+                    item_errors["missing_doc_paths"] = sorted(
+                        dict.fromkeys(missing_doc_paths))
                 if missing_trace_tokens:
-                    item_errors["missing_trace_tokens"] = sorted(dict.fromkeys(missing_trace_tokens))
+                    item_errors["missing_trace_tokens"] = sorted(
+                        dict.fromkeys(missing_trace_tokens))
             if item_errors:
                 section_errors[item["id"]] = item_errors
         if section_errors:
@@ -475,7 +532,8 @@ def check_source_traceability_integrity(ctx: CheckContext, rule: dict[str, Any])
     return _ok(rule, checked_paths)
 
 
-def check_referenced_paths_exist(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_referenced_paths_exist(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     missing_requirements: dict[str, list[str]] = {}
     for requirement in ctx.data["facts"]["requirements"]:
@@ -486,7 +544,10 @@ def check_referenced_paths_exist(ctx: CheckContext, rule: dict[str, Any]) -> Che
             + list(requirement.get("verification_refs", []))
             + list(requirement.get("source_refs", []))
         )
-        stale = [path_value for path_value in paths_to_check if not (ctx.repo_root / path_value).exists()]
+        stale = [
+            path_value for path_value in paths_to_check if not (
+                ctx.repo_root /
+                path_value).exists()]
         if stale:
             missing_requirements[requirement["id"]] = stale
 
@@ -495,8 +556,15 @@ def check_referenced_paths_exist(ctx: CheckContext, rule: dict[str, Any]) -> Che
         if acceptance.get("status", "active") != "active":
             continue
         verification = acceptance.get("verification", {})
-        refs = verification.get("refs", []) if isinstance(verification, dict) else []
-        stale = [path_value for path_value in refs if not (ctx.repo_root / path_value).exists()]
+        refs = verification.get(
+            "refs",
+            []) if isinstance(
+            verification,
+            dict) else []
+        stale = [
+            path_value for path_value in refs if not (
+                ctx.repo_root /
+                path_value).exists()]
         if stale:
             missing_acceptance[acceptance["id"]] = stale
 
@@ -515,7 +583,8 @@ def check_referenced_paths_exist(ctx: CheckContext, rule: dict[str, Any]) -> Che
     return _ok(rule, checked_paths)
 
 
-def check_tasknote_frontmatter_integrity(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_tasknote_frontmatter_integrity(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     contracts = ctx.data["facts"]["tasknote_contracts"]
     requirement_map = _id_map(ctx.data["facts"]["requirements"])
@@ -531,23 +600,25 @@ def check_tasknote_frontmatter_integrity(ctx: CheckContext, rule: dict[str, Any]
             continue
         note_errors: dict[str, Any] = {}
         missing_keys = [
-            key for key in contracts["required_frontmatter_keys"] if key not in frontmatter
-        ]
+            key for key in contracts["required_frontmatter_keys"] if key not in frontmatter]
         if missing_keys:
             note_errors["missing_keys"] = missing_keys
         unresolved_requirements = [
-            item for item in frontmatter.get("requirement_ids", []) if item not in requirement_ids
-        ]
+            item for item in frontmatter.get(
+                "requirement_ids",
+                []) if item not in requirement_ids]
         if unresolved_requirements:
             note_errors["unknown_requirement_ids"] = unresolved_requirements
         unresolved_stakeholders = [
-            item for item in frontmatter.get("stakeholder_ids", []) if item not in stakeholder_ids
-        ]
+            item for item in frontmatter.get(
+                "stakeholder_ids",
+                []) if item not in stakeholder_ids]
         if unresolved_stakeholders:
             note_errors["unknown_stakeholder_ids"] = unresolved_stakeholders
         unresolved_acceptance = [
-            item for item in frontmatter.get("acceptance_ids", []) if item not in acceptance_ids
-        ]
+            item for item in frontmatter.get(
+                "acceptance_ids",
+                []) if item not in acceptance_ids]
         if unresolved_acceptance:
             note_errors["unknown_acceptance_ids"] = unresolved_acceptance
         if (
@@ -565,7 +636,8 @@ def check_tasknote_frontmatter_integrity(ctx: CheckContext, rule: dict[str, Any]
             ]
             if mismatched_acceptance:
                 note_errors["acceptance_ids_not_linked_to_requirement_ids"] = mismatched_acceptance
-        if "done_checks" in frontmatter and not isinstance(frontmatter["done_checks"], list):
+        if "done_checks" in frontmatter and not isinstance(
+                frontmatter["done_checks"], list):
             note_errors["done_checks_not_list"] = True
         if note_errors:
             errors[str(note_path.relative_to(ctx.repo_root))] = note_errors
@@ -575,13 +647,16 @@ def check_tasknote_frontmatter_integrity(ctx: CheckContext, rule: dict[str, Any]
             checked_paths,
             "tasknote_frontmatter_integrity",
             reason="one or more opt-in task notes have invalid frontmatter",
-            expected={"required_frontmatter_keys": contracts["required_frontmatter_keys"]},
-            observed={"tasknote_errors": errors},
+            expected={
+                "required_frontmatter_keys": contracts["required_frontmatter_keys"]},
+            observed={
+                "tasknote_errors": errors},
         )
     return _ok(rule, checked_paths)
 
 
-def check_normalized_requirement_lists(ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def check_normalized_requirement_lists(
+        ctx: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     requirement_drift: dict[str, dict[str, dict[str, list[str]]]] = {}
     requirement_list_keys = (
@@ -669,7 +744,8 @@ def run_checker(
     executed_rules = 0
     selected_rules = data["validation_rules"]
     if rule_ids is not None:
-        selected_rules = [rule for rule in selected_rules if rule["id"] in rule_ids]
+        selected_rules = [
+            rule for rule in selected_rules if rule["id"] in rule_ids]
     for rule in selected_rules:
         executed_rules += 1
         outcome = run_rule(ctx, rule)
@@ -707,11 +783,18 @@ def main(argv: list[str] | None = None) -> int:
     if __doc__:
         description = __doc__.splitlines()[0]
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--rules-path", type=Path, default=ROOT / "docs" / "stakeholder_voices.yml")
+    parser.add_argument(
+        "--rules-path",
+        type=Path,
+        default=ROOT /
+        "docs" /
+        "stakeholder_voices.yml")
     parser.add_argument("--rule-id", action="append", default=None)
     args = parser.parse_args(argv)
 
-    payload = run_checker(ROOT, args.rules_path, rule_ids=set(args.rule_id) if args.rule_id else None)
+    payload = run_checker(
+        ROOT, args.rules_path, rule_ids=set(
+            args.rule_id) if args.rule_id else None)
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
 

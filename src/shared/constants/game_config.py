@@ -25,7 +25,7 @@ ENCOUNTER_RATES = {
 
 VFX_FLASH = {
     "flash_white": {"color": 7, "duration": 2},
-    "flash_red":   {"color": 8, "duration": 3},
+    "flash_red": {"color": 8, "duration": 3},
 }
 
 BATTLE_ATTACK_SCENES = (
@@ -52,11 +52,28 @@ VICTORY_SCENES_BY_ZONE = {
     4: "battle.normal.victory.late",
 }
 
-ZONE_NAMES = {0: "はじまりのそうげん", 1: "ロジックのもり", 2: "アルゴのやまみち", 3: "さばくちたい", 4: "グリッチのどうくつ"}
-ZONE_NAMES_EN = {0: "Grasslands", 1: "Logic Forest", 2: "Algo Mountains", 3: "Desert", 4: "Glitch Cave"}
+ZONE_NAMES = {
+    0: "はじまりのそうげん",
+    1: "ロジックのもり",
+    2: "アルゴのやまみち",
+    3: "さばくちたい",
+    4: "グリッチのどうくつ"}
+ZONE_NAMES_EN = {
+    0: "Grasslands",
+    1: "Logic Forest",
+    2: "Algo Mountains",
+    3: "Desert",
+    4: "Glitch Cave"}
 
 TOWN_MENU_LABELS = ("はなす", "ぶきや", "ぼうぐや", "どうぐや", "やどや", "セーブ", "でる")
-TOWN_MENU_LABELS_EN = ("TALK", "WEAPONS", "ARMOR", "ITEMS", "INN", "SAVE", "EXIT")
+TOWN_MENU_LABELS_EN = (
+    "TALK",
+    "WEAPONS",
+    "ARMOR",
+    "ITEMS",
+    "INN",
+    "SAVE",
+    "EXIT")
 SHOP_KIND_BY_LABEL = {"ぶきや": "weapons", "ぼうぐや": "armors", "どうぐや": "items"}
 INN_COST = 10  # gold (フォールバック値; shops.yaml の inn_prices を優先)
 TOWN_INDEX_BY_POS = {(20, 12): 0, (30, 22): 1, (18, 34): 2}

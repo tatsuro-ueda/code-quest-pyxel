@@ -1,4 +1,12 @@
 from __future__ import annotations
+from src.shared.services.play_session_logging import (
+    end_session,
+    heartbeat_session,
+    start_session,
+)
+from src.shared.services.codemaker_resource_store import (
+    apply_imported_resource,
+)
 
 import argparse
 import json
@@ -11,15 +19,6 @@ from typing import Callable
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-
-from src.shared.services.codemaker_resource_store import (
-    apply_imported_resource,
-)
-from src.shared.services.play_session_logging import (
-    end_session,
-    heartbeat_session,
-    start_session,
-)
 
 
 def _parse_timestamp(raw: str) -> datetime:
@@ -36,7 +35,8 @@ def _client_ip(request: http.server.BaseHTTPRequestHandler) -> str | None:
         return None
 
 
-def rebuild_after_codemaker_resource_import(project_root: Path) -> dict[str, object]:
+def rebuild_after_codemaker_resource_import(
+        project_root: Path) -> dict[str, object]:
     """P3-E: import 後は本番を 1 本だけ再ビルドする（dev staging 廃止）。"""
     from tools.build_web_release import build_web_release
 
@@ -91,7 +91,11 @@ def _make_handler(
             length = int(self.headers.get("Content-Length", "0"))
             return self.rfile.read(length) if length else b""
 
-        def _send_json(self, payload: dict[str, object], *, status: int = 200) -> None:
+        def _send_json(self,
+                       payload: dict[str,
+                                     object],
+                       *,
+                       status: int = 200) -> None:
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
             self.send_response(status)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -154,17 +158,22 @@ def _make_handler(
     return WebRuntimeHandler
 
 
-def make_server(
-    serve_dir: Path,
-    *,
-    host: str = "127.0.0.1",
-    port: int = 8000,
-    db_path: Path | None = None,
-    project_root: Path | None = None,
-    on_codemaker_resource_import: Callable[[Path], dict[str, object]] | None = rebuild_after_codemaker_resource_import,
-) -> http.server.ThreadingHTTPServer:
+def make_server(serve_dir: Path,
+                *,
+                host: str = "127.0.0.1",
+                port: int = 8000,
+                db_path: Path | None = None,
+                project_root: Path | None = None,
+                on_codemaker_resource_import: Callable[[Path],
+                                                       dict[str,
+                                                            object]] | None = rebuild_after_codemaker_resource_import,
+                ) -> http.server.ThreadingHTTPServer:
     serve_dir = Path(serve_dir).resolve()
-    db_path = (db_path or (ROOT / ".runtime" / "play_sessions.sqlite3")).resolve()
+    db_path = (
+        db_path or (
+            ROOT /
+            ".runtime" /
+            "play_sessions.sqlite3")).resolve()
     project_root = (project_root or ROOT).resolve()
     handler = _make_handler(
         serve_dir,
@@ -195,11 +204,17 @@ def ensure_dist_build(project_root: Path, serve_dir: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Serve Block Quest web files and internal play session logging")
+    parser = argparse.ArgumentParser(
+        description="Serve Block Quest web files and internal play session logging")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--serve-dir", default=str(ROOT))
-    parser.add_argument("--db-path", default=str(ROOT / ".runtime" / "play_sessions.sqlite3"))
+    parser.add_argument(
+        "--db-path",
+        default=str(
+            ROOT /
+            ".runtime" /
+            "play_sessions.sqlite3"))
     parser.add_argument(
         "--skip-initial-build",
         action="store_true",

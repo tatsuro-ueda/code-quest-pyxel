@@ -68,6 +68,7 @@ def _coverage_autofix_key(coverage: dict[str, Any]) -> str | None:
             return key
     return None
 
+
 def validate_rules_schema(data: dict[str, Any]) -> None:
     tree = data.get("facts", {}).get("tree")
     if not isinstance(tree, dict):
@@ -82,12 +83,17 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
             raise TypeError("facts.codemaker_bundle_contracts must be a list")
         for contract in contracts:
             if not isinstance(contract, dict):
-                raise TypeError("each codemaker bundle contract must be a dict")
+                raise TypeError(
+                    "each codemaker bundle contract must be a dict")
             for key in ("id", "manifest_path", "required_paths"):
                 if key not in contract:
-                    raise KeyError(f"codemaker bundle contract missing key: {key}")
-            if not isinstance(contract["required_paths"], list) or not contract["required_paths"]:
-                raise TypeError("codemaker bundle contract required_paths must be a non-empty list")
+                    raise KeyError(
+                        f"codemaker bundle contract missing key: {key}")
+            if not isinstance(
+                    contract["required_paths"],
+                    list) or not contract["required_paths"]:
+                raise TypeError(
+                    "codemaker bundle contract required_paths must be a non-empty list")
     required_rule_keys = {
         "id",
         "summary",
@@ -102,49 +108,69 @@ def validate_rules_schema(data: dict[str, Any]) -> None:
     for rule in data["validation_rules"]:
         missing = required_rule_keys - set(rule)
         if missing:
-            raise KeyError(f"rule {rule.get('id', '<unknown>')} missing keys: {sorted(missing)}")
+            raise KeyError(
+                f"rule {
+                    rule.get(
+                        'id',
+                        '<unknown>')} missing keys: {
+                    sorted(missing)}")
         if not isinstance(rule["suggested_actions"], list):
-            raise TypeError(f"rule {rule['id']} suggested_actions must be a list")
+            raise TypeError(
+                f"rule {
+                    rule['id']} suggested_actions must be a list")
         if "mode" not in rule["enforcement"]:
             raise KeyError(f"rule {rule['id']} missing enforcement.mode")
         if not isinstance(rule.get("scope", {}).get("paths"), list):
             raise TypeError(f"rule {rule['id']} scope.paths must be a list")
         checks = rule.get("evidence", {}).get("checks")
         if not isinstance(checks, list) or not checks:
-            raise TypeError(f"rule {rule['id']} evidence.checks must be a non-empty list")
+            raise TypeError(
+                f"rule {
+                    rule['id']} evidence.checks must be a non-empty list")
         coverage = rule.get("coverage")
         if not isinstance(coverage, dict):
             raise TypeError(f"rule {rule['id']} coverage must be a dict")
         for key in ("deterministic_review", "next_checker_unit", "rationale"):
             if key not in coverage:
-                raise KeyError(f"rule {rule['id']} coverage missing key: {key}")
+                raise KeyError(
+                    f"rule {
+                        rule['id']} coverage missing key: {key}")
         autofix_key = _coverage_autofix_key(coverage)
         if autofix_key is None:
             raise KeyError(
-                f"rule {rule['id']} coverage missing key: {PRIMARY_AUTOFIX_KEY} (or legacy repair_autofix)"
-            )
+                f"rule {
+                    rule['id']} coverage missing key: {PRIMARY_AUTOFIX_KEY} (or legacy repair_autofix)")
         if coverage["deterministic_review"] not in VALID_DETERMINISTIC_REVIEWS:
             raise ValueError(
-                f"rule {rule['id']} coverage.deterministic_review must be one of "
-                f"{sorted(VALID_DETERMINISTIC_REVIEWS)}"
-            )
+                f"rule {
+                    rule['id']} coverage.deterministic_review must be one of " f"{
+                    sorted(VALID_DETERMINISTIC_REVIEWS)}")
         next_checker_unit = coverage["next_checker_unit"]
-        if next_checker_unit is not None and not isinstance(next_checker_unit, str):
-            raise TypeError(f"rule {rule['id']} coverage.next_checker_unit must be a string or null")
+        if next_checker_unit is not None and not isinstance(
+                next_checker_unit, str):
+            raise TypeError(
+                f"rule {
+                    rule['id']} coverage.next_checker_unit must be a string or null")
         autofix_value = coverage[autofix_key]
         if autofix_value not in VALID_REPAIR_AUTOFIX:
             raise ValueError(
                 f"rule {rule['id']} coverage.{autofix_key} must be one of "
                 f"{sorted(VALID_REPAIR_AUTOFIX)}"
             )
-        if not isinstance(coverage["rationale"], str) or not coverage["rationale"].strip():
-            raise TypeError(f"rule {rule['id']} coverage.rationale must be a non-empty string")
+        if not isinstance(
+                coverage["rationale"],
+                str) or not coverage["rationale"].strip():
+            raise TypeError(
+                f"rule {
+                    rule['id']} coverage.rationale must be a non-empty string")
         # deterministic rule は「実装した checker 名」と必ず 1 対 1 に対応させる。
         # ここが曖昧だと YAML 上では deterministic なのに実行不能という事故が起きる。
         if rule["enforcement"]["mode"] == "deterministic":
             for check_name in checks:
                 if check_name not in CHECK_REGISTRY:
-                    raise KeyError(f"rule {rule['id']} references unknown deterministic check: {check_name}")
+                    raise KeyError(
+                        f"rule {
+                            rule['id']} references unknown deterministic check: {check_name}")
 
 
 def _scope_paths(rule: dict[str, Any]) -> list[str]:
@@ -157,14 +183,16 @@ def iter_tree_nodes(node: dict[str, Any]):
         yield from iter_tree_nodes(child)
 
 
-def find_tree_node(data: dict[str, Any], path_value: str) -> dict[str, Any] | None:
+def find_tree_node(data: dict[str, Any],
+                   path_value: str) -> dict[str, Any] | None:
     for node in iter_tree_nodes(data["facts"]["tree"]):
         if node.get("path") == path_value:
             return node
     return None
 
 
-def find_entry_point(data: dict[str, Any], entry_id: str) -> dict[str, Any] | None:
+def find_entry_point(data: dict[str, Any],
+                     entry_id: str) -> dict[str, Any] | None:
     entries = data.get("facts", {}).get("entry_points", [])
     return next((item for item in entries if item.get("id") == entry_id), None)
 
@@ -173,7 +201,8 @@ def generated_file_nodes(data: dict[str, Any]) -> list[dict[str, Any]]:
     nodes: list[dict[str, Any]] = []
     for node in iter_tree_nodes(data["facts"]["tree"]):
         path_value = node.get("path", "")
-        if node.get("kind") == "file" and path_value.startswith("src/generated/"):
+        if node.get("kind") == "file" and path_value.startswith(
+                "src/generated/"):
             nodes.append(node)
     return nodes
 
@@ -182,12 +211,18 @@ def distribution_artifact_nodes(data: dict[str, Any]) -> list[dict[str, Any]]:
     dist_node = find_tree_node(data, "dist")
     if dist_node is None:
         return []
-    return [child for child in dist_node.get("children", []) if child.get("kind") == "file"]
+    return [
+        child for child in dist_node.get(
+            "children",
+            []) if child.get("kind") == "file"]
 
 
-def find_codemaker_bundle_contract(data: dict[str, Any], contract_id: str) -> dict[str, Any] | None:
+def find_codemaker_bundle_contract(
+        data: dict[str, Any], contract_id: str) -> dict[str, Any] | None:
     contracts = data.get("facts", {}).get("codemaker_bundle_contracts", [])
-    return next((item for item in contracts if item.get("id") == contract_id), None)
+    return next(
+        (item for item in contracts if item.get("id") == contract_id),
+        None)
 
 
 def _warning(
@@ -251,7 +286,8 @@ SCENE_DRAW_CALL = re.compile(
     r"(?:^|[^_a-zA-Z])pyxel\."
     r"(blt|bltm|text|line|rect|rectb|circ|circb|cls|pset|tri|trib|clip|camera)\b"
 )
-SCENE_INPUT_CALL = re.compile(r"(pyxel\.btnp|pyxel\.btn[^_]|input_state\.btnp|input_state\.btn[^_])")
+SCENE_INPUT_CALL = re.compile(
+    r"(pyxel\.btnp|pyxel\.btn[^_]|input_state\.btnp|input_state\.btn[^_])")
 PYXEL_ANY_CALL = re.compile(r"(?:^|[^_a-zA-Z])pyxel\.")
 PLAYER_STATE_IMPORT = re.compile(
     r"from\s+src\.shared\.services\.player_state\s+import|import\s+src\.shared\.services\.player_state"
@@ -271,7 +307,8 @@ def _iter_py_files(base: Path):
         yield path
 
 
-def _grep(pattern: re.Pattern[str], files: list[Path]) -> list[tuple[Path, int, str]]:
+def _grep(pattern: re.Pattern[str], files: list[Path]
+          ) -> list[tuple[Path, int, str]]:
     hits: list[tuple[Path, int, str]] = []
     for path in files:
         try:
@@ -289,16 +326,26 @@ def _rel_hit(repo_root: Path, hit: tuple[Path, int, str]) -> str:
     return f"{path.relative_to(repo_root)}:{lineno}: {line.strip()}"
 
 
-def scene_static_boundary_checks(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def scene_static_boundary_checks(
+        context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
     scene_root = repo_root / "src" / "scenes"
     if not scene_root.is_dir():
-        return _warning(rule, checked_paths, "scene_static_boundary_checks", reason="missing path: src/scenes")
+        return _warning(
+            rule,
+            checked_paths,
+            "scene_static_boundary_checks",
+            reason="missing path: src/scenes")
 
-    scene_dirs = sorted(p for p in scene_root.iterdir() if p.is_dir() and not p.name.startswith("__"))
+    scene_dirs = sorted(p for p in scene_root.iterdir()
+                        if p.is_dir() and not p.name.startswith("__"))
     if not scene_dirs:
-        return _warning(rule, checked_paths, "scene_static_boundary_checks", reason="src/scenes has no scene directories")
+        return _warning(
+            rule,
+            checked_paths,
+            "scene_static_boundary_checks",
+            reason="src/scenes has no scene directories")
 
     # まず scene ディレクトリ構造そのものを検証する。
     # 構造が壊れている状態でレイヤ境界だけ見ても原因が読み取りにくいため。
@@ -351,19 +398,29 @@ def scene_static_boundary_checks(context: CheckContext, rule: dict[str, Any]) ->
             rule,
             checked_paths,
             "scene_static_boundary_checks",
-            reason=f"pyxel draw call in scene model: {_rel_hit(repo_root, model_hits[0])}",
+            reason=f"pyxel draw call in scene model: {
+                _rel_hit(
+                    repo_root,
+                    model_hits[0])}",
         )
 
     presenter_hits = _grep(
         SCENE_DRAW_CALL,
-        [scene_dir / "presenter.py" for scene_dir in scene_dirs if (scene_dir / "presenter.py").is_file()],
+        [
+            scene_dir /
+            "presenter.py" for scene_dir in scene_dirs if (
+                scene_dir /
+                "presenter.py").is_file()],
     )
     if presenter_hits:
         return _warning(
             rule,
             checked_paths,
             "scene_static_boundary_checks",
-            reason=f"pyxel draw call in scene presenter: {_rel_hit(repo_root, presenter_hits[0])}",
+            reason=f"pyxel draw call in scene presenter: {
+                _rel_hit(
+                    repo_root,
+                    presenter_hits[0])}",
         )
 
     view_like_files: list[Path] = []
@@ -378,53 +435,71 @@ def scene_static_boundary_checks(context: CheckContext, rule: dict[str, Any]) ->
             rule,
             checked_paths,
             "scene_static_boundary_checks",
-            reason=f"input read in scene view layer: {_rel_hit(repo_root, input_hits[0])}",
+            reason=f"input read in scene view layer: {
+                _rel_hit(
+                    repo_root,
+                    input_hits[0])}",
         )
 
     return _ok(rule, checked_paths)
 
 
-def shared_directory_role_checks(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def shared_directory_role_checks(
+        context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
     services_root = repo_root / "src" / "shared" / "services"
     state_root = repo_root / "src" / "shared" / "state"
     if not services_root.is_dir():
-        return _warning(rule, checked_paths, "shared_directory_role_checks", reason="missing path: src/shared/services")
+        return _warning(
+            rule,
+            checked_paths,
+            "shared_directory_role_checks",
+            reason="missing path: src/shared/services")
     if not state_root.is_dir():
-        return _warning(rule, checked_paths, "shared_directory_role_checks", reason="missing path: src/shared/state")
+        return _warning(
+            rule,
+            checked_paths,
+            "shared_directory_role_checks",
+            reason="missing path: src/shared/state")
 
     # player_model.py は shared/state 側の SSoT として明示されているので、
     # facts 側の role/status が崩れていないかを先に点検する。
-    player_model_node = find_tree_node(context.data, "src/shared/state/player_model.py")
+    player_model_node = find_tree_node(
+        context.data, "src/shared/state/player_model.py")
     if player_model_node is not None:
-        if player_model_node.get("role") != "player_source_of_truth" or player_model_node.get("status") != "active":
+        if player_model_node.get(
+                "role") != "player_source_of_truth" or player_model_node.get("status") != "active":
             return _warning(
                 rule,
                 checked_paths,
                 "shared_directory_role_checks",
                 reason="player_model.py facts are not aligned with source-of-truth role",
-                expected={"path": "src/shared/state/player_model.py", "role": "player_source_of_truth", "status": "active"},
-                observed={"role": player_model_node.get("role"), "status": player_model_node.get("status")},
+                expected={
+                    "path": "src/shared/state/player_model.py",
+                    "role": "player_source_of_truth",
+                    "status": "active"},
+                observed={
+                    "role": player_model_node.get("role"),
+                    "status": player_model_node.get("status")},
             )
     for rel_path, expected_role in (
         ("src/shared/services/player_state.py", "legacy_player_snapshot"),
         ("src/shared/services/item_use.py", "legacy_item_use_bridge"),
     ):
         node = find_tree_node(context.data, rel_path)
-        if node is not None and (node.get("status") != "legacy" or node.get("role") != expected_role):
+        if node is not None and (
+                node.get("status") != "legacy" or node.get("role") != expected_role):
             return _warning(
-                rule,
-                checked_paths,
-                "shared_directory_role_checks",
-                reason=f"{Path(rel_path).name} facts are not aligned with legacy bridge status",
-                expected={"path": rel_path, "role": expected_role, "status": "legacy"},
-                observed={"role": node.get("role"), "status": node.get("status")},
-            )
+                rule, checked_paths, "shared_directory_role_checks", reason=f"{
+                    Path(rel_path).name} facts are not aligned with legacy bridge status", expected={
+                    "path": rel_path, "role": expected_role, "status": "legacy"}, observed={
+                    "role": node.get("role"), "status": node.get("status")}, )
 
     # facts 上の role 整合を見た後、実ファイルに pyxel や legacy bridge 参照が
     # 残っていないかを grep で二重確認する。
-    for node in iter_tree_nodes(find_tree_node(context.data, "src/shared/services") or {"children": []}):
+    for node in iter_tree_nodes(find_tree_node(
+            context.data, "src/shared/services") or {"children": []}):
         if node.get("kind") != "file":
             continue
         role = str(node.get("role", ""))
@@ -435,7 +510,8 @@ def shared_directory_role_checks(context: CheckContext, rule: dict[str, Any]) ->
                 "shared_directory_role_checks",
                 reason=f"service file keeps source-of-truth role: {node.get('path')}",
             )
-    for node in iter_tree_nodes(find_tree_node(context.data, "src/shared/state") or {"children": []}):
+    for node in iter_tree_nodes(find_tree_node(
+            context.data, "src/shared/state") or {"children": []}):
         if node.get("kind") != "file":
             continue
         role = str(node.get("role", ""))
@@ -477,7 +553,10 @@ def shared_directory_role_checks(context: CheckContext, rule: dict[str, Any]) ->
             rule,
             checked_paths,
             "shared_directory_role_checks",
-            reason=f"runtime/scenes import legacy player_state shim: {_rel_hit(repo_root, player_state_hits[0])}",
+            reason=f"runtime/scenes import legacy player_state shim: {
+                _rel_hit(
+                    repo_root,
+                    player_state_hits[0])}",
         )
     item_use_hits = _grep(ITEM_USE_IMPORT, dependency_targets)
     if item_use_hits:
@@ -485,24 +564,36 @@ def shared_directory_role_checks(context: CheckContext, rule: dict[str, Any]) ->
             rule,
             checked_paths,
             "shared_directory_role_checks",
-            reason=f"runtime/scenes import legacy item_use bridge: {_rel_hit(repo_root, item_use_hits[0])}",
+            reason=f"runtime/scenes import legacy item_use bridge: {
+                _rel_hit(
+                    repo_root,
+                    item_use_hits[0])}",
         )
 
     return _ok(rule, checked_paths)
 
 
-def wrapper_chain_present(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def wrapper_chain_present(context: CheckContext,
+                          rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
     for rel_path in checked_paths:
         if not (repo_root / rel_path).exists():
-            return _warning(rule, checked_paths, "wrapper_chain_present", reason=f"missing path: {rel_path}")
+            return _warning(
+                rule,
+                checked_paths,
+                "wrapper_chain_present",
+                reason=f"missing path: {rel_path}")
 
     # この rule は「facts に書いてある入口チェーン」と「実コード上の import/run 連鎖」の
     # 両方が一致して初めて OK とする。
     entry = find_entry_point(context.data, "runtime_entry_chain")
     if entry is None:
-        return _warning(rule, checked_paths, "wrapper_chain_present", reason="facts.entry_points.runtime_entry_chain is missing")
+        return _warning(
+            rule,
+            checked_paths,
+            "wrapper_chain_present",
+            reason="facts.entry_points.runtime_entry_chain is missing")
     entry_chain = list(entry.get("nodes", []))
     entry_paths = [item.get("path") for item in entry_chain]
     if entry_paths != checked_paths:
@@ -511,8 +602,10 @@ def wrapper_chain_present(context: CheckContext, rule: dict[str, Any]) -> CheckO
             checked_paths,
             "wrapper_chain_present",
             reason="facts.entry_points.runtime_entry_chain paths do not match scope",
-            expected={"scope_paths": checked_paths},
-            observed={"entry_chain_paths": entry_paths},
+            expected={
+                "scope_paths": checked_paths},
+            observed={
+                "entry_chain_paths": entry_paths},
         )
     if entry_chain[-1].get("symbol") != "Game":
         return _warning(
@@ -529,29 +622,64 @@ def wrapper_chain_present(context: CheckContext, rule: dict[str, Any]) -> CheckO
     app_path = repo_root / "src/runtime/app.py"
 
     if not _file_contains(main_path, "main_runtime.py"):
-        return _warning(rule, checked_paths, "wrapper_chain_present", reason="main.py does not point at runtime shim")
+        return _warning(
+            rule,
+            checked_paths,
+            "wrapper_chain_present",
+            reason="main.py does not point at runtime shim")
     if not _file_contains(main_path, "run()"):
-        return _warning(rule, checked_paths, "wrapper_chain_present", reason="main.py does not call run()")
+        return _warning(
+            rule,
+            checked_paths,
+            "wrapper_chain_present",
+            reason="main.py does not call run()")
     if not _file_contains(shim_path, "from src.runtime.app import Game"):
-        return _warning(rule, checked_paths, "wrapper_chain_present", reason="runtime shim does not re-export Game")
-    if not _file_contains(shim_path, "from src.runtime.app import run as _run"):
-        return _warning(rule, checked_paths, "wrapper_chain_present", reason="runtime shim does not import run() from app")
+        return _warning(
+            rule,
+            checked_paths,
+            "wrapper_chain_present",
+            reason="runtime shim does not re-export Game")
+    if not _file_contains(
+            shim_path,
+            "from src.runtime.app import run as _run"):
+        return _warning(
+            rule,
+            checked_paths,
+            "wrapper_chain_present",
+            reason="runtime shim does not import run() from app")
     if not _file_contains(shim_path, "def run()"):
-        return _warning(rule, checked_paths, "wrapper_chain_present", reason="runtime shim does not expose run()")
+        return _warning(
+            rule,
+            checked_paths,
+            "wrapper_chain_present",
+            reason="runtime shim does not expose run()")
     if not _file_contains(app_path, "class Game"):
-        return _warning(rule, checked_paths, "wrapper_chain_present", reason="runtime app does not define Game")
+        return _warning(
+            rule,
+            checked_paths,
+            "wrapper_chain_present",
+            reason="runtime app does not define Game")
     if not _file_contains(app_path, "def run()"):
-        return _warning(rule, checked_paths, "wrapper_chain_present", reason="runtime app does not define run()")
+        return _warning(
+            rule,
+            checked_paths,
+            "wrapper_chain_present",
+            reason="runtime app does not define run()")
 
     return _ok(rule, checked_paths)
 
 
-def distribution_paths_marked_non_source(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def distribution_paths_marked_non_source(
+        context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
     dist_root = find_tree_node(context.data, "dist")
     if dist_root is None:
-        return _warning(rule, checked_paths, "distribution_paths_marked_non_source", reason="dist root is missing from facts.tree")
+        return _warning(
+            rule,
+            checked_paths,
+            "distribution_paths_marked_non_source",
+            reason="dist root is missing from facts.tree")
     if dist_root.get("status") != "distribution":
         return _warning(
             rule,
@@ -571,33 +699,56 @@ def distribution_paths_marked_non_source(context: CheckContext, rule: dict[str, 
             observed={"source_of_truth": dist_root.get("source_of_truth")},
         )
     if not (repo_root / "dist").exists():
-        return _warning(rule, checked_paths, "distribution_paths_marked_non_source", reason="dist directory does not exist")
+        return _warning(
+            rule,
+            checked_paths,
+            "distribution_paths_marked_non_source",
+            reason="dist directory does not exist")
     return _ok(rule, checked_paths)
 
 
-def generated_entries_mark_non_hand_editable_and_sources(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def generated_entries_mark_non_hand_editable_and_sources(
+        context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
     entries = generated_file_nodes(context.data)
     if not (repo_root / "tools/gen_data.py").is_file():
-        return _warning(rule, checked_paths, "generated_entries_mark_non_hand_editable_and_sources", reason="tools/gen_data.py is missing")
+        return _warning(
+            rule,
+            checked_paths,
+            "generated_entries_mark_non_hand_editable_and_sources",
+            reason="tools/gen_data.py is missing")
 
     for entry in entries:
         rel_path = entry.get("path")
         if not rel_path or not (repo_root / rel_path).is_file():
-            return _warning(rule, checked_paths, "generated_entries_mark_non_hand_editable_and_sources", reason=f"generated target is missing: {rel_path}")
+            return _warning(
+                rule,
+                checked_paths,
+                "generated_entries_mark_non_hand_editable_and_sources",
+                reason=f"generated target is missing: {rel_path}")
         if entry.get("hand_editable") is not False:
             return _warning(
                 rule,
                 checked_paths,
                 "generated_entries_mark_non_hand_editable_and_sources",
-                reason=f"hand_editable must be false for {entry.get('id')}",
-                expected={"hand_editable": False, "generated_from_prefix": "assets/"},
-                observed={"entry_id": entry.get("id"), "hand_editable": entry.get("hand_editable")},
+                reason=f"hand_editable must be false for {
+                    entry.get('id')}",
+                expected={
+                    "hand_editable": False,
+                    "generated_from_prefix": "assets/"},
+                observed={
+                    "entry_id": entry.get("id"),
+                    "hand_editable": entry.get("hand_editable")},
             )
         sources = entry.get("generated_from")
         if not isinstance(sources, list) or not sources:
-            return _warning(rule, checked_paths, "generated_entries_mark_non_hand_editable_and_sources", reason=f"generated_from is missing for {entry.get('id')}")
+            return _warning(
+                rule,
+                checked_paths,
+                "generated_entries_mark_non_hand_editable_and_sources",
+                reason=f"generated_from is missing for {
+                    entry.get('id')}")
         for source in sources:
             if not str(source).startswith("assets/"):
                 return _warning(
@@ -609,15 +760,21 @@ def generated_entries_mark_non_hand_editable_and_sources(context: CheckContext, 
                     observed={"entry_id": entry.get("id"), "generated_from": sources},
                 )
             if not (repo_root / source).is_file():
-                return _warning(rule, checked_paths, "generated_entries_mark_non_hand_editable_and_sources", reason=f"generated source is missing: {source}")
+                return _warning(
+                    rule,
+                    checked_paths,
+                    "generated_entries_mark_non_hand_editable_and_sources",
+                    reason=f"generated source is missing: {source}")
 
     return _ok(rule, checked_paths)
 
 
-def codemaker_manifest_includes_required_paths(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def codemaker_manifest_includes_required_paths(
+        context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
-    contract = find_codemaker_bundle_contract(context.data, "codemaker_non_scene_bundle")
+    contract = find_codemaker_bundle_contract(
+        context.data, "codemaker_non_scene_bundle")
     if contract is None:
         return _warning(
             rule,
@@ -681,22 +838,32 @@ def _command_script_paths(command: str) -> list[str]:
     return [token for token in tokens if token.endswith(".py")]
 
 
-def compare_runbook_commands_and_artifact_defs(context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
+def compare_runbook_commands_and_artifact_defs(
+        context: CheckContext, rule: dict[str, Any]) -> CheckOutcome:
     checked_paths = _scope_paths(rule)
     repo_root = context.repo_root
-    artifact_paths = {item["path"] for item in distribution_artifact_nodes(context.data)}
+    artifact_paths = {item["path"]
+                      for item in distribution_artifact_nodes(context.data)}
     runbooks = context.data["facts"].get("runbooks", [])
 
     for rel_path in checked_paths:
         if not (repo_root / rel_path).exists():
-            return _warning(rule, checked_paths, "compare_runbook_commands_and_artifact_defs", reason=f"missing scoped path: {rel_path}")
+            return _warning(
+                rule,
+                checked_paths,
+                "compare_runbook_commands_and_artifact_defs",
+                reason=f"missing scoped path: {rel_path}")
 
     for runbook in runbooks:
         for step in runbook.get("steps", []):
             command = step.get("command", "")
             for script_path in _command_script_paths(command):
                 if not (repo_root / script_path).exists():
-                    return _warning(rule, checked_paths, "compare_runbook_commands_and_artifact_defs", reason=f"runbook command references missing script: {script_path}")
+                    return _warning(
+                        rule,
+                        checked_paths,
+                        "compare_runbook_commands_and_artifact_defs",
+                        reason=f"runbook command references missing script: {script_path}")
             for output_path in step.get("outputs", []):
                 if output_path not in artifact_paths:
                     return _warning(
@@ -704,11 +871,17 @@ def compare_runbook_commands_and_artifact_defs(context: CheckContext, rule: dict
                         checked_paths,
                         "compare_runbook_commands_and_artifact_defs",
                         reason=f"runbook output not declared as distribution artifact: {output_path}",
-                        expected={"artifact_paths": sorted(artifact_paths)},
-                        observed={"missing_output": output_path},
+                        expected={
+                            "artifact_paths": sorted(artifact_paths)},
+                        observed={
+                            "missing_output": output_path},
                     )
                 if not (repo_root / output_path).exists():
-                    return _warning(rule, checked_paths, "compare_runbook_commands_and_artifact_defs", reason=f"distribution artifact path is missing: {output_path}")
+                    return _warning(
+                        rule,
+                        checked_paths,
+                        "compare_runbook_commands_and_artifact_defs",
+                        reason=f"distribution artifact path is missing: {output_path}")
 
     return _ok(rule, checked_paths)
 
@@ -724,7 +897,8 @@ CHECK_REGISTRY = {
 }
 
 
-def run_deterministic_rule(context: CheckContext, rule: dict[str, Any]) -> dict[str, Any]:
+def run_deterministic_rule(context: CheckContext,
+                           rule: dict[str, Any]) -> dict[str, Any]:
     checks = list(rule.get("evidence", {}).get("checks", []))
     if not checks:
         raise KeyError(f"rule {rule.get('id')} has no evidence.checks")
@@ -739,7 +913,8 @@ def run_deterministic_rule(context: CheckContext, rule: dict[str, Any]) -> dict[
     return result_record(rule, outcome)
 
 
-def result_record(rule: dict[str, Any], outcome: CheckOutcome) -> dict[str, Any]:
+def result_record(rule: dict[str, Any],
+                  outcome: CheckOutcome) -> dict[str, Any]:
     return {
         "rule_id": rule["id"],
         "status": outcome.status,
@@ -791,7 +966,8 @@ def build_coverage_review(results: list[dict[str, Any]]) -> dict[str, Any]:
             keep_non_deterministic_rule_ids.append(item["rule_id"])
 
         autofix_key = _coverage_autofix_key(coverage)
-        repair_autofix = coverage.get(autofix_key) if autofix_key is not None else None
+        repair_autofix = coverage.get(
+            autofix_key) if autofix_key is not None else None
         if repair_autofix == "candidate":
             repair_candidate_rule_ids.append(item["rule_id"])
         elif repair_autofix == "implemented":
@@ -833,7 +1009,10 @@ def run_checker(
     repo_root = repo_root.resolve()
     rules_path = rules_path.resolve()
     data = load_rules(rules_path)
-    context = CheckContext(repo_root=repo_root, rules_path=rules_path, data=data)
+    context = CheckContext(
+        repo_root=repo_root,
+        rules_path=rules_path,
+        data=data)
     results: list[dict[str, Any]] = []
     for rule in data["validation_rules"]:
         rule["__rules_path"] = str(rules_path)
@@ -851,15 +1030,26 @@ def run_checker(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=ROOT, help="repository root to inspect")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=ROOT,
+        help="repository root to inspect")
     parser.add_argument(
         "--rules-path",
         type=Path,
         default=ROOT / "docs" / "architecture_rules.yml",
         help="path to architecture rules YAML",
     )
-    parser.add_argument("--rule-id", action="append", default=[], help="run only the specified rule id (repeatable)")
-    parser.add_argument("--fail-on-warning", action="store_true", help="return exit 1 when warnings remain")
+    parser.add_argument(
+        "--rule-id",
+        action="append",
+        default=[],
+        help="run only the specified rule id (repeatable)")
+    parser.add_argument(
+        "--fail-on-warning",
+        action="store_true",
+        help="return exit 1 when warnings remain")
     args = parser.parse_args(argv)
     try:
         result = run_checker(

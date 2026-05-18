@@ -66,7 +66,8 @@ def resolve_pyxel_command(root: Path) -> list[str]:
     pyxel_cli = shutil.which("pyxel")
     if pyxel_cli:
         return [pyxel_cli]
-    raise FileNotFoundError("Unable to find a Pyxel CLI or Python environment with Pyxel")
+    raise FileNotFoundError(
+        "Unable to find a Pyxel CLI or Python environment with Pyxel")
 
 
 def build_web_release(
@@ -129,7 +130,8 @@ def build_web_release(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build Block Quest Web release")
+    parser = argparse.ArgumentParser(
+        description="Build Block Quest Web release")
     parser.parse_args()
     build_web_release(ROOT)
 

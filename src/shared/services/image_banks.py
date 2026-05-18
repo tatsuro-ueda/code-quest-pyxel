@@ -87,7 +87,8 @@ class ImageBanks:
                 self.pyxres_loaded = True
                 return
             except Exception as exc:
-                print(f"[image_bank] failed to load {pyxres_path}: {exc}; regenerating")
+                print(
+                    f"[image_bank] failed to load {pyxres_path}: {exc}; regenerating")
 
         self.paint_tile_bank()
         self.paint_sprite_bank()
@@ -162,7 +163,8 @@ class ImageBanks:
             # 修正後：image bank 不一致のときは image bank だけ修復し、
             # tilemap には触らない。
             if not self.tile_bank_layout_valid():
-                print("[tilemap] tile bank layout changed — repainting image bank only")
+                print(
+                    "[tilemap] tile bank layout changed — repainting image bank only")
                 self.paint_tile_bank()
                 self.paint_sprite_bank()
                 self.paint_jp_font_bank()
@@ -199,9 +201,9 @@ class ImageBanks:
                 tile = dg[y][x]
                 u, v = self.tile_bank.get(tile, self.tile_bank[M.T_GRASS])
                 tu, tv = u // 8, v // 8
-                tilemap.pset(2 * x,     oy + 2 * y,     (tu,     tv))
-                tilemap.pset(2 * x + 1, oy + 2 * y,     (tu + 1, tv))
-                tilemap.pset(2 * x,     oy + 2 * y + 1, (tu,     tv + 1))
+                tilemap.pset(2 * x, oy + 2 * y, (tu, tv))
+                tilemap.pset(2 * x + 1, oy + 2 * y, (tu + 1, tv))
+                tilemap.pset(2 * x, oy + 2 * y + 1, (tu, tv + 1))
                 tilemap.pset(2 * x + 1, oy + 2 * y + 1, (tu + 1, tv + 1))
 
     def derive_dungeon_from_tilemap(self):
@@ -224,7 +226,8 @@ class ImageBanks:
                 row.append(tid)
             derived.append(row)
         if _miss:
-            print(f"[tilemap] dungeon derive: {_miss} tiles fell back to T_FLOOR")
+            print(
+                f"[tilemap] dungeon derive: {_miss} tiles fell back to T_FLOOR")
         game.dungeon_template = derived
         for y in range(len(derived)):
             for x in range(len(derived[0])):
@@ -266,9 +269,9 @@ class ImageBanks:
                 else:
                     u, v = self.tile_bank.get(tile, self.tile_bank[M.T_GRASS])
                 tu, tv = u // 8, v // 8
-                tilemap.pset(2 * x,     2 * y,     (tu,     tv))
-                tilemap.pset(2 * x + 1, 2 * y,     (tu + 1, tv))
-                tilemap.pset(2 * x,     2 * y + 1, (tu,     tv + 1))
+                tilemap.pset(2 * x, 2 * y, (tu, tv))
+                tilemap.pset(2 * x + 1, 2 * y, (tu + 1, tv))
+                tilemap.pset(2 * x, 2 * y + 1, (tu, tv + 1))
                 tilemap.pset(2 * x + 1, 2 * y + 1, (tu + 1, tv + 1))
 
     def tile_iter(self):
@@ -294,9 +297,11 @@ class ImageBanks:
         self.tile_bank = {}
         self.path_variant_bank = {}
         self.shore_variant_bank = {}
-        col = 0; row = 0
+        col = 0
+        row = 0
         for kind, key, _data in self.tile_iter():
-            bx = col * 16; by = row * 16
+            bx = col * 16
+            by = row * 16
             if kind == "tile":
                 self.tile_bank[key] = (bx, by)
             elif kind == "path":
@@ -305,20 +310,24 @@ class ImageBanks:
                 self.shore_variant_bank[key] = (bx, by)
             col += 1
             if col >= 16:
-                col = 0; row += 1
+                col = 0
+                row += 1
 
     def paint_tile_bank(self):
         """pset でタイル絵をバンクに焼き込む。"""
         bank = pyxel.images[0]
-        col = 0; row = 0
+        col = 0
+        row = 0
         for _kind, _key, data in self.tile_iter():
-            bx = col * 16; by = row * 16
+            bx = col * 16
+            by = row * 16
             for py in range(16):
                 for px in range(16):
                     bank.pset(bx + px, by + py, data[py][px])
             col += 1
             if col >= 16:
-                col = 0; row += 1
+                col = 0
+                row += 1
 
     def render_tiles_to_bank(self):
         """互換ラッパー：layout + paint を順に呼ぶ。"""
@@ -336,25 +345,31 @@ class ImageBanks:
 
     def layout_sprite_bank(self):
         self.sprite_bank = {}
-        col = 0; row = 0
+        col = 0
+        row = 0
         for name, _data in self.sprite_iter():
-            bx = col * 16; by = row * 16
+            bx = col * 16
+            by = row * 16
             self.sprite_bank[name] = (bx, by)
             col += 1
             if col >= 16:
-                col = 0; row += 1
+                col = 0
+                row += 1
 
     def paint_sprite_bank(self):
         bank = pyxel.images[1]
-        col = 0; row = 0
+        col = 0
+        row = 0
         for _name, sdata in self.sprite_iter():
-            bx = col * 16; by = row * 16
+            bx = col * 16
+            by = row * 16
             for py in range(16):
                 for px in range(16):
                     bank.pset(bx + px, by + py, sdata[py][px])
             col += 1
             if col >= 16:
-                col = 0; row += 1
+                col = 0
+                row += 1
 
     def render_sprites_to_bank(self):
         """互換ラッパー：layout + paint を順に呼ぶ。"""

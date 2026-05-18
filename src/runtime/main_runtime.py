@@ -40,6 +40,8 @@ from src.runtime.app import run as _run
 # =====================================================================
 # ENTRY POINT
 # =====================================================================
+
+
 def run():
     """Block Quest の entry point。Game を生成して pyxel.run に入る。"""
     return _run()

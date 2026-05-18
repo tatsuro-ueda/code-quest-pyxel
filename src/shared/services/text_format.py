@@ -1,4 +1,6 @@
 from __future__ import annotations
+from typing import Any
+from dataclasses import dataclass
 
 """日本語名 → 英語名の変換。
 
@@ -58,10 +60,6 @@ NAME_EN_MAP = {
 def name_en(name: str) -> str:
     """日本語名を英語名に変換する。マップに無ければそのまま返す。"""
     return NAME_EN_MAP.get(name, name)
-
-
-from dataclasses import dataclass
-from typing import Any
 
 
 @dataclass

@@ -14,7 +14,8 @@ import sys
 from pathlib import Path
 
 
-def collect_structure(mod: ast.Module) -> list[tuple[str, str, list[tuple[str, str]]]]:
+def collect_structure(
+        mod: ast.Module) -> list[tuple[str, str, list[tuple[str, str]]]]:
     """module.body から (kind, name, children) のリストを返す。
 
     kind: "function" | "class"
@@ -88,8 +89,10 @@ def main(argv: list[str] | None = None) -> int:
         # 既に "- " で始まる行を含む docstring があれば「整備済」扱い
         for line in existing.splitlines():
             if line.startswith("- "):
-                print(f"already has bullet docstring: {args.path} (use --force to regenerate)",
-                      file=sys.stderr)
+                print(
+                    f"already has bullet docstring: {
+                        args.path} (use --force to regenerate)",
+                    file=sys.stderr)
                 return 0
 
     structure = collect_structure(mod)

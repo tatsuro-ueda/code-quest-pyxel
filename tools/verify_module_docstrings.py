@@ -43,7 +43,8 @@ def check_one(path: Path, skip_missing: bool) -> tuple[bool, list[str]]:
         return False, [f"{path}: parse error ({e!r})"]
 
     docstring = ast.get_docstring(mod)
-    top_defs = [n for n in mod.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
+    top_defs = [n for n in mod.body if isinstance(
+        n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
     classes = [n for n in mod.body if isinstance(n, ast.ClassDef)]
     methods_total = sum(
         len([b for b in c.body if isinstance(b, (ast.FunctionDef, ast.AsyncFunctionDef))])
@@ -55,11 +56,13 @@ def check_one(path: Path, skip_missing: bool) -> tuple[bool, list[str]]:
             return True, []
         if not top_defs:
             return True, []
-        return False, [f"{path}: missing module docstring (top defs: {len(top_defs)})"]
+        return False, [
+            f"{path}: missing module docstring (top defs: {
+                len(top_defs)})"]
 
     lines = docstring.splitlines()
-    bullets_top = [l for l in lines if re.match(r"^- .+", l)]
-    bullets_nest = [l for l in lines if re.match(r"^  - .+", l)]
+    bullets_top = [ln for ln in lines if re.match(r"^- .+", ln)]
+    bullets_nest = [ln for ln in lines if re.match(r"^  - .+", ln)]
 
     if not bullets_top and skip_missing:
         return True, []
@@ -70,12 +73,13 @@ def check_one(path: Path, skip_missing: bool) -> tuple[bool, list[str]]:
     msgs: list[str] = []
     if len(top_defs) != len(bullets_top):
         msgs.append(
-            f"{path}: top mismatch (AST defs={len(top_defs)}, docstring bullets={len(bullets_top)})"
-        )
+            f"{path}: top mismatch (AST defs={
+                len(top_defs)}, docstring bullets={
+                len(bullets_top)})")
     if methods_total != len(bullets_nest):
         msgs.append(
-            f"{path}: method mismatch (AST methods={methods_total}, docstring nests={len(bullets_nest)})"
-        )
+            f"{path}: method mismatch (AST methods={methods_total}, docstring nests={
+                len(bullets_nest)})")
     return (not msgs), msgs
 
 
@@ -113,7 +117,9 @@ def main(argv: list[str] | None = None) -> int:
     if fail_count == 0:
         print(f"{checked} files OK", file=sys.stdout)
         return 0
-    print(f"FAIL: {fail_count}/{checked} files have docstring drift", file=sys.stderr)
+    print(
+        f"FAIL: {fail_count}/{checked} files have docstring drift",
+        file=sys.stderr)
     return 1
 
 

@@ -273,7 +273,8 @@ class Game:
             self.status_bar.draw()
             self.messages.draw_window()
         elif self.state == "town_menu":
-            self.town_view.render_menu(self.town_presenter.build_menu_view_model())
+            self.town_view.render_menu(
+                self.town_presenter.build_menu_view_model())
         elif self.state == "shop":
             self.shop_scene.draw()
         elif self.state == "ending":

@@ -1,4 +1,6 @@
 from __future__ import annotations
+# HERO_DOWN, HERO_DOWN_WALK, ENEMY_SPRITES 等を一括 import
+from src.shared.constants.sprite_data import *
 
 """World map / dungeon 生成ロジック（Phase 1.5 実装）。
 
@@ -42,41 +44,58 @@ from src.shared.constants.tile_data import (
 def get_path_variant(world_map, mx, my):
     h = len(world_map)
     w = len(world_map[0]) if h > 0 else 0
+
     def is_path(x, y):
         if 0 <= x < w and 0 <= y < h:
             return world_map[y][x] == T_PATH
         return False
-    n = is_path(mx, my - 1); e = is_path(mx + 1, my)
-    s = is_path(mx, my + 1); w_ = is_path(mx - 1, my)
+    n = is_path(mx, my - 1)
+    e = is_path(mx + 1, my)
+    s = is_path(mx, my + 1)
+    w_ = is_path(mx - 1, my)
     key = (n, e, s, w_)
     variant = _PATH_VARIANTS.get(key)
-    if variant: return variant
-    if n or s: return PATH_V
-    if e or w_: return PATH_H
+    if variant:
+        return variant
+    if n or s:
+        return PATH_V
+    if e or w_:
+        return PATH_H
     return PATH_V
+
 
 def get_shore_variant(world_map, mx, my):
     h = len(world_map)
     w = len(world_map[0]) if h > 0 else 0
+
     def is_land(x, y):
         if 0 <= x < w and 0 <= y < h:
             return world_map[y][x] != T_WATER
         return False
-    n = is_land(mx, my - 1); e = is_land(mx + 1, my)
-    s = is_land(mx, my + 1); w_ = is_land(mx - 1, my)
-    if not (n or e or s or w_): return None
+    n = is_land(mx, my - 1)
+    e = is_land(mx + 1, my)
+    s = is_land(mx, my + 1)
+    w_ = is_land(mx - 1, my)
+    if not (n or e or s or w_):
+        return None
     key = (n, e, s, w_)
     variant = _SHORE_VARIANTS.get(key)
-    if variant: return variant
-    if n: return SHORE_N
-    if s: return SHORE_S
-    if w_: return SHORE_W
-    if e: return SHORE_E
+    if variant:
+        return variant
+    if n:
+        return SHORE_N
+    if s:
+        return SHORE_S
+    if w_:
+        return SHORE_W
+    if e:
+        return SHORE_E
     return None
 
-from src.shared.constants.sprite_data import *  # HERO_DOWN, HERO_DOWN_WALK, ENEMY_SPRITES 等を一括 import
+
 def _make_empty(w, h, fill):
     return [[fill] * w for _ in range(h)]
+
 
 def _carve_winding_path(grid, x1, y1, x2, y2, rng, passable=None):
     if passable is None:
@@ -84,24 +103,34 @@ def _carve_winding_path(grid, x1, y1, x2, y2, rng, passable=None):
     cx, cy = x1, y1
     max_iter = (abs(x2 - x1) + abs(y2 - y1)) * 4 + 50
     for _ in range(max_iter):
-        if cx == x2 and cy == y2: break
+        if cx == x2 and cy == y2:
+            break
         if rng.random() < 0.3 and cx != x2 and cy != y2:
-            if rng.random() < 0.5: cx += 1 if x2 > cx else -1
-            else: cy += 1 if y2 > cy else -1
+            if rng.random() < 0.5:
+                cx += 1 if x2 > cx else -1
+            else:
+                cy += 1 if y2 > cy else -1
         else:
-            if abs(x2 - cx) > abs(y2 - cy): cx += 1 if x2 > cx else -1
-            else: cy += 1 if y2 > cy else -1
+            if abs(x2 - cx) > abs(y2 - cy):
+                cx += 1 if x2 > cx else -1
+            else:
+                cy += 1 if y2 > cy else -1
         cx = max(1, min(MAP_W - 2, cx))
         cy = max(1, min(MAP_H - 2, cy))
         if grid[cy][cx] in passable:
             grid[cy][cx] = T_PATH
 
+
 def _place_forests(grid, rng):
     def density(y):
-        if y < 3 or y >= 47: return 0.0
-        if y < 16: return 0.08
-        if y < 28: return 0.18
-        if y < 38: return 0.30
+        if y < 3 or y >= 47:
+            return 0.0
+        if y < 16:
+            return 0.08
+        if y < 28:
+            return 0.18
+        if y < 38:
+            return 0.30
         return 0.05
     for y in range(MAP_H):
         d = density(y)
@@ -154,12 +183,16 @@ def _place_landmarks(grid):
     """2x2 マルチタイルランドマークを配置する。"""
     # 世界樹
     bx, by = BIGTREE_POS
-    grid[by][bx] = T_BIGTREE_TL; grid[by][bx + 1] = T_BIGTREE_TR
-    grid[by + 1][bx] = T_BIGTREE_BL; grid[by + 1][bx + 1] = T_BIGTREE_BR
+    grid[by][bx] = T_BIGTREE_TL
+    grid[by][bx + 1] = T_BIGTREE_TR
+    grid[by + 1][bx] = T_BIGTREE_BL
+    grid[by + 1][bx + 1] = T_BIGTREE_BR
     # 通信塔
     tx, ty = TOWER_POS
-    grid[ty][tx] = T_TOWER_TL; grid[ty][tx + 1] = T_TOWER_TR
-    grid[ty + 1][tx] = T_TOWER_BL; grid[ty + 1][tx + 1] = T_TOWER_BR
+    grid[ty][tx] = T_TOWER_TL
+    grid[ty][tx + 1] = T_TOWER_TR
+    grid[ty + 1][tx] = T_TOWER_BL
+    grid[ty + 1][tx + 1] = T_TOWER_BR
     # 周囲を通行可能に（障害物を除去）
     for lx, ly in [BIGTREE_POS, TOWER_POS]:
         for dy in range(-1, 3):
@@ -180,20 +213,26 @@ def generate_world_map(seed=42):
     PASS_X = 22
     for y in range(15, 18):
         for x in range(3, 48):
-            if abs(x - PASS_X) > 1: grid[y][x] = T_MOUNTAIN
+            if abs(x - PASS_X) > 1:
+                grid[y][x] = T_MOUNTAIN
     BRIDGE_X = 28
     for y in range(27, 30):
         for x in range(3, 48):
-            if abs(x - BRIDGE_X) <= 1: grid[y][x] = T_BRIDGE
-            else: grid[y][x] = T_WATER
+            if abs(x - BRIDGE_X) <= 1:
+                grid[y][x] = T_BRIDGE
+            else:
+                grid[y][x] = T_WATER
     for y in range(38, 48):
         for x in range(3, 48):
-            if grid[y][x] == T_GRASS: grid[y][x] = T_SAND
+            if grid[y][x] == T_GRASS:
+                grid[y][x] = T_SAND
     _place_forests(grid, rng)
-    cx, cy = CASTLE_POS; grid[cy][cx] = T_CASTLE
+    cx, cy = CASTLE_POS
+    grid[cy][cx] = T_CASTLE
     for tx, ty in [TOWN_HAJIME, TOWN_LOGIC, TOWN_ALGO]:
         grid[ty][tx] = T_TOWN
-    gx, gy = CAVE_GLITCH; grid[gy][gx] = T_CAVE
+    gx, gy = CAVE_GLITCH
+    grid[gy][gx] = T_CAVE
     passable_all = {T_GRASS, T_SAND, T_TREE} | DECORATION_TILES
     _carve_winding_path(grid, cx, cy, *TOWN_HAJIME, rng, passable_all)
     _carve_winding_path(grid, *TOWN_HAJIME, PASS_X, 16, rng, passable_all)
@@ -209,7 +248,9 @@ def generate_world_map(seed=42):
             for dx in (-1, 0, 1):
                 ny, nx = sy + dy, sx + dx
                 if 0 <= ny < MAP_H and 0 <= nx < MAP_W:
-                    if grid[ny][nx] in {T_TREE, T_MOUNTAIN, T_SAND} and (dx != 0 or dy != 0):
+                    if grid[ny][nx] in {
+                            T_TREE, T_MOUNTAIN, T_SAND} and (
+                            dx != 0 or dy != 0):
                         grid[ny][nx] = T_GRASS
     grid[cy][cx] = T_CASTLE
     for tx, ty in [TOWN_HAJIME, TOWN_LOGIC, TOWN_ALGO]:
@@ -220,6 +261,7 @@ def generate_world_map(seed=42):
     _place_landmarks(grid)
     return grid
 
+
 def generate_dungeon(seed=99):
     rng = random.Random(seed)
     grid = _make_empty(DUNGEON_W, DUNGEON_H, T_WALL)
@@ -227,13 +269,15 @@ def generate_dungeon(seed=99):
     attempts = 0
     while len(rooms) < 6 and attempts < 200:
         attempts += 1
-        rw = rng.randint(3, 6); rh = rng.randint(3, 6)
+        rw = rng.randint(3, 6)
+        rh = rng.randint(3, 6)
         rx = rng.randint(1, DUNGEON_W - rw - 1)
         ry = rng.randint(1, DUNGEON_H - rh - 1)
         overlap = False
         for (ox, oy, ow, oh) in rooms:
             if rx < ox + ow + 1 and rx + rw + 1 > ox and ry < oy + oh + 1 and ry + rh + 1 > oy:
-                overlap = True; break
+                overlap = True
+                break
         if not overlap:
             rooms.append((rx, ry, rw, rh))
             for dy2 in range(rh):
@@ -242,8 +286,8 @@ def generate_dungeon(seed=99):
     for i in range(len(rooms) - 1):
         ax = rooms[i][0] + rooms[i][2] // 2
         ay = rooms[i][1] + rooms[i][3] // 2
-        bx = rooms[i+1][0] + rooms[i+1][2] // 2
-        by = rooms[i+1][1] + rooms[i+1][3] // 2
+        bx = rooms[i + 1][0] + rooms[i + 1][2] // 2
+        by = rooms[i + 1][1] + rooms[i + 1][3] // 2
         step = 1 if bx >= ax else -1
         for xx in range(ax, bx + step, step):
             xx = max(1, min(DUNGEON_W - 2, xx))
@@ -266,10 +310,14 @@ def generate_dungeon(seed=99):
         grid[by][bx] = T_GLITCH_LORD_TRIGGER
     return grid, rooms
 
-def get_zone(tile_y, in_dungeon=False):
-    if in_dungeon: return 4
-    if tile_y < 16: return 0
-    if tile_y < 28: return 1
-    if tile_y < 38: return 2
-    return 3
 
+def get_zone(tile_y, in_dungeon=False):
+    if in_dungeon:
+        return 4
+    if tile_y < 16:
+        return 0
+    if tile_y < 28:
+        return 1
+    if tile_y < 38:
+        return 2
+    return 3

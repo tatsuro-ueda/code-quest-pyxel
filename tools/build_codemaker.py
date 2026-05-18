@@ -11,6 +11,7 @@ STUDENT AREA（編集可能領域）とコア自己検査（CORE_HASH）を含�
 使い方:
     python tools/build_codemaker.py
 """
+from codemaker_bundler import build_bundled_source
 import hashlib
 import sys
 from pathlib import Path
@@ -20,7 +21,6 @@ _HERE = Path(__file__).resolve().parent
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
-from codemaker_bundler import build_bundled_source
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "dist" / "code-maker.zip"
@@ -103,7 +103,11 @@ def build_codemaker_main_text(source_text: str | None = None) -> str:
     )
 
 
-def build_codemaker_zip(main_py: Path | None = None, *, pyxres: Path, output: Path) -> Path:
+def build_codemaker_zip(
+        main_py: Path | None = None,
+        *,
+        pyxres: Path,
+        output: Path) -> Path:
     """bundler から main.py を生成し、pyxres と一緒に zip にする。
 
     `main_py` は Phase 2 からは無視する（bundler は常に `codemaker_manifest.txt`

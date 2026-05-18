@@ -64,6 +64,7 @@ def reset_bgm_state_for_tests() -> None:
     global _current_bgm_track
     _current_bgm_track = None
 
+
 # slot 33以降を使用する（旧 BGM 設計が 0-32 を消費していたため）。
 # 順序が slot 割り当てを決定する（cursor=33, select=34, ... step=54）。
 # 新規追加は末尾に。途中の入替は .pyxres との対応が壊れるので禁止。
@@ -174,8 +175,11 @@ class SfxSystem:
             if self._slot_has_sound(slot):
                 continue
             self.pyxel.sounds[slot].set(
-                sd["notes"], sd["tone"], sd["volume"], sd["effect"], sd["speed"]
-            )
+                sd["notes"],
+                sd["tone"],
+                sd["volume"],
+                sd["effect"],
+                sd["speed"])
 
     def play(self, name: str):
         """名前で SFX を再生する（未定義名は黙って無視）。"""

@@ -41,7 +41,10 @@ def load_yaml(path: Path) -> dict[str, Any]:
 
 
 class _ReadableYamlDumper(yaml.SafeDumper):
-    def increase_indent(self, flow: bool = False, indentless: bool = False) -> Any:
+    def increase_indent(
+            self,
+            flow: bool = False,
+            indentless: bool = False) -> Any:
         return super().increase_indent(flow, False)
 
 
@@ -97,9 +100,12 @@ def _write_manifest_lines(path: Path, lines: list[str]) -> None:
     path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
 
-def _find_codemaker_bundle_contract(data: dict[str, Any], contract_id: str) -> dict[str, Any] | None:
+def _find_codemaker_bundle_contract(
+        data: dict[str, Any], contract_id: str) -> dict[str, Any] | None:
     contracts = data.get("facts", {}).get("codemaker_bundle_contracts", [])
-    return next((item for item in contracts if item.get("id") == contract_id), None)
+    return next(
+        (item for item in contracts if item.get("id") == contract_id),
+        None)
 
 
 def _manifest_entries(lines: list[str]) -> set[str]:
@@ -112,7 +118,10 @@ def _manifest_entries(lines: list[str]) -> set[str]:
     return entries
 
 
-def _manifest_insert_before_marker(lines: list[str], path: str, marker: str | None) -> None:
+def _manifest_insert_before_marker(
+        lines: list[str],
+        path: str,
+        marker: str | None) -> None:
     if marker is None:
         lines.append(path)
         return
@@ -130,22 +139,26 @@ def _insert_codemaker_manifest_path(lines: list[str], path: str) -> None:
         "src/shared/services/debug_service.py",
         "src/shared/services/scene_manager.py",
     }:
-        _manifest_insert_before_marker(lines, path, "# --- 10. src/runtime/app.py:")
+        _manifest_insert_before_marker(
+            lines, path, "# --- 10. src/runtime/app.py:")
         return
     if path.startswith("src/shared/assets/"):
-        _manifest_insert_before_marker(lines, path, "# --- 2. shared/constants:")
+        _manifest_insert_before_marker(
+            lines, path, "# --- 2. shared/constants:")
         return
     if path.startswith("src/shared/constants/"):
         _manifest_insert_before_marker(lines, path, "# --- 3. src/generated:")
         return
     if path.startswith("src/generated/"):
-        _manifest_insert_before_marker(lines, path, "# --- 4. src/game_data.py:")
+        _manifest_insert_before_marker(
+            lines, path, "# --- 4. src/game_data.py:")
         return
     if path == "src/game_data.py":
         _manifest_insert_before_marker(lines, path, "# --- 5a. shared/state:")
         return
     if path.startswith("src/shared/state/"):
-        _manifest_insert_before_marker(lines, path, "# --- 5. shared/services:")
+        _manifest_insert_before_marker(
+            lines, path, "# --- 5. shared/services:")
         return
     if path.startswith("src/shared/services/"):
         _manifest_insert_before_marker(lines, path, "# --- 6. shared/ui:")
@@ -169,7 +182,8 @@ def _generated_entry_expected_source(entry_path: str) -> str:
     return f"assets/{stem}.yaml"
 
 
-def ensure_tree_path(root: dict[str, Any], path_value: str, kind: str, **fields: Any) -> dict[str, Any]:
+def ensure_tree_path(root: dict[str, Any], path_value: str,
+                     kind: str, **fields: Any) -> dict[str, Any]:
     if path_value == ".":
         root.update(fields)
         return root
@@ -183,7 +197,9 @@ def ensure_tree_path(root: dict[str, Any], path_value: str, kind: str, **fields:
         is_last = index == len(segments) - 1
         wanted_kind = kind if is_last else "directory"
         children = current.setdefault("children", [])
-        child = next((item for item in children if item.get("path") == current_path), None)
+        child = next(
+            (item for item in children if item.get("path") == current_path),
+            None)
         if child is None:
             child = {"path": current_path, "kind": wanted_kind}
             if wanted_kind != "file":
@@ -229,11 +245,13 @@ def _merge_runtime_entry_preserving_extras(
     return merged_entry
 
 
-def fix_generated_files_edit_policy(repo_root: Path, rules_path: Path, warning: dict[str, Any]) -> list[dict[str, Any]]:
+def fix_generated_files_edit_policy(
+        repo_root: Path, rules_path: Path, warning: dict[str, Any]) -> list[dict[str, Any]]:
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
     changed_yaml = False
-    tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
+    tree = data.setdefault("facts", {}).setdefault(
+        "tree", {"path": ".", "kind": "root", "children": []})
     entries = check_architecture_rules.generated_file_nodes(data)
 
     # generated file rule は Python 実体を書き換えず、facts 側の宣言だけを正す。
@@ -242,29 +260,35 @@ def fix_generated_files_edit_policy(repo_root: Path, rules_path: Path, warning: 
         if entry.get("hand_editable") is not False:
             entry["hand_editable"] = False
             changed_yaml = True
-            fixes.append({"kind": "yaml", "path": str(rules_path), "detail": f"set hand_editable false for {entry.get('id')}"})
+            fixes.append({"kind": "yaml", "path": str(
+                rules_path), "detail": f"set hand_editable false for {entry.get('id')}"})
         expected_source = _generated_entry_expected_source(entry["path"])
         generated_from = list(entry.get("generated_from", []))
         if generated_from != [expected_source]:
             entry["generated_from"] = [expected_source]
             changed_yaml = True
-            fixes.append({"kind": "yaml", "path": str(rules_path), "detail": f"normalized generated_from for {entry.get('id')}"})
+            fixes.append({"kind": "yaml", "path": str(
+                rules_path), "detail": f"normalized generated_from for {entry.get('id')}"})
 
     if changed_yaml:
         write_yaml(rules_path, data)
 
     gen_script = repo_root / "tools" / "gen_data.py"
     if gen_script.is_file():
-        subprocess.run([sys.executable, str(gen_script)], cwd=repo_root, check=True)
-        fixes.append({"kind": "command", "path": str(gen_script), "detail": "ran gen_data.py"})
+        subprocess.run([sys.executable, str(gen_script)],
+                       cwd=repo_root, check=True)
+        fixes.append({"kind": "command", "path": str(
+            gen_script), "detail": "ran gen_data.py"})
     return fixes
 
 
-def fix_dist_not_source(repo_root: Path, rules_path: Path, warning: dict[str, Any]) -> list[dict[str, Any]]:
+def fix_dist_not_source(repo_root: Path, rules_path: Path,
+                        warning: dict[str, Any]) -> list[dict[str, Any]]:
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
     changed_yaml = False
-    tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
+    tree = data.setdefault("facts", {}).setdefault(
+        "tree", {"path": ".", "kind": "root", "children": []})
     # dist 配下は build の結果物なので、code を直接修正せず
     # architecture facts と再 build だけで整合を取り直す。
     dist_root = ensure_tree_path(
@@ -278,30 +302,52 @@ def fix_dist_not_source(repo_root: Path, rules_path: Path, warning: dict[str, An
     )
     if dist_root:
         changed_yaml = True
-        fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized dist root node"})
+        fixes.append({"kind": "yaml", "path": str(rules_path),
+                     "detail": "normalized dist root node"})
 
     build_script = repo_root / "tools" / "build_web_release.py"
     if build_script.is_file():
-        subprocess.run([sys.executable, str(build_script)], cwd=repo_root, check=True)
-        fixes.append({"kind": "command", "path": str(build_script), "detail": "rebuilt dist artifacts"})
+        subprocess.run([sys.executable, str(build_script)],
+                       cwd=repo_root, check=True)
+        fixes.append({"kind": "command", "path": str(
+            build_script), "detail": "rebuilt dist artifacts"})
 
     if changed_yaml:
         write_yaml(rules_path, data)
     return fixes
 
 
-def fix_build_runbook_paths(repo_root: Path, rules_path: Path, warning: dict[str, Any]) -> list[dict[str, Any]]:
+def fix_build_runbook_paths(repo_root: Path,
+                            rules_path: Path,
+                            warning: dict[str,
+                                          Any]) -> list[dict[str,
+                                                             Any]]:
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
     changed_yaml = False
-    tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
-    artifacts = [
-        {"id": "codemaker_zip", "path": "dist/code-maker.zip", "status": "distribution", "summary": "block-quest/main.py + my_resource.pyxres を梱包した教材版 zip"},
-        {"id": "pyxel_html", "path": "dist/pyxel.html", "status": "distribution", "summary": "Web 配布用 HTML"},
-        {"id": "pyxel_pyxapp", "path": "dist/pyxel.pyxapp", "status": "distribution", "summary": "Pyxel app 配布物"},
-        {"id": "play_html", "path": "dist/play.html", "status": "distribution", "summary": "プレイページ"},
-        {"id": "top_index_html", "path": "dist/index.html", "status": "distribution", "summary": "play.html と同内容の wrapper alias"},
-    ]
+    tree = data.setdefault("facts", {}).setdefault(
+        "tree", {"path": ".", "kind": "root", "children": []})
+    artifacts = [{"id": "codemaker_zip",
+                  "path": "dist/code-maker.zip",
+                  "status": "distribution",
+                  "summary": "block-quest/main.py + my_resource.pyxres を梱包した教材版 zip"},
+                 {"id": "pyxel_html",
+                  "path": "dist/pyxel.html",
+                  "status": "distribution",
+                  "summary": "Web 配布用 HTML"},
+                 {"id": "pyxel_pyxapp",
+                  "path": "dist/pyxel.pyxapp",
+                  "status": "distribution",
+                  "summary": "Pyxel app 配布物"},
+                 {"id": "play_html",
+                  "path": "dist/play.html",
+                  "status": "distribution",
+                  "summary": "プレイページ"},
+                 {"id": "top_index_html",
+                  "path": "dist/index.html",
+                  "status": "distribution",
+                  "summary": "play.html と同内容の wrapper alias"},
+                 ]
     for artifact in artifacts:
         ensure_tree_path(
             tree,
@@ -312,7 +358,8 @@ def fix_build_runbook_paths(repo_root: Path, rules_path: Path, warning: dict[str
             summary=artifact["summary"],
         )
     changed_yaml = True
-    fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized distribution artifact nodes"})
+    fixes.append({"kind": "yaml", "path": str(rules_path),
+                 "detail": "normalized distribution artifact nodes"})
 
     runbooks = data.setdefault("facts", {}).setdefault("runbooks", [])
     # runbook は script と artifact を同時に説明する契約なので、
@@ -337,12 +384,16 @@ def fix_build_runbook_paths(repo_root: Path, rules_path: Path, warning: dict[str
                 changed_yaml = True
     if changed_yaml:
         write_yaml(rules_path, data)
-        fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized runbook outputs"})
+        fixes.append({"kind": "yaml", "path": str(rules_path),
+                     "detail": "normalized runbook outputs"})
 
     build_script = repo_root / "tools" / "build_web_release.py"
     if build_script.is_file():
-        subprocess.run([sys.executable, str(build_script)], cwd=repo_root, check=True)
-        fixes.append({"kind": "command", "path": str(build_script), "detail": "rebuilt release artifacts"})
+        subprocess.run([sys.executable, str(build_script)],
+                       cwd=repo_root, check=True)
+        fixes.append({"kind": "command",
+                      "path": str(build_script),
+                      "detail": "rebuilt release artifacts"})
     return fixes
 
 
@@ -353,7 +404,8 @@ def fix_codemaker_manifest_non_scene_paths(
 ) -> list[dict[str, Any]]:
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
-    contract = _find_codemaker_bundle_contract(data, "codemaker_non_scene_bundle")
+    contract = _find_codemaker_bundle_contract(
+        data, "codemaker_non_scene_bundle")
     if contract is None:
         return fixes
 
@@ -394,11 +446,16 @@ def fix_codemaker_manifest_non_scene_paths(
     return fixes
 
 
-def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str, Any]) -> list[dict[str, Any]]:
+def fix_runtime_entry_chain(repo_root: Path,
+                            rules_path: Path,
+                            warning: dict[str,
+                                          Any]) -> list[dict[str,
+                                                             Any]]:
     data = load_yaml(rules_path)
     fixes: list[dict[str, Any]] = []
     changed_yaml = False
-    tree = data.setdefault("facts", {}).setdefault("tree", {"path": ".", "kind": "root", "children": []})
+    tree = data.setdefault("facts", {}).setdefault(
+        "tree", {"path": ".", "kind": "root", "children": []})
 
     main_path = repo_root / "main.py"
     # まず実コード側の wrapper/shim を canonical 形に寄せる。
@@ -406,7 +463,8 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
     if main_path.is_file():
         if main_path.read_text(encoding="utf-8") != CANONICAL_MAIN_WRAPPER:
             main_path.write_text(CANONICAL_MAIN_WRAPPER, encoding="utf-8")
-            fixes.append({"kind": "code", "path": str(main_path), "detail": "normalized runtime main wrapper"})
+            fixes.append({"kind": "code", "path": str(main_path),
+                         "detail": "normalized runtime main wrapper"})
 
     shim_path = repo_root / "src" / "runtime" / "main_runtime.py"
     if shim_path.is_file():
@@ -426,16 +484,43 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
                 changed = True
         if changed:
             shim_path.write_text(text, encoding="utf-8")
-            fixes.append({"kind": "code", "path": str(shim_path), "detail": "normalized runtime shim tail"})
+            fixes.append({"kind": "code", "path": str(shim_path),
+                         "detail": "normalized runtime shim tail"})
 
     # 次に YAML 側の facts / entry_points を揃え、checker が参照する宣言面も一致させる。
-    canonical_entry_chain = [
-        {"id": "runtime_main_wrapper", "path": "main.py", "role": "wrapper", "status": "active", "summary": "src/runtime/main_runtime.py を実行する 8 行 wrapper"},
-        {"id": "runtime_shim", "path": "src/runtime/main_runtime.py", "role": "shim", "status": "active", "summary": "test / Code Maker bundler 互換のための re-export shim"},
-        {"id": "runtime_game", "path": "src/runtime/app.py", "symbol": "Game", "role": "application_root", "status": "active", "summary": "pyxel 初期化、DI、scene/service 組み立て、update/draw dispatcher"},
-    ]
-    ensure_tree_path(tree, "main.py", "file", role="runtime_wrapper", status="active", source_of_truth=False, summary="src/runtime/main_runtime.py を呼ぶ薄い wrapper")
-    ensure_tree_path(tree, "src/runtime", "directory", role="runtime_container", status="active", source_of_truth=True, summary="Pyxel 単一入口の受け皿")
+    canonical_entry_chain = [{"id": "runtime_main_wrapper",
+                              "path": "main.py",
+                              "role": "wrapper",
+                              "status": "active",
+                              "summary": "src/runtime/main_runtime.py を実行する 8 行 wrapper"},
+                             {"id": "runtime_shim",
+                              "path": "src/runtime/main_runtime.py",
+                              "role": "shim",
+                              "status": "active",
+                              "summary": "test / Code Maker bundler 互換のための re-export shim"},
+                             {"id": "runtime_game",
+                              "path": "src/runtime/app.py",
+                              "symbol": "Game",
+                              "role": "application_root",
+                              "status": "active",
+                              "summary": "pyxel 初期化、DI、scene/service 組み立て、update/draw dispatcher"},
+                             ]
+    ensure_tree_path(
+        tree,
+        "main.py",
+        "file",
+        role="runtime_wrapper",
+        status="active",
+        source_of_truth=False,
+        summary="src/runtime/main_runtime.py を呼ぶ薄い wrapper")
+    ensure_tree_path(
+        tree,
+        "src/runtime",
+        "directory",
+        role="runtime_container",
+        status="active",
+        source_of_truth=True,
+        summary="Pyxel 単一入口の受け皿")
     ensure_tree_path(
         tree,
         "src/runtime/main_runtime.py",
@@ -456,7 +541,9 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
         summary="pyxel 初期化、DI、scene/service 組み立て、update/draw dispatcher",
     )
     entry_points = data.setdefault("facts", {}).setdefault("entry_points", [])
-    current_entry = next((item for item in entry_points if item.get("id") == "runtime_entry_chain"), None)
+    current_entry = next(
+        (item for item in entry_points if item.get("id") == "runtime_entry_chain"),
+        None)
     canonical_entry = {
         "id": "runtime_entry_chain",
         "summary": "runtime の入口は wrapper -> shim -> Game の流れを保つ",
@@ -467,14 +554,16 @@ def fix_runtime_entry_chain(repo_root: Path, rules_path: Path, warning: dict[str
         entry_points.append(canonical_entry)
         changed_yaml = True
     else:
-        merged_entry = _merge_runtime_entry_preserving_extras(current_entry, canonical_entry)
+        merged_entry = _merge_runtime_entry_preserving_extras(
+            current_entry, canonical_entry)
         if current_entry != merged_entry:
             current_entry.clear()
             current_entry.update(merged_entry)
             changed_yaml = True
     if changed_yaml:
         write_yaml(rules_path, data)
-        fixes.append({"kind": "yaml", "path": str(rules_path), "detail": "normalized runtime entry tree nodes and entry_points"})
+        fixes.append({"kind": "yaml", "path": str(
+            rules_path), "detail": "normalized runtime entry tree nodes and entry_points"})
     return fixes
 
 
@@ -510,7 +599,8 @@ def run_fixer(
             }
 
         applied_fixes: list[dict[str, Any]] = []
-        warnings = [item for item in current_check["results"] if item["status"] == "warning"]
+        warnings = [item for item in current_check["results"]
+                    if item["status"] == "warning"]
         # autofix できるのは registry に登録された rule だけ。
         # 未登録 warning は silent success にせず、そのまま NEEDS_HUMAN へ流す。
         for warning in warnings:
@@ -538,7 +628,12 @@ def run_fixer(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=ROOT)
-    parser.add_argument("--rules-path", type=Path, default=ROOT / "docs" / "architecture_rules.yml")
+    parser.add_argument(
+        "--rules-path",
+        type=Path,
+        default=ROOT /
+        "docs" /
+        "architecture_rules.yml")
     parser.add_argument("--rule-id", action="append", default=[])
     args = parser.parse_args(argv)
     result = run_fixer(

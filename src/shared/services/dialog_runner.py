@@ -116,9 +116,12 @@ class StructuredDialogRunner:
         body = self._select_body(scene_name, scene)
         self._apply_set(body.get("set"))
         choices = [
-            DialogChoice(text=self._format_text(choice["text"]), next_scene=choice.get("next"))
-            for choice in body.get("choices", [])
-        ]
+            DialogChoice(
+                text=self._format_text(
+                    choice["text"]),
+                next_scene=choice.get("next")) for choice in body.get(
+                "choices",
+                [])]
         return DialogStep(
             scene_name=scene_name,
             speaker=body.get("speaker"),
@@ -127,7 +130,8 @@ class StructuredDialogRunner:
             next_scene=body.get("next"),
         )
 
-    def _select_body(self, scene_name: str, scene: dict[str, Any]) -> dict[str, Any]:
+    def _select_body(self, scene_name: str,
+                     scene: dict[str, Any]) -> dict[str, Any]:
         """variants から現在の状態に一致するものを選ぶ（なければシーン自体をそのまま返す）。"""
         variants = scene.get("variants")
         if variants is None:
@@ -137,9 +141,12 @@ class StructuredDialogRunner:
             when = variant.get("when")
             if when is None:
                 return variant
-            if all(current_state.get(name) == expected for name, expected in when.items()):
+            if all(
+                    current_state.get(name) == expected for name,
+                    expected in when.items()):
                 return variant
-        raise DialogValidationError(f"no matching variant for scene '{scene_name}'")
+        raise DialogValidationError(
+            f"no matching variant for scene '{scene_name}'")
 
     def _apply_set(self, values: dict[str, Any] | None) -> None:
         """シーンの set 句を可変状態に反映する。"""
@@ -160,7 +167,12 @@ class StructuredDialogRunner:
 
     def _validate_variables(self, raw_variables: Any) -> set[str]:
         """variables 宣言（文字列リスト）を検証して集合化する。"""
-        if not isinstance(raw_variables, list) or not all(isinstance(item, str) for item in raw_variables):
+        if not isinstance(
+                raw_variables,
+                list) or not all(
+                isinstance(
+                item,
+                str) for item in raw_variables):
             raise DialogValidationError("variables must be a list of strings")
         return set(raw_variables)
 
@@ -174,93 +186,121 @@ class StructuredDialogRunner:
             if not isinstance(scene_name, str):
                 raise DialogValidationError("scene names must be strings")
             if not isinstance(raw_scene, dict):
-                raise DialogValidationError(f"scene '{scene_name}' must be a mapping")
+                raise DialogValidationError(
+                    f"scene '{scene_name}' must be a mapping")
             scenes[scene_name] = raw_scene
             refs.extend(self._validate_scene(scene_name, raw_scene))
         for source, target in refs:
             if target not in raw_scenes:
                 raise DialogValidationError(
-                    f"scene '{source}' references unknown next scene '{target}'"
-                )
+                    f"scene '{source}' references unknown next scene '{target}'")
         return scenes
 
-    def _validate_scene(self, scene_name: str, scene: dict[str, Any]) -> list[tuple[str, str]]:
+    def _validate_scene(self, scene_name: str,
+                        scene: dict[str, Any]) -> list[tuple[str, str]]:
         """1シーン分のキー妥当性と variants / 直接キーの排他を検証する。"""
         unknown_keys = set(scene) - self._SCENE_KEYS
         if unknown_keys:
             raise DialogValidationError(
-                f"scene '{scene_name}' has unknown keys: {', '.join(sorted(unknown_keys))}"
-            )
+                f"scene '{scene_name}' has unknown keys: {
+                    ', '.join(
+                        sorted(unknown_keys))}")
         refs: list[tuple[str, str]] = []
         variants = scene.get("variants")
         if variants is not None:
-            direct_keys = set(scene) & {"speaker", "text", "set", "choices", "next"}
+            direct_keys = set(scene) & {
+                "speaker", "text", "set", "choices", "next"}
             if direct_keys:
                 raise DialogValidationError(
-                    f"scene '{scene_name}' cannot mix variants with direct keys: {', '.join(sorted(direct_keys))}"
-                )
+                    f"scene '{scene_name}' cannot mix variants with direct keys: {
+                        ', '.join(
+                            sorted(direct_keys))}")
             if not isinstance(variants, list) or not variants:
-                raise DialogValidationError(f"scene '{scene_name}' variants must be a non-empty list")
+                raise DialogValidationError(
+                    f"scene '{scene_name}' variants must be a non-empty list")
             for index, variant in enumerate(variants):
                 refs.extend(self._validate_variant(scene_name, index, variant))
             return refs
         refs.extend(self._validate_entry(scene_name, scene, allow_when=False))
         return refs
 
-    def _validate_variant(self, scene_name: str, index: int, variant: Any) -> list[tuple[str, str]]:
+    def _validate_variant(self, scene_name: str, index: int,
+                          variant: Any) -> list[tuple[str, str]]:
         """variant 単位でキー妥当性を検証する。"""
         if not isinstance(variant, dict):
-            raise DialogValidationError(f"scene '{scene_name}' variant {index} must be a mapping")
+            raise DialogValidationError(
+                f"scene '{scene_name}' variant {index} must be a mapping")
         unknown_keys = set(variant) - self._VARIANT_KEYS
         if unknown_keys:
             raise DialogValidationError(
-                f"scene '{scene_name}' variant {index} has unknown keys: {', '.join(sorted(unknown_keys))}"
-            )
-        return self._validate_entry(f"{scene_name}[{index}]", variant, allow_when=True)
+                f"scene '{scene_name}' variant {index} has unknown keys: {
+                    ', '.join(
+                        sorted(unknown_keys))}")
+        return self._validate_entry(
+            f"{scene_name}[{index}]", variant, allow_when=True)
 
-    def _validate_entry(self, owner: str, entry: dict[str, Any], *, allow_when: bool) -> list[tuple[str, str]]:
+    def _validate_entry(self,
+                        owner: str,
+                        entry: dict[str,
+                                    Any],
+                        *,
+                        allow_when: bool) -> list[tuple[str,
+                                                        str]]:
         """シーン／variant 共通の本文部分（speaker/text/set/next/choices）を検証する。"""
         refs: list[tuple[str, str]] = []
-        if allow_when and "when" in entry and not isinstance(entry["when"], dict):
-            raise DialogValidationError(f"scene '{owner}' when must be a mapping")
+        if allow_when and "when" in entry and not isinstance(
+                entry["when"], dict):
+            raise DialogValidationError(
+                f"scene '{owner}' when must be a mapping")
         speaker = entry.get("speaker")
         if speaker is not None and not isinstance(speaker, str):
-            raise DialogValidationError(f"scene '{owner}' speaker must be a string")
+            raise DialogValidationError(
+                f"scene '{owner}' speaker must be a string")
         text = entry.get("text")
         if not isinstance(text, str) or not text:
-            raise DialogValidationError(f"scene '{owner}' text must be a non-empty string")
+            raise DialogValidationError(
+                f"scene '{owner}' text must be a non-empty string")
         set_values = entry.get("set")
         if set_values is not None:
             if not isinstance(set_values, dict):
-                raise DialogValidationError(f"scene '{owner}' set must be a mapping")
+                raise DialogValidationError(
+                    f"scene '{owner}' set must be a mapping")
             for name in set_values:
                 if name not in self.variables:
-                    raise DialogValidationError(f"scene '{owner}' sets unknown variable '{name}'")
+                    raise DialogValidationError(
+                        f"scene '{owner}' sets unknown variable '{name}'")
         next_scene = entry.get("next")
         if next_scene is not None:
             if not isinstance(next_scene, str):
-                raise DialogValidationError(f"scene '{owner}' next must be a string")
+                raise DialogValidationError(
+                    f"scene '{owner}' next must be a string")
             refs.append((owner, next_scene))
         choices = entry.get("choices")
         if choices is not None:
             if next_scene is not None:
-                raise DialogValidationError(f"scene '{owner}' cannot have both next and choices")
+                raise DialogValidationError(
+                    f"scene '{owner}' cannot have both next and choices")
             if not isinstance(choices, list) or not choices:
-                raise DialogValidationError(f"scene '{owner}' choices must be a non-empty list")
+                raise DialogValidationError(
+                    f"scene '{owner}' choices must be a non-empty list")
             for choice_index, choice in enumerate(choices):
                 refs.extend(self._validate_choice(owner, choice_index, choice))
         return refs
 
-    def _validate_choice(self, owner: str, choice_index: int, choice: Any) -> list[tuple[str, str]]:
+    def _validate_choice(self, owner: str, choice_index: int,
+                         choice: Any) -> list[tuple[str, str]]:
         """選択肢1件の text と next を検証する。"""
         if not isinstance(choice, dict):
-            raise DialogValidationError(f"scene '{owner}' choice {choice_index} must be a mapping")
+            raise DialogValidationError(
+                f"scene '{owner}' choice {choice_index} must be a mapping")
         text = choice.get("text")
         if not isinstance(text, str) or not text:
-            raise DialogValidationError(f"scene '{owner}' choice {choice_index} text must be a non-empty string")
+            raise DialogValidationError(
+                f"scene '{owner}' choice {choice_index} text must be a non-empty string")
         next_scene = choice.get("next")
         if next_scene is None:
             return []
         if not isinstance(next_scene, str):
-            raise DialogValidationError(f"scene '{owner}' choice {choice_index} next must be a string")
+            raise DialogValidationError(
+                f"scene '{owner}' choice {choice_index} next must be a string")
         return [(owner, next_scene)]

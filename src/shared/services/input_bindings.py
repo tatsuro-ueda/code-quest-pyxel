@@ -3,7 +3,11 @@ DOWN_BUTTONS = ("KEY_DOWN", "GAMEPAD1_BUTTON_DPAD_DOWN")
 LEFT_BUTTONS = ("KEY_LEFT", "GAMEPAD1_BUTTON_DPAD_LEFT")
 RIGHT_BUTTONS = ("KEY_RIGHT", "GAMEPAD1_BUTTON_DPAD_RIGHT")
 CONFIRM_BUTTONS = ("KEY_Z", "KEY_SPACE", "KEY_RETURN", "GAMEPAD1_BUTTON_B")
-CANCEL_BUTTONS = ("KEY_X", "KEY_ESCAPE", "GAMEPAD1_BUTTON_A", "GAMEPAD1_BUTTON_BACK")
+CANCEL_BUTTONS = (
+    "KEY_X",
+    "KEY_ESCAPE",
+    "GAMEPAD1_BUTTON_A",
+    "GAMEPAD1_BUTTON_BACK")
 TITLE_START_BUTTONS = CONFIRM_BUTTONS + ("GAMEPAD1_BUTTON_START",)
 
 BUTTON_GROUPS = (
@@ -19,12 +23,14 @@ BUTTON_GROUPS = (
 
 def any_btn(pyxel_module, button_names) -> bool:
     """グループ内のいずれかのボタンが押下中なら True を返す。"""
-    return any(pyxel_module.btn(getattr(pyxel_module, name)) for name in button_names)
+    return any(pyxel_module.btn(getattr(pyxel_module, name))
+               for name in button_names)
 
 
 def any_btnp(pyxel_module, button_names) -> bool:
     """グループ内のいずれかのボタンがこのフレームで押されたなら True を返す。"""
-    return any(pyxel_module.btnp(getattr(pyxel_module, name)) for name in button_names)
+    return any(pyxel_module.btnp(getattr(pyxel_module, name))
+               for name in button_names)
 
 
 class InputStateTracker:

@@ -35,11 +35,13 @@ def changed_files(since: str) -> list[str]:
     )
     if out.returncode != 0:
         return []
-    return [l for l in out.stdout.splitlines() if l.strip()]
+    return [line for line in out.stdout.splitlines() if line.strip()]
 
 
-def extract_scenes_and_areas(files: list[str], scene_keys: list[str], area_keys: list[str]
-                              ) -> tuple[set[str], set[str]]:
+def extract_scenes_and_areas(files: list[str],
+                             scene_keys: list[str],
+                             area_keys: list[str]) -> tuple[set[str],
+                                                            set[str]]:
     """変更ファイルから scene 名と area 名を抽出する。"""
     scenes: set[str] = set()
     areas: set[str] = set()
@@ -105,9 +107,15 @@ def print_for_keys(label: str, keys: set[str], mapping: dict, group: str,
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--map", type=Path, default=Path("tools/scene_to_cj.json"),
-                        help="対応表 JSON")
-    parser.add_argument("--journey", type=Path, default=Path("docs/customer-journeys.md"))
+    parser.add_argument(
+        "--map",
+        type=Path,
+        default=Path("tools/scene_to_cj.json"),
+        help="対応表 JSON")
+    parser.add_argument(
+        "--journey",
+        type=Path,
+        default=Path("docs/customer-journeys.md"))
     parser.add_argument("--list", action="store_true",
                         help="全 scene / area の対応表を一覧表示する")
     parser.add_argument("--since", type=str, default=None,
@@ -136,8 +144,14 @@ def main(argv: list[str] | None = None) -> int:
     cj_categories = collect_cj_categories(args.journey)
 
     if args.list:
-        print_for_keys("scenes", set(mapping.get("scenes", {}).keys()), mapping, "scenes", cj_categories)
-        print_for_keys("areas", set(mapping.get("areas", {}).keys()), mapping, "areas", cj_categories)
+        print_for_keys(
+            "scenes", set(
+                mapping.get(
+                    "scenes", {}).keys()), mapping, "scenes", cj_categories)
+        print_for_keys(
+            "areas", set(
+                mapping.get(
+                    "areas", {}).keys()), mapping, "areas", cj_categories)
         if missing:
             return 1
         return 0
@@ -150,9 +164,15 @@ def main(argv: list[str] | None = None) -> int:
             list(mapping.get("areas", {}).keys()),
         )
         if not scenes and not areas:
-            print(f"no relevant scene / area changes since {args.since}", file=sys.stdout)
+            print(
+                f"no relevant scene / area changes since {args.since}", file=sys.stdout)
             return 0
-        print_for_keys("changed scenes", scenes, mapping, "scenes", cj_categories)
+        print_for_keys(
+            "changed scenes",
+            scenes,
+            mapping,
+            "scenes",
+            cj_categories)
         print_for_keys("changed areas", areas, mapping, "areas", cj_categories)
         if missing:
             return 1

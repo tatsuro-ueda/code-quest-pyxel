@@ -43,7 +43,8 @@ def _resolve_resource_entry(entries: list[str]) -> str:
     if exact_path in entries:
         return exact_path
 
-    matches = [entry for entry in entries if entry.endswith(f"/{RESOURCE_ENTRY_NAME}") or entry == RESOURCE_ENTRY_NAME]
+    matches = [entry for entry in entries if entry.endswith(
+        f"/{RESOURCE_ENTRY_NAME}") or entry == RESOURCE_ENTRY_NAME]
     if len(matches) == 1:
         return matches[0]
     if not matches:
@@ -51,7 +52,8 @@ def _resolve_resource_entry(entries: list[str]) -> str:
     raise ValueError("Code Maker zip に my_resource.pyxres が複数あります")
 
 
-def extract_codemaker_resource_archive(archive_bytes: bytes) -> tuple[bytes, list[str]]:
+def extract_codemaker_resource_archive(
+        archive_bytes: bytes) -> tuple[bytes, list[str]]:
     """Code Maker zip から pyxres バイト列を取り出し、同封コードエントリ名も返す。"""
     entries, zip_file = _load_zip_entries(archive_bytes)
     with zip_file:
@@ -79,7 +81,8 @@ def apply_imported_resource(
     - 呼び出し側（web_runtime_server）はその後に production を再ビルドする
     """
     project_root = project_root.resolve()
-    resource_bytes, ignored_code_entries = extract_codemaker_resource_archive(archive_bytes)
+    resource_bytes, ignored_code_entries = extract_codemaker_resource_archive(
+        archive_bytes)
 
     canonical_path = _canonical_resource_path(project_root)
     canonical_path.parent.mkdir(parents=True, exist_ok=True)

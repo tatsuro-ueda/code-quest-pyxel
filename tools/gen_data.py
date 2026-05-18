@@ -6,6 +6,7 @@ Usage:
     python tools/gen_data.py enemies  # generate one
 """
 from __future__ import annotations
+import yaml
 
 import sys
 from pathlib import Path
@@ -17,7 +18,6 @@ ROOT = Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "assets"
 GENERATED = ROOT / "src" / "generated"
 
-import yaml
 
 HEADER = "# GENERATED - DO NOT EDIT  (source: assets/{yaml})\n"
 
@@ -42,7 +42,12 @@ def _repr_value(obj: Any, indent: int = 0) -> str:
             return "{}"
         items = []
         for k, v in obj.items():
-            items.append(f"{inner}{_repr_value(k)}: {_repr_value(v, indent + 1)}")
+            items.append(
+                f"{inner}{
+                    _repr_value(k)}: {
+                    _repr_value(
+                        v,
+                        indent + 1)}")
         return "{\n" + ",\n".join(items) + f",\n{pad}" + "}"
     if isinstance(obj, list):
         if not obj:
@@ -63,7 +68,8 @@ def _repr_value(obj: Any, indent: int = 0) -> str:
 def _write_generated_module(out_path: Path, lines: list[str]) -> None:
     """Write a generated Python module and restore read-only permissions."""
     if out_path.exists():
-        out_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+        out_path.chmod(stat.S_IRUSR | stat.S_IWUSR |
+                       stat.S_IRGRP | stat.S_IROTH)
     out_path.write_text("\n".join(lines), encoding="utf-8")
     out_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
@@ -71,7 +77,8 @@ def _write_generated_module(out_path: Path, lines: list[str]) -> None:
 def _dialogue_module_lines(data: Any) -> list[str]:
     """Build the generated module for dialogue data."""
     if not isinstance(data, dict):
-        raise TypeError("dialogue.yaml must be a mapping with 'ja' and 'en' keys")
+        raise TypeError(
+            "dialogue.yaml must be a mapping with 'ja' and 'en' keys")
     if not isinstance(data.get("ja"), dict):
         raise TypeError("dialogue.yaml: 'ja' must be a mapping")
     if not isinstance(data.get("en"), dict):

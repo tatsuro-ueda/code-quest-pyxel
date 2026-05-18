@@ -4,6 +4,13 @@ Generated data (src/generated/) を import し、派生データを構築する�
 SSoT は assets/*.yaml → tools/gen_data.py → src/generated/*.py の一方通行。
 """
 from __future__ import annotations
+from src.generated.dialogue import DIALOGUE_JA, DIALOGUE_EN
+from src.generated.shops import SHOPS
+from src.generated.spells import SPELLS
+from src.generated.armors import ARMORS
+from src.generated.weapons import WEAPONS
+from src.generated.items import ITEMS
+from src.generated.enemies import ENEMIES
 
 from pathlib import Path
 from typing import Any
@@ -25,13 +32,6 @@ def load_yaml(path: str | Path) -> Any:
 
 
 # --- generated data (YAML → gen_data.py → here) ---
-from src.generated.enemies import ENEMIES
-from src.generated.items import ITEMS
-from src.generated.weapons import WEAPONS
-from src.generated.armors import ARMORS
-from src.generated.spells import SPELLS
-from src.generated.shops import SHOPS
-from src.generated.dialogue import DIALOGUE_JA, DIALOGUE_EN
 
 
 # --- derived data ---

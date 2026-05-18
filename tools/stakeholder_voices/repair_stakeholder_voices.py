@@ -21,7 +21,8 @@ def run_repair(
 ) -> dict:
     history: list[dict] = []
     cycle = 0
-    initial_check = check_stakeholder_voices.run_checker(repo_root, rules_path, rule_ids=rule_ids)
+    initial_check = check_stakeholder_voices.run_checker(
+        repo_root, rules_path, rule_ids=rule_ids)
     if not initial_check["has_warnings"]:
         return {
             "status": "OK",
@@ -33,7 +34,8 @@ def run_repair(
     check = initial_check
     while cycle < max_cycles and check["has_warnings"]:
         cycle += 1
-        fix_result = fix_stakeholder_voices.run_fixer(repo_root, rules_path, rule_ids=rule_ids)
+        fix_result = fix_stakeholder_voices.run_fixer(
+            repo_root, rules_path, rule_ids=rule_ids)
         history.append(
             {
                 "cycle": cycle,
@@ -47,7 +49,8 @@ def run_repair(
         if not fix_result["applied_fixes"]:
             break
 
-    final_check = check_stakeholder_voices.run_checker(repo_root, rules_path, rule_ids=rule_ids)
+    final_check = check_stakeholder_voices.run_checker(
+        repo_root, rules_path, rule_ids=rule_ids)
     if not final_check["has_warnings"]:
         status = "AUTOFIXED"
     else:
@@ -61,8 +64,14 @@ def run_repair(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="stakeholder voices repair loop")
-    parser.add_argument("--rules-path", type=Path, default=ROOT / "docs" / "stakeholder_voices.yml")
+    parser = argparse.ArgumentParser(
+        description="stakeholder voices repair loop")
+    parser.add_argument(
+        "--rules-path",
+        type=Path,
+        default=ROOT /
+        "docs" /
+        "stakeholder_voices.yml")
     parser.add_argument("--rule-id", action="append", default=None)
     parser.add_argument("--max-cycles", type=int, default=5)
     args = parser.parse_args(argv)

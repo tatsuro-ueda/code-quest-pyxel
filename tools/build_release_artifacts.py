@@ -70,7 +70,8 @@ def dist_output_dir(output_dir: Path) -> Path:
     return output_dir / DIST_DIR
 
 
-def write_wrapper_outputs(wrapper_path: Path, target_dir: Path) -> tuple[Path, Path]:
+def write_wrapper_outputs(
+        wrapper_path: Path, target_dir: Path) -> tuple[Path, Path]:
     target_dir.mkdir(parents=True, exist_ok=True)
     play_path = target_dir / "play.html"
     index_path = target_dir / "index.html"

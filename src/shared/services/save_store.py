@@ -116,7 +116,9 @@ class LocalStorageSaveStore:
     def save(self, data: dict[str, Any]) -> None:
         """localStorage に JSON 文字列として書き込む。"""
         try:
-            self._js.localStorage.setItem(self.KEY, json.dumps(data, ensure_ascii=False))
+            self._js.localStorage.setItem(
+                self.KEY, json.dumps(
+                    data, ensure_ascii=False))
         except Exception as exc:  # noqa: BLE001
             raise SaveStoreError(str(exc)) from exc
 

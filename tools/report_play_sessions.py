@@ -1,4 +1,8 @@
 from __future__ import annotations
+from src.shared.services.play_session_logging import (
+    summarize_sessions,
+    summarize_sessions_by_browser,
+)
 
 import argparse
 from pathlib import Path
@@ -7,11 +11,6 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-
-from src.shared.services.play_session_logging import (
-    summarize_sessions,
-    summarize_sessions_by_browser,
-)
 
 
 def render_summary(rows: list[dict[str, int | str]]) -> str:
@@ -43,7 +42,8 @@ def render_browser_summary(rows: list[dict[str, int | str]]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Report Block Quest play session durations")
+    parser = argparse.ArgumentParser(
+        description="Report Block Quest play session durations")
     parser.add_argument(
         "--db-path",
         default=str(ROOT / ".runtime" / "play_sessions.sqlite3"),

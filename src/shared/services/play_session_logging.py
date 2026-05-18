@@ -49,7 +49,8 @@ def _connect(db_path: Path) -> sqlite3.Connection:
     db_path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(db_path)
     conn.execute(SCHEMA)
-    existing_columns = {row[1] for row in conn.execute("PRAGMA table_info(play_sessions)")}
+    existing_columns = {row[1] for row in conn.execute(
+        "PRAGMA table_info(play_sessions)")}
     for column, statement in _MIGRATIONS:
         if column not in existing_columns:
             conn.execute(statement)
@@ -79,7 +80,11 @@ def start_session(
         )
 
 
-def heartbeat_session(db_path: Path, *, session_id: str, seen_at: datetime) -> None:
+def heartbeat_session(
+        db_path: Path,
+        *,
+        session_id: str,
+        seen_at: datetime) -> None:
     """セッションの生存確認を更新し、現時点までの active_seconds を算出する。"""
     seen = _normalize_timestamp(seen_at)
     with _connect(db_path) as conn:
@@ -96,7 +101,11 @@ def heartbeat_session(db_path: Path, *, session_id: str, seen_at: datetime) -> N
             SET last_seen_at = ?, active_seconds = ?
             WHERE session_id = ?
             """,
-            (_serialize_timestamp(seen), _active_seconds(started_at, seen), session_id),
+            (_serialize_timestamp(seen),
+             _active_seconds(
+                started_at,
+                seen),
+                session_id),
         )
 
 

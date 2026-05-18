@@ -90,7 +90,10 @@ class PlayerModel:
     gold: int = 50
     weapon: int = 0
     armor: int = 0
-    items: list[PlayerItem] = field(default_factory=lambda: [PlayerItem(id=0, qty=3)])
+    items: list[PlayerItem] = field(
+        default_factory=lambda: [
+            PlayerItem(
+                id=0, qty=3)])
     spells: list = field(default_factory=list)
     poisoned: bool = False
     in_dungeon: bool = False
@@ -147,12 +150,14 @@ class PlayerModel:
         }
 
     @classmethod
-    def from_snapshot(cls, snapshot: dict[str, Any]) -> tuple["PlayerModel", tuple[int, int]]:
+    def from_snapshot(
+            cls, snapshot: dict[str, Any]) -> tuple["PlayerModel", tuple[int, int]]:
         """セーブ dict から PlayerModel と town_pos を復元する（旧 restore_snapshot 互換）。"""
         raw_player = dict(snapshot["player"])
         raw_pos = snapshot["town_pos"]
         if "glitch_lord_defeated" not in raw_player and "boss_defeated" in raw_player:
-            raw_player["glitch_lord_defeated"] = bool(raw_player.pop("boss_defeated"))
+            raw_player["glitch_lord_defeated"] = bool(
+                raw_player.pop("boss_defeated"))
         # 2026-05-07 改訂（CJ44 確定版）：bgm/sfx/vfx_enabled は撤去済。
         # 古いセーブに残っていても無視（PlayerModel 属性に存在しない）。
         for legacy_av_key in ("bgm_enabled", "sfx_enabled", "vfx_enabled"):
@@ -163,7 +168,8 @@ class PlayerModel:
             if key in raw_player:
                 val = raw_player[key]
                 if fld.name == "items" and isinstance(val, list):
-                    val = [PlayerItem(id=it["id"], qty=it["qty"]) for it in val]
+                    val = [PlayerItem(id=it["id"], qty=it["qty"])
+                           for it in val]
                 kwargs[fld.name] = val
         player = cls(**kwargs)
         return player, (int(raw_pos[0]), int(raw_pos[1]))
@@ -253,7 +259,10 @@ class PlayerModel:
 
     # ----- ルール：アイテム使用 -----
 
-    def use_item(self, item_data: dict, town_pos: tuple[int, int] | None = None) -> str:
+    def use_item(self,
+                 item_data: dict,
+                 town_pos: tuple[int,
+                                 int] | None = None) -> str:
         """アイテム効果を適用し、結果種別を返す。
 
         戻り値:
@@ -285,7 +294,8 @@ class PlayerModel:
 
     def advance_npc_talk_idx(self, town_index: int, line_count: int) -> int:
         """町ごとの NPC 会話インデックスを進め、進める前の index を返す。"""
-        if town_index < 0 or town_index >= len(self.town_talk_idx) or line_count <= 0:
+        if town_index < 0 or town_index >= len(
+                self.town_talk_idx) or line_count <= 0:
             return 0
         current = self.town_talk_idx[town_index] % line_count
         self.town_talk_idx[town_index] = (current + 1) % line_count

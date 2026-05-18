@@ -21,7 +21,8 @@ def _error(kind: str, **payload: Any) -> dict[str, Any]:
     return data
 
 
-def _iter_tracked_source_trace_refs(data: dict[str, Any]) -> list[dict[str, str]]:
+def _iter_tracked_source_trace_refs(
+        data: dict[str, Any]) -> list[dict[str, str]]:
     trace_refs: list[dict[str, str]] = []
     for section_name in ("requests", "requirements", "acceptance"):
         for item in data["facts"][section_name]:
@@ -38,7 +39,8 @@ def _iter_tracked_source_trace_refs(data: dict[str, Any]) -> list[dict[str, str]
     return trace_refs
 
 
-def _collect_referenced_refs(data: dict[str, Any]) -> tuple[dict[str, set[str]], list[dict[str, Any]]]:
+def _collect_referenced_refs(
+        data: dict[str, Any]) -> tuple[dict[str, set[str]], list[dict[str, Any]]]:
     source_documents = {
         source_document["id"]: source_document for source_document in data["facts"]["source_documents"]
     }
@@ -55,7 +57,12 @@ def _collect_referenced_refs(data: dict[str, Any]) -> tuple[dict[str, set[str]],
             errors.append(_error("invalid_trace_ref_format", **usage))
             continue
         if doc_id not in source_documents:
-            errors.append(_error("unknown_doc_id", doc_id=doc_id, stable_ref=stable_ref, **usage))
+            errors.append(
+                _error(
+                    "unknown_doc_id",
+                    doc_id=doc_id,
+                    stable_ref=stable_ref,
+                    **usage))
             continue
         referenced_refs.setdefault(doc_id, set()).add(stable_ref)
 
@@ -69,7 +76,8 @@ def extract_stable_refs(
     doc_id = source_document["id"]
     doc_path = repo_root / source_document["path"]
     if not doc_path.exists():
-        return set(), [_error("missing_source_document_path", doc_id=doc_id, path=source_document["path"])]
+        return set(), [_error("missing_source_document_path",
+                              doc_id=doc_id, path=source_document["path"])]
 
     extraction = source_document.get("extraction")
     if not isinstance(extraction, dict):
@@ -84,7 +92,11 @@ def extract_stable_refs(
 
     regex_patterns = extraction.get("regex", [])
     literal_refs = extraction.get("literals", [])
-    if not isinstance(regex_patterns, list) or not isinstance(literal_refs, list):
+    if not isinstance(
+            regex_patterns,
+            list) or not isinstance(
+            literal_refs,
+            list):
         return set(), [
             _error(
                 "invalid_extraction_contract",
@@ -131,7 +143,8 @@ def extract_stable_refs(
                 )
             )
             continue
-        extracted_refs.update(match.group(0) for match in compiled.finditer(text))
+        extracted_refs.update(match.group(0)
+                              for match in compiled.finditer(text))
 
     for literal in literal_refs:
         if not isinstance(literal, str) or not literal.strip():
@@ -176,10 +189,12 @@ def build_report(repo_root: Path, rules_path: Path) -> dict[str, Any]:
     broken_documents = 0
     for source_document in data["facts"]["source_documents"]:
         doc_id = source_document["id"]
-        extracted_refs, extraction_errors = extract_stable_refs(repo_root, source_document)
+        extracted_refs, extraction_errors = extract_stable_refs(
+            repo_root, source_document)
         doc_errors = list(extraction_errors)
         referenced = sorted(referenced_refs.get(doc_id, set()))
-        unexpected_referenced = sorted(ref for ref in referenced if ref not in extracted_refs)
+        unexpected_referenced = sorted(
+            ref for ref in referenced if ref not in extracted_refs)
         if unexpected_referenced:
             doc_errors.append(
                 _error(
@@ -189,7 +204,8 @@ def build_report(repo_root: Path, rules_path: Path) -> dict[str, Any]:
                     refs=unexpected_referenced,
                 )
             )
-        missing_refs = sorted(ref for ref in extracted_refs if ref not in set(referenced))
+        missing_refs = sorted(
+            ref for ref in extracted_refs if ref not in set(referenced))
         status = "broken" if doc_errors else "ok"
         if doc_errors:
             broken_documents += 1
@@ -227,8 +243,14 @@ def run_report(repo_root: Path, rules_path: Path) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="stakeholder voices source-trace coverage")
-    parser.add_argument("--rules-path", type=Path, default=ROOT / "docs" / "stakeholder_voices.yml")
+    parser = argparse.ArgumentParser(
+        description="stakeholder voices source-trace coverage")
+    parser.add_argument(
+        "--rules-path",
+        type=Path,
+        default=ROOT /
+        "docs" /
+        "stakeholder_voices.yml")
     args = parser.parse_args(argv)
 
     payload = run_report(ROOT, args.rules_path)

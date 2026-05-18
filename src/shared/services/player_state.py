@@ -70,14 +70,20 @@ def stats_for_level(lv: int) -> dict[str, int]:
     }
 
 
-def create_initial_player(start_x: int = 25, start_y: int = 6) -> dict[str, Any]:
+def create_initial_player(
+        start_x: int = 25, start_y: int = 6) -> dict[str, Any]:
     """ニューゲーム用レベル1プレイヤー dict を返す（旧 API 互換）。"""
-    return player_model_to_dict(PlayerModel.new_game(start_x=start_x, start_y=start_y))
+    return player_model_to_dict(
+        PlayerModel.new_game(
+            start_x=start_x,
+            start_y=start_y))
 
 
-def dump_snapshot(player: dict[str, Any], town_pos: tuple[int, int]) -> dict[str, Any]:
+def dump_snapshot(player: dict[str, Any],
+                  town_pos: tuple[int, int]) -> dict[str, Any]:
     """player dict からセーブ dict を作る（旧 API 互換）。"""
-    saved_player = {key: player[key] for key in SAVED_PLAYER_KEYS if key in player}
+    saved_player = {key: player[key]
+                    for key in SAVED_PLAYER_KEYS if key in player}
     return {
         "save_version": SAVE_VERSION,
         "town_pos": [int(town_pos[0]), int(town_pos[1])],

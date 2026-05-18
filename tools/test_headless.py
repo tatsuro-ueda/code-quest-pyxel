@@ -12,6 +12,7 @@ exit 0 = テスト通過、exit 1 = テスト失敗
 import sys
 import traceback
 
+
 def main():
     try:
         # Step 1: pyxel.init を headless=True 付きにモンキーパッチ

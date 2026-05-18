@@ -88,15 +88,25 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--steering", type=Path, default=Path("steering"),
                         help="タスクノートのルート（デフォルト: steering）")
-    parser.add_argument("--journey", type=Path, default=Path("docs/customer-journeys.md"))
-    parser.add_argument("--jobs", type=Path, default=Path("docs/customer-jobs.md"))
+    parser.add_argument(
+        "--journey",
+        type=Path,
+        default=Path("docs/customer-journeys.md"))
+    parser.add_argument(
+        "--jobs",
+        type=Path,
+        default=Path("docs/customer-jobs.md"))
     args = parser.parse_args(argv)
 
     if not args.steering.is_dir():
-        print(f"steering directory not found: {args.steering}", file=sys.stderr)
+        print(
+            f"steering directory not found: {
+                args.steering}",
+            file=sys.stderr)
         return 2
     if not args.journey.is_file():
-        print(f"customer-journeys.md not found: {args.journey}", file=sys.stderr)
+        print(
+            f"customer-journeys.md not found: {args.journey}", file=sys.stderr)
         return 2
     if not args.jobs.is_file():
         print(f"customer-jobs.md not found: {args.jobs}", file=sys.stderr)
@@ -112,11 +122,16 @@ def main(argv: list[str] | None = None) -> int:
     if missing:
         for cj in missing:
             files = sorted(p.name for p in cj_in_notes[cj])
-            print(f"CJ link broken: {cj} not found in customer-journeys.md (referenced by: {', '.join(files)})",
-                  file=sys.stderr)
+            print(
+                f"CJ link broken: {cj} not found in customer-journeys.md (referenced by: {
+                    ', '.join(files)})",
+                file=sys.stderr)
         fail += len(missing)
     else:
-        print(f"CJ link OK: {len(cj_in_notes)} unique CJ IDs in steering/, all resolved", file=sys.stdout)
+        print(
+            f"CJ link OK: {
+                len(cj_in_notes)} unique CJ IDs in steering/, all resolved",
+            file=sys.stdout)
 
     # C2: 各 CJ の該当カテゴリが customer-jobs.md に実在する
     referenced_cjs = set(cj_in_notes.keys()) & headings
@@ -130,11 +145,15 @@ def main(argv: list[str] | None = None) -> int:
         for cat in cats:
             cjob_checked += 1
             if not category_exists_in_jobs(cat, jobs_text):
-                print(f"CJob category broken: {cj} 該当カテゴリ {cat!r} not found in customer-jobs.md",
-                      file=sys.stderr)
+                print(
+                    f"CJob category broken: {cj} 該当カテゴリ {
+                        cat!r} not found in customer-jobs.md",
+                    file=sys.stderr)
                 cjob_fail += 1
     if cjob_fail == 0:
-        print(f"CJob category OK: {cjob_checked} category tokens checked", file=sys.stdout)
+        print(
+            f"CJob category OK: {cjob_checked} category tokens checked",
+            file=sys.stdout)
     fail += cjob_fail
 
     if fail:

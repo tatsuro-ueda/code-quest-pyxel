@@ -37,12 +37,13 @@ def load_changes(top_changes_path: Path) -> list[str]:
     changes = data.get("changes", [])
     if not isinstance(changes, list):
         raise ValueError(
-            f"{top_changes_path} must contain a JSON object with a 'changes' list"
-        )
+            f"{top_changes_path} must contain a JSON object with a 'changes' list")
     return [str(c) for c in changes]
 
 
-def render_block(changes: list[str], max_render: int = DEFAULT_MAX_RENDER) -> str:
+def render_block(
+        changes: list[str],
+        max_render: int = DEFAULT_MAX_RENDER) -> str:
     """マーカー間に挿入する `<ul class="changes">` ブロックを生成する。"""
     rendered = changes[:max_render]
     items = "\n".join(f"      <li>{c}</li>" for c in rendered)
@@ -92,7 +93,8 @@ def main(argv: list[str] | None = None) -> int:
     block = render_block(changes, max_render=args.max)
     changed = inject_into_index(args.index, block)
     if changed:
-        print(f"[render-top-changes] updated {args.index} (top {min(args.max, len(changes))} entries)")
+        print(
+            f"[render-top-changes] updated {args.index} (top {min(args.max, len(changes))} entries)")
     else:
         print(f"[render-top-changes] no change ({args.index})")
     return 0

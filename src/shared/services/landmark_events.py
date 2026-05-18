@@ -64,7 +64,10 @@ def find_landmark_at(player_x: int, player_y: int) -> LandmarkEvent | None:
     return None
 
 
-def resolve_scene(event: LandmarkEvent, flags: dict[str, bool], glitch_lord_defeated: bool) -> str:
+def resolve_scene(event: LandmarkEvent,
+                  flags: dict[str,
+                              bool],
+                  glitch_lord_defeated: bool) -> str:
     """プレイヤーの進行状況に応じて、該当ランドマークで流すべきシーン名を決める。"""
     if not flags.get(event.flag_name, False):
         return event.scene_name

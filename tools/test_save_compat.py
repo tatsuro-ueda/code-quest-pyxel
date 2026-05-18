@@ -59,7 +59,11 @@ def main():
                 failed = True
                 continue
 
-            print(f"OK: {fixture_path.name} — v{snapshot['save_version']} ロード成功 (キー数: {len(player)})")
+            print(
+                f"OK: {
+                    fixture_path.name} — v{
+                    snapshot['save_version']} ロード成功 (キー数: {
+                    len(player)})")
 
         except Exception:
             print(f"FAIL: {fixture_path.name} — 例外発生")

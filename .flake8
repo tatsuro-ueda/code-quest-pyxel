@@ -1,0 +1,12 @@
+[flake8]
+max-line-length = 79
+exclude =
+    .git,
+    .venv,
+    __pycache__,
+    build,
+    dist,
+    src/generated,
+    src/scenes,
+    src/shared/constants/tile_data.py,
+    src/shared/constants/sprite_data.py

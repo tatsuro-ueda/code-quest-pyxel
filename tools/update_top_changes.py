@@ -126,7 +126,8 @@ def amend_with_marker(subject: str, body: str) -> None:
     if AUTO_MARKER not in new_body:
         new_body = (new_body + "\n\n" + AUTO_MARKER).strip()
     new_message = subject if not new_body else f"{subject}\n\n{new_body}"
-    subprocess.check_call(["git", "add", "top_changes.json", "index.html"], cwd=ROOT)
+    subprocess.check_call(
+        ["git", "add", "top_changes.json", "index.html"], cwd=ROOT)
     subprocess.check_call(
         ["git", "commit", "--amend", "-m", new_message],
         cwd=ROOT,

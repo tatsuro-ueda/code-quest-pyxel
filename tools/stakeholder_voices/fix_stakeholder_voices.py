@@ -29,7 +29,10 @@ REQUEST_NORMALIZED_LIST_KEYS = (
 
 
 class _ReadableYamlDumper(yaml.SafeDumper):
-    def increase_indent(self, flow: bool = False, indentless: bool = False) -> Any:
+    def increase_indent(
+            self,
+            flow: bool = False,
+            indentless: bool = False) -> Any:
         return super().increase_indent(flow, False)
 
 
@@ -110,7 +113,8 @@ def run_fixer(
     *,
     rule_ids: set[str] | None = None,
 ) -> dict[str, Any]:
-    check = check_stakeholder_voices.run_checker(repo_root, rules_path, rule_ids=rule_ids)
+    check = check_stakeholder_voices.run_checker(
+        repo_root, rules_path, rule_ids=rule_ids)
     if not check["has_warnings"]:
         return {
             "status": "OK",
@@ -131,7 +135,8 @@ def run_fixer(
     if applied_fixes:
         write_yaml(rules_path, data)
 
-    post_check = check_stakeholder_voices.run_checker(repo_root, rules_path, rule_ids=rule_ids)
+    post_check = check_stakeholder_voices.run_checker(
+        repo_root, rules_path, rule_ids=rule_ids)
     if applied_fixes and not post_check["has_warnings"]:
         status = "FIXED"
     elif not applied_fixes and check["has_warnings"]:
@@ -150,12 +155,20 @@ def run_fixer(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="stakeholder voices deterministic fixer")
-    parser.add_argument("--rules-path", type=Path, default=ROOT / "docs" / "stakeholder_voices.yml")
+    parser = argparse.ArgumentParser(
+        description="stakeholder voices deterministic fixer")
+    parser.add_argument(
+        "--rules-path",
+        type=Path,
+        default=ROOT /
+        "docs" /
+        "stakeholder_voices.yml")
     parser.add_argument("--rule-id", action="append", default=None)
     args = parser.parse_args(argv)
 
-    payload = run_fixer(ROOT, args.rules_path, rule_ids=set(args.rule_id) if args.rule_id else None)
+    payload = run_fixer(
+        ROOT, args.rules_path, rule_ids=set(
+            args.rule_id) if args.rule_id else None)
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0 if payload["status"] in {"OK", "FIXED"} else 1
 

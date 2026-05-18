@@ -30,7 +30,8 @@ def run_repair(
         for cycle in range(1, max_cycles + 1):
             # 毎サイクルの最初に checker の生結果を history へ積み、
             # 「何を見てどこで止まったか」を後から追えるようにする。
-            check = check_architecture_rules.run_checker(repo_root, rules_path, rule_ids=rule_ids)
+            check = check_architecture_rules.run_checker(
+                repo_root, rules_path, rule_ids=rule_ids)
             history.append({"cycle": cycle, "check": check})
             if not check["has_warnings"]:
                 return {
@@ -67,10 +68,12 @@ def run_repair(
                 }
 
             autofixed = True
-            applied_fixes.extend({"cycle": cycle, **fix} for fix in fix_result["applied_fixes"])
+            applied_fixes.extend({"cycle": cycle, **fix}
+                                 for fix in fix_result["applied_fixes"])
 
         # 上限回数に達した場合も最後に再検査し、直り切ったのか未収束なのかを確定させる。
-        final_check = check_architecture_rules.run_checker(repo_root, rules_path, rule_ids=rule_ids)
+        final_check = check_architecture_rules.run_checker(
+            repo_root, rules_path, rule_ids=rule_ids)
         history.append({"cycle": max_cycles + 1, "check": final_check})
         return {
             "status": "AUTOFIXED" if autofixed and not final_check["has_warnings"] else "NEEDS_HUMAN",
@@ -92,7 +95,12 @@ def run_repair(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=ROOT)
-    parser.add_argument("--rules-path", type=Path, default=ROOT / "docs" / "architecture_rules.yml")
+    parser.add_argument(
+        "--rules-path",
+        type=Path,
+        default=ROOT /
+        "docs" /
+        "architecture_rules.yml")
     parser.add_argument("--max-cycles", type=int, default=5)
     parser.add_argument("--rule-id", action="append", default=[])
     args = parser.parse_args(argv)
