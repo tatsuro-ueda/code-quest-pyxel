@@ -455,107 +455,242 @@ class ExplorePresenter:
         return None
 
     def _check_tile_events(self, game: Any, tile, nx, ny) -> None:
-        """タイル上のイベント（ダンジョン階段・町・城・洞窟・エンカウント）を処理する。
+        """タイル上のイベント（階段・町・城・洞窟・エンカウント）を処理する。
 
         Args:
-            game: game の値。
-            tile: tile の値。
-            nx: nx の値。
-            ny: ny の値。
+            game: ゲーム本体。
+            tile: 移動先タイル。
+            nx, ny: 移動先タイル座標。
         Postconditions:
-            - 副作用とモデル更新は実装どおり。
+            - 該当する handler が 1 つだけ処理する（早期 return 述語列）。
+        """
+        if self._handle_stair_up(game, tile):
+            return
+        if self._handle_glitch_lord_trigger(game, tile):
+            return
+        if self._handle_town(game, tile, nx, ny):
+            return
+        if self._handle_castle(game, tile, nx, ny):
+            return
+        if self._handle_cave(game, tile, nx, ny):
+            return
+        self._check_random_encounter(game, tile)
+
+    def _handle_stair_up(self, game, tile) -> bool:
+        """dungeon の階段で脱出する。
+
+        Args:
+            game: ゲーム本体。
+            tile: 移動先タイル。
+        Returns:
+            bool: True なら処理した。
+        Postconditions:
+            - dungeon 内で T_STAIR_UP のとき player を world_return_xy へ。
         """
         import src.runtime.main_runtime as M
         player = game.player_model
+        is_stair_up_in_dungeon = player.in_dungeon and tile == M.T_STAIR_UP
+        if not is_stair_up_in_dungeon:
+            return False
+        player.in_dungeon = False
+        player.x = game.world_return_x
+        player.y = game.world_return_y
+        game.messages.enter(
+            game.messages.dialog_lines("dungeon.glitch.exit"),
+            callback=self._build_dungeon_exit_callback(game),
+        )
+        return True
 
-        is_predicate_13 = player.in_dungeon and tile == M.T_STAIR_UP
-        if is_predicate_13:
-            player.in_dungeon = False
-            player.x = game.world_return_x
-            player.y = game.world_return_y
+    def _handle_glitch_lord_trigger(self, game, tile) -> bool:
+        """ボス戦のトリガータイル。
+
+        Args:
+            game: ゲーム本体。
+            tile: 移動先タイル。
+        Returns:
+            bool: True なら処理した。
+        Postconditions:
+            - dungeon 内・未撃破のとき battle_scene を start する。
+        """
+        import src.runtime.main_runtime as M
+        player = game.player_model
+        is_glitch_lord_trigger = (
+            player.in_dungeon and tile == M.T_GLITCH_LORD_TRIGGER
+        )
+        if not is_glitch_lord_trigger:
+            return False
+        if not player.glitch_lord_defeated:
+            game.battle_scene.start(M.GLITCH_LORD_DATA, is_glitch_lord=True)
+        return True
+
+    def _handle_town(self, game, tile, nx: int, ny: int) -> bool:
+        """町タイルで town_menu state へ遷移する。
+
+        Args:
+            game: ゲーム本体。
+            tile: 移動先タイル。
+            nx, ny: 町タイル座標。
+        Returns:
+            bool: True なら処理した。
+        Postconditions:
+            - game.state を `town_menu` に切り替え、menu_pos / cursor を初期化。
+        """
+        import src.runtime.main_runtime as M
+        if tile != M.T_TOWN:
+            return False
+        from src.shared.services.game_state import TownContext
+        pos = (nx, ny)
+        game.town_model.menu_pos = pos
+        game.town_model.menu_cursor = 0
+        game.current_town = TownContext(
+            index=M.TOWN_INDEX_BY_POS.get(pos, 0), pos=pos,
+        )
+        game.state = "town_menu"
+        return True
+
+    def _handle_castle(self, game, tile, nx: int, ny: int) -> bool:
+        """城タイルで professor_intro or 対話 state へ遷移する。
+
+        Args:
+            game: ゲーム本体。
+            tile: 移動先タイル。
+            nx, ny: 城タイル座標。
+        Returns:
+            bool: True なら処理した。
+        Postconditions:
+            - 撃破済 + (25,6) のとき professor_scene.enter_intro。
+            - それ以外は _show_castle_dialog で対話メッセージを show。
+        """
+        import src.runtime.main_runtime as M
+        if tile != M.T_CASTLE:
+            return False
+        is_professor_entry = (
+            game.player_model.glitch_lord_defeated and (nx, ny) == (25, 6)
+        )
+        if is_professor_entry:
+            game.professor_scene.enter_intro()
+            return True
+        self._show_castle_dialog(game, nx, ny)
+        return True
+
+    def _show_castle_dialog(self, game, nx: int, ny: int) -> None:
+        """城タイルの対話メッセージを表示し、game.state を `town` に切り替える。
+
+        Args:
+            game: ゲーム本体。
+            nx, ny: 城タイル座標。
+        Postconditions:
+            - TOWN_DIALOG_SCENES の登録が無いときは `...` のみを表示する。
+        """
+        import src.runtime.main_runtime as M
+        scene_name = M.TOWN_DIALOG_SCENES.get((nx, ny))
+        if scene_name is None:
+            lines = ["..."]
+        else:
+            lines = game.messages.dialog_lines(
+                scene_name,
+                ProfessorPhase=game.professor_scene.phase(),
+            )
+        game.messages.show(lines)
+        game.state = "town"
+
+    def _handle_cave(self, game, tile, nx: int, ny: int) -> bool:
+        """洞窟タイルで dungeon 進入 or ブロックメッセージを出す。
+
+        Args:
+            game: ゲーム本体。
+            tile: 移動先タイル。
+            nx, ny: 洞窟タイル座標。
+        Returns:
+            bool: True なら処理した。
+        Postconditions:
+            - block 判定（_handle_cave_block_message）で処理を吸収するか、
+              そうでなければ _enter_dungeon_from_cave で dungeon に入る。
+        """
+        import src.runtime.main_runtime as M
+        player = game.player_model
+        is_cave_entry = tile == M.T_CAVE and not player.in_dungeon
+        if not is_cave_entry:
+            return False
+        if self._handle_cave_block_message(game, player):
+            return True
+        self._enter_dungeon_from_cave(game, nx, ny)
+        return True
+
+    def _handle_cave_block_message(self, game, player) -> bool:
+        """towerNoise 未完了 or 初回開放のときに block / unblock メッセージを出す。
+
+        Args:
+            game: ゲーム本体。
+            player: プレイヤーモデル。
+        Returns:
+            bool: True ならメッセージで処理が完結した。
+        Postconditions:
+            - towerNoiseCleared が False なら cave.blocked を enter。
+            - 初回 unblock のときに _cave_unblock_shown=True にして
+              cave.unblocked を enter する。
+        """
+        if not player.towerNoiseCleared:
+            game.messages.enter(game.messages.dialog_lines("cave.blocked"))
+            return True
+        if not getattr(game, "_cave_unblock_shown", False):
+            game._cave_unblock_shown = True
             game.messages.enter(
-                game.messages.dialog_lines("dungeon.glitch.exit"),
-                callback=self._build_dungeon_exit_callback(game),
+                game.messages.dialog_lines("cave.unblocked")
             )
-            return
+            return True
+        return False
 
-        is_predicate_11 = player.in_dungeon and tile == M.T_GLITCH_LORD_TRIGGER
-        if is_predicate_11:
-            if not player.glitch_lord_defeated:
-                game.battle_scene.start(
-                    M.GLITCH_LORD_DATA, is_glitch_lord=True
-                )
-            return
+    def _enter_dungeon_from_cave(self, game, nx: int, ny: int) -> None:
+        """洞窟から dungeon に入り、world_return_xy / dungeon_spawn を設定する。
 
-        if tile == M.T_TOWN:
-            from src.shared.services.game_state import TownContext
-            pos = (nx, ny)
-            game.town_model.menu_pos = pos
-            game.town_model.menu_cursor = 0
-            game.current_town = TownContext(
-                index=M.TOWN_INDEX_BY_POS.get(pos, 0),
-                pos=pos,
-            )
-            game.state = "town_menu"
-            return
+        Args:
+            game: ゲーム本体。
+            nx, ny: 入口の洞窟タイル座標。
+        Postconditions:
+            - dungeon_in SFX を鳴らし、player.in_dungeon=True、
+              player を dungeon_spawn に置き、glitch.enter メッセージを enter。
+        """
+        player = game.player_model
+        game.sfx.play("dungeon_in")
+        game.world_return_x = nx
+        game.world_return_y = ny
+        player.in_dungeon = True
+        sx, sy = game.dungeon_spawn
+        player.x = sx
+        player.y = sy
+        game.messages.enter(
+            game.messages.dialog_lines("dungeon.glitch.enter")
+        )
 
-        if tile == M.T_CASTLE:
-            is_predicate_9 = (
-                game.player_model.glitch_lord_defeated
-                and (nx, ny) == (25, 6)
-            )
-            if is_predicate_9:
-                game.professor_scene.enter_intro()
-                return
-            scene_name = M.TOWN_DIALOG_SCENES.get((nx, ny))
-            if scene_name is None:
-                lines = ["..."]
-            else:
-                lines = game.messages.dialog_lines(
-                    scene_name,
-                    ProfessorPhase=game.professor_scene.phase(),
-                )
-            game.messages.show(lines)
-            game.state = "town"
-            return
+    def _check_random_encounter(self, game, tile) -> None:
+        """通常タイルでランダムエンカウント判定する。
 
-        is_predicate_7 = tile == M.T_CAVE and (not player.in_dungeon)
-        if is_predicate_7:
-            if not player.towerNoiseCleared:
-                game.messages.enter(
-                    game.messages.dialog_lines("cave.blocked")
-                )
-                return
-            if not getattr(game, "_cave_unblock_shown", False):
-                game._cave_unblock_shown = True
-                game.messages.enter(
-                    game.messages.dialog_lines("cave.unblocked")
-                )
-                return
-            game.sfx.play("dungeon_in")
-            game.world_return_x = nx
-            game.world_return_y = ny
-            player.in_dungeon = True
-            sx, sy = game.dungeon_spawn
-            player.x = sx
-            player.y = sy
-            game.messages.enter(
-                game.messages.dialog_lines("dungeon.glitch.enter")
-            )
+        Args:
+            game: ゲーム本体。
+            tile: 現在タイル。
+        Postconditions:
+            - debug_mode は早期 return。
+            - dungeon 内・ボス撃破済は早期 return。
+            - tile の rate と乱数で勝てば battle_scene を start する。
+        """
+        import src.runtime.main_runtime as M
+        if game.debug_mode:
             return
-
-        # Random encounter
-        if not game.debug_mode:
-            is_predicate_5 = player.in_dungeon and player.glitch_lord_defeated
-            if is_predicate_5:
-                return
-            rate = M.ENCOUNTER_RATES.get(tile, 0)
-            is_predicate_3 = rate > 0 and random.random() < rate
-            if is_predicate_3:
-                zone = M.get_zone(player.y, player.in_dungeon)
-                enemies = M.ZONE_ENEMIES.get(zone, M.ZONE_ENEMIES[0])
-                enemy_template = random.choice(enemies)
-                game.battle_scene.start(enemy_template, is_glitch_lord=False)
+        player = game.player_model
+        is_dungeon_post_boss = (
+            player.in_dungeon and player.glitch_lord_defeated
+        )
+        if is_dungeon_post_boss:
+            return
+        rate = M.ENCOUNTER_RATES.get(tile, 0)
+        can_encounter = rate > 0 and random.random() < rate
+        if not can_encounter:
+            return
+        zone = M.get_zone(player.y, player.in_dungeon)
+        enemies = M.ZONE_ENEMIES.get(zone, M.ZONE_ENEMIES[0])
+        enemy_template = random.choice(enemies)
+        game.battle_scene.start(enemy_template, is_glitch_lord=False)
 
     def _check_landmark_events(self, game: Any) -> bool:
         """ランドマークイベントを判定し、発生したら True を返す。
