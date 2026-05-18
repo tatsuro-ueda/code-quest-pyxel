@@ -1,13 +1,24 @@
 """ゲーム実行時の設定定数（P1.5-E で main_runtime.py から抽出）。
 
+このファイルに含まれる定数:
+
 - ENCOUNTER_RATES: タイルごとの遭遇率
 - VFX_FLASH: 画面エフェクト設定
-- BATTLE_ATTACK_SCENES / ENEMY_HIT_SCENES / VICTORY_SCENES_BY_ZONE: 戦闘 dialog scene 参照
+- BATTLE_ATTACK_SCENES / ENEMY_HIT_SCENES /
+  VICTORY_SCENES_BY_ZONE: 戦闘 dialog scene 参照
 - ZONE_NAMES / ZONE_NAMES_EN: ゾーン表示名
 - TOWN_*: 町メニュー関連
 - SHOP_KIND_BY_LABEL / INN_COST / TOWN_INDEX_BY_POS: 町内商店定義
 - TOWN_DIALOG_SCENES / TOWN_NPC_LINES: 町会話
 - *_MSG: 各種表示メッセージ
+
+Problems:
+    - 戦闘・町・遭遇率などのチューニング定数が main_runtime.py に
+      混ざると、runtime 本体の責務がぼやけて読みにくい。
+
+Solutions:
+    - 設定定数を constants/game_config.py に切り出し、main_runtime と
+      sceneは「定数を読む」だけの責務にする。
 """
 from __future__ import annotations
 

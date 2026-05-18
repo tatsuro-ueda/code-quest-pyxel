@@ -1,6 +1,15 @@
-from __future__ import annotations
+"""misaki_gothic.ttf (8x8) から bake した日本語フォント glyph データ。
 
-"""Font glyph data baked from misaki_gothic.ttf (8x8)."""
+Problems:
+    - 日本語フォントを毎回 TTF 読み込みすると web 配布版で起動が遅くなる。
+    - ライセンス上、TTF 同梱より bake 済み bitmap 化が望ましい場面がある。
+
+Solutions:
+    - TTF を tools/rebake_pyxres.py で 8x8 bitmap に bake し、
+      `JP_FONT_GLYPHS` として Python リテラルで持つ。
+    - 実行時は dict lookup だけで描画でき、外部ファイル依存を持ち込まない。
+"""
+from __future__ import annotations
 
 JP_FONT_GLYPH_W = 8
 JP_FONT_GLYPH_H = 8
@@ -611,4 +620,3 @@ JP_FONT_BITMAPS: dict[str, list[int]] = {
     '：': [0, 48, 48, 0, 48, 48, 0, 0],
     '？': [60, 66, 2, 12, 16, 0, 16, 0],
 }
-
