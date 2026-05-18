@@ -100,91 +100,177 @@ class ExplorePresenter:
         return 0, 0
 
     def _run_update(self, game: Any) -> None:
-        """_run_update() の実装本体。
+        """1 フレーム分の探索更新。
 
         Args:
-            game: game の値。
+            game: ゲーム本体。
         Postconditions:
-            - 副作用とモデル更新は実装どおり。
+            - cool down → メニュー → 移動 の順で 1 度だけ走る。
         """
-        import src.runtime.main_runtime as M
+        if self._tick_cooldowns(game):
+            return
+        if self._handle_menu_open(game):
+            return
+        self._apply_move(game)
 
+    def _tick_cooldowns(self, game) -> bool:
+        """move_cooldown / has_a_cooldown を消費する。
+
+        A-button cooldown は「でる」直後やロード直後の1フレーム目に残っている
+        A 押下を1回だけ捨てて、町メニューが暴発しないようにする。
+
+        Args:
+            game: ゲーム本体。
+        Returns:
+            bool: True ならこのフレームの update を打ち切る。
+        Postconditions:
+            - self.model.move_cooldown / has_a_cooldown が進む。
+        """
         if self.model.move_cooldown > 0:
             self.model.move_cooldown -= 1
-            return
-
-        # A-button cooldown: 「でる」直後やロード直後の1フレーム目に
-        # 残っている A 押下を1回だけ捨てて、町メニューが暴発しないようにする。
+            return True
         if self.model.has_a_cooldown:
             if game.input_state.btnp(CONFIRM_BUTTONS):
                 self.model.has_a_cooldown = False
-                return
+                return True
             self.model.has_a_cooldown = False
+        return False
 
-        # Open menu
-        if game.input_state.btnp(CANCEL_BUTTONS):
-            game.state = "menu"
-            game.menu_cursor = 0
-            game.menu_sub = None
-            return
+    def _handle_menu_open(self, game) -> bool:
+        """CANCEL ボタンでメニューを開く。
 
+        Args:
+            game: ゲーム本体。
+        Returns:
+            bool: True ならメニューを開いた。
+        Postconditions:
+            - game.state を `menu` に切り替え、cursor / sub を初期化。
+        """
+        if not game.input_state.btnp(CANCEL_BUTTONS):
+            return False
+        game.state = "menu"
+        game.menu_cursor = 0
+        game.menu_sub = None
+        return True
+
+    def _apply_move(self, game) -> None:
+        """移動入力を適用し、進入か脱出を実行する。
+
+        Args:
+            game: ゲーム本体。
+        Postconditions:
+            - 進入は _try_step_into、dungeon 境界外は _exit_dungeon_at_edge。
+        """
+        import src.runtime.main_runtime as M
         player = game.player_model
         dx, dy = self._read_move_input(game)
+        has_no_input = dx == 0 and dy == 0
+        if has_no_input:
+            return
+        nx, ny = player.x + dx, player.y + dy
+        if player.in_dungeon:
+            mw, mh = M.DUNGEON_W, M.DUNGEON_H
+        else:
+            mw, mh = M.MAP_W, M.MAP_H
+        is_in_map_bounds = 0 <= nx < mw and 0 <= ny < mh
+        if is_in_map_bounds:
+            self._try_step_into(game, nx, ny)
+            return
+        if player.in_dungeon:
+            self._exit_dungeon_at_edge(game)
 
-        is_predicate_19 = dx != 0 or dy != 0
-        if is_predicate_19:
-            nx, ny = player.x + dx, player.y + dy
-            if player.in_dungeon:
-                mw, mh = M.DUNGEON_W, M.DUNGEON_H
-            else:
-                mw, mh = M.MAP_W, M.MAP_H
+    def _try_step_into(self, game, nx: int, ny: int) -> None:
+        """移動先タイルが通行可能なら進入し、関連処理を順に実行する。
 
-            is_predicate_17 = 0 <= nx < mw and 0 <= ny < mh
-            if is_predicate_17:
-                tile = self.model.get_tile(
-                    nx, ny, in_dungeon=player.in_dungeon
-                )
-                if tile not in M.IMPASSABLE:
-                    old_zone = M.get_zone(player.y, player.in_dungeon)
-                    player.x = nx
-                    player.y = ny
-                    game.sfx.play("step")
-                    self.model.move_cooldown = 4
-                    self.model.walk_timer += 1
-                    new_zone = M.get_zone(player.y, player.in_dungeon)
-                    player.max_zone_reached = max(
-                        player.max_zone_reached, new_zone
-                    )
-                    if new_zone != old_zone:
-                        game.sfx.play("zone_change")
-                    if self.model.walk_timer >= 2:
-                        self.model.walk_frame = 1 - self.model.walk_frame
-                        self.model.walk_timer = 0
+        Args:
+            game: ゲーム本体。
+            nx, ny: 移動先タイル座標。
+        Postconditions:
+            - 通行可能なら player 位置、SFX、cooldown、walk_timer、
+              zone、毒、ランドマーク、タイルイベントをこの順で実行する。
+        """
+        import src.runtime.main_runtime as M
+        player = game.player_model
+        tile = self.model.get_tile(nx, ny, in_dungeon=player.in_dungeon)
+        if tile in M.IMPASSABLE:
+            return
+        old_zone = M.get_zone(player.y, player.in_dungeon)
+        player.x = nx
+        player.y = ny
+        game.sfx.play("step")
+        self.model.move_cooldown = 4
+        self.model.walk_timer += 1
+        self._notify_zone_change(game, old_zone)
+        self._update_walk_frame()
+        self._tick_poison(game)
+        if self._check_landmark_events(game):
+            return
+        self._check_tile_events(game, tile, nx, ny)
 
-                    # Poison tick
-                    if player.poisoned:
-                        game._poison_step_counter = (
-                            getattr(game, "_poison_step_counter", 0) + 1
-                        )
-                        if game._poison_step_counter >= 4:
-                            game._poison_step_counter = 0
-                            player.hp = max(1, player.hp - 2)
-                            game.sfx.play("poison_tick")
+    def _notify_zone_change(self, game, old_zone: int) -> None:
+        """zone が変わったら SFX を鳴らし、max_zone_reached を更新する。
 
-                    # Check events after move
-                    if self._check_landmark_events(game):
-                        return
-                    self._check_tile_events(game, tile, nx, ny)
-            elif player.in_dungeon:
-                # Exit dungeon at edges
-                player.in_dungeon = False
-                player.x = game.world_return_x
-                player.y = game.world_return_y
-                game.messages.enter(
-                    game.messages.dialog_lines("dungeon.glitch.exit"),
-                    callback=self._build_dungeon_exit_callback(game),
-                )
-                return
+        Args:
+            game: ゲーム本体。
+            old_zone: 移動前のゾーン番号。
+        Postconditions:
+            - player.max_zone_reached が更新される。
+        """
+        import src.runtime.main_runtime as M
+        player = game.player_model
+        new_zone = M.get_zone(player.y, player.in_dungeon)
+        player.max_zone_reached = max(player.max_zone_reached, new_zone)
+        if new_zone != old_zone:
+            game.sfx.play("zone_change")
+
+    def _update_walk_frame(self) -> None:
+        """walk_timer が 2 に達したら walk_frame を 0↔1 で切り替える。
+
+        Postconditions:
+            - self.model.walk_frame / walk_timer が更新される。
+        """
+        if self.model.walk_timer >= 2:
+            self.model.walk_frame = 1 - self.model.walk_frame
+            self.model.walk_timer = 0
+
+    def _tick_poison(self, game) -> None:
+        """毒状態のとき 4 歩ごとに HP を 2 削る。
+
+        Args:
+            game: ゲーム本体。
+        Postconditions:
+            - game._poison_step_counter を +1 し、4 に達したら 0 に戻し
+              player.hp を 2 減らして poison_tick SFX を鳴らす。
+        """
+        player = game.player_model
+        if not player.poisoned:
+            return
+        game._poison_step_counter = (
+            getattr(game, "_poison_step_counter", 0) + 1
+        )
+        if game._poison_step_counter < 4:
+            return
+        game._poison_step_counter = 0
+        player.hp = max(1, player.hp - 2)
+        game.sfx.play("poison_tick")
+
+    def _exit_dungeon_at_edge(self, game) -> None:
+        """dungeon 境界外の移動先で dungeon から脱出する。
+
+        Args:
+            game: ゲーム本体。
+        Postconditions:
+            - player.in_dungeon=False、player 座標は world_return_xy。
+            - 脱出メッセージを enter し、_build_dungeon_exit_callback を渡す。
+        """
+        player = game.player_model
+        player.in_dungeon = False
+        player.x = game.world_return_x
+        player.y = game.world_return_y
+        game.messages.enter(
+            game.messages.dialog_lines("dungeon.glitch.exit"),
+            callback=self._build_dungeon_exit_callback(game),
+        )
 
     def _run_build_view_model(self, game: Any) -> ExploreViewModel:
         """ExploreViewModel を組み立てる。
@@ -362,7 +448,8 @@ class ExplorePresenter:
                     continue
                 sx = tx * 16 - self.model.cam_x
                 sy = ty * 16 - self.model.cam_y + 24
-                if -16 < sx < 256 and 8 < sy < 256:
+                is_visible_on_screen = -16 < sx < 256 and 8 < sy < 256
+                if is_visible_on_screen:
                     return (sx, sy)
                 break
         return None
