@@ -12,8 +12,8 @@ tags:
 
 # 2026年5月17日 src/scenes の CR202 大物 3 件を AI で個別リファクタ（タスク A）
 
-> 状態：② ユーザーストーリーマップ
-> 次のゲート：（ユーザー）USM を確認して承認するか直しの希望を伝える
+> 状態：③ Gherkin
+> 次のゲート：（ユーザー）Gherkin を確認して承認するか直しの希望を伝える
 
 ---
 
@@ -53,7 +53,31 @@ tags:
 
 ## 2) ユーザーストーリーマップ
 
-（Journey 承認後に記入）
+> 委任度：🟡 分割境界の最終判断はユーザー確認、機械的な実装と検証は CC のみで可
+> 残る曖昧さ：`_check_tile_events` がタイル副作用順序に敏感かは、実コードと既存テストを読まないと確定しない
+
+### 事前確認
+
+- [x] tasknote確認済み: 
+  - [x] 親 `steering/done/20260517-flake8-cr-scenes.md`
+  - [x] 後続B `steering/20260518-flake8-cr-rule-extension.md`
+  - [x] 後続C `steering/20260518-flake8-cr-scenes-rest27.md`
+- [x] skill・tool・MCP確認済み: 
+  - [x] `check-python-coding-guide` Skill
+  - [x] `flake8-cr` / `pytest` / `make verify` / `make build`
+- [x] 永続的ドキュメント確認済み: 
+  - [x] `~/.claude/skills/check-python-coding-guide/SKILL.md`
+  - [x] `docs/repository-structure.md`
+  - [x] `docs/framework-rule.md`
+
+### 本体
+
+1. 👀 `flake8-cr src/scenes/explore/presenter.py` を実行し、CR202 対象 3 関数（102行目 `_run_update` / 189行目 `_run_build_view_model` / 288行目 `_check_tile_events`）と各長さ（79/89/92）を再確認する
+2. 💦 3 関数の責務を読み、ステップ列・述語・private 切り出しの境界を仮置きする。副作用順序に敏感な `_check_tile_events` を優先して精査する
+3. 🎬 1 関数ずつ、述語切り出し → private 切り出し → 早期 return の順で適用し、20 行以下まで分割する
+4. ✅ 各分割ごとに `pytest` / `make verify` / `make build` が緑であることを確認し、差分は最小コミットで残す
+5. 🎬 分割後の構造から、タスク B のルール候補（CR204 など）に渡す「望ましい構造」のメモを抽出する
+6. ❤️ explore/presenter.py が責務単位で読めるようになり、A→B→C の連結が始められる
 
 ---
 
