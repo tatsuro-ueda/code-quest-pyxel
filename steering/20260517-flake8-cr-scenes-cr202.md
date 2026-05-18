@@ -12,8 +12,8 @@ tags:
 
 # 2026年5月17日 src/scenes の CR202 大物 3 件を AI で個別リファクタ（タスク A）
 
-> 状態：⑤ Tasklist
-> 次のゲート：（自律）Tasklist を埋め、実装に進む
+> 状態：⑨ Closing
+> 次のゲート：（ユーザー）このノートを close してよいか確認する
 
 ---
 
@@ -88,7 +88,7 @@ tags:
 
 ### シナリオ一覧
 
-- [ ] シナリオ1：対象 3 関数の長さが 20 行以下になる
+- [x] シナリオ1：対象 3 関数の長さが 20 行以下になる
 
 1. 🧱 explore/presenter.py に CR202 の 3 関数（`_run_update` / `_run_build_view_model` / `_check_tile_events`）が違反として残っている
 2. 🎬 CC が 1 関数ずつ責務を読み、述語切り出し → private 切り出し → 早期 return の順で分割する
@@ -101,7 +101,7 @@ Then 3 関数とも docstring 除く本体が 20 行以下に収まる
 And `flake8-cr src/scenes/explore/presenter.py` の出力に 3 関数の CR202 警告が出ない
 ```
 
-- [ ] シナリオ2：分割の各ステップで挙動が壊れない
+- [x] シナリオ2：分割の各ステップで挙動が壊れない
 
 1. 🧱 main 相当の状態で `pytest` / `make verify` / `make build` がすべて緑
 2. 🎬 CC が 1 関数ごとの分割直後に検証コマンドを走らせ、最小コミットで差分を残す
@@ -114,7 +114,7 @@ Then 同じ 3 コマンドが分割直後も緑で完走する
 And いずれかが赤になった場合は、CC はその差分を作業ログに記録した上で分割を見直す
 ```
 
-- [ ] シナリオ3：タスクB に渡すルール候補メモが出力される
+- [x] シナリオ3：タスクB に渡すルール候補メモが出力される
 
 1. 🧱 3 関数の分割が完了している
 2. 🎬 CC が分割後の共通構造を箇条書きで抽出する
@@ -127,7 +127,7 @@ Then タスク B（`steering/20260518-flake8-cr-rule-extension.md`）の参考�
 And メモには「述語呼び出し + private 呼び出し + return のステップ列」「early return パターン」など、機械検出に落とせる粒度の構造が並ぶ
 ```
 
-- [ ] シナリオ4：分割境界に迷ったら CC は止まる
+- [x] シナリオ4：分割境界に迷ったら CC は止まる
 
 1. 🧱 CC が 3 関数のいずれかの分割境界を判断しようとしている
 2. 🎬 複数の妥当な分割案を思いつき、責務分担の文脈だけでは選定の根拠が決まらない
@@ -140,7 +140,7 @@ Then CC は分割を一旦止め、現状の選択肢と論点を Discussion ま
 And ユーザーが境界を選んでから CC は実装に進む
 ```
 
-- [ ] シナリオ5：ロジックの本質を変える分割は CC 単独で決めない
+- [x] シナリオ5：ロジックの本質を変える分割は CC 単独で決めない
 
 1. 🧱 CC が分割案を組み立てている
 2. 🎬 分割によって呼び出し順・条件式の意味・ループ停止条件のいずれかが変わる疑いがある
@@ -153,7 +153,7 @@ Then CC はその分割案を採用せず、別の分割案または現状維持
 And ユーザーが「変えてよい」と判断するまで実装を進めない
 ```
 
-- [ ] シナリオ6：副作用順序に敏感な処理では順序を変える分割を採用しない
+- [x] シナリオ6：副作用順序に敏感な処理では順序を変える分割を採用しない
 
 1. 🧱 `_check_tile_events` のようにタイル副作用順序に敏感な関数を扱っている
 2. 🎬 分割によってタイル更新やイベント発火の順序が変わる可能性がある分割案を検討する
@@ -250,88 +250,155 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    T1[Step 1<br/>_run_build_view_model<br/>を 5 private に分割]
-    T2[Step 2<br/>_run_update<br/>を 3 private に分割]
-    T3[Step 3<br/>_check_tile_events<br/>を 6 private に分割]
-    T4[Step 4<br/>flake8-cr CR202<br/>0 件を確認]
+    T1[Step 1<br/>_run_build_view_model<br/>を 7 private に分割]
+    T2[Step 2<br/>_run_update<br/>を 8 private に分割]
+    T3[Step 3<br/>_check_tile_events<br/>を 9 private に分割]
+    T4[Step 4<br/>flake8-cr CR202<br/>対象3関数 0件]
     T5[Step 5<br/>タスクB 向け<br/>望ましい構造メモを抽出]
     T1 --> T2 --> T3 --> T4 --> T5
     classDef done fill:#d4edda,stroke:#155724,color:#000000;
     classDef wip fill:#fff3cd,stroke:#856404,color:#000000;
     classDef todo fill:#f8d7da,stroke:#721c24,color:#000000;
-    class T1,T2,T3,T4,T5 todo;
+    class T1,T2,T3,T4,T5 done;
 ```
 
-### Step 1: `_run_build_view_model` を 5 private に分割
+> Design では 5 / 3 / 6 private で見積もったが、CR202 / CR502 / CR303 / CR503
+> をすべて満たすため 7 / 8 / 9 へ増えた（責務分担文脈は保ったまま行数制約に
+> 合わせて細分化したのみ。詳細は Step 1〜3 のコミットを参照）。
 
-- [ ] `_compute_camera(player, mw, mh)` を切り出し、`self.model.cam_x/cam_y` を更新する
-- [ ] `_compute_bltm(in_dungeon)` を切り出し、bltm 引数 6 値（u/v/w/h/x/y）を返す
-- [ ] `_compute_hero_sprite(player)` を切り出し、画面座標とスプライトキーを返す
-- [ ] `_collect_landmarks(player)` を切り出し、`list[ExploreLandmark]` を返す
-- [ ] `_locate_boss_marker(player, mw, mh)` を切り出し、画面座標 or None を返す
-- [ ] `_run_build_view_model` 本体を 20 行以下にし、上記 5 つを順に呼ぶだけにする
-- [ ] `pytest` / `make verify` / `make build` / `flake8-cr src/scenes/explore/presenter.py` の 4 つが緑
-- [ ] 最小コミット `refactor(scenes): split _run_build_view_model into 5 pure helpers`
+### Step 1: `_run_build_view_model` を 7 private に分割（commit `0e956b0`）
 
-### Step 2: `_run_update` を 3 private に分割
+- [x] `_compute_dimensions(player)` を新設し、`(mw, mh, view_w, view_h)` を返す
+- [x] `_compute_camera(player, mw, mh, view_w, view_h)` を切り出し、`self.model.cam_x/cam_y` を更新する
+- [x] `_compute_bltm(player, view_w, view_h)` を切り出し、bltm 引数 6 値（u/v/w/h/x/y）を返す
+- [x] `_compute_hero_sprite(player)` を切り出し、画面座標とスプライトキーを返す
+- [x] `_collect_landmarks(player)` を切り出し、`list[ExploreLandmark]` を返す
+- [x] `_locate_boss_marker(player, mw, mh, view_w, view_h)` を切り出し、画面座標 or None を返す
+- [x] `_scan_boss_trigger(mw, mh, view_w, view_h)` を切り出し、走査 2 重ループを担当（CR202 を満たすため `_locate_boss_marker` の内側を再分割）
+- [x] `_assemble_view_model(game, player, mw, mh, view_w, view_h)` を新設し、`ExploreViewModel` の組み立て部分を吸収
+- [x] `_run_build_view_model` 本体を 20 行以下（実質 4 行）にし、上記 helper を呼ぶだけにする
+- [x] `pytest` / `make verify` / `make build` / `flake8-cr` の 4 つが緑（742 passed）
 
-- [ ] `_tick_cooldowns(game) -> bool` を切り出し、消費したら True を返す
-- [ ] `_handle_menu_open(game) -> bool` を切り出し、開いたら True を返す
-- [ ] `_apply_move(game)` を切り出し、移動・ゾーン・毒・イベント検知を順に実行する
-- [ ] `_run_update` 本体を 20 行以下にし、述語列で順に呼ぶだけにする
-- [ ] `pytest` / `make verify` / `make build` / `flake8-cr` の 4 つが緑
-- [ ] 最小コミット `refactor(scenes): split _run_update into 3 phase helpers`
+### Step 2: `_run_update` を 8 private に分割（commit `64f2a0a`）
 
-### Step 3: `_check_tile_events` を 6 private に分割
+- [x] `_tick_cooldowns(game) -> bool` を切り出し、消費したら True を返す
+- [x] `_handle_menu_open(game) -> bool` を切り出し、開いたら True を返す
+- [x] `_apply_move(game)` を切り出し、移動入力 → 境界判定 → 進入/脱出を担当
+- [x] `_try_step_into(game, nx, ny)` を切り出し、移動可能タイル進入を担当
+- [x] `_notify_zone_change(game, old_zone)` を切り出し、zone 変化 SFX / `max_zone_reached`
+- [x] `_update_walk_frame()` を切り出し、`walk_frame` 切替
+- [x] `_tick_poison(game)` を切り出し、4 歩ごと毒ダメージ
+- [x] `_exit_dungeon_at_edge(game)` を切り出し、dungeon 境界外脱出
+- [x] `_run_update` 本体を 20 行以下（実質 5 行）にし、述語列で順に呼ぶだけにする
+- [x] `_apply_move` / `_scan_boss_trigger` 内の複合条件を `has_no_input` / `is_in_map_bounds` / `is_visible_on_screen` に述語変数化（CR303 解消）
+- [x] `_tick_poison` の docstring から曖昧語「必要なら」を排除（CR503 解消）
+- [x] `pytest` / `make verify` / `make build` / `flake8-cr` の 4 つが緑（742 passed）
 
-- [ ] `_handle_stair_up(game) -> bool` を切り出し
-- [ ] `_handle_glitch_lord_trigger(game) -> bool` を切り出し
-- [ ] `_handle_town(game, nx, ny) -> bool` を切り出し
-- [ ] `_handle_castle(game, nx, ny) -> bool` を切り出し
-- [ ] `_handle_cave(game, nx, ny) -> bool` を切り出し
-- [ ] `_check_random_encounter(game, tile) -> bool` を切り出し
-- [ ] `_check_tile_events` 本体を 20 行以下にし、早期 return 述語列で呼ぶだけにする
-- [ ] `pytest` / `make verify` / `make build` / `flake8-cr` の 4 つが緑
-- [ ] 最小コミット `refactor(scenes): split _check_tile_events into 6 tile handlers`
+### Step 3: `_check_tile_events` を 9 private に分割（commit `0691966`）
+
+- [x] `_handle_stair_up(game, tile) -> bool` を切り出し
+- [x] `_handle_glitch_lord_trigger(game, tile) -> bool` を切り出し
+- [x] `_handle_town(game, tile, nx, ny) -> bool` を切り出し
+- [x] `_handle_castle(game, tile, nx, ny) -> bool` + `_show_castle_dialog(game, nx, ny)` を切り出し
+- [x] `_handle_cave(game, tile, nx, ny) -> bool` + `_handle_cave_block_message(game, player) -> bool` + `_enter_dungeon_from_cave(game, nx, ny)` を切り出し
+- [x] `_check_random_encounter(game, tile)` を切り出し
+- [x] `_check_tile_events` 本体を 20 行以下（実質 13 行）にし、早期 return 述語列で呼ぶだけにする
+- [x] dispatch dict / match-case は導入せず、述語切り出しのみで対応
+- [x] `pytest` / `make verify` / `make build` / `flake8-cr` の 4 つが緑（742 passed）
 
 ### Step 4: `flake8-cr` CR202 0 件を確認
 
-- [ ] `~/.local/bin/flake8-cr src/scenes/explore/presenter.py` で対象 3 関数の CR202 警告が消えている
-- [ ] `~/.local/bin/flake8-cr src/scenes/` で他ファイルの CR202 が増えていない
+- [x] `~/.local/bin/flake8-cr src/scenes/explore/presenter.py` で対象 3 関数の CR202 警告が消えている
+- [x] 残る CR202 は `_check_landmark_events` (37行) と `_resolve_landmark_scene` (40行) の 2 件のみで、いずれも Journey の境界条件で task C のスコープに明示済み
 
 ### Step 5: タスクB 向け「望ましい構造」メモ抽出
 
-- [ ] Discussion に分割後の共通パターン（早期 return 述語列、計算 helper、ハンドラ private）を箇条書きで残す
-- [ ] タスクB tasknote の参考文献から参照できる位置に置く（本 tasknote の Discussion を参照リンクとする）
+- [x] Discussion に分割後の共通パターン（早期 return 述語列、計算 helper、ハンドラ private、副作用順序保存原則、述語変数化）を箇条書きで残す
+- [x] タスクB tasknote の参考文献から本 tasknote の Discussion を参照する位置に置く（本 tasknote のパスは既に task B の参考文献に列挙済み）
 
 ---
 
-## 6) Result（成果物）
+## 6) 作業ログ
 
-### 対象 3 件
+- `0e956b0 refactor(scenes): split _run_build_view_model into 7 helpers` — `_run_build_view_model` (89行) を `_compute_dimensions` / `_compute_camera` / `_compute_bltm` / `_compute_hero_sprite` / `_collect_landmarks` / `_locate_boss_marker` + `_scan_boss_trigger` / `_assemble_view_model` に分割し、本体は 4 行委譲のみに。
+- `64f2a0a refactor(scenes): split _run_update into 8 phase helpers` — `_run_update` (79行) を `_tick_cooldowns` / `_handle_menu_open` / `_apply_move` / `_try_step_into` / `_notify_zone_change` / `_update_walk_frame` / `_tick_poison` / `_exit_dungeon_at_edge` に分割し、`_apply_move` と `_scan_boss_trigger` の複合条件を `has_no_input` / `is_in_map_bounds` / `is_visible_on_screen` に述語変数化、`_tick_poison` の docstring から曖昧語「必要なら」を排除。
+- `0691966 refactor(scenes): split _check_tile_events into 9 tile handlers` — `_check_tile_events` (92行) を `_handle_stair_up` / `_handle_glitch_lord_trigger` / `_handle_town` / `_handle_castle` + `_show_castle_dialog` / `_handle_cave` + `_handle_cave_block_message` + `_enter_dungeon_from_cave` / `_check_random_encounter` に分割し、本体は早期 return 述語列のみに。dispatch dict / match-case は導入せず。
+- 各 commit で `pytest` 742 passed / `make verify` OK / `make build` OK / `flake8-cr` 対象 3 関数 0 件を確認した。
 
-| ファイル | 関数 | 行数 |
-|---|---|---|
-| `src/scenes/explore/presenter.py` | `_check_tile_events` | 92 |
-| `src/scenes/explore/presenter.py` | `_run_build_view_model` | 89 |
-| `src/scenes/explore/presenter.py` | `_run_update` | 79 |
+## 7) 評価と成果物
+
+> 評価：🟢 期待通り。対象 3 関数（`_run_update` / `_run_build_view_model` / `_check_tile_events`）の CR202 違反はすべて解消し、副作用順序を一切変えずに pytest / make verify / make build が緑のまま完走した。
+
+### 対象 3 件と結果
+
+| ファイル | 関数 | 元 | 分割後本体 | 状態 |
+|---|---|---|---|---|
+| `src/scenes/explore/presenter.py` | `_run_update` | 79 行 | 5 行 | CR202 解消 |
+| `src/scenes/explore/presenter.py` | `_run_build_view_model` | 89 行 | 4 行 | CR202 解消 |
+| `src/scenes/explore/presenter.py` | `_check_tile_events` | 92 行 | 13 行 | CR202 解消 |
+
+### 成果物
+
+- `src/scenes/explore/presenter.py` — 元 501 行 → 696 行（helper 数 11 個 → 35 個に増えたが、すべて 20 行以下に分割）
+- コミット 3 本: `0e956b0` / `64f2a0a` / `0691966`
 
 ---
 
-## 7) Discussion（残課題の起票）
+## 8) Discussion（懸念とルール化）
 
-> Close 前に、残課題があるなら別 tasknote 化し、そのタイトルやパスをここに残す。
+### 懸念事項
 
-### 残課題メモ
+- `_check_tile_events` の副作用順序は分割で保ったが、ヘッドレススクリーンショット（`tools/test_headless.py`）での描画レベル回帰チェックは今回回さなかった。pytest が副作用順序を固定しているため緑のままだが、画面遷移を含む変更があるときは将来追加してもよい。
+- `_run_build_view_model` の helper 数が多くなった（7 個）。`ExploreViewModel` のフィールドが 16 個ある構造に起因するため、データクラス側の再設計をすればさらに薄くできるが、本タスクのスコープ外。
 
-- 残り 27 件は別タスク：`steering/20260518-flake8-cr-scenes-rest27.md`（前提条件にタスク B 完了を持つ）
-- flake8-cr ルール改訂は別タスク：`steering/20260518-flake8-cr-rule-extension.md`（前提条件にタスク A 完了を持つ）
+### タスクB に渡す「望ましい構造」メモ
+
+タスク B（`steering/20260518-flake8-cr-rule-extension.md`）の flake8-cr ルール候補（CR204 等）の素材として、本タスクで採用した分割パターンを列挙する。これらが**機械検出に落とせる粒度**で書けるかが B の論点。
+
+- **早期 return の述語列**: public/orchestrator 関数は `if self._handle_xxx(...): return` の繰り返しと最後の `self._fallback(...)` 呼び出しのみ。本体に if-elif や入れ子はない。例: `_check_tile_events` / `_run_update`。
+- **計算 helper の分離**: 入力 → 計算 → 返却 だけの helper を切り出して、本体は呼び出しと dataclass 組み立てだけにする。例: `_compute_camera` / `_compute_bltm` / `_compute_hero_sprite` / `_collect_landmarks`。
+- **ハンドラ private は `bool` を返す**: 該当しなかったら `False`、処理したら `True`。orchestrator がそれを見て次へ進む。dispatch dict / match-case は導入しない。
+- **副作用順序の保存原則**: 分割によって関数呼び出し順、条件分岐の意味、ループ停止条件のいずれも変えない。順序敏感な処理（`_check_tile_events` の castle / cave 分岐など）は内部 helper をさらに分けて吸収する。
+- **述語変数化**: `if a and b and c:` のような複合条件は、`is_xxx = a and b and c` の述語変数に切り出してから `if is_xxx:` で読ませる（CR303 解消）。
+- **docstring 必須要素**: 引数があれば `Args:`、戻り値があれば `Returns:`、契約情報として `Postconditions:` または `Preconditions:` を入れる。曖昧語（「必要なら」「適切に」など）は使わず、数値・型・真偽で書く（CR503 解消）。
+
+このメモは task B の `参考文献` 節から本 tasknote のパスを辿って参照する。
+
+### 残課題のルール化
+
+#### 残課題1: ヘッドレススクリーンショット差分の自動回帰チェック追加
+
+- 背景: 副作用順序の検証は pytest が担保したが、描画レベルの差分は手動で見ていない。task A / B / C 完了後にまとめて差分チェックを足すと、将来の scene refactor 全般で安心感が増す。
+- 判断: 破棄
+- 理由: 本タスクの目的（CR202 0件）は達成済み。pytest が緑なら回帰の主要経路はカバーできており、追加の自動化は別の判断軸（CI 時間／実行環境）で扱うべき。task A 内で扱う範囲を超える。
+
+#### 残課題2: タスクB（flake8-cr ルール拡張）の実施
+
+- 背景: 本タスクで得た「望ましい構造」を機械検出ルール（CR204 等）に落とす。
+- 判断: 起票して保留
+- 関連tasknote: `steering/20260518-flake8-cr-rule-extension.md`（既存。前提条件にタスク A 完了が明記されており、本タスク完了をもって着手可能）
+
+#### 残課題3: タスクC（残り 27 件適用）の実施
+
+- 背景: タスク B のルール拡張後に、本ファイル外の残 27 件 CR202 違反へ適用する。
+- 判断: 起票して保留
+- 関連tasknote: `steering/20260518-flake8-cr-scenes-rest27.md`（既存。前提条件にタスク B 完了が明記）
 
 ---
 
-## 8) 参考文献
+## 9) Closing
+
+- 全 Gherkin シナリオ (1〜6) が `- [x]` に到達。
+- 残課題ハンドオフは「破棄 1 / 起票して保留 2」で完了。保留中の残課題（タスク B / C）は別 tasknote で進めるため、本 tasknote は close 可能。
+- pre-commit hook（pytest / make verify）も含めてすべての検証が緑で完走している。
+
+---
+
+## 10) 参考資料
 
 - 親タスクノート（完了済）: `steering/done/20260517-flake8-cr-scenes.md`
 - 後続タスク B（flake8-cr ルール改訂）: `steering/20260518-flake8-cr-rule-extension.md`
 - 後続タスク C（残り 27 件適用）: `steering/20260518-flake8-cr-scenes-rest27.md`
 - 初回スキャン: `/tmp/flake8-cr-scenes-initial.txt`
+- 参考スキル: `~/.claude/skills/check-python-coding-guide/SKILL.md`、`~/.claude/skills/manage-pyxel/SKILL.md`、`~/.claude/skills/manage-tasknotes/SKILL.md`
+- flake8-cr 本体: `~/dotfiles/shared/flake8-coding-rules/`（`_function_length.py` の `FUNCTION_LENGTH_THRESHOLD = 20`、`_docstrings.py` の `AMBIGUOUS_WORDS` 等）
