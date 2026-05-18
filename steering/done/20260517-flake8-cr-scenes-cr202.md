@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 priority: normal
 scheduled: 2026-05-17T00:00:00.000+09:00
 dateCreated: 2026-05-17T00:00:00.000+09:00
@@ -12,8 +12,8 @@ tags:
 
 # 2026年5月17日 src/scenes の CR202 大物 3 件を AI で個別リファクタ（タスク A）
 
-> 状態：⑨ Closing
-> 次のゲート：（ユーザー）このノートを close してよいか確認する
+> 状態：⑨ Closing（完了）
+> 次のゲート：なし（done へ退避済み）
 
 ---
 
