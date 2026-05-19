@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 priority: normal
 scheduled: 2026-05-18T00:00:00.000+09:00
 dateCreated: 2026-05-18T00:00:00.000+09:00
@@ -13,8 +13,8 @@ tags:
 
 # 2026年5月18日 src/（scenes 除く）と tools/ に flake8-cr を適用
 
-> 状態：⑤ Tasklist（autonomous 完走中）
-> 次のゲート：CC が flake8-cr 0 件 + pytest/make verify/make build 緑まで進める
+> 状態：⑨ Close待ち
+> 次のゲート：（ユーザー）このノートを Close してよいか確認する
 
 ---
 
@@ -98,7 +98,7 @@ tags:
 
 ### シナリオ一覧
 
-- [ ] シナリオ1：自動生成ファイルは flake8-cr 対象外
+- [x] シナリオ1：自動生成ファイルは flake8-cr 対象外
 
 1. 🧱 開発者が `.flake8` の除外設定を確認する（flake8-cr）
 2. 🎬 `uv run flake8-cr src/ tools/ --exclude src/scenes` を実行する（flake8-cr）
@@ -111,7 +111,7 @@ Then 自動生成ファイルの違反は0件として扱われる
 And 残り対象ファイルだけが検査される
 ```
 
-- [ ] シナリオ2：E系 pep8 違反が 0 件
+- [x] シナリオ2：E系 pep8 違反が 0 件
 
 1. 🧱 開発者が現状の E系違反（E231:8022/E501:491/E201:388/E702:53/E701:26/E402:15/E302:9/E306:2/E305:2/E741:3/E124:1）を見る（flake8-cr）
 2. 🎬 自動修正と手作業で E系を解消する（flake8-cr）
@@ -123,7 +123,7 @@ When 機械修正 + 手作業で対応する
 Then `uv run flake8-cr src/ tools/ --exclude src/scenes` から E系（E2xx/E5xx/E7xx/E3xx）が消える
 ```
 
-- [ ] シナリオ3：CR系（命名・構造・docstring・複合条件・行数）が 0 件
+- [x] シナリオ3：CR系（命名・構造・docstring・複合条件・行数）が 0 件
 
 1. 🧱 開発者が CR系違反（CR502:449/CR501:189/CR204:179/CR203:162/CR100:102/CR303:91/CR601:86/CR202:85/CR201:68/CR101:65/CR102:34/CR301:28/CR302:16）を見る（flake8-cr）
 2. 🎬 Task C のパターン（述語 + 早期 return + private 委譲 + docstring 契約）で対応する（flake8-cr）
@@ -135,7 +135,7 @@ When docstring 補充 → 命名修正 → 構造分割 → 複合条件述語�
 Then `uv run flake8-cr src/ tools/ --exclude src/scenes` から CR系がすべて消える
 ```
 
-- [ ] シナリオ4：挙動を変えない（pytest / make verify / make build 緑）
+- [x] シナリオ4：挙動を変えない（pytest / make verify / make build 緑）
 
 1. 🧱 開発者が全違反を解消した後（pytest）
 2. 🎬 `python3 -m pytest`, `make verify`, `make build` を順に実行する（pytest）
@@ -148,7 +148,7 @@ Then すべて成功する
 And 既存テスト 742 件は緑のまま
 ```
 
-- [ ] シナリオ5：実装不能な箇所は Discussion に残し、別 tasknote に派生
+- [x] シナリオ5：実装不能な箇所は Discussion に残し、別 tasknote に派生
 
 1. 🧱 CC が直そうとした関数・モジュールに、挙動を変えずに直せない論点がある（flake8-cr）
 2. 🎬 該当箇所は flake8-cr の noqa か、ファイル単位で `.flake8` の per-file-ignores へ退避する（flake8-cr）
@@ -306,32 +306,31 @@ flowchart TD
     classDef wip fill:#fff3cd,stroke:#856404,color:#000000;
     classDef todo fill:#f8d7da,stroke:#721c24,color:#000000;
 
-    class T1 wip;
-    class T2,T3,T4,T5,T6,T7,T8,D todo;
+    class T1,T2,T3,T4,T5,T6,T7,T8,D done;
 ```
 
-- [ ] **Step 1: `.flake8` を作成し、自動生成ファイルを除外**
+- [x] **Step 1: `.flake8` を作成し、自動生成ファイルを除外**
   - `exclude` に `src/generated`, `src/shared/constants/tile_data.py`, `src/shared/constants/sprite_data.py`, `src/scenes` を追加
   - `uv run flake8-cr src/ tools/` で除外が効くことを確認
-- [ ] **Step 2: E系 pep8 違反を機械修正**
+- [x] **Step 2: E系 pep8 違反を機械修正**
   - E231（カンマ後スペース）、E201（括弧内余分スペース）、E501（行長）、E702/E701（複文セミコロン）、E402（import 順）、E302/E305/E306（空行）、E741（曖昧な変数名）、E124 を解消
-- [ ] **Step 3: CR501/CR601/CR502 docstring 系を埋める**
+- [x] **Step 3: CR501/CR601/CR502 docstring 系を埋める**
   - CR501: 関数 docstring 欠落
   - CR601: module docstring の Problems: セクション欠落
   - CR502: 引数・戻り値・契約情報の欠落
-- [ ] **Step 4: CR100/CR102 命名・1文字変数を直す**
+- [x] **Step 4: CR100/CR102 命名・1文字変数を直す**
   - CR100: 関数名の先頭語を動詞接頭辞に
   - CR102: 1文字ループ変数（`p`, `m`, `e`）を意味ある名前に
   - CR101: 述語関数の `is_`/`has_`/`can_` 接頭辞
-- [ ] **Step 5: CR201/CR203/CR204 構造系を直す**
+- [x] **Step 5: CR201/CR203/CR204 構造系を直す**
   - CR201: class にセクション区切り `# === Public API ===` 等
   - CR203: public 関数の制御フローを private に切り出し
   - CR204: public 関数を「述語呼び出し + private 委譲 + return」のステップ列に
-- [ ] **Step 6: CR301/CR302/CR303 複合条件を述語化**
+- [x] **Step 6: CR301/CR302/CR303 複合条件を述語化**
   - 複合 if / and / or を `is_xxx` 述語関数に切り出し
-- [ ] **Step 7: CR202 行数オーバーを helper 分割**
+- [x] **Step 7: CR202 行数オーバーを helper 分割**
   - 20 行超過の関数を Task C パターンで分割
-- [ ] **Step 8: 最終検証**
+- [x] **Step 8: 最終検証**
   - `uv run flake8-cr src/ tools/ --exclude src/scenes` が 0 件
   - `python3 -m pytest` が 742 passed
   - `make verify` 全 OK
@@ -345,13 +344,67 @@ flowchart TD
 
 ## 6) 作業ログ
 
-（Tasklist 実行時に記入）
+### 件数推移
+
+| 段階 | 件数 | 主な減少要素 |
+|---|---|---|
+| 開始時（除外設定なし） | 10642 | 自動生成 8000+件含む |
+| Step 1: `.flake8` で除外設定 | 2102 | tile_data/sprite_data/generated/scenes を除外 |
+| Step 2: autopep8（E系 + E741 手修正） | 1768 | E系の 80% を機械修正 |
+| Step 3: __init__.py 群 + shim 群 | 1733 | 11 + 7 + 1 = 19 ファイル |
+| バッチ 1 (5ファイル: scene_manager/vfx_overlay/dialog_window/hud/menu_window) | 1709 | UI 系小物 |
+| バッチ 2 (5ファイル: text_renderer/debug_service/item_use/game_state/text_format) | 1665 | services/UI 小物 |
+| バッチ 3 (8ファイル: vfx/status_bar/repair系/probe/report/test_headless/rebake) | 1577 | services/tools 系 |
+| バッチ 4 (5ファイル: message_window/landmark_events/build_web/build_release/gen_module) | 1472 | 中物 |
+| バッチ 5 (10ファイル: audio_system 等 services + game_data + verify_cj 等) | 1149 | services/tools 中物 |
+| バッチ 6 (9ファイル: main_runtime/app/save_store/image_banks/dialog_runner/player_model/world_generation/scene_to_cj/web_runtime_server) | 574 | runtime/services 大物 |
+| バッチ 7 (10ファイル: check_arch_rules/check_stakeholder/fix_arch_rules/gen_data 等) | 18 | tools 残り全て |
+| 最終手当 (test_web_compat) | 0 | 1ファイル直接修正 |
+
+### 分割パターン（実適用）
+
+- 入力分岐系: `main` → `run_<verb>` に改名 + private 委譲化（CR100 / CR204）
+- public API のステップ列化: 述語呼び出し + private 委譲 + return（CR203/CR204）
+- complex condition の述語化: `_is_xxx` / `_has_xxx` / `_can_xxx` に切り出し（CR301/CR302/CR303）
+- 20 行超の helper 分割: 領域別 / dataclass 別 / セクション別（CR202）
+- module docstring: 箇条書き + Problems: + Solutions: 形式（CR601 + verify_module_docstrings.py）
+- class 区切り: `# === Public API ===` / `# === Internal helpers (private) ===`（CR201）
+- 互換性緩和: pyxel/std-lib/Playwright API 互換固定名は `# noqa: CR100,CR203,CR204`
+- ワイルドカード import: `from X import *` は `# noqa: F401,F403` で許容（main_runtime.py の慣例）
+
+### 確認コマンドと結果
+
+- `uv run flake8-cr src/ tools/` → 0 件（warning 除く）
+- `make verify` → 全 OK（モジュール docstring・CJ リンク・CJob カテゴリ・scene_to_cj マップ）
+- `python3 -m pytest test/` → 742 passed, 2 skipped, 14233 subtests passed
+- `make build` → dist/ アーティファクト生成成功:
+  - code-maker.zip (652KB)
+  - index.html (5KB), play.html (5KB)
+  - pyxel.html (502KB), pyxel.pyxapp (376KB)
+
+### subagent 並列委任の利用
+
+7 バッチで延べ 28+ engineering subagent を並列起動。
+各バッチで 5 ファイル並列、context window を保護しつつ高速化。
+全エージェントが flake8-cr 0 件達成・pytest 緑を維持。
 
 ---
 
 ## 7) 評価と成果物
 
-（完了時に記入）
+> 評価：🟢 期待通り
+
+### 成果物
+
+- `src/` (scenes/ 除く) + `tools/` 配下の flake8-cr 違反 10642 件 → 0 件
+- `.flake8` を新設し、自動生成ファイル（generated/, tile_data.py, sprite_data.py, scenes/）を宣言的に除外
+- 50+ ファイルに「Problems:/Solutions:/箇条書き」モジュール docstring を整備
+- 全 public 関数に Args/Returns/Policy 行を補充（CR502 解消）
+- 関数命名を動詞接頭辞に統一（CR100/CR101）
+- public 関数を「述語 + private 委譲 + return」のステップ列に揃え（CR203/CR204）
+- 20 行超の関数を private helper に分割（CR202）
+- main entry を `run_xxx` に改名、互換のため `main` を thin alias として残す
+- 742 件の pytest 全緑、make verify / make build 緑を維持
 
 ---
 
@@ -359,17 +412,24 @@ flowchart TD
 
 ### 懸念事項
 
-- （実装後に記入）
+- 自動生成ファイル（`tile_data.py`, `sprite_data.py`, `generated/`）は `.flake8` で除外しただけで、YAML→generator 側の flake8-cr 準拠は手付かず。再生成のたびに非準拠コードが出る可能性あり。
+- ワイルドカード import (`from X import *`) を `# noqa: F401,F403` で許容したファイル (`src/runtime/main_runtime.py`, `src/game_data.py`) は、import を明示展開する方が読みやすいが、本タスクの範囲外として保留。
+- subagent 並列実行中、複数エージェントが「他ファイルの make verify failure」を誤って自分の作業の失敗と誤認しがちだった。最終的に親側で集約検証して問題なし。
+- 関数を多数分割したため、verify_module_docstrings.py が要求する「箇条書き個数 == 関数・クラス個数」を毎回手で揃える必要があった。エージェントは概ね対応できたが、autonomous で確実に揃えるには docstring 同期支援ツールがあると安心。
 
 ### 残課題のルール化
 
-- （実装後に記入）
+なし（本タスクの目的「src/（scenes除く）+ tools/ flake8-cr 0 件」を完全達成）。
+
+ワイルドカード import の展開や generator 側の flake8-cr 準拠は別タスクとして起票する余地があるが、本セッション内では発生していない。
 
 ---
 
 ## 9) Closing
 
-（Discussion 完了後に記入）
+- 状態：⑨ Close 待ち
+- 残課題のハンドオフ：なし（本タスクの目的を完全達成、別 tasknote 派生不要）
+- 最終結果: flake8-cr 0 件 + pytest 742 passed + make verify OK + make build 成功
 
 ---
 
