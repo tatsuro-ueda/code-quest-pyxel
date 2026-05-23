@@ -130,6 +130,39 @@ class GenerateWikiTest(unittest.TestCase):
             self.assertIn("# 代表タスクノート", tasknote_text)
             self.assertIn("- Result", tasknote_text)
 
+            index_path = wiki_root / "wiki" / "index.md"
+            log_path = wiki_root / "wiki" / "log.md"
+            tasknote_index = wiki_root / "wiki" / "indexes" / "tasknotes.md"
+            query_readme = wiki_root / "wiki" / "query" / "README.md"
+            concepts_path = wiki_root / "wiki" / "candidates" / "concepts.md"
+            entities_path = wiki_root / "wiki" / "candidates" / "entities.md"
+
+            self.assertTrue(index_path.is_file())
+            self.assertTrue(log_path.is_file())
+            self.assertTrue(tasknote_index.is_file())
+            self.assertTrue(query_readme.is_file())
+            self.assertTrue(concepts_path.is_file())
+            self.assertTrue(entities_path.is_file())
+
+            index_text = index_path.read_text(encoding="utf-8")
+            self.assertIn("customer-jobs-summary.md", index_text)
+            self.assertIn("example-tasknote-summary.md", index_text)
+
+            log_text = log_path.read_text(encoding="utf-8")
+            self.assertIn("2026-05-22", log_text)
+            self.assertIn("raw/knowledge/docs/customer-jobs.md", log_text)
+
+            tasknote_index_text = tasknote_index.read_text(encoding="utf-8")
+            self.assertIn("example-tasknote", tasknote_index_text)
+            self.assertIn("| 代表タスクノート | done |", tasknote_index_text)
+
+            query_text = query_readme.read_text(encoding="utf-8")
+            self.assertIn("read-only", query_text)
+            self.assertIn("根拠", query_text)
+
+            self.assertIn("| 用語 | 頻度 |", concepts_path.read_text(encoding="utf-8"))
+            self.assertIn("| 用語 | 頻度 |", entities_path.read_text(encoding="utf-8"))
+
     def test_generate_wiki_summarizes_yaml_top_level_keys(self):
         gen_wiki = load_gen_wiki_module()
 
@@ -189,6 +222,63 @@ class GenerateWikiTest(unittest.TestCase):
             self.assertIn("- validation_rules", summary_text)
             self.assertIn("stakeholders", summary_text)
             self.assertIn("requests", summary_text)
+            self.assertIn("status: draft", summary_text)
+
+    def test_generate_wiki_supports_checklists_as_queryable_knowledge(self):
+        gen_wiki = load_gen_wiki_module()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            (repo_root / "wiki" / "checklists").mkdir(parents=True, exist_ok=True)
+
+            checklist_path = repo_root / "wiki" / "checklists" / "ux-checklist.md"
+            checklist_path.write_text(
+                textwrap.dedent(
+                    """
+                    ---
+                    status: active
+                    origin:
+                      - docs/ux-policy.md
+                    ---
+
+                    # UX Checklist
+
+                    ## 子ども向け表記
+
+                    - [ ] ひらがな中心
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            wiki_root = repo_root / "wiki"
+            result = gen_wiki.generate_wiki(
+                knowledge_paths=[],
+                tasknote_paths=[],
+                checklist_paths=["wiki/checklists/ux-checklist.md"],
+                repo_root=repo_root,
+                wiki_root=wiki_root,
+                today="2026-05-23",
+            )
+
+            raw_checklist = wiki_root / "raw" / "knowledge" / "checklists" / "ux-checklist.md"
+            summary_checklist = (
+                wiki_root
+                / "wiki"
+                / "summaries"
+                / "checklists"
+                / "ux-checklist-summary.md"
+            )
+
+            self.assertEqual(result["raw_paths"], [raw_checklist])
+            self.assertEqual(result["summary_paths"], [summary_checklist])
+            summary_text = summary_checklist.read_text(encoding="utf-8")
+            self.assertIn("source: raw/knowledge/checklists/ux-checklist.md", summary_text)
+            self.assertIn("source_type: checklist", summary_text)
+            self.assertIn("status: active", summary_text)
+            self.assertIn("origin:", summary_text)
+            self.assertIn("docs/ux-policy.md", summary_text)
 
 
 if __name__ == "__main__":

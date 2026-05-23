@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-22T21:30:00.000+09:00
 dateCreated: 2026-05-22T21:30:00.000+09:00
-dateModified: 2026-05-23T04:10:24+00:00
+dateModified: 2026-05-23T09:30:00+00:00
 tags:
   - task
   - llm-wiki
@@ -14,8 +14,8 @@ tags:
 
 # 2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す
 
-> 状態：④ Design
-> 次のゲート：（CC）`wiki/wiki/index.md` と `wiki/wiki/log.md` の雛形を作り、`tools/gen_wiki.py` に書き戻す責務を持たせるかを決める
+> 状態：⑧ Closing
+> 次のゲート：（CC）なし
 
 ---
 
@@ -121,8 +121,31 @@ tags:
   - query 実装
   - checklist 実装
 
-### 中断メモ
+### Tasklist
 
-- session close 2026-05-23:
-  - 現在の状態：Design まで完了。Karpathy 寄り方針と `list-tasknotes` skill は保存対象へ含める
-  - 次に再開すること：`wiki/wiki/index.md` と `wiki/wiki/log.md` の最小仕様を確定し、必要なら `tools/gen_wiki.py` のテストから始める
+- [x] `wiki/wiki/index.md` を生成した
+- [x] `wiki/wiki/log.md` を生成した
+- [x] `tools/gen_wiki.py` に index/log 生成責務を持たせた
+- [x] `wiki/wiki/indexes/tasknotes.md` を追加し、repo-local の open/done tasknote を一覧できるようにした
+- [x] `wiki/wiki/query/README.md` を追加し、read-only query の入口を固定した
+
+### Result
+
+- `tools/gen_wiki.py` が raw/summaries の生成後に `index.md` / `log.md` / `indexes/tasknotes.md` / `query/README.md` / `candidates/*.md` を deterministic に再生成するようになった
+- `wiki/wiki/index.md` から knowledge / tasknote / checklist summary の入口を辿れるようになった
+- `wiki/wiki/log.md` から ingest 日付ごとの source を時系列で追えるようになった
+- repo-local rollout では `areas/current-state` を採らず、`index.md` / `log.md` / `indexes/tasknotes.md` を query 入口とする方針を実物へ反映した
+
+### Discussion
+
+- `areas/current-state` は引き続き保留。navigation が不足した時点で再検討する
+- query の自動化はまだ行わず、06 では read-only ルールと spot-check の記録を先に通した
+
+### Closing
+
+- 状態: done
+- 次のゲート: なし
+- close 条件:
+    - [x] `wiki/wiki/index.md` が生成されている
+    - [x] `wiki/wiki/log.md` が生成されている
+    - [x] generator から再生成できる

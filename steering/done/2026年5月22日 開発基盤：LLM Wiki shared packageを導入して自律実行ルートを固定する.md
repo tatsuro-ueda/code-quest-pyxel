@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-22T18:00:00.000+09:00
 dateCreated: 2026-05-22T18:00:00.000+09:00
-dateModified: 2026-05-23T05:43:08+00:00
+dateModified: 2026-05-23T09:35:00+00:00
 tags:
   - task
   - llm-wiki
@@ -12,15 +12,15 @@ tags:
 
 # 2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する
 
-> 状態：⑤ Tasklist
-> 次のゲート：（CC）`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md` を開き、次の実作業を `index.md` / `log.md` 実生成へ進める
+> 状態：⑧ Closing
+> 次のゲート：（CC）なし
 
 ---
 
 ## 1) Journey（どこへ行くか）
 
 > 補足：深層的目的 LLM Wiki 導入の入口を 1 本に固定し、次回セッションが探索から始まらないようにする
-> 補足：やらないこと 今回の note で wiki 本体生成・summary 生成・checklist 変換・試運転までは完走しない
+> 補足：やらないこと shared package 自体の再設計や area current-state の再導入は今回やらない
 
 1. 前提条件
    1. 💦 `steering/llm-wiki/` は shared package の置き場所であり、実行中 tasknote そのものではない
@@ -188,7 +188,7 @@ flowchart TD
 - 検証コマンド:
   - `diff -ru /home/exedev/dotfiles/shared/llm-wiki-how-to /home/exedev/code-quest-pyxel/steering/llm-wiki`
   - `find steering/llm-wiki -maxdepth 3 -type f | sort`
-  - `git status --short steering/llm-wiki 'steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md'`
+  - `git status --short steering/llm-wiki 'steering/done/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md'`
 - 成功条件:
   - shared source と repo copy に差分が無い
   - shared package の README / 親note / child 12 本が揃う
@@ -211,6 +211,14 @@ flowchart TD
 - [x] child `02` で closed tasknotes の shortlist と投入順を固定した
 - [x] child `04` を現在日付 tasknote に切り直し、spot ingest の source / output / UX 根拠 docs を固定した
 - [x] child `04` で `test/test_gen_wiki.py` red-green、`tools/gen_wiki.py`、実 raw/summaries 生成まで完了した
+- [x] child `05`（repo-local 置換）で `index.md` / `log.md` / `tasknotes index` を実生成した
+- [x] child `06` で `wiki/wiki/query/README.md` と `wiki/wiki/query/spot-check.md` を追加した
+- [x] child `07` で knowledge docs の raw/summaries を拡張した
+- [x] child `08` で `wiki/wiki/candidates/concepts.md` / `entities.md` を作成した
+- [x] child `09` で `wiki/checklists/architecture-checklist.md` と `framework-checklist.md` を作成した
+- [x] child `10` で `docs/ux-policy.md` と `wiki/checklists/ux-checklist.md` を作成した
+- [x] child `11` で checklist docs を raw knowledge / checklist summaries に反映した
+- [x] child `12` で `battle-stale-spell-message` を試運転 task に採用し、precheck と bugfix を記録した
 
 ---
 
@@ -230,6 +238,9 @@ flowchart TD
 - child `01` の現在日付 tasknoteで `latest_docs / supporting_docs / deprecated / history_snapshots` を固定した
 - child `02` の現在日付 tasknoteで `steering/done` 113 件から 25 件の closed tasknotes shortlist を固定した
 - child `04` の現在日付 tasknoteで `test/test_gen_wiki.py` と `tools/gen_wiki.py` を追加し、`docs/customer-jobs.md` + `steering/done/20260509-stakeholder-voices-bootstrap.md` の spot ingest を `wiki/raw` / `wiki/wiki/summaries` に流した
+- child `05-08` で `index.md` / `log.md` / `indexes/tasknotes.md` / `query/README.md` / `query/spot-check.md` / `candidates/*.md` を追加し、repo-local の query 導線を `areas/current-state` なしで固定した
+- child `09-11` で `docs/ux-policy.md`、`wiki/checklists/*.md`、`wiki/raw/knowledge/checklists/`、`wiki/wiki/summaries/checklists/` を追加し、architecture / framework / UX の checklist を query から辿れる状態にした
+- child `12` で `battle-stale-spell-message` を試運転 task に選び、architecture / framework / UX の checklist と query 導線を使って bugfix まで進めた
 
 ---
 
@@ -241,42 +252,42 @@ flowchart TD
 - [x] child `01`：`steering/done/2026年5月22日 練習用プロジェクトの正本docsとGit snapshot候補を棚卸しする.md`
 - [x] child `02`：`steering/done/2026年5月22日 練習用プロジェクトのclosed tasknotes投入候補と順番を固定する.md`
 - [x] child `04`：`steering/done/2026年5月22日 練習用プロジェクトでminimal ingestとsummariesを通す.md`
-- [ ] child `05`（repo-local 置換）：`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md`
-- [ ] child `06`：`steering/llm-wiki/child-tasknotes/06-練習用プロジェクトでread-only queryを通す.md`
-- [ ] child `07`：`steering/llm-wiki/child-tasknotes/07-練習用プロジェクトでraw knowledgeをrebuild summaries対象に含める.md`
-- [ ] child `08`：`steering/llm-wiki/child-tasknotes/08-練習用プロジェクトでconcept entity candidatesを出す.md`
-- [ ] child `09`：`steering/llm-wiki/child-tasknotes/09-architecture.mdをchecklist正本へ変換する.md`
-- [ ] child `10`：`steering/llm-wiki/child-tasknotes/10-ux-policy.mdをchecklist正本へ変換する.md`
-- [ ] child `11`：`steering/llm-wiki/child-tasknotes/11-checklist docsをwiki raw knowledgeとsummariesに反映する.md`
-- [ ] child `12`：`steering/llm-wiki/child-tasknotes/12-小さな開発task1本でLLM Wikiとchecklistを試運転する.md`
+- [x] child `05`（repo-local 置換）：`steering/done/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md`
+- [x] child `06`：`steering/llm-wiki/child-tasknotes/06-練習用プロジェクトでread-only queryを通す.md`
+- [x] child `07`：`steering/llm-wiki/child-tasknotes/07-練習用プロジェクトでraw knowledgeをrebuild summaries対象に含める.md`
+- [x] child `08`：`steering/llm-wiki/child-tasknotes/08-練習用プロジェクトでconcept entity candidatesを出す.md`
+- [x] child `09`：`steering/llm-wiki/child-tasknotes/09-architecture.mdをchecklist正本へ変換する.md`
+- [x] child `10`：`steering/llm-wiki/child-tasknotes/10-ux-policy.mdをchecklist正本へ変換する.md`
+- [x] child `11`：`steering/llm-wiki/child-tasknotes/11-checklist docsをwiki raw knowledgeとsummariesに反映する.md`
+- [x] child `12`：`steering/llm-wiki/child-tasknotes/12-小さな開発task1本でLLM Wikiとchecklistを試運転する.md`
 
 ### 残課題メモ
 
 - `scripts/commit-tasknote.sh` が repo に存在しないため、manage-tasknotes の「起票直後 commit」ルールをこの repo ではそのまま実行できない
 - shared package の一般論は `generated/wiki/` 案を残しているが、この repo の current-date notes はユーザー判断に従って `wiki/` 直下を採用した
-- 次の実作業は Karpathy 寄りの `index.md` / `log.md` 最小実装
-- 別tasknoteにした場合のタイトル or パス：`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md`
+- 試運転では `areas/current-state` を使わず、`index.md` / `indexes/tasknotes.md` / checklist summaries を入口にしても前進できることを確認した
+- 別tasknoteにした場合のタイトル or パス：`steering/done/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md`
 
 ### 反省とルール化
 
 - 記入先：`steering/llm-wiki/README.md`, `AGENTS.md`
-- 次にやること：`index.md` / `log.md` の current-date note を開き、最小実装を進める
+- 次にやること：wiki query の自動化や area current-state 再導入が必要になったら別 note で切る
 - session close 2026-05-23:
-  - 現在の状態：child `04` まで完了、Karpathy 方針への切り替えと skill 作成まで保存対象に含める
-  - 次に再開すること：`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md` を開き、`wiki/wiki/index.md` と `wiki/wiki/log.md` の実生成に着手する
+  - 現在の状態：child `12` まで repo-local で完了
+  - 次に再開すること：残っている open app task（`cj09-glitch-lord-conversation-mode` など）へ戻る
 
 ---
 
 ## 8) Closing
 
-- 状態: open
-- 次のゲート: `steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md` を開いて、repo 側 next 作業を進める
+- 状態: done
+- 次のゲート: なし
 - close 条件:
     - [x] child `03` current-date 化と skeleton 初期化が終わっている
     - [x] child `01` latest docs / snapshot 固定が終わっている
     - [x] child `02` closed tasknotes shortlist 固定が終わっている
     - [x] child `04` minimal ingest と summaries spot が終わっている
-    - [ ] child `05`（repo-local 置換）以降の index / query / checklist / 試運転が終わっている
+    - [x] child `05`（repo-local 置換）以降の index / query / checklist / 試運転が終わっている
 
 ---
 

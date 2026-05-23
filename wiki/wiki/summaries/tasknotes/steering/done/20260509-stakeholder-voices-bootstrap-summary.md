@@ -1,7 +1,8 @@
 ---
 source: raw/tasknotes/steering/done/20260509-stakeholder-voices-bootstrap.md
 source_type: tasknote
-last_ingested: 2026-05-22
+status: done
+last_ingested: 2026-05-23
 size_class: medium
 ---
 
@@ -39,6 +40,8 @@ size_class: medium
 - 2) Gherkin（完了条件）
 - シナリオ1：AI が根拠 YAML を更新しても参照切れを検知できる
 - シナリオ2：安全な YAML ドリフトは fix / repair で自動正規化できる
+- シナリオ3：task note は requirement と verification を frontmatter で追跡できる
+- シナリオ4：実装過程と結論が note に残る
 
 ## 注意点
 

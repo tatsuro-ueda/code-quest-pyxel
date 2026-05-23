@@ -285,8 +285,7 @@ class BattlePresenter:
             self._select_spell_menu(game)
             return
         if model.menu == 2:
-            model.phase = "item_select"
-            model.item_select = 0
+            self._open_item_menu()
             return
         if model.menu == 3:
             self._select_run(game)
@@ -301,10 +300,23 @@ class BattlePresenter:
         """
         model = self.model
         if game.player_model.spells:
-            model.phase = "spell_select"
-            model.spell_select = 0
+            self._open_spell_menu()
             return
         model.text = "まだ じゅもんを おぼえていない"
+
+    def _open_spell_menu(self) -> None:
+        """spell submenu へ入り、menu 由来の stale text を消す。"""
+        model = self.model
+        model.phase = "spell_select"
+        model.spell_select = 0
+        model.text = ""
+
+    def _open_item_menu(self) -> None:
+        """item submenu へ入り、menu 由来の stale text を消す。"""
+        model = self.model
+        model.phase = "item_select"
+        model.item_select = 0
+        model.text = ""
 
     def _select_run(self, game: Any) -> None:
         """にげる選択時の処理。

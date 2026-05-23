@@ -1,7 +1,8 @@
 ---
 source: raw/knowledge/docs/customer-jobs.md
 source_type: knowledge
-last_ingested: 2026-05-22
+status: active
+last_ingested: 2026-05-23
 size_class: small
 ---
 
@@ -41,6 +42,8 @@ size_class: small
 - JPL 子ども（プレイヤー） [JOB:JPL_CHILD_PLAYER]
 - JCR 子ども（クリエイター） [JOB:JCR_CHILD_CREATOR]
 - JCT 子ども（批評家） [JOB:JCT_CHILD_CRITIC]
+- JSC 子ども（社会的存在） [JOB:JSC_CHILD_SOCIAL]
+- JPA 親（根源ジョブ） [JOB:JPA_PARENT_ROOT]
 
 ## 注意点
 

@@ -1,17 +1,17 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-17T22:30:00.000+09:00
 dateCreated: 2026-05-17T22:30:00.000+09:00
-dateModified: 2026-05-23T04:10:24+00:00
+dateModified: 2026-05-23T09:40:00+00:00
 tags:
   - task
 ---
 
 # 2026年5月17日 アプリ：battle-stale-spell-message
 
-> 状態：① Journey 素案
-> 次のゲート：（ユーザー）Journey 素案を修正・承認する
+> 状態：⑧ Closing
+> 次のゲート：（CC）なし
 
 ---
 
@@ -53,31 +53,98 @@ tags:
 
 ## 2) ユーザーストーリーマップ
 
-（フェーズ2で記入）
+> 委任度：🟢 bugfix と検証まで CC が進められる
+> 残る曖昧さ：なし
+
+### 話題1：再現条件を presenter 遷移へ閉じ込める
+
+##### ユーザー：私
+
+1. 当初計画
+    1. 👀 じゅもん未習得メッセージの発火条件を固定する
+    2. 👀 item menu へ入る瞬間に stale text が残ることを再現する
+    3. ✂️ submenu 遷移時だけ text をクリアする最小差分を選ぶ
+
+### 話題2：wiki/checklist の試運転に使う
+
+##### ユーザー：私
+
+1. 当初計画
+    1. 📚 `ux-policy` と `ux-checklist` から「今の操作だけを見せる」を確認する
+    2. 📚 `framework-checklist` から presenter 側で閉じる方針を確認する
+    3. ✅ bugfix 後に battle task を wiki の試運転記録へ流用する
 
 ---
 
 ## 3) Gherkin（完了条件）
 
-（フェーズ3で記入）
+> 委任度：🟢 実装とテスト追加まで CC が完走できる
+> 残る曖昧さ：なし
+
+- [x] シナリオ1：未習得 spell メッセージは item menu へ持ち越さない
+
+1. 🧱 じゅもん未習得の状態で spell を選ぶと `まだ じゅもんを おぼえていない` が menu 上に出る
+2. 🎬 その直後に item menu を開く
+3. ✅ `item_select` に遷移し、前のメッセージは空になる
+
+- [x] シナリオ2：timed result message の経路は変えない
+
+1. 🧱 run fail や item use success は `text_timer` 付きで結果表示を行う
+2. 🎬 submenu 遷移の stale text だけを修正する
+3. ✅ run / item / spell の timed result 経路は既存テストのまま通る
 
 ---
 
 ## 4) Design（どうやるか）
 
-（フェーズ4で記入）
+- **関連スキル・MCP**：`manage-tasknotes`, `test-driven-development`
+
+### 【参照】
+
+- Steering: `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- Architecture: `wiki/checklists/framework-checklist.md`
+- UXPolicy: `docs/ux-policy.md`
+
+### 変更範囲
+
+- やること:
+  - `BattlePresenter` の submenu 遷移で stale text をクリアする
+  - regression test を追加する
+- やらないこと:
+  - window 抽象化
+  - 座標系の整理
+  - timed result message の表示仕様変更
+
+### 検証
+
+- 検証コマンド:
+  - `python -m pytest test/test_cjg_battle_stale_spell_message.py -q`
+  - `python -m pytest test/test_battle_run_logic.py test/test_cjg_battle_spell_effects.py -q`
+- 成功条件:
+  - stale spell message regression が防がれる
+  - run / spell effect の既存テストが壊れない
+- 未実施時の扱い:
+  - 画面 overlap の再現確認ができないので done にしない
 
 ---
 
 ## 5) Tasklist
 
-（フェーズ5で記入）
+- [x] battle task を wiki/checklist の試運転候補に選んだ
+- [x] `wiki/wiki/indexes/tasknotes.md` から open task として引けることを確認した
+- [x] `docs/ux-policy.md` / `wiki/checklists/ux-checklist.md` から「今の操作だけを見せる」を確認した
+- [x] `wiki/checklists/framework-checklist.md` から presenter 側の最小差分を選んだ
+- [x] failing test `test/test_cjg_battle_stale_spell_message.py` を追加した
+- [x] `BattlePresenter` に submenu 遷移時の text clear を実装した
+- [x] targeted pytest を通した
 
 ---
 
 ## 6) Result（成果物）
 
-（フェーズ6で記入）
+- `src/scenes/battle/presenter.py` で spell / item submenu を開く瞬間に `model.text = ""` を行うようにした
+- `test/test_cjg_battle_stale_spell_message.py` を追加し、未習得 spell メッセージが item menu に持ち越されないことを固定した
+- 試運転では `areas/current-state` を使わず、`indexes/tasknotes.md` と checklist docs だけでも前進できることを確認した
 
 ---
 
@@ -85,15 +152,16 @@ tags:
 
 ### 残課題メモ
 
-- なし / 残課題を書く
-- 別tasknoteにした場合のタイトル or パス：`path/to/tasknote.md`
+- 今回の bug は presenter 側で閉じたため、window 抽象化は不要のまま保留にした
+- 同種の重なりが 3 回再発したら別 note で window 責務整理を切る
+- 別tasknoteにした場合のタイトル or パス：`steering/2026年5月23日 アプリ：battle-window-overlap-policy.md`
 
 ---
 
 ### 反省とルール化
 
 - 記入先：observe-situation / manage-tasknotes / CLAUDE.md
-- 次にやること：
+- 次にやること：glitch-lord prebattle 会話の open task へ戻る
 
 ---
 
