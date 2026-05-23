@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ "${SKIP_TESTS:-}" == "1" ]]; then
+  exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [[ -z "${REPO_ROOT}" ]]; then
+  exit 0
+fi
+cd "$REPO_ROOT"
+
+if [[ "${TASKNOTE_PRECOMMIT:-0}" == "1" && -f tasknote-lint.config.json ]]; then
+  echo "pre-commit: tasknote-lint ..."
+  if ! node "${HOME}/dotfiles/shared/linter/coding-rules/tasknote/run_tasknote_lint.mjs" \
+    --config ./tasknote-lint.config.json \
+    --staged; then
+    echo "pre-commit: tasknote-lint FAILED. Commit blocked."
+    echo "  - Fix tasknote markdown / core rule violations."
+    echo "  - Or commit without TASKNOTE_PRECOMMIT=1 if this is not a tasknote commit."
+    exit 1
+  fi
+fi
+
+echo "pre-commit: make verify ..."
+if ! make verify; then
+  echo "pre-commit: verify FAILED. Commit blocked."
+  echo "  - Fix docstring drift / CJ link / map issues."
+  echo "  - Or use SKIP_TESTS=1 git commit to bypass (not recommended)."
+  exit 1
+fi
+
+echo "pre-commit: pytest ..."
+if python -m pytest test/ -q --tb=short 2>&1; then
+  echo "pre-commit: All tests passed."
+  exit 0
+fi
+
+echo "pre-commit: Tests failed. Commit blocked."
+echo "  - Fix failing tests, or SKIP_TESTS=1 git commit to bypass."
+exit 1

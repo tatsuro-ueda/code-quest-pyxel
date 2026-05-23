@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "markdownlintConfigPath": ".markdownlint-cli2.jsonc",
+  "tasknotePathPatterns": ["^steering/.+\\.md$"],
+  "ignoredBasenames": ["README.md", "TEMPLATE.md", "tasklist.md"]
+}

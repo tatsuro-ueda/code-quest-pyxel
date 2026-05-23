@@ -5,9 +5,9 @@
 #   bash tools/install_hooks.sh
 #
 # pre-commit:
-#   - make verify（モジュール docstring drift / CJ-CJob 整合 / scene_to_cj 対応表）
-#   - pytest（既存テスト）
-#   どちらかが失敗するとコミットがブロックされる。
+#   - repo 管理の .githooks/pre-commit を実行
+#   - tasknote commit 時は TASKNOTE_PRECOMMIT=1 で shared tasknote lint を実行
+#   - 通常は make verify と pytest を実行
 #   緊急時は SKIP_TESTS=1 git commit でバイパス可能。
 #
 # post-commit:
@@ -25,39 +25,24 @@ PRE_COMMIT="$HOOK_DIR/pre-commit"
 cat > "$PRE_COMMIT" <<'PRE_COMMIT'
 #!/usr/bin/env bash
 # Auto-installed by tools/install_hooks.sh
-# 1) make verify（モジュール docstring drift / CJ-CJob 整合 / scene_to_cj 対応表）
-# 2) pytest（既存テスト）
-# 緊急時は SKIP_TESTS=1 git commit でバイパス可能。
+# repo 管理の .githooks/pre-commit へ委譲する。
 
 set -euo pipefail
 
-if [[ "${SKIP_TESTS:-}" == "1" ]]; then
-  exit 0
-fi
-
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
-if [ -z "$REPO_ROOT" ]; then
+if [[ -z "${REPO_ROOT}" ]]; then
   exit 0
 fi
 cd "$REPO_ROOT"
 
-echo "pre-commit: make verify ..."
-if ! make verify; then
-  echo "pre-commit: verify FAILED. Commit blocked."
-  echo "  - Fix docstring drift / CJ link / map issues."
-  echo "  - Or use SKIP_TESTS=1 git commit to bypass (not recommended)."
+HOOK_SCRIPT="$REPO_ROOT/.githooks/pre-commit"
+if [[ ! -x "${HOOK_SCRIPT}" ]]; then
+  echo "pre-commit: missing executable ${HOOK_SCRIPT}" >&2
+  echo "  - Re-run: bash tools/install_hooks.sh" >&2
   exit 1
 fi
 
-echo "pre-commit: pytest ..."
-if python -m pytest test/ -q --tb=short 2>&1; then
-  echo "pre-commit: All tests passed."
-  exit 0
-else
-  echo "pre-commit: Tests failed. Commit blocked."
-  echo "  - Fix failing tests, or SKIP_TESTS=1 git commit to bypass."
-  exit 1
-fi
+exec "$HOOK_SCRIPT" "$@"
 PRE_COMMIT
 chmod +x "$PRE_COMMIT"
 echo "[install-hooks] installed: $PRE_COMMIT"
