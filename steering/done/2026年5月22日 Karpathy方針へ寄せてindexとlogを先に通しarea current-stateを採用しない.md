@@ -113,7 +113,7 @@ tags:
 
 ### 【参照】
 
-- Steering: `steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- Steering: `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
 - Steering: `steering/done/2026年5月22日 練習用プロジェクトでminimal ingestとsummariesを通す.md`
 - Steering: `steering/llm-wiki/child-tasknotes/05-練習用プロジェクトでraw tasknotes indexとarea current-stateを通す.md`
 - External: Andrej Karpathy `LLM Wiki` gist
@@ -165,11 +165,11 @@ tags:
 
 - `index.md` と `log.md` の生成責務を `tools/gen_wiki.py` にどこまで持たせるかはまだ未確定
 - shared package 側の child `05` は残るので、今後も repo ローカル判断との差を current-date notes 側で管理する必要がある
-- 別tasknoteにした場合のタイトル or パス：`steering/2026年5月22日 Karpathy方針でindexとlogの最小形を通す.md`
+- 別tasknoteにした場合のタイトル or パス：`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md`
 
 ### 反省とルール化
 
-- 記入先：`wiki/README.md`, `steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- 記入先：`wiki/README.md`, `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
 - 次にやること：`index.md` と `log.md` を先に通し、それでも navigation が足りないと判明した場合だけ local extension を足す
 
 ---
@@ -177,7 +177,7 @@ tags:
 ## 8) Closing
 
 - 状態: done
-- 次のゲート: `steering/2026年5月22日 Karpathy方針でindexとlogの最小形を通す.md` を開き、`index.md` / `log.md` の実生成へ進む
+- 次のゲート: `steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md` を開き、`index.md` / `log.md` の実生成へ進む
 - close 条件:
     - [x] repo 側 next gate を差し替えた
     - [x] shared package mirror はそのまま保った

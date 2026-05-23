@@ -154,7 +154,7 @@ flowchart TD
 
 ### 【参照】
 
-- Steering: `steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- Steering: `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
 - Steering: `steering/llm-wiki/child-tasknotes/03-練習用プロジェクト向けLLM Wiki skeletonと命名ルールを置く.md`
 - Docs: `AGENTS.md`
 - Docs: `docs/framework-rule.md`
@@ -214,7 +214,7 @@ flowchart TD
 
 - `scripts/commit-tasknote.sh` 不在のため、tasknote 作成直後 commit の運用は repo 側で代替が要る
 - この note 自体の deliverable は完了。後続の導線は親 orchestration note と `index.md` / `log.md` 系 note 側で継続する
-- 別tasknoteにした場合のタイトル or パス：`steering/2026年5月22日 Karpathy方針でindexとlogの最小形を通す.md`
+- 別tasknoteにした場合のタイトル or パス：`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md`
 
 ### 反省とルール化
 
@@ -226,7 +226,7 @@ flowchart TD
 ## 8) 参考文献
 
 - `steering/llm-wiki/child-tasknotes/03-練習用プロジェクト向けLLM Wiki skeletonと命名ルールを置く.md`
-- `steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
 - `AGENTS.md`
 - `docs/framework-rule.md`
 - `docs/repository-structure.md`

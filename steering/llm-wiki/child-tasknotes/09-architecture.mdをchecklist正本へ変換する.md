@@ -15,9 +15,9 @@
 - メモ:
   - 「正本に照らして fail/pass を判定できる形」を優先する
 - 委任メモ:
-  - 🟡 代替正本を決めれば任せやすい
+  - 🟢 代替正本の選定と checklist 分割方針は CC が決めて進めてよい
 - 先に決めること:
-  - architecture source を 1系統か 2系統か
+  - architecture source の 1系統 / 2系統は CC が最小運用コストで選んでよい
 
 ---
 
@@ -33,7 +33,7 @@
 | `docs/framework-rule.md` | 35KB / 命名・運用ルール | ○ 補完情報、特に運用面 |
 | `docs/repository-structure.md` | 26KB / リプレース予定 | △ 古い、参照のみ |
 
-### 統合判断（ユーザーゲート）
+### 統合判断（CC 既定判断可）
 
 3 つの選択肢：
 
@@ -47,7 +47,7 @@
   - 利点: 1箇所で済む
   - 欠点: ファイルが大きくなる、改訂が大変
 
-→ 着手前にユーザー判断。**B 推奨**（responsibility が分かれている方が運用しやすい）。
+→ **B 推奨**。responsibility が分かれている方が運用しやすく、CC がこの既定値を採って着手してよい。
 
 ### 翻訳方針（architecture_rules.yml → checklist）
 

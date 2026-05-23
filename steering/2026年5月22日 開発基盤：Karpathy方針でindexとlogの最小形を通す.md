@@ -3,7 +3,7 @@ status: open
 priority: high
 scheduled: 2026-05-22T21:30:00.000+09:00
 dateCreated: 2026-05-22T21:30:00.000+09:00
-dateModified: 2026-05-22T21:30:00.000+09:00
+dateModified: 2026-05-23T04:10:24+00:00
 tags:
   - task
   - llm-wiki
@@ -12,7 +12,7 @@ tags:
   - log
 ---
 
-# 2026年5月22日 Karpathy方針でindexとlogの最小形を通す
+# 2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す
 
 > 状態：④ Design
 > 次のゲート：（CC）`wiki/wiki/index.md` と `wiki/wiki/log.md` の雛形を作り、`tools/gen_wiki.py` に書き戻す責務を持たせるかを決める
@@ -124,5 +124,5 @@ tags:
 ### 中断メモ
 
 - session close 2026-05-23:
-  - 現在の状態：Design まで完了。Karpathy 寄り方針と `list-tasknote-status-board` skill は保存対象へ含める
+  - 現在の状態：Design まで完了。Karpathy 寄り方針と `list-tasknotes` skill は保存対象へ含める
   - 次に再開すること：`wiki/wiki/index.md` と `wiki/wiki/log.md` の最小仕様を確定し、必要なら `tools/gen_wiki.py` のテストから始める

@@ -1,9 +1,9 @@
 ---
-status: open
+status: wont
 priority: high
 scheduled: 2026-04-20T23:30:15+00:00
 dateCreated: 2026-04-20T23:30:15+00:00
-dateModified: 2026-04-20T23:30:15+00:00
+dateModified: 2026-05-23T04:10:24+00:00
 tags:
   - task
   - cj26
@@ -13,8 +13,8 @@ tags:
 
 # 2026年4月20日 CJ26 Code Maker の Sound / Music を code asset として取り込む
 
-> 状態：`open`
-> 次のゲート：（ユーザー）task note 確認後、実装へ進む
+> 状態：`wont`（`CJ24` の Sound round-trip 修正と `pyxres SSoT` 方針に置き換わった）
+> 次のゲート：なし（後続は `steering/done/20260420-cj24-codemaker-sfx-roundtrip.md` と `steering/done/20260506-bgm-pyxres-ssot.md` を参照）
 
 ---
 

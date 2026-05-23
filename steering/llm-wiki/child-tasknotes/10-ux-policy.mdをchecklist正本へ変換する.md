@@ -13,11 +13,11 @@
 - 最初の一手:
   - ux-policy の禁止事項と推奨事項を確認項目に変換する
 - メモ:
-  - ここは今回の必須ゲートの1つ
+  - UX 正本が未作成でも、CC が初版 `docs/ux-policy.md` を起こして前進してよい
 - 委任メモ:
-  - 🔴 ux 正本が無い場合は、先に作り方を決める必要がある
+  - 🟢 CC が既存 docs と tasknotes から初版 `ux-policy.md` を作ってから checklist 化してよい
 - 先に決めること:
-  - `ux-policy.md` 自体を新規作成するか
+  - `docs/ux-policy.md` は CC が新規作成してよい
 
 ---
 
@@ -39,11 +39,11 @@
 
 `architecture_rules.yml` のような構造化された正本は ux 側には**ない**。
 
-→ 単純な「変換」では成立しない。**ux-policy.md 自体を新規作成**してから checklist 化するのが筋。
+→ 単純な「変換」では成立しない。**CC が `ux-policy.md` 自体を新規作成**してから checklist 化するのが筋。
 
 ### 推奨アプローチ
 
-**事前ステップ: ux-policy.md を新規作成**
+**事前ステップ: CC が ux-policy.md を新規作成**
 
 1. メモリ `project_ui_policy.md` を起点に骨格を作る
 2. `product-requirements-av.md` `product-requirements-narrative.md` から UI / 表記方針を抽出

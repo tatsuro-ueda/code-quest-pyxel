@@ -38,7 +38,7 @@ Expected: no diff output.
 ### Task 2: Add The Repo-Local Orchestration Note
 
 **Files:**
-- Create: `steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- Create: `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
 - Reference: `steering/llm-wiki/README.md`
 - Reference: `steering/llm-wiki/child-tasknotes/03-練習用プロジェクト向けLLM Wiki skeletonと命名ルールを置く.md`
 - Reference: `steering/llm-wiki/child-tasknotes/09-architecture.mdをchecklist正本へ変換する.md`
@@ -72,7 +72,7 @@ Document that `scripts/commit-tasknote.sh` does not exist in this repo, so the m
 
 **Files:**
 - Verify: `steering/llm-wiki/**/*`
-- Verify: `steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- Verify: `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
 
 - [x] **Step 1: Verify the synced package file set**
 
@@ -82,7 +82,7 @@ Expected: README, one parent note, and 12 child tasknotes appear.
 
 - [x] **Step 2: Verify the orchestration note is the only new steering entry point**
 
-Run: `git status --short steering/llm-wiki 'steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md'`
+Run: `git status --short steering/llm-wiki 'steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md'`
 
 Expected: untracked package directory plus one untracked orchestration note, with unrelated user changes untouched.
 

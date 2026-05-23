@@ -14,7 +14,7 @@ tags:
 # 2026年5月22日 練習用プロジェクトでminimal ingestとsummariesを通す
 
 > 状態：⑧ Closing 完了
-> 次のゲート：（CC）`steering/2026年5月22日 Karpathy方針でindexとlogの最小形を通す.md` を開き、`index.md` と `log.md` の実生成に進む
+> 次のゲート：（CC）`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md` を開き、`index.md` と `log.md` の実生成に進む
 
 ---
 
@@ -147,7 +147,7 @@ flowchart TD
 
 ### 【参照】
 
-- Steering: `steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- Steering: `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
 - Steering: `steering/done/2026年5月22日 練習用プロジェクトのclosed tasknotes投入候補と順番を固定する.md`
 - Steering: `steering/llm-wiki/child-tasknotes/04-練習用プロジェクトでminimal ingestとsummariesを通す.md`
 - Docs: `docs/customer-jobs.md`
@@ -228,7 +228,7 @@ flowchart TD
 
 ### 反省とルール化
 
-- 記入先：`wiki/README.md`, `steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- 記入先：`wiki/README.md`, `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
 - 次にやること：今回生成した `wiki/raw/...` と `wiki/wiki/summaries/...` を材料に、Karpathy 寄りの `index.md` / `log.md` 最小形を実生成する
 
 ---
@@ -236,7 +236,7 @@ flowchart TD
 ## 8) Closing
 
 - 状態: done
-- 次のゲート: `steering/2026年5月22日 Karpathy方針でindexとlogの最小形を通す.md` を開いて、`index.md` / `log.md` の実生成へ進む
+- 次のゲート: `steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md` を開いて、`index.md` / `log.md` の実生成へ進む
 - close 条件:
     - [x] failing test を先に置いた
     - [x] red を確認した

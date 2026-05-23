@@ -3,17 +3,17 @@ status: open
 priority: high
 scheduled: 2026-05-22T18:00:00.000+09:00
 dateCreated: 2026-05-22T18:00:00.000+09:00
-dateModified: 2026-05-22T18:00:00.000+09:00
+dateModified: 2026-05-23T05:43:08+00:00
 tags:
   - task
   - llm-wiki
   - orchestration
 ---
 
-# 2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する
+# 2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する
 
 > 状態：⑤ Tasklist
-> 次のゲート：（CC）`steering/2026年5月22日 Karpathy方針でindexとlogの最小形を通す.md` を開き、次の実作業を `index.md` / `log.md` 実生成へ進める
+> 次のゲート：（CC）`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md` を開き、次の実作業を `index.md` / `log.md` 実生成へ進める
 
 ---
 
@@ -188,7 +188,7 @@ flowchart TD
 - 検証コマンド:
   - `diff -ru /home/exedev/dotfiles/shared/llm-wiki-how-to /home/exedev/code-quest-pyxel/steering/llm-wiki`
   - `find steering/llm-wiki -maxdepth 3 -type f | sort`
-  - `git status --short steering/llm-wiki 'steering/2026年5月22日 LLM Wiki shared packageを導入して自律実行ルートを固定する.md'`
+  - `git status --short steering/llm-wiki 'steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md'`
 - 成功条件:
   - shared source と repo copy に差分が無い
   - shared package の README / 親note / child 12 本が揃う
@@ -235,12 +235,27 @@ flowchart TD
 
 ## 7) Discussion（残課題の起票）
 
+### child tasknote 一覧
+
+- [x] child `03`：`steering/done/2026年5月22日 練習用プロジェクト向けLLM Wiki skeletonと命名ルールを置く.md`
+- [x] child `01`：`steering/done/2026年5月22日 練習用プロジェクトの正本docsとGit snapshot候補を棚卸しする.md`
+- [x] child `02`：`steering/done/2026年5月22日 練習用プロジェクトのclosed tasknotes投入候補と順番を固定する.md`
+- [x] child `04`：`steering/done/2026年5月22日 練習用プロジェクトでminimal ingestとsummariesを通す.md`
+- [ ] child `05`（repo-local 置換）：`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md`
+- [ ] child `06`：`steering/llm-wiki/child-tasknotes/06-練習用プロジェクトでread-only queryを通す.md`
+- [ ] child `07`：`steering/llm-wiki/child-tasknotes/07-練習用プロジェクトでraw knowledgeをrebuild summaries対象に含める.md`
+- [ ] child `08`：`steering/llm-wiki/child-tasknotes/08-練習用プロジェクトでconcept entity candidatesを出す.md`
+- [ ] child `09`：`steering/llm-wiki/child-tasknotes/09-architecture.mdをchecklist正本へ変換する.md`
+- [ ] child `10`：`steering/llm-wiki/child-tasknotes/10-ux-policy.mdをchecklist正本へ変換する.md`
+- [ ] child `11`：`steering/llm-wiki/child-tasknotes/11-checklist docsをwiki raw knowledgeとsummariesに反映する.md`
+- [ ] child `12`：`steering/llm-wiki/child-tasknotes/12-小さな開発task1本でLLM Wikiとchecklistを試運転する.md`
+
 ### 残課題メモ
 
 - `scripts/commit-tasknote.sh` が repo に存在しないため、manage-tasknotes の「起票直後 commit」ルールをこの repo ではそのまま実行できない
 - shared package の一般論は `generated/wiki/` 案を残しているが、この repo の current-date notes はユーザー判断に従って `wiki/` 直下を採用した
 - 次の実作業は Karpathy 寄りの `index.md` / `log.md` 最小実装
-- 別tasknoteにした場合のタイトル or パス：`steering/2026年5月22日 Karpathy方針でindexとlogの最小形を通す.md`
+- 別tasknoteにした場合のタイトル or パス：`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md`
 
 ### 反省とルール化
 
@@ -248,20 +263,20 @@ flowchart TD
 - 次にやること：`index.md` / `log.md` の current-date note を開き、最小実装を進める
 - session close 2026-05-23:
   - 現在の状態：child `04` まで完了、Karpathy 方針への切り替えと skill 作成まで保存対象に含める
-  - 次に再開すること：`steering/2026年5月22日 Karpathy方針でindexとlogの最小形を通す.md` を開き、`wiki/wiki/index.md` と `wiki/wiki/log.md` の実生成に着手する
+  - 次に再開すること：`steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md` を開き、`wiki/wiki/index.md` と `wiki/wiki/log.md` の実生成に着手する
 
 ---
 
 ## 8) Closing
 
 - 状態: open
-- 次のゲート: `steering/2026年5月22日 Karpathy方針でindexとlogの最小形を通す.md` を開いて、repo 側 next 作業を進める
+- 次のゲート: `steering/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す.md` を開いて、repo 側 next 作業を進める
 - close 条件:
     - [x] child `03` current-date 化と skeleton 初期化が終わっている
     - [x] child `01` latest docs / snapshot 固定が終わっている
     - [x] child `02` closed tasknotes shortlist 固定が終わっている
     - [x] child `04` minimal ingest と summaries spot が終わっている
-    - [ ] child `05` 以降の index / query / checklist / 試運転が終わっている
+    - [ ] child `05`（repo-local 置換）以降の index / query / checklist / 試運転が終わっている
 
 ---
 

@@ -3,7 +3,7 @@ status: open
 priority: high
 scheduled: 2026-04-18T12:31:41+00:00
 dateCreated: 2026-04-18T12:31:41+00:00
-dateModified: 2026-04-18T12:31:41+00:00
+dateModified: 2026-05-23T04:10:24+00:00
 tags:
   - task
   - cj09
@@ -16,10 +16,10 @@ tags:
   - narrative
 ---
 
-# 2026年4月18日 CJ09 魔王戦の導入をプロフェッサー型の会話モードに寄せる
+# 2026年4月18日 アプリ：cj09-glitch-lord-conversation-mode
 
-> 状態：(1) 改善対象ジャーニー
-> 次のゲート：（ユーザー）task note 確認後、実装へ進む
+> 状態：`open`（dialogue asset はあるが、本筋の trigger 接続は未完）
+> 次のゲート：（CC）`src/scenes/explore/presenter.py` の魔王トリガーを prebattle conversation 開始へつなぎ直す
 
 ---
 

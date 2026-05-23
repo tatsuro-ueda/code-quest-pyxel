@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-04-20T16:23:00+00:00
 dateCreated: 2026-04-20T16:23:00+00:00
-dateModified: 2026-04-22T00:00:00+00:00
+dateModified: 2026-05-23T04:10:24+00:00
 tags:
   - task
   - cj26
@@ -14,8 +14,8 @@ tags:
 
 # 2026年4月20日 CJ26 Code Maker で直した image bank を runtime が巻き戻さないようにする
 
-> 状態：`open`
-> 次のゲート：（ユーザー）task note 確認後、実装へ進む
+> 状態：`done`（後続の `pyxres SSoT` / imagebank cleanup task で完了）
+> 次のゲート：なし（根拠は `steering/done/20260425-pyxres-as-world-map-ssot.md` と `steering/done/20260505-imagebank-direct-cleanup.md`）
 
 ---
 

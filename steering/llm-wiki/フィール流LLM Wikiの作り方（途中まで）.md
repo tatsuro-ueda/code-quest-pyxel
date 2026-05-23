@@ -193,7 +193,7 @@ final の `concepts/` や `entities/` は、人と LLM が相談してからで�
 
 - 簡単すぎる → checklist の価値が見えない
 - 複雑すぎる → checklist で防げる範囲を超える
-- 既存 open task（例: `steering/20260517-battle-stale-spell-message.md`）を兼ねるか、捨て試運転にするかの判断が要る
+- 既存 open task（例: `steering/20260517 アプリ：battle-stale-spell-message.md`）を兼ねるか、捨て試運転にするかの判断が要る
 
 ### 9. 親note が「途中まで」である事の波及
 

@@ -170,7 +170,7 @@ Git Graph のスピナーが回り続ける間は、件数表示を意思決定�
 - `AGENTS.md`
 - `README.md`
 - `docs/repository-structure.md`
-- `steering/20260517-battle-stale-spell-message.md`
+- `steering/20260517 アプリ：battle-stale-spell-message.md`
 - 事実メモ：起票時の `git status --short` は 2 パス
 - 参考画像：`steering/2026年5月22日未コミット89件？.png`
 - 事実メモ：Git Graph は `Uncommitted Changes (89)` と表示
