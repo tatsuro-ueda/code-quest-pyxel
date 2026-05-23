@@ -9,3 +9,4 @@ mock/
 *.egg-info/
 .playwright-mcp/
 .claude/
+.worktrees/
