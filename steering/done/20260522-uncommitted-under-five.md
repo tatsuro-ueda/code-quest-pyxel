@@ -118,7 +118,7 @@ flowchart TD
 
 - `git status --short -uall` （➕：未コミット件数の正本）
 - `remoteexthost.log` （➕：Git 拡張の異常の証跡）
-- `steering/2026年5月22日未コミット89件？.png` （➕：Git Graph 表示の証拠）
+- `steering/done/2026年5月22日未コミット89件？.png` （➕：Git Graph 表示の証拠）
 
 ---
 
@@ -135,7 +135,7 @@ flowchart TD
 ## 6) Result（成果物）
 
 - 2026-05-22、Git Graph の表示は `Uncommitted Changes (89)` のまま更新中になった
-- 画像証跡を `steering/2026年5月22日未コミット89件？.png` として保持した
+- 画像証跡を `steering/done/2026年5月22日未コミット89件？.png` として保持した
 - `git status --short -uall | wc -l` の fresh 実行では 5 行で、目標の「5個以下」は満たした
 - 5 行のうち 2 行は同じ tasknote の `steering/` から `steering/done/` への移動で生じた
 - 拡張ホストログに built-in Git の `Error: Git error` 連発を確認した
@@ -172,7 +172,7 @@ Git Graph のスピナーが回り続ける間は、件数表示を意思決定�
 - `docs/repository-structure.md`
 - `steering/20260517 アプリ：battle-stale-spell-message.md`
 - 事実メモ：起票時の `git status --short` は 2 パス
-- 参考画像：`steering/2026年5月22日未コミット89件？.png`
+- 参考画像：`steering/done/2026年5月22日未コミット89件？.png`
 - 事実メモ：Git Graph は `Uncommitted Changes (89)` と表示
 - 事実メモ：Closing 時の `git status --short -uall | wc -l` は 5
 - 参考コード：`~/.vscode-server/extensions/mhutchie.git-graph-1.30.0/out/dataSource.js`
