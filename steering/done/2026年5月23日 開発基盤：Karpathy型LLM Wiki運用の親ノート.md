@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-23T16:46:43.000+00:00
 dateCreated: 2026-05-23T16:46:43.000+00:00
@@ -15,8 +15,8 @@ tags:
 
 # 2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート
 
-> 状態：⑤ Tasklist
-> 次のゲート：（CC）child `01` の土台フォルダと基準ページ作成に入る
+> 状態：⑧ Closing
+> 次のゲート：なし
 
 ---
 
@@ -201,7 +201,7 @@ tags:
 
 ### シナリオ一覧
 
-- [ ] シナリオ1：親 note が setup から health-check までの入口になる
+- [x] シナリオ1：親 note が setup から health-check までの入口になる
 
 1. 🧱 route はあるが、最初に何から進めるかが曖昧である（整理前）
 2. 🎬 setup / ingest / query / health-check の順へ child を並べ直す（整理）
@@ -215,7 +215,7 @@ And 次のゲートは child `01` を指す
 And batch と schema は later note として分離される
 ```
 
-- [ ] シナリオ2：child `01` が最小の置き場と基準ページを定義する
+- [x] シナリオ2：child `01` が最小の置き場と基準ページを定義する
 
 1. 🧱 raw はあるが、master index や logs の器が足りない（setup 前）
 2. 🎬 setup child で folders と starter pages を揃える（setup）
@@ -228,7 +228,7 @@ Then 1 本目の ingest に必要な置き場が揃う
 And 早すぎる entity / concept 分離を避けられる
 ```
 
-- [ ] シナリオ3：child `02` が 1 本目の ingest の done 条件を固定する
+- [x] シナリオ3：child `02` が 1 本目の ingest の done 条件を固定する
 
 1. 🧱 1 本目の source をどこまで更新したら done かが曖昧である（ingest 前）
 2. 🎬 raw / summary / master index / related pages 2 件以上 / ingest log を done 条件にする（ingest）
@@ -241,7 +241,7 @@ Then 1 本目の ingest を done 判定できる
 And 10 から 15 ページ更新は将来の波及であって初回の必須条件ではない
 ```
 
-- [ ] シナリオ4：child `03` が代表質問 1 本で answer filing を試せる
+- [x] シナリオ4：child `03` が代表質問 1 本で answer filing を試せる
 
 1. 🧱 ingest した wiki に質問できても、保存条件が曖昧だと再利用しにくい（query 前）
 2. 🎬 markdown 既定で evidence 付き回答を 1 本作り、良ければ保存する（query）
@@ -254,7 +254,7 @@ Then evidence 付き回答を 1 本保存できる
 And 外部事実が必要なら candidate source に切り分けられる
 ```
 
-- [ ] シナリオ5：child `04` が初回 health-check を core 5 で回せる
+- [x] シナリオ5：child `04` が初回 health-check を core 5 で回せる
 
 1. 🧱 small wiki でも summary / related pages / answer page が揃うと矛盾しうる（点検前）
 2. 🎬 contradictions / stale claims / orphan pages / missing concepts / missing crossrefs を見る（点検）
@@ -350,10 +350,10 @@ flowchart LR
 - [x] parent note を child `01-04` の main route へ書き換える
 - [x] ingest / query / health-check child の next gate を CC 連鎖に寄せる
 - [x] batch / schema を later note 扱いへ下げる
-- [ ] child `01` の土台フォルダと基準ページ作成に入る
-- [ ] child `02` の 1 本目 ingest を進める
-- [ ] child `03` の代表質問と saved answer を進める
-- [ ] child `04` の初回 health-check を進める
+- [x] child `01` の土台フォルダと基準ページ作成に入る
+- [x] child `02` の 1 本目 ingest を進める
+- [x] child `03` の代表質問と saved answer を進める
+- [x] child `04` の初回 health-check を進める
 
 ---
 
@@ -363,13 +363,13 @@ flowchart LR
 - [x] setup child を新設する方針に変えた
 - [x] batch と schema を main route から外した
 - [x] parent note の次のゲートを child `01` に変えた
-- [ ] llm-wiki の実物作成と health-check 実行はこれから進める
+- [x] llm-wiki の実物作成と health-check 実行まで完了した
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟢 初回 health-check までの route が child 単位で明確になった
+> 評価：🟢 first cycle の `setup -> ingest -> query -> health-check -> schema` を repo 上で完了できた
 
 ### 成果物
 
@@ -378,6 +378,18 @@ flowchart LR
 - `steering/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す.md` （child `02`）
 - `steering/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す.md` （child `03`）
 - `steering/2026年5月23日 開発基盤：Wikiの健全性チェックを試す.md` （child `04`）
+- `llm-wiki/raw/knowledge/2026-04-04-karpathy-llm-wiki.md`
+- `llm-wiki/wiki/indexes/master-index.md`
+- `llm-wiki/wiki/logs/source-inbox.md`
+- `llm-wiki/wiki/logs/ingest-log.md`
+- `llm-wiki/wiki/logs/health-check-log.md`
+- `llm-wiki/wiki/summaries/knowledge/2026-04-04-karpathy-llm-wiki-summary.md`
+- `llm-wiki/wiki/areas/persistent-wiki-vs-rag.md`
+- `llm-wiki/wiki/areas/ingest-query-lint-loop.md`
+- `llm-wiki/wiki/areas/schema-driven-wiki-maintainer.md`
+- `llm-wiki/wiki/query/2026-05-23-why-persistent-wiki-beats-rag.md`
+- `llm-wiki/wiki/candidates/2026-05-23-qmd-and-obsidian-tooling-candidate.md`
+- `docs/llm-wiki-ops-schema.md`
 
 ---
 
@@ -385,10 +397,10 @@ flowchart LR
 
 ### child tasknote 一覧
 
-- [ ] child `01`：`steering/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る.md`
-- [ ] child `02`：`steering/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す.md`
-- [ ] child `03`：`steering/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す.md`
-- [ ] child `04`：`steering/2026年5月23日 開発基盤：Wikiの健全性チェックを試す.md`
+- [x] child `01`：`steering/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る.md`
+- [x] child `02`：`steering/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す.md`
+- [x] child `03`：`steering/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す.md`
+- [x] child `04`：`steering/2026年5月23日 開発基盤：Wikiの健全性チェックを試す.md`
 
 ### 残課題のルール化
 
@@ -414,7 +426,7 @@ flowchart LR
 
 ### 残課題5
 
-- 委任度: 🟡 throughput と schema 固定は初回 1 周のあとに回す
+- 委任度: 🟢 throughput と schema 固定も、開始条件と更新条件まで含めて CC が進められる
 - 関連tasknote: `steering/2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める.md`
 - 関連tasknote: `steering/2026年5月23日 開発基盤：LLM Wiki運用をスキーマへ文書化する.md`
 
@@ -422,13 +434,14 @@ flowchart LR
 
 ## 9) Closing
 
-- 状態: open
-- 次のゲート: （CC）child `01` の土台フォルダと基準ページ作成に入る
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] child `01` が完了している
-  - [ ] child `02` が raw / summary / index / related pages / ingest log まで終わっている
-  - [ ] child `03` が representative query と saved answer を 1 本終えている
-  - [ ] child `04` が core 5 の health-check log を 1 本残している
+  - [x] child `01` が完了している
+  - [x] child `02` が raw / summary / index / related pages / ingest log まで終わっている
+  - [x] child `03` が representative query と saved answer を 1 本終えている
+  - [x] child `04` が core 5 の health-check log を 1 本残している
+  - [x] schema draft と batch policy も separate note に整理されている
 
 ---
 
