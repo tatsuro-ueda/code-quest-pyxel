@@ -6,10 +6,10 @@
 
 ## Current State
 
-- The repo-local LLM Wiki currently lives under `wiki/`.
-- Generated artifacts are split across `wiki/raw/`, `wiki/wiki/`, and `wiki/checklists/`.
-- `tools/gen_wiki.py` and `test/test_gen_wiki.py` assume `wiki/` as the default output root.
-- Operational docs such as `wiki/README.md` and generated query/index pages describe the old root directly.
+- This rename has been implemented in-repo; the repo-local LLM Wiki now lives under `llm-wiki/`.
+- The preserved internal layout remains `llm-wiki/raw/`, `llm-wiki/wiki/`, and `llm-wiki/checklists/`.
+- `tools/gen_wiki.py` now defaults to `<repo>/llm-wiki`, and `test/test_gen_wiki.py` asserts that behavior.
+- Active operational docs now point at `llm-wiki/`, while historical tasknote prose intentionally retains old path strings.
 
 ## Problem
 
@@ -44,7 +44,7 @@ Rejected for now because it preserves two competing roots and reintroduces disco
 
 ### Directories
 
-- Rename: `wiki/` -> `llm-wiki/`
+- Renamed: `wiki/` -> `llm-wiki/`
 
 ### Code
 

@@ -15,9 +15,9 @@ Problems:
       次回セッションで入口探索からやり直しになる。
 
 Solutions:
-    - repo 相対 path をそのまま `wiki/raw/...` に mirror し、
-      `wiki/wiki/summaries/.../*-summary.md` を同じ相対構造で生成する。
-    - checklist は `wiki/checklists/` を source としつつ、
+    - repo 相対 path をそのまま `llm-wiki/raw/...` に mirror し、
+      `llm-wiki/wiki/summaries/.../*-summary.md` を同じ相対構造で生成する。
+    - checklist は `llm-wiki/checklists/` を source としつつ、
       `raw/knowledge/checklists/` と `summaries/checklists/` に寄せる。
     - 生成後に `index.md` / `log.md` / `indexes/tasknotes.md` /
       `query/README.md` / `candidates/*.md` を deterministic に書き直す。
