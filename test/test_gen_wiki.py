@@ -21,6 +21,30 @@ def load_gen_wiki_module():
 
 
 class GenerateWikiTest(unittest.TestCase):
+    def test_generate_wiki_defaults_output_root_to_llm_wiki(self):
+        gen_wiki = load_gen_wiki_module()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            (repo_root / "docs").mkdir(parents=True, exist_ok=True)
+
+            knowledge_path = repo_root / "docs" / "customer-jobs.md"
+            knowledge_path.write_text("# 顧客のジョブ\n", encoding="utf-8")
+
+            result = gen_wiki.generate_wiki(
+                knowledge_paths=["docs/customer-jobs.md"],
+                tasknote_paths=[],
+                repo_root=repo_root,
+                today="2026-05-23",
+            )
+
+            expected_raw = (
+                repo_root / "llm-wiki" / "raw" / "knowledge" / "docs" / "customer-jobs.md"
+            )
+
+            self.assertEqual(result["raw_paths"], [expected_raw])
+            self.assertTrue(expected_raw.is_file())
+
     def test_generate_wiki_copies_markdown_sources_and_writes_mirrored_summaries(self):
         gen_wiki = load_gen_wiki_module()
 
@@ -70,7 +94,7 @@ class GenerateWikiTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            wiki_root = repo_root / "wiki"
+            wiki_root = repo_root / "llm-wiki"
             result = gen_wiki.generate_wiki(
                 knowledge_paths=["docs/customer-jobs.md"],
                 tasknote_paths=["steering/done/example-tasknote.md"],
@@ -159,6 +183,7 @@ class GenerateWikiTest(unittest.TestCase):
             query_text = query_readme.read_text(encoding="utf-8")
             self.assertIn("read-only", query_text)
             self.assertIn("根拠", query_text)
+            self.assertIn("`llm-wiki/raw/`", query_text)
 
             self.assertIn("| 用語 | 頻度 |", concepts_path.read_text(encoding="utf-8"))
             self.assertIn("| 用語 | 頻度 |", entities_path.read_text(encoding="utf-8"))
@@ -192,7 +217,7 @@ class GenerateWikiTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            wiki_root = repo_root / "wiki"
+            wiki_root = repo_root / "llm-wiki"
             result = gen_wiki.generate_wiki(
                 knowledge_paths=["docs/stakeholder_voices.yml"],
                 tasknote_paths=[],
@@ -229,9 +254,9 @@ class GenerateWikiTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir)
-            (repo_root / "wiki" / "checklists").mkdir(parents=True, exist_ok=True)
+            (repo_root / "llm-wiki" / "checklists").mkdir(parents=True, exist_ok=True)
 
-            checklist_path = repo_root / "wiki" / "checklists" / "ux-checklist.md"
+            checklist_path = repo_root / "llm-wiki" / "checklists" / "ux-checklist.md"
             checklist_path.write_text(
                 textwrap.dedent(
                     """
@@ -252,11 +277,11 @@ class GenerateWikiTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            wiki_root = repo_root / "wiki"
+            wiki_root = repo_root / "llm-wiki"
             result = gen_wiki.generate_wiki(
                 knowledge_paths=[],
                 tasknote_paths=[],
-                checklist_paths=["wiki/checklists/ux-checklist.md"],
+                checklist_paths=["llm-wiki/checklists/ux-checklist.md"],
                 repo_root=repo_root,
                 wiki_root=wiki_root,
                 today="2026-05-23",

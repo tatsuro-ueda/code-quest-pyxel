@@ -94,9 +94,9 @@ def generate_wiki(
     Args:
         knowledge_paths: `docs/...` のような repo 相対 source path。
         tasknote_paths: `steering/...` のような repo 相対 source path。
-        checklist_paths: `wiki/checklists/...` のような repo 相対 source path。
+        checklist_paths: `llm-wiki/checklists/...` のような repo 相対 source path。
         repo_root: source 解決の基準 repo root。
-        wiki_root: 出力先 root。未指定時は `<repo>/wiki`。
+        wiki_root: 出力先 root。未指定時は `<repo>/llm-wiki`。
         today: frontmatter に書く日付。未指定時は `YYYY-MM-DD`。
 
     Returns:
@@ -242,7 +242,7 @@ def _generate_group(
 
 
 def _resolve_wiki_root(repo_root: Path, wiki_root: Path | None) -> Path:
-    return (wiki_root or (repo_root / "wiki")).resolve()
+    return (wiki_root or (repo_root / "llm-wiki")).resolve()
 
 
 def _ensure_non_empty_targets(
@@ -313,7 +313,7 @@ def _output_relative_path(relative_path: str, source_type: str) -> Path:
     if source_type != "checklist":
         return relative
     parts = list(relative.parts)
-    if parts[:2] == ["wiki", "checklists"]:
+    if parts[:2] in (["wiki", "checklists"], ["llm-wiki", "checklists"]):
         parts = parts[2:]
     elif parts[:1] == ["checklists"]:
         parts = parts[1:]
@@ -818,7 +818,7 @@ def _build_query_readme_text(records: list[dict[str, Any]]) -> str:
         "",
         "## read-only rules",
         "",
-        "- query 中に `wiki/raw/` を更新しない",
+        "- query 中に `llm-wiki/raw/` を更新しない",
         "- 根拠は summary / checklist / index に限定して返す",
         "- 情報不足なら不足と書く",
         "- raw が古そうでも maintenance note 以外は更新しない",
