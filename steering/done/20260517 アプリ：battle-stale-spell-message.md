@@ -58,7 +58,7 @@ tags:
 
 ### 話題1：再現条件を presenter 遷移へ閉じ込める
 
-##### ユーザー：私
+ユーザー：私
 
 1. 当初計画
     1. 👀 じゅもん未習得メッセージの発火条件を固定する
@@ -67,7 +67,7 @@ tags:
 
 ### 話題2：wiki/checklist の試運転に使う
 
-##### ユーザー：私
+ユーザー：私
 
 1. 当初計画
     1. 📚 `ux-policy` と `ux-checklist` から「今の操作だけを見せる」を確認する
@@ -101,7 +101,7 @@ tags:
 
 ### 【参照】
 
-- Steering: `steering/done/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
+- Steering: `steering/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する.md`
 - Architecture: `wiki/checklists/framework-checklist.md`
 - UXPolicy: `docs/ux-policy.md`
 
