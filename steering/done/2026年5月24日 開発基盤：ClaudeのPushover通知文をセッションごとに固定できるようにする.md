@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-24T13:25:00+00:00
 dateCreated: 2026-05-24T13:25:00+00:00
-dateModified: 2026-05-24T13:25:00+00:00
+dateModified: 2026-05-24T13:49:00+00:00
 tags:
   - task
   - claude
@@ -14,8 +14,8 @@ tags:
 
 # 2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）`set_session_name "..."` を UserPromptSubmit hook で拾う最小方針でよいか確認
+> 状態：⑧ Closing
+> 次のゲート：なし
 
 ---
 
@@ -114,7 +114,7 @@ tags:
 
 ### シナリオ一覧
 
-- [ ] シナリオ1：セッション名コマンドで通知文面を保存できる
+- [x] シナリオ1：セッション名コマンドで通知文面を保存できる
 
 1. 🧱 Claude の `UserPromptSubmit` が `session_id` と prompt を受け取る
 2. 🎬 `set_session_name "Pushover通知の修復"` を送る
@@ -127,7 +127,7 @@ Then `/tmp/claude-user-prompts/<session_id>.txt` の1行目に `Pushover通知�
 And 文面設定用の prompt は Claude 本体へ通常会話として渡らない
 ```
 
-- [ ] シナリオ2：同じセッションの Stop 通知で保存済み文面を使える
+- [x] シナリオ2：同じセッションの Stop 通知で保存済み文面を使える
 
 1. 🧱 `session_id` に対応する txt の1行目が保存済みである
 2. 🎬 Claude が同じセッションで Stop する
@@ -140,7 +140,7 @@ Then Pushover 通知の `message` は保存済み文面になる
 And 既存の fallback 文面は使われない
 ```
 
-- [ ] シナリオ3：保存済み文面が無いときは既存の fallback を保つ
+- [x] シナリオ3：保存済み文面が無いときは既存の fallback を保つ
 
 1. 🧱 対応する txt が存在しない
 2. 🎬 Claude が Stop する
@@ -210,43 +210,52 @@ flowchart LR
 
 ## 5) Tasklist
 
-- [ ] `set_session_name "..."` を拾う UserPromptSubmit hook を追加する
-- [ ] session 文面保存のテストを追加する
-- [ ] Stop hook の再利用テストと実 hook 確認を通す
+- [x] `set_session_name "..."` を拾う UserPromptSubmit hook を追加する
+- [x] session 文面保存のテストを追加する
+- [x] Stop hook の再利用テストと実 hook 確認を通す
 
 ---
 
 ## 6) 作業ログ
 
-- 未着手
+- `save-session-name.sh` を追加し、`UserPromptSubmit` で `set_session_name "..."` だけを拾うようにした
+- `~/.claude/settings.json` と dotfiles の template/settings に hook を配線した
+- `test_save_session_name_hook.py` を追加し、設定テストも拡張した
+- 手元で hook を 1 回流し、session file に `Pushover通知の修復` が保存されることを確認した
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟡 tasknote 起票は完了、実装と検証はまだこれから
+> 評価：🟢 最小の session-name route が入り、同じ session_id の Stop 通知で再利用できる
 
 ### 成果物
 
-- `steering/2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする.md`
+- `/home/exedev/dotfiles/claude/.claude/hooks/save-session-name.sh`
+- `/home/exedev/dotfiles/claude/.claude/settings.json`
+- `/home/exedev/dotfiles/claude/.claude/settings.json.template`
+- `/home/exedev/dotfiles/tests/test_save_session_name_hook.py`
+- `/home/exedev/dotfiles/tests/test_notification_configs.py`
+- `/home/exedev/.claude/settings.json`
 
 ---
 
 ## 8) Discussion
 
-- 今の `stop-pushover.sh` は session file を読む口をすでに持っている
-- 今回の最小実装は「書き込む側」を足すことに閉じる
+- `set_session_name "..."` の許容構文は double quote 付き 1 形式に絞った
+- Stop hook は既存の file contract を維持し、通知の責務を増やしていない
+- prompt を通常会話へ流さないため、保存時は hook JSON で `continue: false` を返す
 
 ---
 
 ## 9) Closing
 
-- 状態: open
-- 次のゲート: （ユーザー）`set_session_name "..."` を UserPromptSubmit hook で拾う最小方針でよいか確認
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] 文面保存 hook が追加されている
-  - [ ] 同じ session_id で通知文面が固定される
-  - [ ] fallback 文面が壊れていない
+  - [x] 文面保存 hook が追加されている
+  - [x] 同じ session_id で通知文面が固定される
+  - [x] fallback 文面が壊れていない
 
 ---
 
