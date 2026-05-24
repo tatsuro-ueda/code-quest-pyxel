@@ -10,7 +10,7 @@
 2. source を読み、`llm-wiki/wiki/summaries/knowledge/` に summary を作る。
 3. `llm-wiki/wiki/indexes/master-index.md`、`llm-wiki/wiki/areas/`、`llm-wiki/wiki/logs/ingest-log.md` を更新する。
 4. representative query を 1 本作り、再利用価値があれば `llm-wiki/wiki/query/` に保存する。
-5. core 5 の health-check を行い、`llm-wiki/wiki/logs/health-check-log.md` に分類付きで残す。
+5. core 6 + `data_gaps` の health-check を行い、`llm-wiki/wiki/logs/health-check-log.md` に分類付きで残す。
 
 ## File Layout
 
@@ -114,6 +114,11 @@
 
 ## Update Rule
 
+- `update-schema` は `health-check-log` を主入力にする
+- recurring pattern だけを schema 更新候補にする
+- tasknote 原文や局所 incident は schema に直入れしない
+- current schema の見出しは維持し、内部対応で 5 バケットを扱う
 - 同じルールが 2 回連続で通ったときだけ schema を更新する
+- evidence が弱い回は `no schema change` で止める
 - 2 セッション連続で崩れなければ AGENTS から参照してよい
 - それまでは tasknote を正本とし、schema は draft として扱う

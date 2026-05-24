@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: done
 priority: high
 scheduled: 2026-05-24T11:37:12.000+00:00
 dateCreated: 2026-05-24T11:37:12.000+00:00
-dateModified: 2026-05-24T11:49:24.000+00:00
+dateModified: 2026-05-24T12:16:03.000+00:00
 tags:
   - task
   - llm-wiki
@@ -14,8 +14,8 @@ tags:
 
 # 2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る
 
-> 状態：⑤ Tasklist
-> 次のゲート：（CC）既存 `health-check-log` を基準に `no schema change` の判定観点を固める
+> 状態：⑧ Closing
+> 次のゲート：なし
 
 ---
 
@@ -228,7 +228,7 @@ flowchart LR
 - [x] `health-check-log` 中心の入力を固定する
 - [x] stable rule 昇格条件を決める
 - [x] 現行 schema 見出しを維持する対応表を決める
-- [ ] `no schema change` 条件と dry-run 観点を決める
+- [x] `no schema change` 条件と dry-run 観点を決める
 
 ---
 
@@ -237,19 +237,24 @@ flowchart LR
 - [x] global skill 前提で `update-schema` の名前と保存先を確定
 - [x] `health-check-log` / compiled wiki / stable rule の contract を反映
 - [x] 現行見出し維持の内部対応表を反映
-- [ ] `no schema change` の dry-run 観点を詰める
+- [x] `/home/exedev/dotfiles/claude/.claude/skills/update-schema/SKILL.md` を追加した
+- [x] `docs/llm-wiki-ops-schema.md` の `Update Rule` を skill contract に揃えた
+- [x] 直近 `health-check-log` では page-level stale/orphan が中心で、新規 default 候補は無いので `no schema change` と判定できる
+- [x] sync script、markdownlint、tasknote lint、diff check を通した
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟢 stable rule 昇格と現行見出し維持の draft を tasknote に固定できている
+> 評価：🟢 shared skill、schema 整合、no-op 基準、verification まで完了している
 
 ### 成果物
 
+- `/home/exedev/dotfiles/claude/.claude/skills/update-schema/SKILL.md`
 - `steering/2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る.md`
 - `docs/llm-wiki-ops-schema.md`
 - `llm-wiki/wiki/logs/health-check-log.md`
+- `docs/superpowers/plans/2026-05-24-update-schema-skill.md`
 
 ---
 
@@ -260,18 +265,20 @@ flowchart LR
 - stable rule の無い回は schema を更新しない
 - 親ノートの 5 バケット表現は、現行 schema 見出しへの内部対応で吸収する
 - recurring pattern を拾う役に絞り、incident の要約役にしない
+- 最新 `health-check-log` の stale/orphan は page-level cleanup であり、追加 schema 更新なしで止める dry-run が成立した
+- `Default Flow` の `core 5` 残りは current schema の自己矛盾なので、この task で修正対象に含めた
 
 ---
 
 ## 9) Closing
 
-- 状態: in-progress
-- 次のゲート: （CC）既存 `health-check-log` を基準に `no schema change` の判定観点を固める
+- 状態: done
+- 次のゲート: なし
 - close 条件:
   - [x] `update-schema` の主入力が `health-check-log` に固定される
   - [x] stable rule 昇格条件が固まる
   - [x] 現行 schema 見出しを維持する対応表が固まる
-  - [ ] `no schema change` 条件と dry-run 観点が固まる
+  - [x] `no schema change` 条件と dry-run 観点が固まる
 
 ---
 
