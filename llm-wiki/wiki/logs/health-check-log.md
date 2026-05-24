@@ -76,3 +76,44 @@
   - `llm-wiki/wiki/summaries/tasknotes/steering/**/*.md`（tasknote summary subtree のみ）
 - notes:
   - live wiki の主要 graph は、curated summary / area / query へほぼ一本化できた
+
+## [2026-05-24] lint | post-health-check-skill contract
+
+- scope:
+  - `llm-wiki/wiki/indexes/master-index.md`
+  - `llm-wiki/wiki/areas/*.md`
+  - `llm-wiki/wiki/query/*.md`
+  - `llm-wiki/wiki/summaries/knowledge/*.md`
+  - `llm-wiki/wiki/summaries/checklists/*.md`
+  - `llm-wiki/wiki/summaries/tasknotes/**/*.md`
+  - `llm-wiki/wiki/logs/health-check-log.md`
+- contradictions: none in the indexed wiki graph
+- stale_claims:
+  - `llm-wiki/wiki/indexes/master-index.md` の `Health Check Log` 説明が `core 5 点検の履歴` のままで、current schema の `core 6 + data_gaps` 契約へ追随していない
+  - `llm-wiki/wiki/areas/ingest-query-lint-loop.md` の `lint` 節が `contradictions / stale claims / orphan pages / missing concepts / missing crossrefs` の 5 項目止まりで、`data_gaps` をまだ含んでいない
+- orphan_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/20260418 アプリ：cj09-glitch-lord-conversation-mode-summary.md`
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-stakeholder-voices-bootstrap-summary.md`
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260517 アプリ：battle-stale-spell-message-summary.md`
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月22日 開発基盤：Karpathy方針でindexとlogの最小形を通す-summary.md`
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月22日 開発基盤：LLM Wiki shared packageを導入して自律実行ルートを固定する-summary.md`
+- missing_concepts:
+  - `health-check-wiki` を read-only lint route、`update-schema` を stable rule promotion route として分ける current contract は schema / skill / tasknote にあるが、llm-wiki compiled page 側にはまだまとまっていない
+  - `Code Maker が子どもの正式な編集面であり、editor で見えたものが runtime の真実である` という概念は依然として map / platform / guardrails / AV に分散している
+  - `Code Maker zip の持ち出し・取り込み・resource carry-back` の運用境界は依然として platform / guardrails に分散している
+- missing_crossrefs:
+  - none
+- data_gaps:
+  - current wiki だけでは `health-check-wiki` と `update-schema` の役割分離、および `data_gaps` を含む 6 分類 lint の現行運用を十分に説明できない
+- fix_now:
+  - 上記 5 本の orphan tasknote summary を `master-index` へ載せるか、`archive` へ退避するかを決める
+  - `master-index` の `Health Check Log` 説明を `core 6 + data_gaps` に更新する
+  - `Ingest Query Lint Loop` の `lint` 節へ `data_gaps` を追加する
+- next_ingest:
+  - `health-check-wiki` と `update-schema` の分離、および `core 6 + data_gaps` lint contract を 1 本の compiled page として切り出したい
+  - 既存 source から `Code Maker editing truth` と `resource carry-back pipeline` の 2 概念を synthesized page として切り出したい
+- candidate_source:
+  - none
+- notes:
+  - indexed graph 自体の矛盾や crossref 破綻は見当たらない
+  - 今回の中心は、active page の lint 契約が `core 5` 表記のまま残っている点と、unindexed tasknote summary 5 本が live wiki 側に残っている点である
