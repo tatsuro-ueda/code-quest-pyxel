@@ -6,10 +6,16 @@ sources:
   - ../summaries/knowledge/framework-rule-summary.md
   - ../summaries/tasknotes/done/20260412-g12-rebuild-codemaker-zip-summary.md
   - ../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-2-hooks-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
   - ../../raw/knowledge/docs/repository-structure.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
   - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
 ---
 
 # Repository Operating Structure
@@ -26,6 +32,8 @@ sources:
 - scenes、services、state、generated の責務を分ける
 - `assets/*.yaml -> tools/gen_data.py -> src/generated/*.py -> src/game_data.py` が data 系の更新経路になる
 - Code Maker 向け `code-maker.zip` は build 生成物だが、中身は `main.py` と `blockquest.pyxres` の現行正本に追従する必要がある
+- `.claude/settings.json` と `tools/hooks/*.sh` が generated / `.pyxres` / import path の誤操作を止める guardrail entrypoint になる
+- `tools/test_headless.py` が build 前段で import / init / 1 フレーム描画を検査する runtime guardrail になる
 
 ## 運用上の意味
 
@@ -33,6 +41,7 @@ sources:
 - `docs と code がずれたら未実装/仕様ずれ` の扱いを固定する
 - AI 修正時に `どこを触ってはいけないか` も含めて案内できる
 - generated pipeline と packaging lane の両方を知っていると、AI が直す場所と regenerate する場所を混同しにくい
+- hooks、headless test、resource verify の置き場が見えていると、guardrail を「仕組み」として保守しやすい
 
 ## この repo への含意
 
@@ -40,6 +49,7 @@ sources:
 - guardrail の多くは、この責務分担が前提になっている
 - repo structure が stale になると、AI の修正面も stale になる
 - packaging artifact や generated data の通り道が stale になると、AI の修正入口そのものがずれていく
+- `.pyxres` の current truth が変わったときも、runtime self-heal と build verify のどちらが正式経路かを repo map に反映しておく必要がある
 
 ## 関連ページ
 

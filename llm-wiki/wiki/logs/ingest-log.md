@@ -1,5 +1,63 @@
 # Ingest Log
 
+## [2026-05-24] ingest | Guardrails 2 Hooks
+
+- source_id: `2026-04-12-guardrails-2-hooks`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260412-guardrails-2-hooks-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - G5 / G7 の lint warning 系は未導入のままで、hook guardrail はまだ block 系に偏っている
+- notes:
+  - wrong-path edit を runtime 手前で止める guardrail を layering、loop、repo map の各 page へ接続した
+
+## [2026-05-24] ingest | Guardrails 3 Headless Test
+
+- source_id: `2026-04-12-guardrails-3-headless-test`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - G9 の 4 シナリオや build / approval queue 統合は未完了のままである
+- notes:
+  - headless startup gate を golden path、layering、loop、防御的 failure handling の各 page に波及させた
+
+## [2026-05-24] ingest | Guardrails 4 pyxres Validation
+
+- source_id: `2026-04-12-guardrails-4-pyxres-validation`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - 元 note の runtime self-heal 前提は stale なので、current truth に沿う validator 設計は別途明文化が必要
+- notes:
+  - `.pyxres` guardrail を old assumption 付き source として保存しつつ、現行 wiki では Code Maker truth と verify route に読み替えて接続した
+
 ## [2026-05-24] ingest | G12 code-maker.zip rebuild
 
 - source_id: `2026-04-12-g12-rebuild-codemaker-zip`

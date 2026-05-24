@@ -6,10 +6,14 @@ sources:
   - ../summaries/knowledge/product-requirements-guardrails-summary.md
   - ../summaries/knowledge/repository-structure-summary.md
   - ../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/knowledge/docs/product-requirements-guardrails.md
   - ../../raw/knowledge/docs/repository-structure.md
   - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
 ---
 
 # No Silent Failure And Migration Safety
@@ -24,6 +28,7 @@ sources:
 - ユーザー編集データを無言で上書きしない
 - 読み込み失敗を default 生成でごまかさない
 - 成功したように見せない
+- resource mismatch を startup self-heal で見えなくしない
 
 ## Migration Safety
 
@@ -39,6 +44,7 @@ sources:
 - `実公開で記録されるはず` のような思い込みも silent failure の一種として扱う
 - build runbook や startup gate は migration safety を運用へ落とした形である
 - pytest import error を「テストが無い」扱いで見逃さず、guardrail の欠損として最優先で直す
+- headless 起動で NameError / ImportError / init crash を先に落とし、子どもの前で初めて壊れる状態を防ぐ
 
 ## 関連ページ
 

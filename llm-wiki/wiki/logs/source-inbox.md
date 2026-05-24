@@ -111,3 +111,27 @@
 - status: processed
 - owner: codex
 - note: child-readable UX と parent assist 境界の source として ingest
+
+## [2026-05-24] inbox | Guardrails 2 Hooks
+
+- source_id: `2026-04-12-guardrails-2-hooks`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md`
+- status: processed
+- owner: codex
+- note: steering 最古組の tasknote として hooks guardrail の設計・実装記録を ingest
+
+## [2026-05-24] inbox | Guardrails 3 Headless Test
+
+- source_id: `2026-04-12-guardrails-3-headless-test`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md`
+- status: processed
+- owner: codex
+- note: steering 最古組の tasknote として headless build gate の設計記録を ingest
+
+## [2026-05-24] inbox | Guardrails 4 pyxres Validation
+
+- source_id: `2026-04-12-guardrails-4-pyxres-validation`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md`
+- status: processed
+- owner: codex
+- note: steering 最古組の tasknote として pyxres guardrail の旧前提と現行読み替えを ingest

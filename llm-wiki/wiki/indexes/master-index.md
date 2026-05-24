@@ -41,6 +41,12 @@
 - [Tasknote Raw: G15 test pinning](../../raw/tasknotes/done/20260412-g15-test-pinning.md): テスト復旧と挙動固定の実施記録
 - [Tasknote Summary: Guardrails 1 SSoT + Codegen](../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md): YAML 正本、codegen、loader 境界で data 不整合を減らした summary
 - [Tasknote Raw: Guardrails 1 SSoT + Codegen](../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md): SSoT と codegen 基盤導入の実施記録
+- [Tasknote Summary: Guardrails 2 Hooks](../summaries/tasknotes/steering/done/20260412-guardrails-2-hooks-summary.md): generated / `.pyxres` / wrong import path を hook で block し、正しい編集経路へ戻す summary
+- [Tasknote Raw: Guardrails 2 Hooks](../../raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md): hook guardrail 設計・実装の元 tasknote
+- [Tasknote Summary: Guardrails 3 Headless Test](../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md): `tools/test_headless.py` による headless 起動 gate の設計をまとめた summary
+- [Tasknote Raw: Guardrails 3 Headless Test](../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md): headless test 基盤の元 tasknote
+- [Tasknote Summary: Guardrails 4 pyxres Validation](../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md): `.pyxres` guardrail の旧前提と current truth への読み替えをまとめた summary
+- [Tasknote Raw: Guardrails 4 pyxres Validation](../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md): pyxres 整合チェックの元 tasknote
 
 ## Areas
 
