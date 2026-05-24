@@ -47,11 +47,35 @@ def prepare_raw_tasknote(raw_tasknote_path: Path) -> dict[str, object]:
         - 要約文や quote 候補はこの helper で生成しない。
     """
     text = raw_tasknote_path.read_text(encoding="utf-8")
-    frontmatter, body = _split_frontmatter(text)
+    return prepare_tasknote_material(
+        text,
+        logical_raw_tasknote_path=raw_tasknote_path,
+    )
+
+
+def prepare_tasknote_material(
+    tasknote_text: str,
+    *,
+    logical_raw_tasknote_path: Path,
+) -> dict[str, object]:
+    """tasknote text と論理 raw path から構造化材料を返す。
+
+    Args:
+        tasknote_text: tasknote markdown 本文。
+        logical_raw_tasknote_path: summary path や source_id を決める基準 raw path。
+
+    Returns:
+        source_id と summary draft path を含む JSON 互換 dict。
+
+    Policy:
+        - 実ファイルの置き場と、wiki 上で扱いたい raw path が違っていてもよい。
+        - 欠けた section は捏造せず空配列と `missing_sections` で返す。
+    """
+    frontmatter, body = _split_frontmatter(tasknote_text)
     sections = _collect_sections(body)
     return {
-        "source_id": _derive_source_id(raw_tasknote_path),
-        "summary_draft_path": _derive_summary_draft_path(raw_tasknote_path),
+        "source_id": _derive_source_id(logical_raw_tasknote_path),
+        "summary_draft_path": _derive_summary_draft_path(logical_raw_tasknote_path),
         "source_type": "tasknote",
         "frontmatter": frontmatter,
         "headings": _collect_headings(body),

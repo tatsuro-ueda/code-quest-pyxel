@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-24T15:15:38.000+00:00
 dateCreated: 2026-05-24T15:15:38.000+00:00
-dateModified: 2026-05-24T15:15:38.000+00:00
+dateModified: 2026-05-24T15:25:38.000+00:00
 tags:
   - task
   - llm-wiki
@@ -16,8 +16,8 @@ tags:
 
 # 2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる
 
-> 状態：④ Design
-> 次のゲート：（CC）batch ingest helper の入出力と related page 候補出し規則を固める
+> 状態：⑧ Closing
+> 次のゲート：なし（batch helper 実装と dry-run 10 件の検証まで完了）
 
 ---
 
@@ -119,7 +119,7 @@ tags:
 
 ### シナリオ一覧
 
-- [ ] シナリオ1：oldest 10 件の未 ingest tasknote を決定的に選べる
+- [x] シナリオ1：oldest 10 件の未 ingest tasknote を決定的に選べる
 
 1. 🧱 `steering/done/` に複数の完了 tasknote がある
 2. 🎬 batch helper を実行する
@@ -134,7 +134,7 @@ And 古い順に並べる
 And 先頭 10 件を返す
 ```
 
-- [ ] シナリオ2：各 source の summary scaffold を Python が返せる
+- [x] シナリオ2：各 source の summary scaffold を Python が返せる
 
 1. 🧱 batch 対象 10 件が決まっている
 2. 🎬 helper が source 材料を読む
@@ -148,7 +148,7 @@ And scaffold には title source_id summary_draft_path key_points slot quote slo
 And 最終 prose は未確定のまま残る
 ```
 
-- [ ] シナリオ3：related page 候補と append block を Python が返せる
+- [x] シナリオ3：related page 候補と append block を Python が返せる
 
 1. 🧱 source ごとの材料が取れている
 2. 🎬 helper が page 候補と追記 block を組み立てる
@@ -162,7 +162,7 @@ And `source-inbox` `master-index` `ingest-log` の append block も返る
 And block は LLM が review して適用できる markdown 形式である
 ```
 
-- [ ] シナリオ4：意味づけと自然な文面は LLM に残る
+- [x] シナリオ4：意味づけと自然な文面は LLM に残る
 
 1. 🧱 Python が batch 材料を返している
 2. 🎬 ingest 後半へ進む
@@ -237,26 +237,27 @@ flowchart LR
 
 - 検証コマンド:
   - `node /home/exedev/dotfiles/shared/linter/coding-rules/tasknote/run_tasknote_lint.mjs --config ./tasknote-lint.config.json 'steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる.md'`
-  - `python -m pytest test/test_llm_wiki_batch_ingest_helper.py -q`
+  - `python -m pytest test/test_llm_wiki_steering_batch_helper.py -q`
+  - `python -m pytest test/test_llm_wiki_tasknote_helper.py -q`
+  - `python tools/llm_wiki_steering_batch_helper.py --limit 10`
   - `python -m pytest test/ -q`
 - 成功条件:
   - tasknote lint が通る
   - oldest 10 選定が再現可能である
   - summary scaffold と append block の shape が固定される
-- 未実施時の扱い:
-  - helper 実装前は tasknote lint だけを今回の完了条件にする
+  - real repo dry-run で 10 件分の候補と related page shortlist が返る
 
 ---
 
 ## 5) Tasklist
 
-- [ ] oldest 10 steering done 未 ingest source の選定 rule を helper に落とす
-- [ ] source helper を batch から再利用できる形に整理する
-- [ ] summary scaffold の JSON / markdown shape を決める
-- [ ] related page 候補出しの scoring rule を決める
-- [ ] `source-inbox` `master-index` `ingest-log` の append block 生成を実装する
-- [ ] skill を batch helper 呼び出し前提へ更新する
-- [ ] dry-run 10 件で batch 出力を検証する
+- [x] oldest 10 steering done 未 ingest source の選定 rule を helper に落とす
+- [x] source helper を batch から再利用できる形に整理する
+- [x] summary scaffold の JSON / markdown shape を決める
+- [x] related page 候補出しの scoring rule を決める
+- [x] `source-inbox` `master-index` `ingest-log` の append block 生成を実装する
+- [x] skill を batch helper 呼び出し前提へ更新する
+- [x] dry-run 10 件で batch 出力を検証する
 
 ---
 
@@ -265,16 +266,25 @@ flowchart LR
 - 2026-05-24 CC: user が今後の対象を `steering/done/` の古い 10 件ずつに固定した
 - 2026-05-24 CC: user が `summary の型作り` `related page 候補出し` `log/index/inbox の追記文生成` も Python に寄せる方針を選んだ
 - 2026-05-24 CC: LLM に残す責務は `何が大事かの判断` `自然な文面` `open questions の言い換え` と整理した
+- 2026-05-24 CC: `test/test_llm_wiki_steering_batch_helper.py` を先に追加し、oldest 10 選定、scaffold 生成、related page 候補、CLI 出力を TDD で固定した
+- 2026-05-24 CC: `tools/llm_wiki_tasknote_helper.py` に `prepare_tasknote_material()` を足し、`steering/done/` の source を logical raw path 付きで再利用できるようにした
+- 2026-05-24 CC: `tools/llm_wiki_steering_batch_helper.py` を追加し、`summary_scaffold` `related_page_candidates` `append_blocks` を JSON で返すようにした
+- 2026-05-24 CC: real repo で dry-run 10 件を流し、先頭が `20260418-cj31-explicit-preview-promotion` から始まる oldest batch と shortlist を確認した
+- 2026-05-24 CC: `llm-wiki-capture-and-ingest-source` skill を更新し、steering oldest 10 batch mode では batch helper を先に呼ぶ前提に揃えた
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟢 10件 batch ingest の Python 化スコープを一読で分かる形で起票できている
+> 評価：🟢 10件 batch ingest の下ごしらえを Python helper に移し、LLM が review と意味づけへ寄れる状態まで進められた
 
 ### 成果物
 
 - `steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる.md`
+- `tools/llm_wiki_steering_batch_helper.py`
+- `tools/llm_wiki_tasknote_helper.py`
+- `test/test_llm_wiki_steering_batch_helper.py`
+- `~/dotfiles/claude/.claude/skills/llm-wiki-capture-and-ingest-source/SKILL.md`
 
 ---
 
@@ -284,18 +294,22 @@ flowchart LR
 - 1 本ずつの source helper だけでは batch ingest の定型コストがまだ残る
 - Python に寄せるのは `決まった形に並べる仕事` までで、意味づけは LLM に残す
 - related page 候補出しは完全自動確定ではなく、LLM review 前提の shortlist 生成として扱う
+- shortlist の scoring は `ingest-log` 履歴 token と text overlap の弱い合算に留め、過剰な意味づけを避ける
+- helper は `append_blocks` まで返すが、`TODO_SUMMARY_INDEX_DESCRIPTION` や risk / note は LLM が埋める前提にした
 
 ---
 
 ## 9) Closing
 
-- 状態: open
-- 次のゲート: （CC）batch ingest helper の入出力と related page 候補出し規則を固める
+- 状態: done
+- 次のゲート: なし
 - close 条件:
   - [x] steering done oldest 10 batch を対象にする方針が note にある
   - [x] Python に寄せる対象が note にある
   - [x] LLM に残す責務が note にある
-  - [x] 初期 Tasklist がある
+  - [x] batch helper 実装と source helper 再利用が入っている
+  - [x] skill 更新が入っている
+  - [x] dry-run 10 件の検証結果がある
 
 ---
 
