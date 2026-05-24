@@ -28,7 +28,7 @@ size_class: medium
 
 - ingest: 1 source を raw に置き、summary / index / related pages / log を更新する
 - query: index から relevant page を探し、答えを synthesize して保存する
-- lint: core 5 と data gap を見て、次の source や質問候補を作る
+- lint: contradictions、stale claims、orphan pages、missing concepts、missing crossrefs、data_gaps を見て、次の source や質問候補を作る
 
 ## キーワード
 

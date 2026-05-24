@@ -176,3 +176,48 @@
   - `master-index` の `Health Check Log` 説明と `Ingest Query Lint Loop` の `lint` 節は、current schema の `core 6 + data_gaps` 契約へ追随した
   - `health-check` と `update-schema` の役割分離は、現時点では compiled page でなく schema に置く判断とした
   - Python helper の `orphan_signals` と `missing_target_signals` は空で、helper の `crossref_signals` は今回も human judgment で issue 化しなかった
+
+## [2026-05-24] lint | current wiki
+
+- scope:
+  - `llm-wiki/wiki/indexes/master-index.md`
+  - `llm-wiki/wiki/areas/*.md`
+  - `llm-wiki/wiki/query/*.md`
+  - `llm-wiki/wiki/summaries/knowledge/*.md`
+  - `llm-wiki/wiki/summaries/checklists/*.md`
+  - `llm-wiki/wiki/summaries/tasknotes/**/*.md`
+  - `llm-wiki/wiki/candidates/*.md`
+  - `llm-wiki/wiki/logs/*.md`
+- contradictions: none
+- stale_claims:
+  - `llm-wiki/wiki/summaries/knowledge/2026-04-04-karpathy-llm-wiki-summary.md` の `lint: core 5 と data gap` という表現は、current repo の運用表記 `core 6 + data_gaps` とずれて見える。source summary と repo-local contract の境界を明示していないため、active wiki 上では wording drift として読まれうる
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md` の H1 が `battle/view.py` 個別 note と同じ題名のままで、body が説明している umbrella note の内容と一致していない
+- orphan_pages: none
+- missing_concepts: none
+- missing_crossrefs: none
+- data_gaps: none
+- fix_now:
+  - `2026-04-04-karpathy-llm-wiki-summary.md` の lint 表記を current repo の契約へそろえるか、`source 側では 5 + data gap / repo 運用では 6 categories` のように境界を明示する
+  - `20260507-src-header-functions-for-all-files-summary.md` の H1 を umbrella note の実内容に合わせて改題し、`battle-view` summary との重複題名を解消する
+- next_ingest:
+  - none
+- candidate_source:
+  - none
+- notes:
+  - Python helper の `orphan_signals` と `missing_target_signals` は今回も 0 件だった
+  - helper の `crossref_signals` は 99 件出たが、大半は summary / log / candidate の薄い接続を拾う広めの signal で、今回の issue には採用しなかった
+  - 現在の中心は graph の欠損ではなく、active page の wording / title metadata drift である
+
+## [2026-05-24] fix | current wiki drift repair
+
+- action:
+  - `llm-wiki/wiki/summaries/knowledge/2026-04-04-karpathy-llm-wiki-summary.md` の `lint` 行を current repo の `core 6 + data_gaps` 契約に合う表現へ更新
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md` の H1 を umbrella note の実内容に合う題名へ改題
+- resolved:
+  - `Karpathy LLM Wiki Summary` の wording drift
+  - `Src header functions for all files` summary の title drift
+- verification:
+  - `python tools/llm_wiki_health_check_helper.py --repo-root .` を再実行し、`orphan_signal_count 0` と `missing_target_signal_count 0` を確認
+  - 旧 wording と旧 H1 は `rg` 再確認で一致 0 件
+- notes:
+  - 今回は compiled wiki の active page 2 件だけを直し、過去の lint entry は履歴として保持した
