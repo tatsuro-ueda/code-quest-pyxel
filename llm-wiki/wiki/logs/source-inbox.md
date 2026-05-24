@@ -607,3 +607,75 @@
 - status: processed
 - owner: codex
 - note: steering 3-cycle batch ingest の tasknote として Verify scripts and makefile の記録を反映
+
+## [2026-05-24] inbox | Architecture rules yaml
+
+- source_id: `2026-05-08-architecture-rules-yaml`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture rules yaml の記録を反映
+
+## [2026-05-24] inbox | Architecture guardian
+
+- source_id: `2026-05-09-architecture-guardian`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-guardian.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture guardian の記録を反映
+
+## [2026-05-24] inbox | Architecture md removal
+
+- source_id: `2026-05-09-architecture-md-removal`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-md-removal.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture md removal の記録を反映
+
+## [2026-05-24] inbox | Architecture rules check fix repair split
+
+- source_id: `2026-05-09-architecture-rules-check-fix-repair-split`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture rules check fix repair split の記録を反映
+
+## [2026-05-24] inbox | Architecture rules checker improvements
+
+- source_id: `2026-05-09-architecture-rules-checker-improvements`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-checker-improvements.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture rules checker improvements の記録を反映
+
+## [2026-05-24] inbox | Architecture rules checker
+
+- source_id: `2026-05-09-architecture-rules-checker`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-checker.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture rules checker の記録を反映
+
+## [2026-05-24] inbox | Architecture rules label ja
+
+- source_id: `2026-05-09-architecture-rules-label-ja`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-label-ja.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture rules label ja の記録を反映
+
+## [2026-05-24] inbox | Architecture rules tree coverage expansion
+
+- source_id: `2026-05-09-architecture-rules-tree-coverage-expansion`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture rules tree coverage expansion の記録を反映
+
+## [2026-05-24] inbox | Architecture rules tree facts
+
+- source_id: `2026-05-09-architecture-rules-tree-facts`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture rules tree facts の記録を反映

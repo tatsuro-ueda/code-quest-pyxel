@@ -1474,3 +1474,174 @@
   - `旧来 docstring 由来の false positive と skip-missing 前提が残り、完全 hard gate までは段階移行中である。`
 - notes:
   - verify スクリプト本体と Makefile 依存関係を追加し build 前に docs/code 整合を検査するようにした
+
+## [2026-05-24] ingest | Architecture rules yaml
+
+- source_id: `2026-05-08-architecture-rules-yaml`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260508-architecture-rules-yaml-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `初版は warning-only で、完全自動 hard fail checker まではまだ意図的に踏み込んでいない。`
+- notes:
+  - repo architecture を YAML 正本へ載せ替える第一歩として AI/人共通の初版 schema を実装した
+
+## [2026-05-24] ingest | Architecture guardian
+
+- source_id: `2026-05-09-architecture-guardian`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-guardian.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-architecture-guardian-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `guardian は commit しない設計で、人の最終差分確認を前提とする運用責任が残る。`
+- notes:
+  - architecture checker に fixer と再検査を束ねた guardian CLI を追加した
+
+## [2026-05-24] ingest | Architecture md removal
+
+- source_id: `2026-05-09-architecture-md-removal`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-md-removal.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-architecture-md-removal-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `history docs に旧名が残るため grep ノイズは続き、追加の履歴整理 task が必要になる。`
+- notes:
+  - live 文書から architecture.md を外し repository-structure と guard 導線を更新した
+
+## [2026-05-24] ingest | Architecture rules check fix repair split
+
+- source_id: `2026-05-09-architecture-rules-check-fix-repair-split`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `history docs と一部集計フィールドの旧名が残り、grep ベースの探索ではまだ混線する。`
+- notes:
+  - guardian という曖昧名を分解して architecture tools の責務と import 経路を整理した
+
+## [2026-05-24] ingest | Architecture rules checker improvements
+
+- source_id: `2026-05-09-architecture-rules-checker-improvements`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-checker-improvements.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-architecture-rules-checker-improvements-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `未実装 note のため、ここで挙がった改善は別 task に移されるまでは運用知に留まる。`
+- notes:
+  - checker の rule 追加前に信頼性と再実行性を上げる優先順位を整理した
+
+## [2026-05-24] ingest | Architecture rules checker
+
+- source_id: `2026-05-09-architecture-rules-checker`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-checker.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-architecture-rules-checker-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `warning-only なので CI の強制力は弱く、運用 discipline に依存する部分が残る。`
+- notes:
+  - architecture_rules YAML を読む deterministic checker と test を初版として作った
+
+## [2026-05-24] ingest | Architecture rules label ja
+
+- source_id: `2026-05-09-architecture-rules-label-ja`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-label-ja.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-architecture-rules-label-ja-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `tree node 全体への展開と集計名整理は据え置きで、可読性改善は部分適用に留まる。`
+- notes:
+  - architecture_rules の主要要素へ日本語ラベルを加え人間レビュー性を上げた
+
+## [2026-05-24] ingest | Architecture rules tree coverage expansion
+
+- source_id: `2026-05-09-architecture-rules-tree-coverage-expansion`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `分類と次単位整理が中心で、checker 実装本体は別タスクに残る。`
+- notes:
+  - tree-first architecture rules の coverage を棚卸しし static 化候補を切り出した
+
+## [2026-05-24] ingest | Architecture rules tree facts
+
+- source_id: `2026-05-09-architecture-rules-tree-facts`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-architecture-rules-tree-facts-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `schema 再編後の coverage 拡張と human-facing readability tuning はまだ続きの作業が要る。`
+- notes:
+  - architecture_rules を tree-first facts 構造へ組み替え検査系も新 schema に合わせた

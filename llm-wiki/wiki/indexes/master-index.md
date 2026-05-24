@@ -167,6 +167,24 @@
 - [Tasknote Raw: Src header functions for all files](../../raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md): Src header functions for all files の元 tasknote
 - [Tasknote Summary: Verify scripts and makefile](../summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md): docstring/CJ 整合 verifier を追加し Makefile build 前段へ組み込んだ summary
 - [Tasknote Raw: Verify scripts and makefile](../../raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md): Verify scripts and makefile の元 tasknote
+- [Tasknote Summary: Architecture rules yaml](../summaries/tasknotes/steering/done/20260508-architecture-rules-yaml-summary.md): architecture_rules.yml 初版を meta/facts/validation_rules で立ち上げた summary
+- [Tasknote Raw: Architecture rules yaml](../../raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md): Architecture rules yaml の元 tasknote
+- [Tasknote Summary: Architecture guardian](../summaries/tasknotes/steering/done/20260509-architecture-guardian-summary.md): architecture checker を自動修復ループ付き guardian へ拡張した summary
+- [Tasknote Raw: Architecture guardian](../../raw/tasknotes/steering/done/20260509-architecture-guardian.md): Architecture guardian の元 tasknote
+- [Tasknote Summary: Architecture md removal](../summaries/tasknotes/steering/done/20260509-architecture-md-removal-summary.md): docs/architecture.md を live から外し repository-structure を人用詳細へ戻した summary
+- [Tasknote Raw: Architecture md removal](../../raw/tasknotes/steering/done/20260509-architecture-md-removal.md): Architecture md removal の元 tasknote
+- [Tasknote Summary: Architecture rules check fix repair split](../summaries/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split-summary.md): architecture tooling を check/fix/repair の責務名へ分解し package 化した summary
+- [Tasknote Raw: Architecture rules check fix repair split](../../raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md): Architecture rules check fix repair split の元 tasknote
+- [Tasknote Summary: Architecture rules checker improvements](../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-improvements-summary.md): architecture checker を増築する前に壊れ方と再実行性を固める提案 summary
+- [Tasknote Raw: Architecture rules checker improvements](../../raw/tasknotes/steering/done/20260509-architecture-rules-checker-improvements.md): Architecture rules checker improvements の元 tasknote
+- [Tasknote Summary: Architecture rules checker](../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-summary.md): architecture_rules.yml の初版 warning-only checker を追加した summary
+- [Tasknote Raw: Architecture rules checker](../../raw/tasknotes/steering/done/20260509-architecture-rules-checker.md): Architecture rules checker の元 tasknote
+- [Tasknote Summary: Architecture rules label ja](../summaries/tasknotes/steering/done/20260509-architecture-rules-label-ja-summary.md): architecture_rules 主要ブロックへ label_ja を足して可読性を上げた summary
+- [Tasknote Raw: Architecture rules label ja](../../raw/tasknotes/steering/done/20260509-architecture-rules-label-ja.md): Architecture rules label ja の元 tasknote
+- [Tasknote Summary: Architecture rules tree coverage expansion](../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion-summary.md): tree-first facts 後の architecture rule coverage を分類し次の static 昇格候補を決めた summary
+- [Tasknote Raw: Architecture rules tree coverage expansion](../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md): Architecture rules tree coverage expansion の元 tasknote
+- [Tasknote Summary: Architecture rules tree facts](../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-facts-summary.md): architecture_rules facts を tree-first へ再編し checker/guardian も追従させた summary
+- [Tasknote Raw: Architecture rules tree facts](../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md): Architecture rules tree facts の元 tasknote
 
 ## Areas
 
