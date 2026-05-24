@@ -63,6 +63,7 @@
 ## Queries
 
 - [Why Persistent Wiki Beats RAG](../query/2026-05-23-why-persistent-wiki-beats-rag.md): persistent wiki が compounding artifact になる理由を整理した saved answer
+- [What Protects Child Agency In Co-Development](../query/2026-05-24-what-protects-child-agency-in-co-development.md): 子どもの主体性を守るために必要な親の役割、approval loop、UX、fast feedback を整理した saved answer
 
 ## Candidates
 

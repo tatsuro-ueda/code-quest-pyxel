@@ -40,3 +40,4 @@ sources:
 - [Guardrails Protect The Loop](./guardrails-protect-the-loop.md)
 - [Repository Operating Structure](./repository-operating-structure.md)
 - [Single Source Of Truth And Golden Path](./single-source-of-truth-and-golden-path.md)
+- [View Presenter Model Boundaries](./view-presenter-model-boundaries.md)

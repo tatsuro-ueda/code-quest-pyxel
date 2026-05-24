@@ -38,3 +38,4 @@ sources:
 - [Approval Loop And Child Agency](./approval-loop-and-child-agency.md)
 - [Low Friction Sharing](./low-friction-sharing.md)
 - [Child Readable UX And Parent Assist](./child-readable-ux-and-parent-assist.md)
+- [Parent Support Without Control](./parent-support-without-control.md)

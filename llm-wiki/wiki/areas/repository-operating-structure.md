@@ -38,3 +38,4 @@ sources:
 - [View Presenter Model Boundaries](./view-presenter-model-boundaries.md)
 - [Single Source Of Truth And Golden Path](./single-source-of-truth-and-golden-path.md)
 - [Guardrail Layering And AI Change Boundaries](./guardrail-layering-and-ai-change-boundaries.md)
+- [Guardrails Protect The Loop](./guardrails-protect-the-loop.md)

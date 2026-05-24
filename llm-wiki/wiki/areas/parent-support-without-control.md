@@ -51,3 +51,4 @@ sources:
 - [Low Friction Sharing](./low-friction-sharing.md)
 - [Approval Loop And Child Agency](./approval-loop-and-child-agency.md)
 - [Child Readable UX And Parent Assist](./child-readable-ux-and-parent-assist.md)
+- [Platform Sharing And Approval Ops](./platform-sharing-and-approval-ops.md)

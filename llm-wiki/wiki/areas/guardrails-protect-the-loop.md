@@ -45,3 +45,4 @@ sources:
 - [Single Source Of Truth And Golden Path](./single-source-of-truth-and-golden-path.md)
 - [No Silent Failure And Migration Safety](./no-silent-failure-and-migration-safety.md)
 - [Guardrail Layering And AI Change Boundaries](./guardrail-layering-and-ai-change-boundaries.md)
+- [Repository Operating Structure](./repository-operating-structure.md)

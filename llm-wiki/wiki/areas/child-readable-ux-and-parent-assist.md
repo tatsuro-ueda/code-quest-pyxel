@@ -39,3 +39,4 @@ sources:
 - [Platform Sharing And Approval Ops](./platform-sharing-and-approval-ops.md)
 - [Narrative Branching And Player Guidance](./narrative-branching-and-player-guidance.md)
 - [Parent Support Without Control](./parent-support-without-control.md)
+- [Approval Loop And Child Agency](./approval-loop-and-child-agency.md)

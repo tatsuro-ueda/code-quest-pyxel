@@ -40,3 +40,4 @@ sources:
 - [Fast Feedback Development Loop](./fast-feedback-development-loop.md)
 - [Parent Support Without Control](./parent-support-without-control.md)
 - [Platform Sharing And Approval Ops](./platform-sharing-and-approval-ops.md)
+- [Child Readable UX And Parent Assist](./child-readable-ux-and-parent-assist.md)
