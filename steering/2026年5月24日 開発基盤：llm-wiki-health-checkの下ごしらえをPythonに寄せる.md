@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-24T15:41:41+00:00
 dateCreated: 2026-05-24T15:41:41+00:00
-dateModified: 2026-05-24T15:41:41+00:00
+dateModified: 2026-05-24T16:03:00+00:00
 tags:
   - task
   - llm-wiki
@@ -15,8 +15,8 @@ tags:
 
 # 2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）Python を graph 下ごしらえと log 骨組みまでに留めるか確認
+> 状態：⑧ Closing
+> 次のゲート：なし
 
 ---
 
@@ -58,7 +58,7 @@ tags:
 6. 委任度
    1. 🟢 起票と scope 固定は CC 単独で進められる
    2. 🟢 CCのみで可：Python の担当を構造整理までに固定する
-   3. 🟡 人の判断: orphan 候補を即 issue 扱いするかは確認が要る
+   3. 🟢 ユーザー確認済み：Python は graph 下ごしらえと log 骨組みまでに留める
 
 ---
 
@@ -66,7 +66,7 @@ tags:
 
 > Python に渡す部分を、scope 検出、graph 下ごしらえ、log 骨組みの順にそろえる。
 > 委任度：🟢 provisional map までは CC が進められる
-> 残る曖昧さ：orphan 候補や stale 候補を helper の返り値へどこまで含めるか
+> 残る曖昧さ：なし
 
 ### 事前確認
 
@@ -126,7 +126,7 @@ tags:
 ## 3) Gherkin（完了条件）
 
 > 委任度：🟢 helper の責務境界と I/O たたき台までは CC が進められる
-> 残る曖昧さ：AI に残す category judgment の粒度
+> 残る曖昧さ：なし
 
 ### シナリオ一覧
 
@@ -280,11 +280,11 @@ flowchart LR
 
 ## 5) Tasklist
 
-- [ ] helper が返す構造材料の最小セットを確定する
-- [ ] scope 検出と active graph 収集の I/O を固定する
-- [ ] orphan と crossref を signal として返す shape を決める
-- [ ] `health-check-log` scaffold の markdown shape を決める
-- [ ] `llm-wiki-health-check` 側の呼び出し位置を決める
+- [x] helper が返す構造材料の最小セットを確定する
+- [x] scope 検出と active graph 収集の I/O を固定する
+- [x] orphan と crossref を signal として返す shape を決める
+- [x] `health-check-log` scaffold の markdown shape を決める
+- [x] `llm-wiki-health-check` 側の呼び出し位置を決める
 
 ---
 
@@ -294,16 +294,25 @@ flowchart LR
 - [x] Python は `scope` `graph signal` `log scaffold` までに留める draft を起票した
 - [x] AI に残す責務を 6分類の判断と prose に固定した
 - [x] 保存先を `steering/` に固定した
+- [x] ユーザー承認として、Python は graph 下ごしらえと log 骨組みまでに留める方針を確定した
+- [x] `test/test_llm_wiki_health_check_helper.py` を先に追加し、health-check helper の contract を red で固定した
+- [x] `tools/llm_wiki_health_check_helper.py` を追加し、scope / active graph / signal / log scaffold の JSON helper を実装した
+- [x] `~/dotfiles/claude/.claude/skills/llm-wiki-health-check/SKILL.md` に repo-local helper 呼び出し前提を反映した
+- [x] focused pytest、helper family pytest、CLI dry-run、tasknote lint を通した
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟢 今日の先行例に合わせた責務境界で起票できている
+> 評価：🟢 helper 実装、skill 反映、verification まで完了している
 
 ### 成果物
 
 - `steering/2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる.md`
+- `tools/llm_wiki_health_check_helper.py`
+- `test/test_llm_wiki_health_check_helper.py`
+- `~/dotfiles/claude/.claude/skills/llm-wiki-health-check/SKILL.md`
+- `docs/superpowers/plans/2026-05-24-llm-wiki-health-check-python-helper.md`
 
 ---
 
@@ -311,17 +320,19 @@ flowchart LR
 
 - 今日の先行例に合わせ、Python は deterministic prep に限定する
 - health-check の意味判断は source ingest より曖昧さが強いため、signal と judgment を分ける
+- orphan や stale の候補は helper では signal 止まりにし、issue 断定は AI に残す
+- repo-local helper は `master-index` 起点の active graph と thin connectivity を先に返し、skill 側はそれを読んで 6分類へ落とす
 
 ---
 
 ## 9) Closing
 
-- 状態: draft
-- 次のゲート: （ユーザー）Python を graph 下ごしらえと log 骨組みまでに留めるか確認
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] Python に渡す範囲が確定している
-  - [ ] helper の I/O が確定している
-  - [ ] skill 側へ反映する前提が固まっている
+  - [x] Python に渡す範囲が確定している
+  - [x] helper の I/O が確定している
+  - [x] skill 側へ反映する前提が固まっている
 
 ---
 
