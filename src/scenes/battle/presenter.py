@@ -30,6 +30,8 @@ from src.shared.services.input_bindings import (
     UP_BUTTONS,
 )
 
+VISIBLE_LIST_ROWS = 4
+
 
 def _build_item_use_message(game: Any, item_data: dict, result: str) -> str:
     """アイテム使用結果メッセージを組み立てる。
@@ -834,7 +836,14 @@ class BattlePresenter:
         """
         model = self.model
         rows: list[BattleRow] = []
-        for i, name in enumerate(spells[:4]):
+        window_start = self._compute_visible_window_start(
+            selected_index=model.spell_select,
+            item_count=len(spells),
+        )
+        visible_spells = spells[
+            window_start:window_start + VISIBLE_LIST_ROWS
+        ]
+        for i, name in enumerate(visible_spells, start=window_start):
             spell = SPELL_BY_NAME.get(name)
             if spell is None:
                 continue
@@ -846,6 +855,29 @@ class BattlePresenter:
                 color=color,
             ))
         return rows
+
+    @staticmethod
+    def _compute_visible_window_start(
+        selected_index: int, item_count: int
+    ) -> int:
+        """4 行窓で選択中行を見失わない先頭 index を返す。
+
+        Args:
+            selected_index: 現在の absolute cursor index。
+            item_count: 一覧全体の件数。
+        Returns:
+            描画に使う 4 行窓の先頭 index。
+        Policy:
+            - 4 件以下では 0 固定。
+            - 5 件目以降は選択行が最下段に入るよう窓を 1 行ずつ送る。
+        """
+        if item_count <= VISIBLE_LIST_ROWS:
+            return 0
+        max_start = item_count - VISIBLE_LIST_ROWS
+        return min(
+            max(0, selected_index - VISIBLE_LIST_ROWS + 1),
+            max_start,
+        )
 
     def _build_item_panel(self, game: Any) -> BattleSubPanel:
         """item_select phase の sub_panel を返す。
