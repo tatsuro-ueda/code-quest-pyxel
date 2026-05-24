@@ -1,17 +1,19 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/customer-jobs-summary.md
   - ../summaries/knowledge/customer-journeys-summary.md
   - ../summaries/knowledge/old-customer-jobs-summary.md
   - ../summaries/knowledge/product-requirements-platform-summary.md
   - ../summaries/knowledge/ux-policy-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md
   - ../../raw/knowledge/docs/customer-jobs.md
   - ../../raw/knowledge/docs/customer-journeys.md
   - ../../raw/knowledge/docs/old-customer-jobs.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/knowledge/docs/ux-policy.md
+  - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
 ---
 
 # Parent Support Without Control
@@ -34,6 +36,8 @@ sources:
 - 親はコード修正、ビルド、配信などの実装手数を引き受けてもよい
 - ただし親主導で進めすぎると `支援` が `支配` に反転する
 - 詳細な可視化も、やり方を誤ると `理解` ではなく `監視` になる
+- play session の長短は、親が `何を変えるかを決める材料` でなく
+  `どう声をかけるかを考える材料` に留める必要がある
 - `old-customer-jobs` は、親の役割を AI 翻訳者と明言し、「何を直すか」を親が決めない線引きを追加する
 - `customer-journeys` は、その線引きを承認キューのような仕組みへ落とす
 - `ux-policy` は、親向け補助 UI でも子どもの決定権を奪わない表示面を要求する
@@ -44,6 +48,8 @@ sources:
 - AI 活用でも、親や AI が主役になりすぎる運用は避ける
 - 親の仕事は選択肢や技術翻訳を出すことまでで、最終選択を奪わないことにある
 - platform の approve / reject / change list も、親の操作権と子どもの決定権を分けて設計する
+- shared play duration の事実は、親が次の支援を考える補助には使えても、
+  監視ダッシュボード化するとこの原則から外れやすい
 
 ## 関連ページ
 

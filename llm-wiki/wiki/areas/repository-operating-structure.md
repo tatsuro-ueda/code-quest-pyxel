@@ -12,6 +12,9 @@ sources:
   - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
   - ../summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md
   - ../summaries/tasknotes/steering/done/20260412-j36-dialogue-ssot-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md
   - ../../raw/knowledge/docs/repository-structure.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
@@ -22,6 +25,9 @@ sources:
   - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
   - ../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md
   - ../../raw/tasknotes/steering/done/20260412-j36-dialogue-ssot.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
+  - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
+  - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
 ---
 
 # Repository Operating Structure
@@ -40,8 +46,14 @@ sources:
 - Code Maker 向け `code-maker.zip` は build 生成物だが、中身は `main.py` と `blockquest.pyxres` の現行正本に追従する必要がある
 - `.claude/settings.json` と `tools/hooks/*.sh` が generated / `.pyxres` / import path の誤操作を止める guardrail entrypoint になる
 - `tools/test_headless.py` が build 前段で import / init / 1 フレーム描画を検査する runtime guardrail になる
+- `tools/test_web_compat.py` が wrapper から実ブラウザ起動までを検査する
+  user-facing delivery gate になる
 - `tests/fixtures/save_v1.json` と `tools/test_save_compat.py` が save schema 変更の migration safety を守る tool layer になる
 - `generate_wrapper()` で作る `play.html` は selector page から実ゲームへつなぐ user-facing artifact lane の一部である
+- `tools/build_web_release.py` は current / preview 分離と `--promote` を持つ
+  approval build lane の中核でもある
+- `tools/web_runtime_server.py` と `src/play_session_logging.py` は shared play の
+  session facts を残す server lane になる
 - dialogue も `assets/dialogue.yaml -> tools/gen_data.py -> src/generated/dialogue.py -> src/game_data.py` と `tools/sync_main_data.py` の同期経路へ収まる
 
 ## 運用上の意味
@@ -61,6 +73,8 @@ sources:
 - `.pyxres` の current truth が変わったときも、runtime self-heal と build verify のどちらが正式経路かを repo map に反映しておく必要がある
 - selector から辿る wrapper artifact が欠けるだけでも、repo map と child-facing delivery は同時に壊れる
 - dialogue のような旧来の直書き data は、single-file `main.py` 同期まで含めて repo map に戻さないと半端な二重管理になる
+- preview/current 分離や play-session logging も、build lane と wrapper lane の
+ 責務として repo map に載っていないと運用がすぐずれる
 
 ## 関連ページ
 

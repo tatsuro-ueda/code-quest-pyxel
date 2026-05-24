@@ -6,10 +6,16 @@ sources:
   - ../summaries/knowledge/product-requirements-platform-summary.md
   - ../summaries/knowledge/product-requirements-narrative-summary.md
   - ../summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j37-dialogue-page-advance-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md
   - ../../raw/knowledge/docs/ux-policy.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/knowledge/docs/product-requirements-narrative.md
   - ../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md
+  - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
+  - ../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md
+  - ../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md
 ---
 
 # Child Readable UX And Parent Assist
@@ -25,6 +31,7 @@ sources:
 - 押した直後の feedback を返す
 - 危険操作は確認を入れて無言で通さない
 - selector page で `あそんでみる` が dead link にならず、子どもが親のデバッグなしで遊び始められる状態を保つ
+- 複数フレーズ会話では current page だけを見せ、前ページが残らないようにする
 
 ## 親の補助境界
 
@@ -37,6 +44,10 @@ sources:
 - UX review では文言、layout、input feedback、agency の 4 つを同時に見る
 - Code Maker 境界や CJ44 simplicity は UX の外側の話ではなく、子どもの理解可能性に直結する
 - child-facing selector の wrapper artifact 欠損も UX 破綻として扱い、単なる build 失敗で片付けない
+- preview/current の compare route が崩れないことも、子どもが自分で選ぶための
+  読みやすさ条件に含まれる
+- 最奥の目印キャラのような `次に踏む場所が見て分かる` 手がかりは、
+  口頭説明の代わりになる child-facing UX である
 
 ## 関連ページ
 

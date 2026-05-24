@@ -159,3 +159,43 @@
 - status: processed
 - owner: codex
 - note: steering 最古組の未インジェスト tasknote として dialogue SSoT migration の記録を取り込み待ちにした
+
+## [2026-05-24] inbox | Guardrails 6 Web Delivery Test
+
+- source_id: `2026-04-12-guardrails-6-web-delivery-test`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として web delivery gate の設計記録を batch ingest
+
+## [2026-05-24] inbox | J38 Preview Build Flow
+
+- source_id: `2026-04-12-j38-preview-build-flow`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として preview/current 分離の運用記録を batch ingest
+
+## [2026-05-24] inbox | J21 Access Log Visibility
+
+- source_id: `2026-04-13-j21-access-log-visibility`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として shared play log 導入の記録を batch ingest
+
+## [2026-05-24] inbox | J37 Dialogue Page Advance
+
+- source_id: `2026-04-13-j37-dialogue-page-advance`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として複数フレーズ会話の表示修正記録を batch ingest
+
+## [2026-05-24] inbox | J38 Dungeon Boss Trigger
+
+- source_id: `2026-04-13-j38-dungeon-boss-trigger`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として最奥ボス導線復旧の記録を batch ingest

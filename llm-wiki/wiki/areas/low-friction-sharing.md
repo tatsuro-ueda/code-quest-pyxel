@@ -1,17 +1,21 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/customer-jobs-summary.md
   - ../summaries/knowledge/customer-journeys-summary.md
   - ../summaries/knowledge/old-customer-jobs-summary.md
   - ../summaries/knowledge/product-requirements-platform-summary.md
   - ../summaries/knowledge/ux-policy-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md
   - ../../raw/knowledge/docs/customer-jobs.md
   - ../../raw/knowledge/docs/customer-journeys.md
   - ../../raw/knowledge/docs/old-customer-jobs.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/knowledge/docs/ux-policy.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
+  - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
 ---
 
 # Low Friction Sharing
@@ -37,6 +41,8 @@ sources:
 - `customer-journeys` では `友達に見せる` `実公開で遊ばれた記録が見える` `友達のフィードバックを反映する` が一つの共有 loop として並ぶ
 - `old-customer-jobs` では、スマホ URL で即プレイできることが、友達まで loop を広げる条件とされる
 - `product-requirements-platform` は URL 即プレイ、全画面、再共有、play log を具体運用まで落としている
+- shared play の長短が見えると、`届いた` の次に `どれくらい遊ばれたか`
+  まで loop を回せる
 
 ## この repo への含意
 
@@ -44,6 +50,8 @@ sources:
 - sharing friction は子どもの social job だけでなく、friend job の入口としても扱う
 - analytics や play log も、監視でなく feedback loop の材料として設計する
 - UX 的にも、共有導線は説明の少なさと起動の速さを優先する
+- browser で実際に起動するかを機械的に止める gate も、low-friction sharing の
+  一部として扱う
 
 ## 関連ページ
 

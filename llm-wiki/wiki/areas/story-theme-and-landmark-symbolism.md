@@ -1,13 +1,17 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/story-concepts-summary.md
   - ../summaries/knowledge/product-requirements-narrative-summary.md
   - ../summaries/knowledge/product-requirements-map-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j37-dialogue-page-advance-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md
   - ../../raw/knowledge/docs/story-concepts.md
   - ../../raw/knowledge/docs/product-requirements-narrative.md
   - ../../raw/knowledge/docs/product-requirements-map.md
+  - ../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md
+  - ../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md
 ---
 
 # Story Theme And Landmark Symbolism
@@ -28,6 +32,10 @@ sources:
 - landmark は decoration でなく、 guidance と theme expression の接点として設計する
 - 戦闘ログ、会話、ending の文言は story spine を直接運ぶ
 - map や narrative の変更では、 theme を弱めていないかも確認対象にする
+- 世界樹や通信塔の複数フレーズ会話は、page advance が壊れるだけで
+  象徴の読み取り自体が弱くなる
+- ダンジョン最奥の目印キャラと boss trigger は、終点を `ただの床` でなく
+  意味のある到達点として見せるための landmark 設計になる
 
 ## 関連ページ
 

@@ -1,5 +1,98 @@
 # Ingest Log
 
+## [2026-05-24] ingest | Guardrails 6 Web Delivery Test
+
+- source_id: `2026-04-12-guardrails-6-web-delivery-test`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/low-friction-sharing.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - file inclusion check と `code-maker.zip` の構文チェックは、この source の時点ではまだ後続課題のままである
+- notes:
+  - browser 実行 gate を loop protection、sharing ops、repo map、low-friction sharing の各 page に接続した
+
+## [2026-05-24] ingest | J38 Preview Build Flow
+
+- source_id: `2026-04-12-j38-preview-build-flow`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/approval-loop-and-child-agency.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `--preview` / `--promote` の親向け運用手順は、tasknote 以外の docs ではまだ薄い
+- notes:
+  - preview/current 分離を approval loop、child-facing compare flow、build runbook の各 page に波及させた
+
+## [2026-05-24] ingest | J21 Access Log Visibility
+
+- source_id: `2026-04-13-j21-access-log-visibility`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/low-friction-sharing.md`
+  - `llm-wiki/wiki/areas/parent-support-without-control.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - play log の運用が理解補助より監視へ寄らないよう、parent-facing 表示面の設計はまだ別途必要である
+- notes:
+  - shared play duration logging を low-friction sharing、parent support、platform ops、repo server lane の各 page に接続した
+
+## [2026-05-24] ingest | J37 Dialogue Page Advance
+
+- source_id: `2026-04-13-j37-dialogue-page-advance`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260413-j37-dialogue-page-advance-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/narrative-branching-and-player-guidance.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/areas/story-theme-and-landmark-symbolism.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `battle_text` 側の表示症状は別経路として残っており、この source では扱っていない
+- notes:
+  - multi-page dialogue repair を narrative readability、child-facing readability、landmark message legibility の各 page に接続した
+
+## [2026-05-24] ingest | J38 Dungeon Boss Trigger
+
+- source_id: `2026-04-13-j38-dungeon-boss-trigger`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/narrative-branching-and-player-guidance.md`
+  - `llm-wiki/wiki/areas/story-theme-and-landmark-symbolism.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - headless 補助検証は sandbox 制約で未完了のままで、追加演出や報酬拡張も別 task に残っている
+- notes:
+  - final-room boss trigger を narrative guidance、landmark symbolism、child-visible destination cue の各 page に接続した
+
 ## [2026-05-24] ingest | Guardrails 5 Save Compat
 
 - source_id: `2026-04-12-guardrails-5-save-compat`

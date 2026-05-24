@@ -7,11 +7,17 @@ sources:
   - ../summaries/tasknotes/done/20260412-g12-rebuild-codemaker-zip-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md
   - ../summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/knowledge/docs/ux-policy.md
   - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md
   - ../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
+  - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
+  - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
 ---
 
 # Platform Sharing And Approval Ops
@@ -25,6 +31,8 @@ sources:
 - URL だけで即プレイできる低摩擦共有
 - フィードバックをその場で修正して再共有できる loop
 - play log で「届いたか」を次の行動へつなげる
+- preview/current を分けた compare flow で、未承認変更が current に混ざらない状態を保つ
+- shared wrapper に残る play session の長短を、次の声かけや修正判断へつなげる
 - 開発版 / 本番版の比較で承認、却下、再提案、巻き戻しを回す
 - approval queue に出す前に save compatibility を通し、既存セーブを壊す版を共有前に止める
 
@@ -42,6 +50,8 @@ sources:
 - UX policy の読みやすさと危険操作確認は、この approval flow の説明面を支える
 - selector page の `あそんでみる` が dead link になると、共有と承認の loop 自体が始まらない
 - `play.html` 復旧のような wrapper artifact 修正も platform ops の一部として扱う必要がある
+- `tools/test_web_compat.py` の browser gate は、URL を送ったあとに
+  dead-on-arrival になる版を共有前に止める
 
 ## 関連ページ
 

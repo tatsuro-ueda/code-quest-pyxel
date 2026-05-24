@@ -12,6 +12,7 @@ sources:
   - ../summaries/tasknotes/steering/done/20260412-guardrails-2-hooks-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md
   - ../../raw/knowledge/docs/customer-journeys.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/knowledge/docs/product-requirements-guardrails.md
@@ -22,6 +23,7 @@ sources:
   - ../../raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
 ---
 
 # Guardrails Protect The Loop
@@ -48,6 +50,8 @@ sources:
 - hook で generated / `.pyxres` / wrong import path をその場で止め、誤った入口から壊させない
 - headless 起動 gate を通し、壊れた版を approval queue の手前で落とす
 - save compatibility test を通し、既存データを壊す版を approval queue の手前で落とす
+- Playwright + Chromium Headless で Web 共有物を実ブラウザ起動し、
+  ローカルでは通るが browser で落ちる版を approval queue の手前で止める
 
 ## この repo への含意
 

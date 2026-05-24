@@ -1,11 +1,13 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/customer-journeys-summary.md
   - ../summaries/knowledge/product-requirements-platform-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md
   - ../../raw/knowledge/docs/customer-journeys.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
+  - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
 ---
 
 # Approval Loop And Child Agency
@@ -34,6 +36,8 @@ sources:
 - AI の速さは、そのままだと親主導を加速させる危険もある
 - だから approval loop は nice-to-have ではなく、主体性を壊さないための core mechanism である
 - platform 側の build / approve / reject / rollback は、全部この child agency を支える ops である
+- preview build が current に混ざらず、`--promote` でだけ昇格する構造そのものが
+  child agency の guardrail になる
 
 ## 関連ページ
 

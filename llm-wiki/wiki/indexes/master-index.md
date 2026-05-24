@@ -53,6 +53,16 @@
 - [Tasknote Raw: J31 fix selector links](../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md): selector link restore の元 tasknote
 - [Tasknote Summary: J36 dialogue SSoT](../summaries/tasknotes/steering/done/20260412-j36-dialogue-ssot-summary.md): dialogue を YAML 正本 + generated + sync へ寄せた SSoT migration の summary
 - [Tasknote Raw: J36 dialogue SSoT](../../raw/tasknotes/steering/done/20260412-j36-dialogue-ssot.md): dialogue SSoT migration の元 tasknote
+- [Tasknote Summary: Guardrails 6 Web Delivery Test](../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md): Playwright による browser 実行 gate で Web 版破壊を approval queue 手前で止める summary
+- [Tasknote Raw: Guardrails 6 Web Delivery Test](../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md): web delivery guardrail の元 tasknote
+- [Tasknote Summary: J38 preview build flow](../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md): preview/current build を分離し、未承認変更が current に混ざらないようにした summary
+- [Tasknote Raw: J38 preview build flow](../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md): preview/current build 分離の元 tasknote
+- [Tasknote Summary: J21 access log visibility](../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md): shared play の長短を same-origin logging で後から読めるようにした summary
+- [Tasknote Raw: J21 access log visibility](../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md): play session logging 導入の元 tasknote
+- [Tasknote Summary: J37 dialogue page advance](../summaries/tasknotes/steering/done/20260413-j37-dialogue-page-advance-summary.md): 複数フレーズ会話で current page だけを描くように責務をそろえた summary
+- [Tasknote Raw: J37 dialogue page advance](../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md): dialogue paging 修正の元 tasknote
+- [Tasknote Summary: J38 dungeon boss trigger](../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md): ダンジョン最奥に explicit boss trigger と目印を置いて終点導線を復旧した summary
+- [Tasknote Raw: J38 dungeon boss trigger](../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md): ダンジョン終点ボス導線復旧の元 tasknote
 
 ## Areas
 
