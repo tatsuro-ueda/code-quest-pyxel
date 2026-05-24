@@ -1,5 +1,188 @@
 # Ingest Log
 
+## [2026-05-24] ingest | J42 RPG Loop Journey
+
+- source_id: `2026-04-13-j42-rpg-loop-journey`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260413-j42-rpg-loop-journey-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/continuous-experience-loop.md`
+  - `llm-wiki/wiki/areas/battle-balance-and-spell-design.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `最後まで遊べる` の acceptance criteria は docs 先行で、runtime / test への完全展開はまだ残る
+- notes:
+  - 完走体験を positive journey と guardrail target として continuous loop、battle、guardrail の各 page に接続した
+
+## [2026-05-24] ingest | J39 Run Fail Enemy Turn
+
+- source_id: `2026-04-13-j39-run-fail-enemy-turn`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/continuous-experience-loop.md`
+  - `llm-wiki/wiki/areas/battle-balance-and-spell-design.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 2
+- risks:
+  - phase 責務の整理は battle 全体へはまだ広がっていない
+- notes:
+  - 逃走失敗後の敵ターン欠落を battle loop と continuous experience の各 page に接続した
+
+## [2026-05-24] ingest | J33 Selector Change List SSoT
+
+- source_id: `2026-04-14-j33-selector-change-list-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/approval-loop-and-child-agency.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - current 側の change list 自動化は、preview と同じ水準までまだ詰め切れていない
+- notes:
+  - selector explanation trust を platform、approval、child UX、guardrail の各 page に接続した
+
+## [2026-05-24] ingest | J43 Public Access Log Runtime
+
+- source_id: `2026-04-14-j43-public-access-log-runtime`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j43-public-access-log-runtime.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260414-j43-public-access-log-runtime-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/low-friction-sharing.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - runtime server の常駐運用は固まったが、runbook の粒度は今後も要補強である
+- notes:
+  - public logging recovery を platform、low-friction sharing、repo server lane の各 page に接続した
+
+## [2026-05-24] ingest | J44 Stale Preview Selector Runtime
+
+- source_id: `2026-04-14-j44-stale-preview-selector-runtime`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/approval-loop-and-child-agency.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - preview 非表示時の user-facing explanation wording はまだ薄い
+- notes:
+  - stale preview suppression を platform、approval、child UX、repo artifact lane の各 page に接続した
+
+## [2026-05-24] ingest | J45 Noise Guardian Event Only Preview
+
+- source_id: `2026-04-14-j45-noise-guardian-event-only-preview`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/battle-balance-and-spell-design.md`
+  - `llm-wiki/wiki/areas/narrative-branching-and-player-guidance.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 2
+- risks:
+  - event-only enemy rule の一般化基準は、tasknote 単体ではまだ固定していない
+- notes:
+  - Noise Guardian split を battle と narrative guidance の各 page に接続した
+
+## [2026-05-24] ingest | J46 Web Cache Bust Preview Current
+
+- source_id: `2026-04-14-j46-web-cache-bust-preview-current`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/low-friction-sharing.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - build token の対象範囲は HTML 以外までまだ広げ切っていない
+- notes:
+  - cache bust を platform、low-friction sharing、repo release lane、guardrail の各 page に接続した
+
+## [2026-05-24] ingest | J47 Preview First Selector Autogen
+
+- source_id: `2026-04-16-j47-preview-first-selector-autogen`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/approval-loop-and-child-agency.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - current 側の説明生成は、preview と同じ水準までまだそろっていない
+- notes:
+  - preview-first diff autogen を platform、approval、child UX、repo release lane の各 page に接続した
+
+## [2026-05-24] ingest | J48 Preview Must Reflect Current Request
+
+- source_id: `2026-04-16-j48-preview-must-reflect-current-request`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/approval-loop-and-child-agency.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - preview meaning は docs 先行で、runtime 判定との完全一致はまだ残る
+- notes:
+  - current request semantics を platform、approval、child UX、guardrail の各 page に接続した
+
+## [2026-05-24] ingest | J49 Bind Preview To Open Request Note
+
+- source_id: `2026-04-16-j49-bind-preview-to-open-request-note`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/approval-loop-and-child-agency.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - promotion trigger の自動化基準は、source 運用ルールとしてまだ仮置きである
+- notes:
+  - preview/current promotion rule を platform、approval、repo flow の各 page に接続した
+
 ## [2026-05-24] ingest | Guardrails 6 Web Delivery Test
 
 - source_id: `2026-04-12-guardrails-6-web-delivery-test`

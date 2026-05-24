@@ -9,6 +9,8 @@ sources:
   - ../summaries/knowledge/ux-policy-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j43-public-access-log-runtime-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md
   - ../../raw/knowledge/docs/customer-jobs.md
   - ../../raw/knowledge/docs/customer-journeys.md
   - ../../raw/knowledge/docs/old-customer-jobs.md
@@ -16,6 +18,8 @@ sources:
   - ../../raw/knowledge/docs/ux-policy.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
   - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
+  - ../../raw/tasknotes/steering/done/20260414-j43-public-access-log-runtime.md
+  - ../../raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md
 ---
 
 # Low Friction Sharing
@@ -43,6 +47,9 @@ sources:
 - `product-requirements-platform` は URL 即プレイ、全画面、再共有、play log を具体運用まで落としている
 - shared play の長短が見えると、`届いた` の次に `どれくらい遊ばれたか`
   まで loop を回せる
+- 実公開 URL が play session を残せることまで含めて、`届いた` を確認できる共有導線になる
+- cache bust が無いと、同じ URL でも友達に古い版が届き、
+  low-friction sharing が trust loss に変わる
 
 ## この repo への含意
 
@@ -52,6 +59,8 @@ sources:
 - UX 的にも、共有導線は説明の少なさと起動の速さを優先する
 - browser で実際に起動するかを機械的に止める gate も、low-friction sharing の
   一部として扱う
+- low-friction sharing では `開ける URL` だけでなく、
+  `正しい版が開く` `遊ばれた事実が残る` まで確認する
 
 ## 関連ページ
 

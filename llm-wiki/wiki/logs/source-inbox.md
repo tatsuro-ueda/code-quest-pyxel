@@ -204,78 +204,78 @@
 
 - source_id: `2026-04-13-j42-rpg-loop-journey`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote として完走導線の設計記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote として完走導線の設計記録を batch ingest
 
 ## [2026-05-24] inbox | J39 Run Fail Enemy Turn
 
 - source_id: `2026-04-13-j39-run-fail-enemy-turn`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote として逃走失敗後の敵ターン修正記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote として逃走失敗後の敵ターン修正記録を batch ingest
 
 ## [2026-05-24] inbox | J33 Selector Change List SSoT
 
 - source_id: `2026-04-14-j33-selector-change-list-ssot`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote として選択ページ説明の SSoT 化記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote として選択ページ説明の SSoT 化記録を batch ingest
 
 ## [2026-05-24] inbox | J43 Public Access Log Runtime
 
 - source_id: `2026-04-14-j43-public-access-log-runtime`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j43-public-access-log-runtime.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote として実公開アクセスログ導入記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote として実公開アクセスログ導線の復旧記録を batch ingest
 
 ## [2026-05-24] inbox | J44 Stale Preview Selector Runtime
 
 - source_id: `2026-04-14-j44-stale-preview-selector-runtime`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote として stale preview 遮断の運用記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote として stale preview 遮断の運用記録を batch ingest
 
 ## [2026-05-24] inbox | J45 Noise Guardian Event Only Preview
 
 - source_id: `2026-04-14-j45-noise-guardian-event-only-preview`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote としてノイズガーディアン導線の preview 修正記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote としてノイズガーディアン導線の preview 修正記録を batch ingest
 
 ## [2026-05-24] inbox | J46 Web Cache Bust Preview Current
 
 - source_id: `2026-04-14-j46-web-cache-bust-preview-current`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote として preview/current 配信物の cache bust 記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote として preview/current 配信物の cache bust 記録を batch ingest
 
 ## [2026-05-24] inbox | J47 Preview First Selector Autogen
 
 - source_id: `2026-04-16-j47-preview-first-selector-autogen`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote として preview 固定と選択ページ自動説明の記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote として preview 固定と選択ページ自動説明の記録を batch ingest
 
 ## [2026-05-24] inbox | J48 Preview Must Reflect Current Request
 
 - source_id: `2026-04-16-j48-preview-must-reflect-current-request`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote として preview が今の依頼を表す基準化記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote として preview が今の依頼を表す基準化記録を batch ingest
 
 ## [2026-05-24] inbox | J49 Bind Preview To Open Request Note
 
 - source_id: `2026-04-16-j49-bind-preview-to-open-request-note`
 - source_path: `llm-wiki/raw/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note.md`
-- status: inbox
+- status: processed
 - owner: codex
-- note: steering 古い未インジェスト組の tasknote として preview/current 繰り上げ運用の記録を summary draft 保存済み・continue mode 待ちで保持
+- note: steering 古い未インジェスト組の tasknote として preview/current 繰り上げ運用の記録を batch ingest

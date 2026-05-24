@@ -8,12 +8,14 @@ sources:
   - ../summaries/tasknotes/steering/done/20260412-j36-dialogue-ssot-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j37-dialogue-page-advance-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview-summary.md
   - ../../raw/knowledge/docs/product-requirements-narrative.md
   - ../../raw/knowledge/docs/story-concepts.md
   - ../../raw/knowledge/docs/ux-policy.md
   - ../../raw/tasknotes/steering/done/20260412-j36-dialogue-ssot.md
   - ../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md
   - ../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md
+  - ../../raw/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview.md
 ---
 
 # Narrative Branching And Player Guidance
@@ -30,6 +32,7 @@ sources:
 - guidance は答えを言いすぎず、方向だけは失わせない
 - branching は会話の変化だけでなく state に残る
 - ending は ownership を完成させる
+- 通信塔の `ノイズガーディアン` のような script-bound enemy は、通常遭遇へ漏れず event lane に留まる必要がある
 - ダンジョン最奥のような終点イベントは、silent dead end でなく
   明示トリガーと見た目の手がかりで物語へ接続する
 
@@ -41,6 +44,7 @@ sources:
 - `src.dialogue_data.py` の互換を残しつつ `main.py` 同期まで通すことで、会話の正本変更が runtime 実体から外れないようにする
 - 世界樹や通信塔のページ送り修正と、ダンジョン終点のボストリガー復旧は、
   narrative guidance を code path と map event の両側で支える例になった
+- イベント敵が通常遭遇へ漏れると、戦闘 balance だけでなく guidance と world logic も崩れる
 
 ## 関連ページ
 

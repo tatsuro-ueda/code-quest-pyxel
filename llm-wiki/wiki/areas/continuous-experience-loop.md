@@ -1,13 +1,17 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/customer-jobs-summary.md
   - ../summaries/knowledge/customer-journeys-summary.md
   - ../summaries/knowledge/old-customer-jobs-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j42-rpg-loop-journey-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn-summary.md
   - ../../raw/knowledge/docs/customer-jobs.md
   - ../../raw/knowledge/docs/customer-journeys.md
   - ../../raw/knowledge/docs/old-customer-jobs.md
+  - ../../raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md
+  - ../../raw/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn.md
 ---
 
 # Continuous Experience Loop
@@ -34,12 +38,15 @@ sources:
 
 - `customer-journeys` は、この連続性を `開発` `デバッグ` `演出` `共有` `発展` `承認` `ガードレール` の具体ループへ展開する
 - `old-customer-jobs` は、親子の good cycle が AI による数分修正で初めて回ると説明する
+- `J42` は、この連続性の終点を `最後まで遊び切れる` まで明文化し、guardrail もその完走体験を守る前提へ広げた
+- `J39` は、逃走失敗後に敵ターンが飛ぶような一見小さな battle bug でも、`最後まで遊ぶ` 連続体験を途中で空洞化させると示した
 
 ## この repo への含意
 
 - product docs や feature 議論では、単発機能がどの段の進歩を押し、どこで途切れさせるかを確認する
 - `作れる` `遊べる` `共有できる` を別物として最適化しすぎない
 - `作る -> 遊ぶ -> 直す -> また遊ぶ` が閉じる速さも、連続体験の一部として扱う
+- 戦闘や進行の修正では、`止まらないこと` だけでなく `最後までやり切れること` を done 条件に含める
 
 ## 関連ページ
 

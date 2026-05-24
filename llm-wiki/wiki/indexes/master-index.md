@@ -63,6 +63,26 @@
 - [Tasknote Raw: J37 dialogue page advance](../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md): dialogue paging 修正の元 tasknote
 - [Tasknote Summary: J38 dungeon boss trigger](../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md): ダンジョン最奥に explicit boss trigger と目印を置いて終点導線を復旧した summary
 - [Tasknote Raw: J38 dungeon boss trigger](../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md): ダンジョン終点ボス導線復旧の元 tasknote
+- [Tasknote Summary: J42 RPG loop journey](../summaries/tasknotes/steering/done/20260413-j42-rpg-loop-journey-summary.md): バグ修正を完走体験の保護へ結び直し、CJ42 と guardrail 対象 journey を広げた summary
+- [Tasknote Raw: J42 RPG loop journey](../../raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md): RPG 完走体験と guardrail 接続の元 tasknote
+- [Tasknote Summary: J39 run fail enemy turn](../summaries/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn-summary.md): 逃走失敗後の敵ターン欠落を phase 責務の修正で戦闘ループへ戻した summary
+- [Tasknote Raw: J39 run fail enemy turn](../../raw/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn.md): 逃走失敗後の敵ターン修正の元 tasknote
+- [Tasknote Summary: J33 selector change list SSoT](../summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md): selector の変更説明を SoT failure と捉え、stale metadata を guardrail で止める summary
+- [Tasknote Raw: J33 selector change list SSoT](../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md): selector change list SSoT 修正の元 tasknote
+- [Tasknote Summary: J43 public access log runtime](../summaries/tasknotes/steering/done/20260414-j43-public-access-log-runtime-summary.md): 実公開 URL の play log 欠落を runtime server 差し替えで復旧した summary
+- [Tasknote Raw: J43 public access log runtime](../../raw/tasknotes/steering/done/20260414-j43-public-access-log-runtime.md): 実公開アクセスログ復旧の元 tasknote
+- [Tasknote Summary: J44 stale preview selector runtime](../summaries/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime-summary.md): preview source 不在時は stale preview を見せない運用へ切り替えた summary
+- [Tasknote Raw: J44 stale preview selector runtime](../../raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md): stale preview 遮断の元 tasknote
+- [Tasknote Summary: J45 noise guardian event only preview](../summaries/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview-summary.md): イベント専用敵ノイズガーディアンを通常遭遇から外し preview で検証した summary
+- [Tasknote Raw: J45 noise guardian event only preview](../../raw/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview.md): ノイズガーディアン event-only 修正の元 tasknote
+- [Tasknote Summary: J46 web cache bust preview current](../summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md): build token 付き URL で preview/current の cache bust を導入した summary
+- [Tasknote Raw: J46 web cache bust preview current](../../raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md): preview/current cache bust の元 tasknote
+- [Tasknote Summary: J47 preview first selector autogen](../summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md): preview-first 運用に合わせて selector 説明を diff 自動生成へ寄せた summary
+- [Tasknote Raw: J47 preview first selector autogen](../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md): preview-first selector 自動説明の元 tasknote
+- [Tasknote Summary: J48 preview must reflect current request](../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md): おためしばんは今の依頼を表す版だと CJ31/CJG31 に固定した summary
+- [Tasknote Raw: J48 preview must reflect current request](../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md): preview meaning 明文化の元 tasknote
+- [Tasknote Summary: J49 bind preview to open request note](../summaries/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note-summary.md): 次の依頼で前 preview を current に回す promotion rule を探った summary
+- [Tasknote Raw: J49 bind preview to open request note](../../raw/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note.md): preview/current promotion rule の元 tasknote
 
 ## Areas
 

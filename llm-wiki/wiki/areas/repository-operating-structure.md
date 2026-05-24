@@ -15,6 +15,11 @@ sources:
   - ../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md
   - ../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j43-public-access-log-runtime-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md
+  - ../summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md
+  - ../summaries/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note-summary.md
   - ../../raw/knowledge/docs/repository-structure.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
@@ -28,6 +33,11 @@ sources:
   - ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
   - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
   - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
+  - ../../raw/tasknotes/steering/done/20260414-j43-public-access-log-runtime.md
+  - ../../raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md
+  - ../../raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md
+  - ../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md
+  - ../../raw/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note.md
 ---
 
 # Repository Operating Structure
@@ -55,6 +65,14 @@ sources:
 - `tools/web_runtime_server.py` と `src/play_session_logging.py` は shared play の
   session facts を残す server lane になる
 - dialogue も `assets/dialogue.yaml -> tools/gen_data.py -> src/generated/dialogue.py -> src/game_data.py` と `tools/sync_main_data.py` の同期経路へ収まる
+- `tools/web_runtime_server.py` は、shared play logging を含む実公開 lane の
+  正式な server 入口として扱う必要がある
+- preview source が無いときに stale preview を掃除する処理も、
+  build artifact lane の責務に含まれる
+- `tools/build_web_release.py` は build token 付き URL と preview diff 由来の
+  metadata を生成する release lane でもある
+- preview/current の昇格は request note の目視一致でなく、
+  source を回す promotion flow として扱う
 
 ## 運用上の意味
 
@@ -75,6 +93,10 @@ sources:
 - dialogue のような旧来の直書き data は、single-file `main.py` 同期まで含めて repo map に戻さないと半端な二重管理になる
 - preview/current 分離や play-session logging も、build lane と wrapper lane の
  責務として repo map に載っていないと運用がすぐずれる
+- 実公開 server lane が repo map に載っていないと、コードが正しくても
+  運用で facts が落ちる
+- 説明 metadata や preview artifact を build-owned と明示しないと、
+  SoT がすぐ分裂する
 
 ## 関連ページ
 

@@ -9,6 +9,10 @@ sources:
   - ../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j37-dialogue-page-advance-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime-summary.md
+  - ../summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md
+  - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
   - ../../raw/knowledge/docs/ux-policy.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/knowledge/docs/product-requirements-narrative.md
@@ -16,6 +20,10 @@ sources:
   - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
   - ../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md
   - ../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md
+  - ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md
+  - ../../raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md
+  - ../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md
+  - ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
 ---
 
 # Child Readable UX And Parent Assist
@@ -32,6 +40,9 @@ sources:
 - 危険操作は確認を入れて無言で通さない
 - selector page で `あそんでみる` が dead link にならず、子どもが親のデバッグなしで遊び始められる状態を保つ
 - 複数フレーズ会話では current page だけを見せ、前ページが残らないようにする
+- selector の変更説明は、実際の preview 差分と一致している必要がある
+- `おためしばん` は `今の依頼を表す版` として読める必要がある
+- preview source が無いときは、古い card を見せるより card 自体を出さないほうが child-facing に正直である
 
 ## 親の補助境界
 
@@ -48,6 +59,9 @@ sources:
   読みやすさ条件に含まれる
 - 最奥の目印キャラのような `次に踏む場所が見て分かる` 手がかりは、
   口頭説明の代わりになる child-facing UX である
+- stale な説明や stale preview は、build の問題である前に
+  `子どもが読んで誤解する UX` の問題である
+- preview の説明を build-owned に寄せると、親の口頭補足なしでも比較しやすくなる
 
 ## 関連ページ
 

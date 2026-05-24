@@ -5,9 +5,19 @@ sources:
   - ../summaries/knowledge/customer-journeys-summary.md
   - ../summaries/knowledge/product-requirements-platform-summary.md
   - ../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime-summary.md
+  - ../summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md
+  - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
+  - ../summaries/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note-summary.md
   - ../../raw/knowledge/docs/customer-journeys.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
+  - ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md
+  - ../../raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md
+  - ../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md
+  - ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
+  - ../../raw/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note.md
 ---
 
 # Approval Loop And Child Agency
@@ -24,6 +34,9 @@ sources:
 - 子どもが「やっぱり戻す」を自分で言える
 - 子どもが development と production を遊び比べて決められる
 - 却下した版が勝手に本番へ上がらない
+- 子どもが change list を信じて preview/current を比べられる
+- 子どもが `今の依頼に対応する preview` だけを見る
+- 前の preview がいつ current になるかが勝手に曖昧にならない
 
 ## 止まる条件
 
@@ -37,6 +50,9 @@ sources:
 - だから approval loop は nice-to-have ではなく、主体性を壊さないための core mechanism である
 - platform 側の build / approve / reject / rollback は、全部この child agency を支える ops である
 - preview build が current に混ざらず、`--promote` でだけ昇格する構造そのものが
+  child agency の guardrail になる
+- 手書き metadata や stale preview が混ざると、選ぶ前に誤認させる approval loop になる
+- preview-first、diff 由来の説明、promotion rule がそろって初めて
   child agency の guardrail になる
 
 ## 関連ページ

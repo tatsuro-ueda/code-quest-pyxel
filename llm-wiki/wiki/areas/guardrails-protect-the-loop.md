@@ -13,6 +13,10 @@ sources:
   - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md
+  - ../summaries/tasknotes/steering/done/20260413-j42-rpg-loop-journey-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md
+  - ../summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md
+  - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
   - ../../raw/knowledge/docs/customer-journeys.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/knowledge/docs/product-requirements-guardrails.md
@@ -24,6 +28,10 @@ sources:
   - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
+  - ../../raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md
+  - ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md
+  - ../../raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md
+  - ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
 ---
 
 # Guardrails Protect The Loop
@@ -52,6 +60,9 @@ sources:
 - save compatibility test を通し、既存データを壊す版を approval queue の手前で落とす
 - Playwright + Chromium Headless で Web 共有物を実ブラウザ起動し、
   ローカルでは通るが browser で落ちる版を approval queue の手前で止める
+- 先に `何を守る体験か` を docs で固定し、guardrail の対象 journey を曖昧にしない
+- selector の説明や preview の意味づけが stale なら、build が通っても guardrail failure とみなす
+- cache を含む配信 artifact まで見て、`今見せている版が本当にその版か` を守る
 
 ## この repo への含意
 
@@ -60,6 +71,7 @@ sources:
 - docs、runtime map、hooks、build、pytest を別々でなく防御層として束ねて見る必要がある
 - YAML 正本 + codegen のような structural guardrail は、修正速度が上がるほど価値が増す
 - `.pyxres` mismatch を runtime self-heal に逃がさず、verify で止める方が current truth と child trust を守りやすい
+- `実装は正しいが説明や preview が別物` という状態も、guardrail pass ではなく loop break として扱う
 
 ## 関連ページ
 
