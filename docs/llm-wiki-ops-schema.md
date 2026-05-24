@@ -14,16 +14,20 @@
 
 ## Default Flow
 
-1. 新しい source を `llm-wiki/raw/knowledge/` に追加する。
-2. source を読み、`llm-wiki/wiki/summaries/knowledge/` に summary を作る。
+1. 新しい source を `llm-wiki/raw/` 配下の適切な subtree に追加する。
+2. source を読み、対応する `llm-wiki/wiki/summaries/` 配下に summary を作る。
 3. `llm-wiki/wiki/indexes/master-index.md`、`llm-wiki/wiki/areas/`、`llm-wiki/wiki/logs/ingest-log.md` を更新する。
 4. representative query を 1 本作り、再利用価値があれば `llm-wiki/wiki/query/` に保存する。
 5. core 6 + `data_gaps` の health-check を行い、`llm-wiki/wiki/logs/health-check-log.md` に分類付きで残す。
 
 ## File Layout
 
-- `llm-wiki/raw/knowledge/`: immutable source documents
-- `llm-wiki/wiki/summaries/knowledge/`: source summaries
+- `llm-wiki/raw/`: immutable source documents
+- `llm-wiki/wiki/summaries/`: source summaries
+- `llm-wiki/raw/knowledge/`: knowledge sources
+- `llm-wiki/raw/tasknotes/`: tasknote sources
+- `llm-wiki/wiki/summaries/knowledge/`: knowledge summaries
+- `llm-wiki/wiki/summaries/tasknotes/`: tasknote summaries
 - `llm-wiki/wiki/indexes/master-index.md`: content-oriented index
 - `llm-wiki/wiki/areas/`: related concept/topic pages
 - `llm-wiki/wiki/query/`: saved answers
@@ -31,6 +35,13 @@
 - `llm-wiki/wiki/logs/source-inbox.md`: source 受付 log
 - `llm-wiki/wiki/logs/ingest-log.md`: ingest chronology
 - `llm-wiki/wiki/logs/health-check-log.md`: lint chronology
+
+## Adapter Contract
+
+- machine-readable path と tasknote section 名は `llm-wiki/adapter.yml` に置く
+- human-readable な運用 rule は `docs/llm-wiki-ops-schema.md` に置く
+- skill / helper は adapter を path 解決の SSoT とし、route の意味判断は schema に残す
+- adapter に repo 名条件分岐や workflow policy を入れない
 
 ## Ingest Defaults
 
