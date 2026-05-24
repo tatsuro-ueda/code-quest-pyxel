@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-24T14:18:37.000+00:00
 dateCreated: 2026-05-24T14:18:37.000+00:00
-dateModified: 2026-05-24T14:18:37.000+00:00
+dateModified: 2026-05-24T14:37:40.000+00:00
 tags:
   - task
   - llm-wiki
@@ -15,8 +15,8 @@ tags:
 
 # 2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）Python が返す材料の最小セットを確定
+> 状態：⑧ Closing
+> 次のゲート：なし（helper 実装と dry-run 3 本の検証まで完了）
 
 ---
 
@@ -66,7 +66,7 @@ tags:
 
 > Python に渡す部分を、入力固定、材料抽出、AI への受け渡しの順にそろえる。
 > 委任度：🟢 起票直後の provisional map までは CC が進められる
-> 残る曖昧さ：Python が返す材料の最小セットをどこまでにするか
+> 残る曖昧さ：なし
 
 ### 事前確認
 
@@ -98,8 +98,9 @@ tags:
 
 1. 当初計画
     1. 👀 frontmatter と見出しを読む
-    2. ✂️ Tasklist や Discussion から evidence 候補を抜く
-    3. 🧾 AI が要約判断しやすい順に材料を返す
+    2. ✂️ Tasklist と Result から事実候補を抜く
+    3. ✂️ Discussion と Closing から判断候補を抜く
+    4. 🧾 AI が要約判断しやすい順に材料を返す
 
 #### 話題3：AI は判断と会話を担当する
 
@@ -115,7 +116,7 @@ tags:
 ## 3) Gherkin（完了条件）
 
 > 委任度：🟢 起票時点の完了条件のたたき台までは CC が進められる
-> 残る曖昧さ：Python が返す材料セットの最終定義
+> 残る曖昧さ：なし
 
 ### シナリオ一覧
 
@@ -129,7 +130,9 @@ tags:
 Given `llm-wiki/raw/tasknotes/` 配下に raw tasknote file が存在する
 When Python helper に raw tasknote path を渡す
 Then helper は `source_id` と summary draft path を決められる
-And frontmatter と主要見出しと Tasklist 由来の材料を返せる
+And frontmatter と主要見出しと材料候補を返せる
+And Tasklist Result Discussion Closing を材料に含められる
+And 返り値は JSON object として扱える
 ```
 
 - [ ] シナリオ2：tasknote 構造が足りなくても捏造せず不足を返せる
@@ -165,6 +168,8 @@ And gate 1 と gate 2 の会話も AI が担当する
 ### 責務分担概要
 
 - 新しい Python helper は raw tasknote から決定的な材料だけを返す
+- 返す材料は `frontmatter` `見出し` `Tasklist` `Result` `Discussion` `Closing` を基本にする
+- helper の返り値形式は JSON に固定する
 - `llm-wiki-capture-and-ingest-source` はその材料を使って会話と要約判断を続ける
 - 最初の対象は raw tasknote のみで、他 source type は扱わない
 - 文章生成を Python に渡さないことで speed と安全の折り合いを取る
@@ -190,6 +195,26 @@ flowchart LR
 - `llm-wiki/raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md` （➕：dry-run source 3）
 - `tools/` （➕：raw tasknote helper の置き場候補）
 
+### JSON I/O contract
+
+- input:
+  - `raw_tasknote_path`: raw tasknote の相対 path
+- output:
+  - `source_id`: `YYYY-MM-DD-slug`
+  - `summary_draft_path`: summary draft の相対 path
+  - `source_type`: 固定で `tasknote`
+  - `frontmatter`: frontmatter の key-value
+  - `headings`: 見出し配列
+  - `tasklist_items`: Tasklist 由来の項目配列
+  - `result_facts`: Result 由来の事実配列
+  - `discussion_points`: Discussion 由来の判断配列
+  - `closing_points`: Closing 由来の完了条件配列
+  - `missing_sections`: 見つからなかった section 名配列
+- policy:
+  - 値が無い section は捏造せず空配列か `missing_sections` へ入れる
+  - quote 文字列や summary 文はこの helper で生成しない
+  - AI はこの JSON を読んで gate 会話と summary preview を作る
+
 ### 【参照】
 
 - Steering: `steering/2026年5月24日 開発基盤：capture-and-ingest-sourceでraw tasknoteからsummary draftを作る.md`
@@ -200,7 +225,7 @@ flowchart LR
 
 - やること:
   - raw tasknote だけを対象に Python 化の対象範囲を固定する
-  - Python が返す材料セットの最小形を決める
+  - Python が返す材料セットを中くらい案で固定する
   - AI に残す責務を明文化する
 - やらないこと:
   - article や video や post まで広げること
@@ -222,17 +247,38 @@ flowchart LR
 
 ## 5) Tasklist
 
-- [ ] Python が返す材料の最小セットを確定する
-- [ ] raw tasknote helper の I/O contract を言語化する
-- [ ] dry-run source 3 本で必要な材料差分を洗い出す
-- [ ] `llm-wiki-capture-and-ingest-source` 側の呼び出し位置を決める
+- [x] Python が返す材料の最小セットを確定する
+- [x] `frontmatter` `見出し` `Tasklist` `Result` `Discussion` `Closing` を材料セットに固定する
+- [x] raw tasknote helper の I/O contract を言語化する
+- [x] helper の返り値を JSON にする
+- [x] dry-run source 3 本で必要な材料差分を洗い出す
+- [x] `llm-wiki-capture-and-ingest-source` 側の呼び出し位置を決める
 
 ---
 
 ## 6) 作業ログ
 
+- 2026-05-24 CC: `test/test_llm_wiki_tasknote_helper.py` を先に追加し、
+  `tools/llm_wiki_tasknote_helper.py` を TDD で実装した。
+- 2026-05-24 CC: dry-run を
+  `20260412-g12-rebuild-codemaker-zip`
+  `20260412-g15-test-pinning`
+  `20260412-guardrails-1-ssot-codegen`
+  の 3 本で実施した。
+- 2026-05-24 CC: 3 本とも `Result` と `Closing` は未整備で、
+  `Discussion` は `Discussion（記録・反省）` と `Discussion` の表記ゆれがあった。
+  helper は keyword 正規化と `missing_sections` でこれを吸収する形にした。
+- 2026-05-24 CC: `llm-wiki-capture-and-ingest-source` は
+  tasknote の `raw-source-path mode` で
+  `python tools/llm_wiki_tasknote_helper.py <raw_tasknote_path>` を先に呼び、
+  AI はその JSON を材料に gate と summary preview を続ける方針へ更新した。
+
 - raw tasknote だけを最初の対象にする方針を固定した
 - Python は材料整理まで、文章生成は AI のままにする方針を固定した
+- 材料セットは中くらい案をベースにする方針を固定した
+- `Result` も根拠候補に含める方針を固定した
+- helper の返り値は JSON に固定した
+- helper の JSON I/O contract を tasknote に明文化した
 - `steering/` 配下に tasknote を起票することを選んだ
 
 ---
@@ -251,18 +297,22 @@ flowchart LR
 
 - 関連tasknote: `steering/2026年5月24日 開発基盤：capture-and-ingest-sourceでraw tasknoteからsummary draftを作る.md`
 - 今回は speed のために Python 化するが、要約の言い過ぎを防ぐため文章生成はまだ AI に残す
-- 次の相談点は「Python が返す材料の最小セット」をどこまでにするかである
+- `Result` は事実の section とみなし、根拠候補に含める
+- helper の返り値は JSON に固定し、以後の細かい形式判断は CC が引き取る
+- 次の実務判断は dry-run source 3 本でどの section 差分が出るかを見ることである
 
 ---
 
 ## 9) Closing
 
 - 状態: open
-- 次のゲート: （ユーザー）Python が返す材料の最小セットを確定
+- 次のゲート: （CC）dry-run source 3 本で材料差分を洗う
 - close 条件:
-  - [ ] raw tasknote 限定の scope が確定している
-  - [ ] Python が返す材料の最小セットが決まっている
-  - [ ] AI に残す責務が note から読める
+  - [x] raw tasknote 限定の scope が確定している
+  - [x] Python が返す材料セットが決まっている
+  - [x] helper の返り値形式が決まっている
+  - [x] helper の JSON I/O contract が note にある
+  - [x] AI に残す責務が note から読める
 
 ---
 
