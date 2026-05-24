@@ -1,11 +1,13 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/product-requirements-platform-summary.md
   - ../summaries/knowledge/ux-policy-summary.md
+  - ../summaries/tasknotes/done/20260412-g12-rebuild-codemaker-zip-summary.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/knowledge/docs/ux-policy.md
+  - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
 ---
 
 # Platform Sharing And Approval Ops
@@ -26,6 +28,7 @@ sources:
 - 持ち出す zip はその時点の候補と一致している必要がある
 - 取り込むときは resource を戻し、 zip 内の main.py は採用しない
 - 編集面で見えたものが実ゲームの真実であることを壊さない
+- zip を持ち出す前に、zip 内 `main.py` と `my_resource.pyxres` が現行 candidate と一致しているかを artifact で確かめる
 
 ## この repo への含意
 

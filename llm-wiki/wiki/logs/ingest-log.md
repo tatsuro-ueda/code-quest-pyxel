@@ -1,5 +1,58 @@
 # Ingest Log
 
+## [2026-05-24] ingest | G12 code-maker.zip rebuild
+
+- source_id: `2026-04-12-g12-rebuild-codemaker-zip`
+- source_path: `llm-wiki/raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/done/20260412-g12-rebuild-codemaker-zip-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - packaging の学びは入ったが、zip freshness を定期的に点検する自動 gate まではまだ無い
+- notes:
+  - Code Maker artifact freshness を SSoT、guardrail、repository、platform の各 page へ波及させた
+
+## [2026-05-24] ingest | G15 test pinning
+
+- source_id: `2026-04-12-g15-test-pinning`
+- source_path: `llm-wiki/raw/tasknotes/done/20260412-g15-test-pinning.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/done/20260412-g15-test-pinning-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - CI が無いままでは、同種の broken test lane が次も長期間放置される可能性がある
+- notes:
+  - pytest lane 復旧を guardrail、migration safety、layering の各 page へ接続した
+
+## [2026-05-24] ingest | Guardrails 1 SSoT + Codegen
+
+- source_id: `2026-04-12-guardrails-1-ssot-codegen`
+- source_path: `llm-wiki/raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - codegen lane は入ったが、`gen` 実行忘れを防ぐ hook や CI は別 guardrail として残っている
+- notes:
+  - YAML SSoT、generated code、loader 境界の structural guardrail を既存 area pages へ接続した
+
 ## [2026-05-23] ingest | LLM Wiki
 
 - source_id: `2026-04-04-karpathy-llm-wiki`

@@ -1,13 +1,15 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/framework-rule-summary.md
   - ../summaries/knowledge/product-requirements-guardrails-summary.md
   - ../summaries/knowledge/repository-structure-summary.md
+  - ../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/knowledge/docs/product-requirements-guardrails.md
   - ../../raw/knowledge/docs/repository-structure.md
+  - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
 ---
 
 # No Silent Failure And Migration Safety
@@ -28,6 +30,7 @@ sources:
 - 旧 API や旧 field 名の残存を機械的に検出する
 - grep や目視だけで移行完了と判断しない
 - manifest や設定追加を記憶に頼らない
+- 削除済み dependency の import や obsolete test fixture path を放置しない
 
 ## この repo への含意
 
@@ -35,6 +38,7 @@ sources:
 - 壊れた版を隠すより、明示的に止めて人が気づける方がましである
 - `実公開で記録されるはず` のような思い込みも silent failure の一種として扱う
 - build runbook や startup gate は migration safety を運用へ落とした形である
+- pytest import error を「テストが無い」扱いで見逃さず、guardrail の欠損として最優先で直す
 
 ## 関連ページ
 

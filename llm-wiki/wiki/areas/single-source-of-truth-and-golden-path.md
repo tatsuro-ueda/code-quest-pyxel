@@ -1,13 +1,17 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/framework-rule-summary.md
   - ../summaries/knowledge/product-requirements-guardrails-summary.md
   - ../summaries/knowledge/repository-structure-summary.md
+  - ../summaries/tasknotes/done/20260412-g12-rebuild-codemaker-zip-summary.md
+  - ../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/knowledge/docs/product-requirements-guardrails.md
   - ../../raw/knowledge/docs/repository-structure.md
+  - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
+  - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
 ---
 
 # Single Source Of Truth And Golden Path
@@ -22,6 +26,7 @@ sources:
 - 生データ直読みや都合のよい参照先切り替えをしない
 - ユーザー編集より自動生成を優先しない
 - `src/` と `assets/` を正本にし、 `dist/` を source 扱いしない
+- `assets/*.yaml -> tools/gen_data.py -> src/generated/*.py -> src/game_data.py` の一方向生成を守り、手動多重更新より regenerate を優先する
 
 ## Golden Path
 
@@ -29,11 +34,13 @@ sources:
 - 起動、メニュー、戦闘、配布物など本番導線を最低 1 回は通す
 - bundle や実物確認を後回しにしない
 - Code Maker zip、公開 URL、play log のような user-facing artifact も通り道に含める
+- Code Maker 向け zip では、zip 内 `main.py` と `my_resource.pyxres` が現行正本と一致し、展開物が headless 起動することまで確かめる
 
 ## この repo への含意
 
 - docs、pyxres、配布物、save payload のどれが正本かを先に固定する
 - 「直した」ではなく「ユーザーが触る通り道で動いた」ことを done とみなす
+- generated data や packaging artifact も、`正本から再現できるか` で点検する
 
 ## 関連ページ
 

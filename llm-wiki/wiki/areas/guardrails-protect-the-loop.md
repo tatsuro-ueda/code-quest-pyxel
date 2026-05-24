@@ -1,15 +1,19 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/customer-journeys-summary.md
   - ../summaries/knowledge/framework-rule-summary.md
   - ../summaries/knowledge/product-requirements-guardrails-summary.md
   - ../summaries/knowledge/repository-structure-summary.md
+  - ../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md
+  - ../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md
   - ../../raw/knowledge/docs/customer-journeys.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/knowledge/docs/product-requirements-guardrails.md
   - ../../raw/knowledge/docs/repository-structure.md
+  - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
+  - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
 ---
 
 # Guardrails Protect The Loop
@@ -32,12 +36,14 @@ sources:
 - migration の取り残しを機械的に検出する
 - 起動ゲートで壊れた版を承認キューから除外する
 - Code Maker resource の境界を越えない
+- 壊れた test lane を先に直し、failure signal 自体を guardrail として回復させる
 
 ## この repo への含意
 
 - guardrail は開発速度の敵でなく、速度を子どもへ安全に届けるための条件である
 - 好循環が速くなるほど、guardrail の重要度も上がる
 - docs、runtime map、hooks、build、pytest を別々でなく防御層として束ねて見る必要がある
+- YAML 正本 + codegen のような structural guardrail は、修正速度が上がるほど価値が増す
 
 ## 関連ページ
 

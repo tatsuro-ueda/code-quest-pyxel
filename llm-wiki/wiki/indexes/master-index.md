@@ -35,6 +35,12 @@
 - [Architecture Checklist Summary](../summaries/checklists/architecture-checklist-summary.md): Code Maker と docs/pyxres の守り方
 - [Framework Checklist Summary](../summaries/checklists/framework-checklist-summary.md): M1-M5 と done の扱い
 - [UX Checklist Summary](../summaries/checklists/ux-checklist-summary.md): UX policy の checklist summary
+- [Tasknote Summary: G12 code-maker.zip rebuild](../summaries/tasknotes/done/20260412-g12-rebuild-codemaker-zip-summary.md): Code Maker zip を Web 版の `main.py` と `pyxres` にそろえ、artifact diff と headless 起動まで確認した summary
+- [Tasknote Raw: G12 code-maker.zip rebuild](../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md): Code Maker packaging の実施記録
+- [Tasknote Summary: G15 test pinning](../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md): 壊れた pytest lane を復旧し、130 テスト全通過で failure signal を戻した summary
+- [Tasknote Raw: G15 test pinning](../../raw/tasknotes/done/20260412-g15-test-pinning.md): テスト復旧と挙動固定の実施記録
+- [Tasknote Summary: Guardrails 1 SSoT + Codegen](../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md): YAML 正本、codegen、loader 境界で data 不整合を減らした summary
+- [Tasknote Raw: Guardrails 1 SSoT + Codegen](../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md): SSoT と codegen 基盤導入の実施記録
 
 ## Areas
 
