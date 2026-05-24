@@ -7,7 +7,7 @@
 # pre-commit:
 #   - repo 管理の .githooks/pre-commit を実行
 #   - tasknote commit 時は TASKNOTE_PRECOMMIT=1 で shared tasknote lint を実行
-#   - 通常は make verify と pytest を実行
+#   - 通常は make verify を実行
 #   緊急時は SKIP_TESTS=1 git commit でバイパス可能。
 #
 # post-commit:

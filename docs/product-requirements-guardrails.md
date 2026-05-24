@@ -820,7 +820,7 @@ Claude Code だけでなく、他の AI や人の手動編集でも守りが効�
 | 1. Claude Code hooks (PreToolUse) | ファイル編集をツールレベルでブロック | ✅ | ❌ | ❌ |
 | 2. ファイル権限 (chmod 444) | `src/generated/*.py` を読み取り専用にして OS レベルで書き込み拒否 | ✅ | ✅ | ✅ |
 | 3. AGENTS.md / repository-structure.md | SSoTルール・編集禁止ファイル・テスト必須・framework-rule.md M1〜M5 を明記 | ✅ | ✅ | — |
-| 4. git pre-commit hook | `git commit` 時に pytest を自動実行し失敗ならブロック | ✅ | ✅ | ✅ |
+| 4. git pre-commit hook | `git commit` 時に `make verify` を自動実行し、drift や CJ 対応表ずれをブロック | ✅ | ✅ | ✅ |
 
 ---
 

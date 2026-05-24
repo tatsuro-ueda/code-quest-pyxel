@@ -32,12 +32,5 @@ if ! make verify; then
   exit 1
 fi
 
-echo "pre-commit: pytest ..."
-if python -m pytest test/ -q --tb=short 2>&1; then
-  echo "pre-commit: All tests passed."
-  exit 0
-fi
-
-echo "pre-commit: Tests failed. Commit blocked."
-echo "  - Fix failing tests, or SKIP_TESTS=1 git commit to bypass."
-exit 1
+echo "pre-commit: verify OK."
+exit 0

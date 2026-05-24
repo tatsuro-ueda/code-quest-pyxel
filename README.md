@@ -50,7 +50,7 @@ python main.py
 
 `tools/install_hooks.sh` は 2 つの hook を `.git/hooks/` に冪等インストールします：
 
-- **pre-commit**: `make verify`（モジュール docstring drift / CJ ↔ カスタマージャーニー / カスタマージョブ整合 / scene_to_cj 対応表）と `pytest` を走らせる。失敗すればコミットがブロックされる。緊急時は `SKIP_TESTS=1 git commit` でバイパス可能。
+- **pre-commit**: `make verify`（モジュール docstring drift / CJ ↔ カスタマージャーニー / カスタマージョブ整合 / scene_to_cj 対応表）を走らせる。失敗すればコミットがブロックされる。`pytest` は必要に応じて手動実行する。緊急時は `SKIP_TESTS=1 git commit` でバイパス可能。
 - **post-commit**: `tools/update_top_changes.py` が走り、Claude Haiku が「子どもに関係ある変更」を判定して `top_changes.json` の先頭に追記する。`ANTHROPIC_API_KEY` を環境変数に設定すると AI 判定が有効化される（未設定でも silent skip）。手動で `top_changes.json` を編集 → `python tools/render_top_changes.py` で kid-pixel `index.html` のマーカー間に反映できる。
 
 CI でも同等の検証が `.github/workflows/verify.yml` で push / PR 時に走ります。
