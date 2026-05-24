@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -263,6 +264,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         self.assertEqual(report["documents"][0]["referenced_refs"], ["CJ14"])
         self.assertEqual(report["documents"][0]["missing_refs"], [])
 
+    @pytest.mark.repo_scan_nightly
     def test_cli_runs_on_real_repo_and_returns_document_summaries(self):
         completed = subprocess.run(
             [sys.executable, str(ROOT / "tools" / "report_source_trace_coverage.py")],
@@ -282,6 +284,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         self.assertIn("product_requirements_av", document_ids)
         self.assertIn("product_requirements_narrative", document_ids)
 
+    @pytest.mark.repo_scan_nightly
     def test_real_repo_report_covers_all_map_prd_refs(self):
         report_module = load_report_module()
 
@@ -294,6 +297,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         )
         self.assertEqual(document["missing_refs"], [])
 
+    @pytest.mark.repo_scan_nightly
     def test_real_repo_report_covers_all_battle_prd_refs(self):
         report_module = load_report_module()
 
@@ -306,6 +310,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         )
         self.assertEqual(document["missing_refs"], [])
 
+    @pytest.mark.repo_scan_nightly
     def test_real_repo_report_covers_all_platform_prd_refs(self):
         report_module = load_report_module()
 
@@ -318,6 +323,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         )
         self.assertEqual(document["missing_refs"], [])
 
+    @pytest.mark.repo_scan_nightly
     def test_real_repo_report_covers_all_guardrails_prd_refs(self):
         report_module = load_report_module()
 
@@ -330,6 +336,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         )
         self.assertEqual(document["missing_refs"], [])
 
+    @pytest.mark.repo_scan_nightly
     def test_real_repo_report_covers_all_av_prd_refs(self):
         report_module = load_report_module()
 
@@ -342,6 +349,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
         )
         self.assertEqual(document["missing_refs"], [])
 
+    @pytest.mark.repo_scan_nightly
     def test_real_repo_report_reduces_customer_job_missing_refs_to_autonomy_only(self):
         report_module = load_report_module()
 
@@ -350,6 +358,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
 
         self.assertEqual(document["missing_refs"], [])
 
+    @pytest.mark.repo_scan_nightly
     def test_real_repo_report_reduces_customer_journey_missing_refs_to_story_tail(self):
         report_module = load_report_module()
 
@@ -358,6 +367,7 @@ class SourceTraceCoverageReportTest(unittest.TestCase):
 
         self.assertEqual(document["missing_refs"], [])
 
+    @pytest.mark.repo_scan_nightly
     def test_real_repo_report_covers_all_narrative_prd_refs(self):
         report_module = load_report_module()
 

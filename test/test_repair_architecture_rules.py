@@ -8,6 +8,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -46,6 +47,7 @@ def coverage_metadata(
 
 
 class RepairArchitectureRulesTest(unittest.TestCase):
+    @pytest.mark.real_repo_smoke
     def test_repair_cli_runs_clean_on_real_repo(self):
         completed = subprocess.run(
             [sys.executable, str(ROOT / "tools" / "repair_architecture_rules.py")],

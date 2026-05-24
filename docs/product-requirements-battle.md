@@ -214,7 +214,7 @@ Rule: 外からの感想でバランスを回せる
 この共通条件では、「戦闘データをいじっても、最低限の整合性が崩れない」を約束する。
 
 実装状況:
-- `実装済み`: `test/test_game_data.py` と `test/test_spell_logic.py` が現行スキーマと基本挙動を確認している
+- `実装済み`: `test/test_game_data.py` と `test/test_cjg_battle_spell_effects.py` が現行スキーマと基本挙動を確認している
 
 ```gherkin
 Feature: 共通条件 Battle

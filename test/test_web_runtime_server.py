@@ -10,6 +10,7 @@ import urllib.request
 from pathlib import Path
 from zipfile import ZipFile
 
+import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -24,6 +25,7 @@ def load_server_module():
     return web_runtime_server
 
 
+@pytest.mark.high_value_smoke
 class WebRuntimeServerTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

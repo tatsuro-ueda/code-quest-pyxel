@@ -1,4 +1,4 @@
-.PHONY: gen test build verify-module-docstrings verify-cj-cjob verify-scene-cj-map verify
+.PHONY: gen test test-smoke test-nightly build verify-module-docstrings verify-cj-cjob verify-scene-cj-map verify
 
 # P3-F: sync_main_data.py は廃止。gen_data.py が src/generated/*.py を生成し、
 # Phase 1.5 shim の import * と Phase 2 codemaker_bundler がそれを読む。
@@ -8,6 +8,12 @@ gen:
 
 test:
 	python3 -m pytest test/ -v
+
+test-smoke:
+	python3 -m pytest -o addopts='' test/ -v -m "real_repo_smoke or high_value_smoke"
+
+test-nightly:
+	python3 -m pytest -o addopts='' test/ -v -m repo_scan_nightly
 
 # モジュール docstring の drift 検出（A2 / B1）。
 # 横展開未完のため --skip-missing-docstring で段階移行モード。

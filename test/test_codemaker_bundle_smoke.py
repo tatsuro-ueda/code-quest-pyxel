@@ -21,6 +21,8 @@ import types
 import unittest
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -159,6 +161,7 @@ def _restore_pyxel(original: object) -> None:
         sys.modules["pyxel"] = original  # type: ignore[assignment]
 
 
+@pytest.mark.high_value_smoke
 class BundledSourceLoadsTest(unittest.TestCase):
     """build_bundled_source の出力を実際に exec して回帰を検出する。"""
 

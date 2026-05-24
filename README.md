@@ -55,6 +55,8 @@ python main.py
 
 CI でも同等の検証が `.github/workflows/verify.yml` で push / PR 時に走ります。
 
+日常の回帰確認は `make test` を使ってください。これは `pytest.ini` により `real_repo_smoke`、`high_value_smoke`、`repo_scan_nightly` を除いた daily suite を実行します。thin CLI shim と高価値 integration smoke は `make test-smoke`、repo 全走査の guardrail / report 系は `make test-nightly` で明示的に回します。
+
 ## Pyxel Code Maker で遊ぶ・改造する
 
 [Pyxel Code Maker](https://kitao.github.io/pyxel/wasm/code-maker.html) にアップロードする場合は、[`dist/code-maker.zip`](dist/code-maker.zip) を使ってください。コード全体が1つの `main.py` にインライン化されています。

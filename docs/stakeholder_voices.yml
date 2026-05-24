@@ -696,14 +696,14 @@ facts:
         - src/game_data.py
         - src/scenes/battle/scene.py
         - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_battle_spell_effects.py
         - test/test_cjg_player_model_spell_learn.py
-        - test/test_spell_logic.py
         - tools/gen_data.py
       verification_refs:
         - docs/product-requirements-battle.md
         - test/test_cjg_battle_flow_smoke.py
+        - test/test_cjg_battle_spell_effects.py
         - test/test_cjg_player_model_spell_learn.py
-        - test/test_spell_logic.py
       source_refs:
         - docs/customer-journeys.md
         - docs/product-requirements-battle.md
@@ -2081,8 +2081,8 @@ facts:
         mode: deterministic
         refs:
           - test/test_cjg_battle_flow_smoke.py
+          - test/test_cjg_battle_spell_effects.py
           - test/test_cjg_player_model_spell_learn.py
-          - test/test_spell_logic.py
 
     - id: acc_global_balance_tunable_replay
       status: active

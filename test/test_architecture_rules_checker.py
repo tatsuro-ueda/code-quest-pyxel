@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -49,6 +50,7 @@ def coverage_metadata(
 
 
 class ArchitectureRulesCheckerTest(unittest.TestCase):
+    @pytest.mark.repo_scan_nightly
     def test_real_rules_expose_tree_first_facts(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
 
@@ -61,6 +63,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
         self.assertIsNotNone(find_tree_node(data["facts"]["tree"], "src/generated/dialogue.py"))
         self.assertIn("entry_points", data["facts"])
 
+    @pytest.mark.repo_scan_nightly
     def test_validation_rules_include_suggested_actions(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
         rules = data["validation_rules"]
@@ -70,6 +73,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
             self.assertIn("suggested_actions", rule)
             self.assertIsInstance(rule["suggested_actions"], list)
 
+    @pytest.mark.repo_scan_nightly
     def test_validation_rules_include_coverage_metadata(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
         rules = data["validation_rules"]
@@ -86,6 +90,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
             self.assertIn("rationale", coverage)
             self.assertEqual(len([key for key in coverage if key.endswith("_autofix")]), 1)
 
+    @pytest.mark.repo_scan_nightly
     def test_major_id_sections_put_label_ja_before_id(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
 
@@ -114,6 +119,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
         for item in data["validation_rules"]:
             self.assertEqual(list(item.keys())[:2], ["label_ja", "id"])
 
+    @pytest.mark.repo_scan_nightly
     def test_codemaker_contract_excludes_removed_legacy_shell_paths(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
         contracts = data["facts"]["codemaker_bundle_contracts"]
@@ -123,6 +129,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
         self.assertNotIn("src/app.py", required_paths)
         self.assertNotIn("src/core/scene_manager.py", required_paths)
 
+    @pytest.mark.repo_scan_nightly
     def test_run_checker_executes_deterministic_rules_and_skips_others(self):
         checker = load_checker_module()
 
@@ -152,6 +159,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
             "implemented",
         )
 
+    @pytest.mark.repo_scan_nightly
     def test_run_checker_reports_coverage_review(self):
         checker = load_checker_module()
 
@@ -186,6 +194,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
             ],
         )
 
+    @pytest.mark.repo_scan_nightly
     def test_run_checker_can_filter_single_rule(self):
         checker = load_checker_module()
 
@@ -200,6 +209,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
         self.assertEqual(result["summary"]["executed_rules"], 1)
         self.assertEqual([item["rule_id"] for item in result["results"]], ["runtime_entry_chain"])
 
+    @pytest.mark.real_repo_smoke
     def test_cli_stdout_is_valid_json_for_default_repo(self):
         completed = subprocess.run(
             [sys.executable, str(ROOT / "tools" / "check_architecture_rules.py")],
@@ -452,6 +462,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
         )
         self.assertIn("player_model.py", by_rule["shared_service_vs_state_boundary"]["message"])
 
+    @pytest.mark.repo_scan_nightly
     def test_cli_fail_on_warning_returns_exit_one(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
         dialogue_node = find_tree_node(data["facts"]["tree"], "src/generated/dialogue.py")
@@ -494,6 +505,7 @@ class ArchitectureRulesCheckerTest(unittest.TestCase):
             with self.assertRaises(KeyError):
                 checker.run_checker(ROOT, broken_yaml)
 
+    @pytest.mark.repo_scan_nightly
     def test_cli_returns_warning_with_suggested_actions_and_exit_zero(self):
         data = yaml.safe_load((ROOT / "docs" / "architecture_rules.yml").read_text(encoding="utf-8"))
         for rule in data["validation_rules"]:

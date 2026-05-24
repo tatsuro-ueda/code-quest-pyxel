@@ -8,6 +8,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -136,6 +137,7 @@ class StakeholderVoicesCheckerTest(unittest.TestCase):
         self.assertEqual(result["summary"]["executed_rules"], 10)
         self.assertEqual(result["summary"]["skipped_rules"], 0)
 
+    @pytest.mark.real_repo_smoke
     def test_cli_stdout_is_valid_json_for_default_repo(self):
         completed = subprocess.run(
             [sys.executable, str(ROOT / "tools" / "check_stakeholder_voices.py")],

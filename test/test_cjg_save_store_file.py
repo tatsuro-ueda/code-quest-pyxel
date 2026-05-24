@@ -18,7 +18,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.shared.services.save_store import FileSaveStore
+from src.shared.services.save_store import (
+    FileSaveStore,
+    SaveStoreError,
+    make_save_store,
+)
 
 
 class FileSaveStoreRoundTripTest(unittest.TestCase):
@@ -73,6 +77,13 @@ class FileSaveStoreRoundTripTest(unittest.TestCase):
             loaded = store.load()
             self.assertEqual(loaded["player"]["hp"], 50)
 
+    def test_save_missing_parent_raises_save_store_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = FileSaveStore(Path(tmp) / "missing" / "save.json")
+
+            with self.assertRaises(SaveStoreError):
+                store.save({"save_version": 1, "player": {}, "town_pos": [0, 0]})
+
 
 class FileSaveStoreAtomicityTest(unittest.TestCase):
     def test_save_removes_tmp_file(self):
@@ -85,6 +96,14 @@ class FileSaveStoreAtomicityTest(unittest.TestCase):
 
             tmp_path = path.with_suffix(path.suffix + ".tmp")
             self.assertFalse(tmp_path.exists())
+
+
+class SaveStoreFactoryTest(unittest.TestCase):
+    def test_make_save_store_returns_file_store_on_desktop(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = make_save_store(Path(tmp) / "save.json")
+
+            self.assertIsInstance(store, FileSaveStore)
 
 
 if __name__ == "__main__":
