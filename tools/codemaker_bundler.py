@@ -94,6 +94,9 @@ def run_main() -> int:  # noqa: CR100
 _IMPORT_AS_RE = re.compile(
     r"^\s*from\s+src\.[^\s]+\s+import\s+(\w+)\s+as\s+(\w+)\s*$"
 )
+_LOCAL_MODULE_IMPORT_AS_RE = re.compile(
+    r"^\s*import\s+src\.[^\s]+\s+as\s+(\w+)\s*$"
+)
 
 
 def _read_manifest_paths() -> list[Path]:
@@ -148,6 +151,7 @@ def _strip_local_imports(source: str) -> str:
 
     Policy:
         - `from src.X import Y as Z` は単行/多行ともに `Z = Y` 行を残す。
+        - `import src.X.Y as alias` は `alias = M` として残す。
         - `import src.X.Y` は alias を出さずに削除のみ。
     """
     out_lines: list[str] = []
@@ -180,6 +184,10 @@ def _consume_one_import_line(
         - 単行 `as` alias は書き換え、ローカル import なら丸ごと消して
           内部 alias を抽出、それ以外はそのまま追加する。
     """
+    module_alias_match = _LOCAL_MODULE_IMPORT_AS_RE.match(line)
+    if module_alias_match is not None:
+        _emit_module_alias(out_lines, line, module_alias_match)
+        return cursor + 1
     single_match = _IMPORT_AS_RE.match(line)
     if single_match is not None:
         _emit_single_as_alias(out_lines, line, single_match)
@@ -207,6 +215,30 @@ def _emit_single_as_alias(
     """
     indent = line[: len(line) - len(line.lstrip())]
     out_lines.append(f"{indent}{match.group(2)} = {match.group(1)}")
+
+
+def _emit_module_alias(
+    out_lines: list[str],
+    line: str,
+    match: re.Match,
+) -> None:
+    """単行 `import src.X as alias` を `alias = M` 行で書き出す。
+
+    Args:
+        out_lines: 出力先（in-place 更新）。
+        line: 元の import 行（indent 抽出に使う）。
+        match: _LOCAL_MODULE_IMPORT_AS_RE のマッチオブジェクト。
+
+    Policy:
+        - bundle header の `M = sys.modules[__name__]` を使い、
+          ローカル module alias を現 bundle module に向ける。
+        - 既存の `import src.runtime.main_runtime as M` は追加出力しない。
+    """
+    alias = match.group(1)
+    if alias == "M":
+        return
+    indent = line[: len(line) - len(line.lstrip())]
+    out_lines.append(f"{indent}{alias} = M")
 
 
 def _consume_local_import_block(
