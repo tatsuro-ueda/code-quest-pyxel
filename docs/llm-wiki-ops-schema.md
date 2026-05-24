@@ -4,6 +4,14 @@
 
 この schema は、この repo の `llm-wiki/` を generic chatbot ではなく disciplined wiki maintainer として保守するための既定動作をまとめる。対象は `llm-wiki/raw/` の immutable source、`llm-wiki/wiki/` の generated markdown、そしてそれらをつなぐ ingest / query / health-check の運用である。
 
+## Shared Skill Routes
+
+- `llm-wiki`: generic 入口。目的から child route を選ぶ
+- `llm-wiki-query`: current wiki へ質問し、必要なら query page や candidate を残す
+- `llm-wiki-health-check`: compiled wiki を read-only で点検し、`health-check-log` を残す
+- `llm-wiki-update-schema`: `health-check-log` を踏まえ、安定した rule だけを schema に昇格する
+- `llm-wiki-capture-and-ingest-source`: source を raw / summary draft / related page 更新へつなぐ
+
 ## Default Flow
 
 1. 新しい source を `llm-wiki/raw/knowledge/` に追加する。
@@ -84,7 +92,7 @@
 
 ## Health-Check Defaults
 
-- `health-check-wiki` は compiled wiki を主に読む read-only route である
+- `llm-wiki-health-check` は compiled wiki を主に読む read-only route である
 - 既定の scope は `master-index` `areas` `query` `summaries/knowledge` `logs`
 - core 6 を見る: contradictions / stale claims / orphan pages / missing concepts / missing crossrefs / data gaps
 - raw source や tasknote 原文は主入力にしない
@@ -93,7 +101,7 @@
 - `no issue` の回でも health-check log を残す
 - 結果は `fix now / next ingest / candidate source / notes` に分ける
 - `fix now` が見えても、この route 自体では page 修正を行わない
-- schema 更新は `update-schema` route に渡す
+- schema 更新は `llm-wiki-update-schema` route に渡す
 - small wiki でも source summary、related page、saved answer があれば 1 回回してよい
 
 ## Batch Policy
@@ -114,7 +122,7 @@
 
 ## Update Rule
 
-- `update-schema` は `health-check-log` を主入力にする
+- `llm-wiki-update-schema` は `health-check-log` を主入力にする
 - recurring pattern だけを schema 更新候補にする
 - tasknote 原文や局所 incident は schema に直入れしない
 - current schema の見出しは維持し、内部対応で 5 バケットを扱う
