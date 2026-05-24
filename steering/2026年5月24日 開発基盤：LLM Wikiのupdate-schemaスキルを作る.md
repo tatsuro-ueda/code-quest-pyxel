@@ -1,9 +1,9 @@
 ---
-status: open
+status: in-progress
 priority: high
 scheduled: 2026-05-24T11:37:12.000+00:00
 dateCreated: 2026-05-24T11:37:12.000+00:00
-dateModified: 2026-05-24T11:37:12.000+00:00
+dateModified: 2026-05-24T11:49:24.000+00:00
 tags:
   - task
   - llm-wiki
@@ -14,8 +14,8 @@ tags:
 
 # 2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）stable rule だけ昇格し現行見出しを維持する draft でよいか確認
+> 状態：⑤ Tasklist
+> 次のゲート：（CC）既存 `health-check-log` を基準に `no schema change` の判定観点を固める
 
 ---
 
@@ -54,16 +54,16 @@ tags:
    3. `update-schema` は page 修正や log 追記そのものを担当しない
 
 6. 委任度
-   1. 🟢 stable rule 昇格の draft と対応表までは CC 単独で進められる
+   1. 🟢 stable rule 昇格条件と対応表は実装準備まで進められる
    2. 🟢 CCのみで可：current schema 見出しを維持した内部対応表を作れる
-   3. 🟡 人の判断: 全プロジェクト共通 skill としての wording の最終温度感
+   3. 🟢 CCのみで可：`no schema change` 条件を skill contract に落とせる
 
 ---
 
 ## 2) ユーザーストーリーマップ
 
 > schema 更新を「全部書く」のでなく「何度も効くやり方だけ昇格する」route に絞る。
-> 委任度：🟢 昇格条件、対応表、no-op 条件の draft までは CC が固められる
+> 委任度：🟢 昇格条件、対応表、no-op 条件は固まり、dry-run 観点まで CC が進められる
 > 残る曖昧さ：なし
 
 ### 事前確認
@@ -117,7 +117,7 @@ tags:
 
 ## 3) Gherkin（完了条件）
 
-> 委任度：🟢 stable rule 昇格条件と対応表の draft までは CC が進められる
+> 委任度：🟢 stable rule 昇格条件と dry-run 観点までは CC が進められる
 > 残る曖昧さ：なし
 
 ### シナリオ一覧
@@ -224,17 +224,20 @@ flowchart LR
 
 ## 5) Tasklist
 
-- [ ] skill 名と保存先を決める
-- [ ] `health-check-log` 中心の入力を固定する
-- [ ] stable rule 昇格条件を決める
-- [ ] 現行 schema 見出しを維持する対応表を決める
+- [x] skill 名と保存先を決める
+- [x] `health-check-log` 中心の入力を固定する
+- [x] stable rule 昇格条件を決める
+- [x] 現行 schema 見出しを維持する対応表を決める
 - [ ] `no schema change` 条件と dry-run 観点を決める
 
 ---
 
 ## 6) 作業ログ
 
-- [ ] 未着手
+- [x] global skill 前提で `update-schema` の名前と保存先を確定
+- [x] `health-check-log` / compiled wiki / stable rule の contract を反映
+- [x] 現行見出し維持の内部対応表を反映
+- [ ] `no schema change` の dry-run 観点を詰める
 
 ---
 
@@ -256,17 +259,19 @@ flowchart LR
 - `update-schema` は tasknote 原文をそのまま rule 化せず、log と compiled wiki を主入力にする
 - stable rule の無い回は schema を更新しない
 - 親ノートの 5 バケット表現は、現行 schema 見出しへの内部対応で吸収する
+- recurring pattern を拾う役に絞り、incident の要約役にしない
 
 ---
 
 ## 9) Closing
 
-- 状態: open
-- 次のゲート: （ユーザー）stable rule だけ昇格し現行見出しを維持する draft でよいか確認
+- 状態: in-progress
+- 次のゲート: （CC）既存 `health-check-log` を基準に `no schema change` の判定観点を固める
 - close 条件:
-  - [ ] `update-schema` の主入力が `health-check-log` に固定される
-  - [ ] stable rule 昇格条件が固まる
-  - [ ] 現行 schema 見出しを維持する対応表が固まる
+  - [x] `update-schema` の主入力が `health-check-log` に固定される
+  - [x] stable rule 昇格条件が固まる
+  - [x] 現行 schema 見出しを維持する対応表が固まる
+  - [ ] `no schema change` 条件と dry-run 観点が固まる
 
 ---
 

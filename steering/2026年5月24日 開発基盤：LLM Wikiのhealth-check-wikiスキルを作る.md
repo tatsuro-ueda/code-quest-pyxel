@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-24T11:37:11.000+00:00
 dateCreated: 2026-05-24T11:37:11.000+00:00
-dateModified: 2026-05-24T11:37:11.000+00:00
+dateModified: 2026-05-24T12:15:00.000+00:00
 tags:
   - task
   - llm-wiki
@@ -14,8 +14,8 @@ tags:
 
 # 2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）read-only 点検と 6分類+`data_gaps` の draft でよいか確認
+> 状態：⑧ Closing
+> 次のゲート：なし
 
 ---
 
@@ -54,16 +54,16 @@ tags:
    3. 既存 log 形式は活かしつつ、必要なら `data_gaps` を明示項目として足す
 
 6. 委任度
-   1. 🟢 read-only 点検 route と log schema の draft までは CC 単独で進められる
-   2. 🟢 CCのみで可：current repo の scope と分類項目を固定できる
-   3. 🟡 人の判断: 全プロジェクト共通 skill としての wording の最終温度感
+   1. 🟢 read-only 点検 route と log schema は実装準備まで進められる
+   2. 🟢 CCのみで可：current wiki 中心の scope と分類項目を維持できる
+   3. 🟢 CCのみで可：fix 分離と `data_gaps` 出力を skill contract に落とせる
 
 ---
 
 ## 2) ユーザーストーリーマップ
 
 > 点検 skill を read-only に固定し、fix と昇格の前で必ず止まる。
-> 委任度：🟢 点検対象、分類項目、log 出力の draft までは CC が固められる
+> 委任度：🟢 点検対象、分類項目、停止条件は固まり、dry-run 観点まで CC が進められる
 > 残る曖昧さ：なし
 
 ### 事前確認
@@ -115,7 +115,7 @@ tags:
 
 ## 3) Gherkin（完了条件）
 
-> 委任度：🟢 read-only 点検 route と log 出力の draft までは CC が進められる
+> 委任度：🟢 read-only 点検 route と dry-run 観点までは CC が進められる
 > 残る曖昧さ：なし
 
 ### シナリオ一覧
@@ -230,29 +230,36 @@ flowchart LR
 
 ## 5) Tasklist
 
-- [ ] skill 名と保存先を決める
-- [ ] current wiki の点検 scope を固定する
-- [ ] 6分類+`data_gaps` の log schema を決める
-- [ ] read-only で止まる境界を決める
-- [ ] 既存 `health-check-log` を使った dry-run 観点を決める
+- [x] skill 名と保存先を決める
+- [x] current wiki の点検 scope を固定する
+- [x] 6分類+`data_gaps` の log schema を決める
+- [x] read-only で止まる境界を決める
+- [x] 既存 `health-check-log` を使った dry-run 観点を決める
 
 ---
 
 ## 6) 作業ログ
 
-- [ ] 未着手
+- [x] global skill 前提で `health-check-wiki` の名前と保存先を確定
+- [x] read-only / compiled wiki / 6分類+`data_gaps` の contract を反映
+- [x] `/home/exedev/dotfiles/claude/.claude/skills/health-check-wiki/SKILL.md` を追加した
+- [x] `docs/llm-wiki-ops-schema.md` の Health-Check Defaults を skill contract に揃えた
+- [x] `health-check-log` の既存 entry 順を dry-run 観点として固定した
+- [x] sync script、markdownlint、tasknote lint、diff check を通した
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟢 read-only 点検 route と log 分類の draft を tasknote に固定できている
+> 評価：🟢 shared skill、schema 整合、dry-run 観点、verification まで完了している
 
 ### 成果物
 
+- `/home/exedev/dotfiles/claude/.claude/skills/health-check-wiki/SKILL.md`
 - `steering/2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る.md`
 - `llm-wiki/wiki/logs/health-check-log.md`
 - `docs/llm-wiki-ops-schema.md`
+- `docs/superpowers/plans/2026-05-24-health-check-wiki-skill.md`
 
 ---
 
@@ -262,17 +269,21 @@ flowchart LR
 - `health-check-wiki` は tasknote 原文でなく compiled wiki と logs を主に読む
 - `health-check-wiki` は issue を見つけても fix を実行せず、log に分類して止まる
 - `data_gaps` は `candidate_source` の前段判断として残す
+- read-only は lint/log の役割に絞り、fix を混ぜない
+- dry-run 観点は既存 `health-check-log` の entry 順と `none` 表記をそのまま使う
+- discovery 反映は `sync_claude_skills_to_agents.py` で確認した
 
 ---
 
 ## 9) Closing
 
-- 状態: open
-- 次のゲート: （ユーザー）read-only 点検と 6分類+`data_gaps` の draft でよいか確認
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] `health-check-wiki` の scope が current wiki に固定される
-  - [ ] 6分類+`data_gaps` の log schema が固まる
-  - [ ] read-only で止まる境界が固まる
+  - [x] `health-check-wiki` の scope が current wiki に固定される
+  - [x] 6分類+`data_gaps` の log schema が固まる
+  - [x] read-only で止まる境界が固まる
+  - [x] 既存 `health-check-log` を使った dry-run 観点が固まる
 
 ---
 

@@ -40,11 +40,60 @@
 - 再利用価値がある答えだけ `llm-wiki/wiki/query/` に保存する
 - wiki 外の事実が必要なら answer に直混ぜせず、`llm-wiki/wiki/candidates/` に切り出す
 
+### Query Read Order
+
+- 質問文と質問者名を受け取り、`question_type` を先に決める
+- current repo の query では `master-index` -> `summaries/knowledge` -> `areas` の順を既定にする
+- 既存 query page は、同じ比較軸や synthesis が既にあるときだけ補助的に読む
+- raw source や web 検索は query の既定入口にしない
+
+### Answer Shape
+
+- answer object は `question` `answer` `evidence` `compared_pages` `confidence` を必須とする
+- `evidence` は page ごとの claim を 2〜5 bullet で残す
+- `compared_pages` は実際に読んだ page の相対 path を列挙する
+- `confidence` は `High` `Medium` `Low` と理由 1 文を持つ
+
+### Format Rule
+
+- markdown が既定である
+- 比較中心の問いだけ table に切り替える
+- table では `観点 | A | B | implication` の比較軸を優先する
+
+### Save Gate
+
+- official save の前に answer preview を見せ、`残すか` を user に確認する
+- user が最初から `保存して` `wiki/query/ に残して` と明示しているときは `yes` 扱いでよい
+- `no` のときは chat reply だけで止め、official page は作らない
+
+### Query Filename Rule
+
+- 新規 query page は日本語質問文ベースの file 名を既定にする
+- 既定形は `YYYY年M月D日（質問者）質問内容.md`
+- 質問者名が無いときは `YYYY年M月D日 質問内容.md`
+- `/` `\\` `:` `*` `?` `\"` `<` `>` `|` と改行は `・` に置き換える
+- 長すぎるときは主題を残して 40〜60 文字程度へ丸める
+- 既存の英語 slug query page は legacy 例として残し、今回の rule 更新では自動 rename しない
+
+### Candidate Defaults
+
+- current wiki に無い外部事実が answer の核になるときだけ candidate page を作る
+- candidate page には `missing_fact` `why_needed` `search_hint` `priority` を残す
+- candidate file 名は `YYYY年M月D日 候補source：不足論点.md` を既定にする
+- official answer に wiki 外の事実を直混ぜしない
+
 ## Health-Check Defaults
 
-- core 5 を見る: contradictions / stale claims / orphan pages / missing concepts / missing crossrefs
+- `health-check-wiki` は compiled wiki を主に読む read-only route である
+- 既定の scope は `master-index` `areas` `query` `summaries/knowledge` `logs`
+- core 6 を見る: contradictions / stale claims / orphan pages / missing concepts / missing crossrefs / data gaps
+- raw source や tasknote 原文は主入力にしない
 - 成功条件は「問題ゼロ」ではなく、「分類付き log が残ること」
-- 結果は `fix now / next ingest / candidate source` に分ける
+- issue が無い項目は `none` と明記する
+- `no issue` の回でも health-check log を残す
+- 結果は `fix now / next ingest / candidate source / notes` に分ける
+- `fix now` が見えても、この route 自体では page 修正を行わない
+- schema 更新は `update-schema` route に渡す
 - small wiki でも source summary、related page、saved answer があれば 1 回回してよい
 
 ## Batch Policy
