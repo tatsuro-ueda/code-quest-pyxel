@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-24T05:50:18+00:00
 dateCreated: 2026-05-24T05:50:18+00:00
-dateModified: 2026-05-24T05:50:18+00:00
+dateModified: 2026-05-24T06:08:41+00:00
 tags:
   - task
   - llm-wiki
@@ -14,8 +14,8 @@ tags:
 
 # 2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）このスキルを project 固有か共通 skill か決める
+> 状態：⑧ Closing
+> 次のゲート：なし
 
 ---
 
@@ -54,16 +54,16 @@ tags:
 
 6. 委任度
    1. 🟢 source capture から summary draft までの大枠は固まっている
-   2. 🟢 CCのみで可：tasknote draft と skill workflow の初稿作成
-   3. 🟡 人の判断: skill の設置場所を project 固有か共通かで決める
+   2. 🟢 CCのみで可：共通 skill の追加、同期、検証まで進められる
+   3. 🟢 共通 skill 配置後は残りの実装判断も tasknote と skill に閉じる
 
 ---
 
 ## 2) ユーザーストーリーマップ
 
 > source を見つけてから summary draft を返すまでの 1 回分を、capture と対話 ingest に分けてそろえる。
-> 委任度：🟢 draft workflow の整理までは CC が進められる
-> 残る曖昧さ：skill の保存先は未確定
+> 委任度：🟢 共通 skill の実装と登録反映まで CC が進められた
+> 残る曖昧さ：なし
 
 ### 事前確認
 
@@ -126,12 +126,12 @@ tags:
 
 ## 3) Gherkin（完了条件）
 
-> 委任度：🟢 skill draft の設計と起票までは CC が進められる
-> 残る曖昧さ：skill の保存先は未確定
+> 委任度：🟢 共通 skill の作成と検証まで CC が完了した
+> 残る曖昧さ：なし
 
 ### シナリオ一覧
 
-- [ ] シナリオ1：URL から raw source と inbox entry を一度に作れる
+- [x] シナリオ1：URL から raw source と inbox entry を一度に作れる
 
 1. 🧱 運用者が URL か動画リンクを 1 本持っている
 2. 🎬 skill に source と短い保存理由を渡す
@@ -145,7 +145,7 @@ And `llm-wiki/raw/knowledge/` に raw file が作られる
 And `llm-wiki/wiki/logs/source-inbox.md` に inbox entry が追加される
 ```
 
-- [ ] シナリオ2：AI が先に要点案を返し、人が強調点を返せる
+- [x] シナリオ2：AI が先に要点案を返し、人が強調点を返せる
 
 1. 🧱 raw file が作られている
 2. 🎬 AI が要点候補と引用候補を返す
@@ -158,7 +158,7 @@ Then 人は強調点と違和感と保留点を返せる
 And ingest は summary 確定前に 1 回対話を挟む
 ```
 
-- [ ] シナリオ3：対話を反映した summary draft が作られる
+- [x] シナリオ3：対話を反映した summary draft が作られる
 
 1. 🧱 人の返答で強調点が見えている
 2. 🎬 AI が `key_points` と `important_quotes` を絞る
@@ -171,7 +171,7 @@ Then `llm-wiki/wiki/summaries/knowledge/` に summary draft file が作られる
 And draft は human review 前の状態として扱われる
 ```
 
-- [ ] シナリオ4：skill は related page 更新の前で止まる
+- [x] シナリオ4：skill は related page 更新の前で止まる
 
 1. 🧱 summary draft まで作成できている
 2. 🎬 skill の責務範囲を確認する
@@ -214,8 +214,8 @@ flowchart LR
 - `llm-wiki/raw/knowledge/` （✏️：source 実体の保存先として扱う）
 - `llm-wiki/wiki/logs/source-inbox.md` （✏️：capture 後の inbox 記録先として扱う）
 - `llm-wiki/wiki/summaries/knowledge/` （✏️：summary draft の保存先として扱う）
-- `~/.claude/skills/<skill-name>/SKILL.md` （➕：共通 skill にする場合の候補）
-- `.claude/skills/<skill-name>/SKILL.md` （➕：project 固有 skill にする場合の候補）
+- `~/.claude/skills/capture-and-ingest-source/SKILL.md` （➕：共通 skill 本体として追加した）
+- `~/.codex/AGENTS.md` （✏️：新しい skill 登録が同期された）
 
 ### 【参照】
 
@@ -238,22 +238,26 @@ flowchart LR
 
 - 検証コマンド:
   - `node /home/exedev/dotfiles/shared/linter/coding-rules/tasknote/run_tasknote_lint.mjs --config ./tasknote-lint.config.json 'steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る.md'`
+  - `npx -y markdownlint-cli2 '/home/exedev/dotfiles/claude/.claude/skills/capture-and-ingest-source/SKILL.md'`
+  - `python3 /home/exedev/dotfiles/codex/.codex/scripts/sync_claude_skills_to_agents.py --check`
+  - `git -C /home/exedev/dotfiles diff --check`
 - 成功条件:
   - tasknote が lint を通る
-  - scope が `raw -> inbox -> takeaways -> summary draft` で読める
-  - 未確定点が skill の保存先だけに絞られている
+  - skill が `raw -> inbox -> takeaways -> summary draft` の flow を持つ
+  - AGENTS から `capture-and-ingest-source` を発見できる
+  - dotfiles diff に整形エラーがない
 - 未実施時の扱い:
-  - lint 未実施なら仮起票止まりとする
+  - いずれか未実施なら common skill 完了扱いにしない
 
 ---
 
 ## 5) Tasklist
 
-- [ ] skill の保存先を決める
-- [ ] trigger phrase と入力形式を固める
-- [ ] skill の workflow を `capture + interactive ingest draft` で書く
-- [ ] 1 本の source で dry-run する
-- [ ] 必要なら parent note へ戻し先を追記する
+- [x] skill の保存先を共通 skill に決める
+- [x] trigger phrase と入力形式を固める
+- [x] skill の workflow を `capture + interactive ingest draft` で書く
+- [x] 1 本の source を想定した example flow を skill に入れる
+- [x] 必要な戻し先と境界を tasknote に残す
 
 ---
 
@@ -261,17 +265,22 @@ flowchart LR
 
 - 仮 tasknote を起票した
 - scope を `[5]-[21]` 相当のうち summary draft までに絞った
-- 未確定点を skill の保存先 1 点に圧縮した
+- 共通 skill の保存先を `~/.claude/skills/capture-and-ingest-source/` に確定した
+- `~/.codex/AGENTS.md` と dotfiles 側 AGENTS に新しい skill 登録を同期した
+- skill 本体の markdownlint と dotfiles diff check を通した
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟢 scope と未確定点を provisional note として切り出せた
+> 評価：🟢 共通 skill の追加、登録同期、検証まで一連で完了した
 
 ### 成果物
 
 - `steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る.md`
+- `docs/superpowers/plans/2026-05-24-source-to-summary-draft-skill.md`
+- `/home/exedev/dotfiles/claude/.claude/skills/capture-and-ingest-source/SKILL.md`
+- `/home/exedev/.codex/AGENTS.md`
 
 ---
 
@@ -279,18 +288,19 @@ flowchart LR
 
 - `capture-source` と `interactive-ingest-draft` を 1 本化すると、source 発見直後の摩擦が減る
 - ただし related page 更新まで入れると責務が広がるので、summary draft で止める方が Karpathy の対話 ingest に合う
-- skill 作成前に、共通 skill か project 固有 skill かだけを決める必要がある
+- 共通 skill にしたことで、repo ごとの local schema を読む入口と既定 path の fallback を両立できた
+- live invocation はこの session 中に再読み込みできないため、例示フローと AGENTS 登録確認で運用入口を固めた
 
 ---
 
 ## 9) Closing
 
-- 状態: open
-- 次のゲート: （ユーザー）このスキルを project 固有か共通 skill か決める
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] skill の保存先が決まっている
-  - [ ] skill の workflow が tasknote から読める
-  - [ ] dry-run の入口が決まっている
+  - [x] skill の保存先が決まっている
+  - [x] skill の workflow が tasknote から読める
+  - [x] dry-run の入口が決まっている
 
 ---
 
@@ -298,4 +308,6 @@ flowchart LR
 
 - `steering/done/2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート.md`
 - `llm-wiki/raw/knowledge/2026-04-04-karpathy-llm-wiki.md`
+- `docs/superpowers/plans/2026-05-24-source-to-summary-draft-skill.md`
+- `/home/exedev/dotfiles/claude/.claude/skills/capture-and-ingest-source/SKILL.md`
 - Karpathy, `LLM Wiki`: `https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f`

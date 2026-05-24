@@ -159,38 +159,40 @@ tags:
 
 - [13] 佐藤さんは AI に「この source を ingest して」と頼む。
 - [14] AI は `ingest-source` を使う。
-- [15] AI は raw file を読んで要点を抜く。
-- [16] AI は `key_points` を 3〜7 個に絞る。
-- [17] AI は `important_quotes` を選ぶ。
-- [18] AI は `open_questions` も分けて書く。
-- [19] AI は `llm-wiki/wiki/summaries/knowledge/2026-05-23-miku-article-summary.md` を作る。
-- [20] summary file に `summary` `key_points` `important_quotes` `open_questions` を書く。
-- [21] AI は `update-related-pages` を使う。
-- [22] AI は関係する entity page を探す。
-- [23] AI は関係する concept page を探す。
-- [24] AI は `llm-wiki/wiki/entities/...` や `llm-wiki/wiki/concepts/...` に追記する。
-- [25] そこに `new_fact` `why_it_matters` `source_ref` を書く。
-- [26] AI は `llm-wiki/wiki/indexes/vocaloid-index.md` を更新する。
-- [27] index に `new_page_link` `related_topics` `see_also` を足す。
-- [28] AI は `llm-wiki/wiki/logs/ingest-log.md` に `date` `source_id` `created_pages` `updated_pages` `risks` を書く。
+- [15] AI は raw file を読み、仮の `key_takeaways` を先に並べる。
+- [16] AI は「ここが大事そう」「ここは保留かも」という観点で、要点候補と気になる引用候補を佐藤さんへ返す。
+- [17] 佐藤さんは、強調したい点、違和感がある点、まだ判断しない点を伝える。
+- [18] AI はその返答を反映して `key_points` を 3〜7 個に絞る。
+- [19] AI は `important_quotes` を選び、`open_questions` も分けて書く。
+- [20] AI は `llm-wiki/wiki/summaries/knowledge/2026-05-23-miku-article-summary.md` を作る。
+- [21] summary file に `summary` `key_points` `important_quotes` `open_questions` を書く。
+- [22] 佐藤さんは summary を読み、強調不足や言い過ぎがあればその場で直してもらう。
+- [23] AI は `update-related-pages` を使う。
+- [24] AI は関係する entity page を探す。
+- [25] AI は関係する concept page を探す。
+- [26] AI は `llm-wiki/wiki/entities/...` や `llm-wiki/wiki/concepts/...` に追記する。
+- [27] そこに `new_fact` `why_it_matters` `source_ref` を書く。
+- [28] AI は `llm-wiki/wiki/indexes/vocaloid-index.md` を更新する。
+- [29] index に `new_page_link` `related_topics` `see_also` を足す。
+- [30] AI は `llm-wiki/wiki/logs/ingest-log.md` に `date` `source_id` `created_pages` `updated_pages` `risks` を書く。
 
 #### Block 3: 質問して育てる
 
-- [29] 後日、佐藤さんは AI に「この曲とあの曲はどうつながるの」と聞く。
-- [30] AI は `query-wiki` を使う。
-- [31] AI は summaries、entities、concepts、indexes を読む。
-- [32] AI は引用付きで答えを組み立てる。
-- [33] AI は通常は markdown 形式で返す。
-- [34] 比較が主なら表にする。
-- [35] AI は `llm-wiki/wiki/query/2026-05-23-sato-song-connection.md` を作る。
-- [36] その file に `question` `answer` `evidence` `compared_pages` `confidence` を書く。
-- [37] 保存価値が高ければ、AI は `file-answer` を使って wiki の正式 page にする。
-- [38] wiki 外の事実が必要なら、AI は `candidate-source` を使う。
-- [39] AI は `llm-wiki/wiki/candidates/...` に `missing_fact` `why_needed` `search_hint` `priority` を書く。
+- [31] 後日、佐藤さんは AI に「この曲とあの曲はどうつながるの」と聞く。
+- [32] AI は `query-wiki` を使う。
+- [33] AI は summaries、entities、concepts、indexes を読む。
+- [34] AI は引用付きで答えを組み立てる。
+- [35] AI は通常は markdown 形式で返す。
+- [36] 比較が主なら表にする。
+- [37] AI は `llm-wiki/wiki/query/2026-05-23-sato-song-connection.md` を作る。
+- [38] その file に `question` `answer` `evidence` `compared_pages` `confidence` を書く。
+- [39] 保存価値が高ければ、AI は `file-answer` を使って wiki の正式 page にする。
+- [40] wiki 外の事実が必要なら、AI は `candidate-source` を使う。
+- [41] AI は `llm-wiki/wiki/candidates/...` に `missing_fact` `why_needed` `search_hint` `priority` を書く。
 
 #### Block 4: 点検してルール化する
 
-- [40] 佐藤さんが「点検して、必要ならルールも更新して」と頼むと、AI は `health-check-wiki` と `update-schema` を使い、`contradictions` `stale_claims` `orphan_pages` `missing_concepts` `missing_crossrefs` `data_gaps` を log に残し、安定した運用だけを `docs/llm-wiki-ops-schema.md` の `defaults` `exceptions` `timing` `query_policy` `batch_policy` に反映する。
+- [42] 佐藤さんが「点検して、必要ならルールも更新して」と頼むと、AI は `health-check-wiki` と `update-schema` を使い、`contradictions` `stale_claims` `orphan_pages` `missing_concepts` `missing_crossrefs` `data_gaps` を log に残し、安定した運用だけを `docs/llm-wiki-ops-schema.md` の `defaults` `exceptions` `timing` `query_policy` `batch_policy` に反映する。
 
 ---
 
