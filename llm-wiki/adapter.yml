@@ -1,0 +1,13 @@
+raw_root: llm-wiki/raw
+summary_root: llm-wiki/wiki/summaries
+master_index_path: llm-wiki/wiki/indexes/master-index.md
+source_inbox_path: llm-wiki/wiki/logs/source-inbox.md
+ingest_log_path: llm-wiki/wiki/logs/ingest-log.md
+health_check_log_path: llm-wiki/wiki/logs/health-check-log.md
+area_root: llm-wiki/wiki/areas
+query_root: llm-wiki/wiki/query
+candidate_root: llm-wiki/wiki/candidates
+tasknote_required_sections:
+  result: Result
+  discussion: Discussion
+  closing: Closing

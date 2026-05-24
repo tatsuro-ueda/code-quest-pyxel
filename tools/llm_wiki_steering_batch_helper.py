@@ -24,6 +24,9 @@ import yaml
 try:
     from tools.llm_wiki_tasknote_helper import prepare_tasknote_material
 except ModuleNotFoundError:  # pragma: no cover - CLI fallback for `python tools/...`
+    _SHARED_CORE = Path.home() / "dotfiles/shared/llm-wiki-core/python"
+    if str(_SHARED_CORE) not in sys.path:
+        sys.path.insert(0, str(_SHARED_CORE))
     from llm_wiki_tasknote_helper import prepare_tasknote_material
 
 

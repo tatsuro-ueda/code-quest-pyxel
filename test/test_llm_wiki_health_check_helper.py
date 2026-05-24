@@ -42,6 +42,42 @@ def test_prepare_health_check_material_collects_signals_and_scaffold(
     assert "- notes:" in payload["log_scaffold"]
 
 
+def test_prepare_health_check_material_uses_adapter_paths(tmp_path: Path) -> None:
+    adapter_path = tmp_path / "llm-wiki/adapter.yml"
+    adapter_path.parent.mkdir(parents=True, exist_ok=True)
+    adapter_path.write_text(
+        "\n".join(
+            [
+                "raw_root: llm-wiki/raw",
+                "summary_root: llm-wiki/wiki/summaries",
+                "master_index_path: knowledge/wiki/indexes/start.md",
+                "source_inbox_path: knowledge/wiki/logs/source-inbox.md",
+                "ingest_log_path: knowledge/wiki/logs/ingest-log.md",
+                "health_check_log_path: knowledge/wiki/logs/health-check-log.md",
+                "area_root: knowledge/wiki/areas",
+                "query_root: knowledge/wiki/query",
+                "candidate_root: knowledge/wiki/candidates",
+                "tasknote_required_sections:",
+                "  result: Result",
+                "  discussion: Discussion",
+                "  closing: Closing",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    _write_page(
+        tmp_path / "knowledge/wiki/indexes/start.md",
+        "# Start\n\n- [Topic A](../areas/topic-a.md)\n",
+    )
+    _write_page(tmp_path / "knowledge/wiki/areas/topic-a.md", "# Topic A\n")
+    _write_page(tmp_path / "knowledge/wiki/logs/health-check-log.md", "# Log\n")
+
+    payload = prepare_health_check_material(tmp_path, current_date="2026-05-24")
+
+    assert payload["graph_entrypoints"] == ["knowledge/wiki/indexes/start.md"]
+    assert payload["scope_paths"][0] == "knowledge/wiki/indexes/start.md"
+
+
 def test_health_check_helper_cli_outputs_json(tmp_path: Path) -> None:
     repo_root = _build_small_wiki_repo(tmp_path)
     script_path = (

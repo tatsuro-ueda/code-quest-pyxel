@@ -36,6 +36,13 @@
 - `llm-wiki/wiki/logs/ingest-log.md`: ingest chronology
 - `llm-wiki/wiki/logs/health-check-log.md`: lint chronology
 
+## Adapter Contract
+
+- machine-readable path と tasknote section 名は `llm-wiki/adapter.yml` に置く
+- human-readable な運用 rule は `docs/llm-wiki-ops-schema.md` に置く
+- skill / helper は adapter を path 解決の SSoT とし、route の意味判断は schema に残す
+- adapter に repo 名条件分岐や workflow policy を入れない
+
 ## Ingest Defaults
 
 - one-by-one が既定である
