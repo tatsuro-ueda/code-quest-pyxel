@@ -279,3 +279,155 @@
 - status: processed
 - owner: codex
 - note: steering 古い未インジェスト組の tasknote として preview/current 繰り上げ運用の記録を batch ingest
+
+## [2026-05-24] inbox | CJ26 codemaker resource import
+
+- source_id: `2026-04-20-cj26-codemaker-resource-import`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-import.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として CJ26 codemaker resource import の記録を batch ingest
+
+## [2026-05-24] inbox | CJ26 static codemaker upload
+
+- source_id: `2026-04-20-cj26-static-codemaker-upload`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj26-static-codemaker-upload.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として CJ26 static codemaker upload の記録を batch ingest
+
+## [2026-05-24] inbox | CJ26 codemaker resource truth runtime
+
+- source_id: `2026-04-20-cj26-codemaker-resource-truth-runtime`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として CJ26 codemaker resource truth runtime の記録を batch ingest
+
+## [2026-05-24] inbox | CJ26 codemaker audio code import
+
+- source_id: `2026-04-20-cj26-codemaker-audio-code-import`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として CJ26 codemaker audio code import の記録を batch ingest
+
+## [2026-05-24] inbox | CJ24 codemaker sfx roundtrip
+
+- source_id: `2026-04-20-cj24-codemaker-sfx-roundtrip`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として CJ24 codemaker sfx roundtrip の記録を batch ingest
+
+## [2026-05-24] inbox | Src method level comments
+
+- source_id: `2026-04-21-src-method-level-comments`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260421-src-method-level-comments.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Src method level comments の記録を batch ingest
+
+## [2026-05-24] inbox | CJ26 distribute loaded resource
+
+- source_id: `2026-04-22-cj26-distribute-loaded-resource`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として CJ26 distribute loaded resource の記録を batch ingest
+
+## [2026-05-24] inbox | J52 main runtime full extraction
+
+- source_id: `2026-04-22-j52-main-runtime-full-extraction`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として J52 main runtime full extraction の記録を batch ingest
+
+## [2026-05-24] inbox | J53 runtime modularize and single distribution
+
+- source_id: `2026-04-22-j53-runtime-modularize-and-single-distribution`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として J53 runtime modularize and single distribution の記録を batch ingest
+
+## [2026-05-24] inbox | Town framework rule align
+
+- source_id: `2026-04-24-town-framework-rule-align`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260424-town-framework-rule-align.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Town framework rule align の記録を batch ingest
+
+## [2026-05-24] inbox | Guardrails prd framework rule sync
+
+- source_id: `2026-04-24-guardrails-prd-framework-rule-sync`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Guardrails prd framework rule sync の記録を batch ingest
+
+## [2026-05-24] inbox | Play session ip ua browser
+
+- source_id: `2026-04-22-play-session-ip-ua-browser`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260422-play-session-ip-ua-browser.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Play session ip ua browser の記録を batch ingest
+
+## [2026-05-24] inbox | Player dict residue crash fix
+
+- source_id: `2026-04-25-player-dict-residue-crash-fix`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-player-dict-residue-crash-fix.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Player dict residue crash fix の記録を batch ingest
+
+## [2026-05-24] inbox | Shop keyerror shop list unpack
+
+- source_id: `2026-04-25-shop-keyerror-shop-list-unpack`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Shop keyerror shop list unpack の記録を batch ingest
+
+## [2026-05-24] inbox | Tests that prevent runtime crashes
+
+- source_id: `2026-04-25-tests-that-prevent-runtime-crashes`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Tests that prevent runtime crashes の記録を batch ingest
+
+## [2026-05-24] inbox | Autonomous rule compliance loop
+
+- source_id: `2026-04-25-autonomous-rule-compliance-loop`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Autonomous rule compliance loop の記録を batch ingest
+
+## [2026-05-24] inbox | Menu shim crash fix
+
+- source_id: `2026-04-25-menu-shim-crash-fix`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-menu-shim-crash-fix.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Menu shim crash fix の記録を batch ingest
+
+## [2026-05-24] inbox | Brushup customer journeys
+
+- source_id: `2026-04-25-brushup-customer-journeys`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Brushup customer journeys の記録を batch ingest
+
+## [2026-05-24] inbox | Pyxres as world map SSOT
+
+- source_id: `2026-04-25-pyxres-as-world-map-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Pyxres as world map SSOT の記録を batch ingest

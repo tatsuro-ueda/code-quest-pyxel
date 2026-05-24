@@ -693,3 +693,364 @@
   - policy 自体は短く、 feature 判断時は platform / narrative と併読が前提になる
 - notes:
   - readability、one next action、safe confirmation、parent assist を横断 area へ整理した
+
+## [2026-05-24] ingest | CJ26 codemaker resource import
+
+- source_id: `2026-04-20-cj26-codemaker-resource-import`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-import.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-import-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/approval-loop-and-child-agency.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `child-facing upload affordance は hidden panel 前提で、説明面はまだ薄い。`
+- notes:
+  - resource-only import を selector、runtime server、build の 3 役分離で固定した
+
+## [2026-05-24] ingest | CJ26 static codemaker upload
+
+- source_id: `2026-04-20-cj26-static-codemaker-upload`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj26-static-codemaker-upload.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260420-cj26-static-codemaker-upload-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/areas/approval-loop-and-child-agency.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `browser 保存は端末/ブラウザ単位で、shared truth にはならない。`
+- notes:
+  - static host でも upload UI が honest に動く browser-first fallback を整えた
+
+## [2026-05-24] ingest | CJ26 codemaker resource truth runtime
+
+- source_id: `2026-04-20-cj26-codemaker-resource-truth-runtime`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `責務整理はできたが、この note の時点では実装と full pytest が未完である。`
+- notes:
+  - image bank rollback を runtime bug ではなく guardrail ownership のずれとして再定義した
+
+## [2026-05-24] ingest | CJ26 codemaker audio code import
+
+- source_id: `2026-04-20-cj26-codemaker-audio-code-import`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `audio import 経路は設計段階で、実装と pytest は後続タスクに残っている。`
+- notes:
+  - audio authoring と runtime playback を分ける import 問題として切り出した
+
+## [2026-05-24] ingest | CJ24 codemaker sfx roundtrip
+
+- source_id: `2026-04-20-cj24-codemaker-sfx-roundtrip`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `Music と broader audio asset 化は別 note のままである。`
+- notes:
+  - Sound editor -> selector import -> gameplay SFX の round-trip を復旧した
+
+## [2026-05-24] ingest | Src method level comments
+
+- source_id: `2026-04-21-src-method-level-comments`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260421-src-method-level-comments.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260421-src-method-level-comments-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `コメント方針は固まったが、将来の更新ルールはまだ明文化されていない。`
+- notes:
+  - generated を触らない前提で責務コメントを src 全体へ展開した
+
+## [2026-05-24] ingest | CJ26 distribute loaded resource
+
+- source_id: `2026-04-22-cj26-distribute-loaded-resource`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `production artifact まで同じ resource を使っている証明はこの note だけでは未完で、再オープンになった。`
+- notes:
+  - server-first import と build 分割で shared artifact を正本へ寄せたが、artifact 実証は継続課題として残った
+
+## [2026-05-24] ingest | J52 main runtime full extraction
+
+- source_id: `2026-04-22-j52-main-runtime-full-extraction`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/approval-loop-and-child-agency.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `runtime monolith 自体の詳細分解は J53 へ持ち越した。`
+- notes:
+  - build 正本反転を先に完了させ、root main は entrypoint だけに絞った
+
+## [2026-05-24] ingest | J53 runtime modularize and single distribution
+
+- source_id: `2026-04-22-j53-runtime-modularize-and-single-distribution`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `phase をまたぐ artifact 変更は、Code Maker zip のように実物 verification を怠ると再発しやすい。`
+- notes:
+  - runtime modularization から single distribution / autostart までを 4 phase で閉じた
+
+## [2026-05-24] ingest | Town framework rule align
+
+- source_id: `2026-04-24-town-framework-rule-align`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260424-town-framework-rule-align.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260424-town-framework-rule-align-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `browser manual verification と、他 scene の同種 refactor は別 note に残っている。`
+- notes:
+  - town bugfix を PlayerModel と Presenter/View dispatch まで引き上げた
+
+## [2026-05-24] ingest | Guardrails prd framework rule sync
+
+- source_id: `2026-04-24-guardrails-prd-framework-rule-sync`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `guardrail 実装本体は scope 外で、docs 同期後も hook / lint / test 追加は別タスクに残る。`
+- notes:
+  - stale な guardrails PRD を framework-rule M1〜M5 と current repo facts に合わせて再編した
+
+## [2026-05-24] ingest | Play session ip ua browser
+
+- source_id: `2026-04-22-play-session-ip-ua-browser`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260422-play-session-ip-ua-browser.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260422-play-session-ip-ua-browser-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `実装コミットが refactor と混在しており、変更動機の追跡性はさかのぼり note 補完に依存する。`
+- notes:
+  - play session logging を migration-safe に拡張し browser 別 observability を追加した
+
+## [2026-05-24] ingest | Player dict residue crash fix
+
+- source_id: `2026-04-25-player-dict-residue-crash-fix`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-player-dict-residue-crash-fix.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260425-player-dict-residue-crash-fix-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `grep ガードと UI smoke test の自動化は、この note では提案止まりで別タスクに残る。`
+- notes:
+  - player dict residue crash を status bar などの残参照修正と grep ルール化で止めた
+
+## [2026-05-24] ingest | Shop keyerror shop list unpack
+
+- source_id: `2026-04-25-shop-keyerror-shop-list-unpack`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `shop 購入〜使用〜セーブの integration 風 smoke は未整備で、同型バグ余地が残る。`
+- notes:
+  - stale `M.SHOPS` 依存と item-use shim ずれを直し scene の SSoT 経路を戻した
+
+## [2026-05-24] ingest | Tests that prevent runtime crashes
+
+- source_id: `2026-04-25-tests-that-prevent-runtime-crashes`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `coverage map の追跡は人手整理に依存し、新規経路の見落としは別 regression 追加で補う前提である。`
+- notes:
+  - 新しい大ハーネスではなく既存 test 群の coverage audit と撤収判断で閉じた
+
+## [2026-05-24] ingest | Autonomous rule compliance loop
+
+- source_id: `2026-04-25-autonomous-rule-compliance-loop`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `services/ui 描画や old shim 削除などの大きい論点は未解決で、人判断前提のまま残っている。`
+- notes:
+  - 自律 compliance loop で即完走項目を閉じ、残課題を 6 件の判断分岐へ整理した
+
+## [2026-05-24] ingest | Menu shim crash fix
+
+- source_id: `2026-04-25-menu-shim-crash-fix`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-menu-shim-crash-fix.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260425-menu-shim-crash-fix-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `menu 以外の scene にも同型の `game._*` 呼び出しが残る可能性は別調査待ちである。`
+- notes:
+  - menu の nonexistent Game shim crash を scene 実 API へ戻して止めた
+
+## [2026-05-24] ingest | Brushup customer journeys
+
+- source_id: `2026-04-25-brushup-customer-journeys`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260425-brushup-customer-journeys-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/continuous-experience-loop.md`
+  - `llm-wiki/wiki/areas/low-friction-sharing.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `journey 側の enrichment は進んだが、各 PRD への波及はまだ後続起票待ちである。`
+- notes:
+  - customer journeys 全面に competitor-before と category tag を追加して要求化の土台を広げた
+
+## [2026-05-24] ingest | Pyxres as world map SSOT
+
+- source_id: `2026-04-25-pyxres-as-world-map-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `dungeon bake / path variant / unknown tile fallback などの周辺 SSoT 問題はこの修正では扱っていない。`
+- notes:
+  - world map の truth を pyxres 側へ戻し procedural 上書きを 1 ガードで止めた

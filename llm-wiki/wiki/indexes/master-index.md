@@ -84,6 +84,46 @@
 - [Tasknote Summary: J49 bind preview to open request note](../summaries/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note-summary.md): 次の依頼で前 preview を current に回す promotion rule を探った summary
 - [Tasknote Raw: J49 bind preview to open request note](../../raw/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note.md): preview/current promotion rule の元 tasknote
 
+- [Tasknote Summary: CJ26 codemaker resource import](../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-import-summary.md): Code Maker zip から code を拾わず resource だけを戻す import 経路と approve/reject 閉路を固めた summary
+- [Tasknote Raw: CJ26 codemaker resource import](../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-import.md): CJ26 codemaker resource import の元 tasknote
+- [Tasknote Summary: CJ26 static codemaker upload](../summaries/tasknotes/steering/done/20260420-cj26-static-codemaker-upload-summary.md): static 配信でも Code Maker zip を browser 保存経由で戻せる honest upload UX を整えた summary
+- [Tasknote Raw: CJ26 static codemaker upload](../../raw/tasknotes/steering/done/20260420-cj26-static-codemaker-upload.md): CJ26 static codemaker upload の元 tasknote
+- [Tasknote Summary: CJ26 codemaker resource truth runtime](../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime-summary.md): Code Maker で直した image bank を runtime self-heal で巻き戻させない責務整理の summary
+- [Tasknote Raw: CJ26 codemaker resource truth runtime](../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime.md): CJ26 codemaker resource truth runtime の元 tasknote
+- [Tasknote Summary: CJ26 codemaker audio code import](../summaries/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import-summary.md): Sound/Music の authoring と runtime playback を分ける audio import 設計を固めた summary
+- [Tasknote Raw: CJ26 codemaker audio code import](../../raw/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import.md): CJ26 codemaker audio code import の元 tasknote
+- [Tasknote Summary: CJ24 codemaker sfx roundtrip](../summaries/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip-summary.md): Sound エディタの SFX を imported slot truth として本編へ残す round-trip 修正の summary
+- [Tasknote Raw: CJ24 codemaker sfx roundtrip](../../raw/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip.md): CJ24 codemaker sfx roundtrip の元 tasknote
+- [Tasknote Summary: Src method level comments](../summaries/tasknotes/steering/done/20260421-src-method-level-comments-summary.md): 責務コメントを `src/generated` を触らずに src へ展開し可読性を上げた summary
+- [Tasknote Raw: Src method level comments](../../raw/tasknotes/steering/done/20260421-src-method-level-comments.md): Src method level comments の元 tasknote
+- [Tasknote Summary: CJ26 distribute loaded resource](../summaries/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource-summary.md): 読み込んだ resource と配布 artifact の resource source を server-first で一致させる運用の summary
+- [Tasknote Raw: CJ26 distribute loaded resource](../../raw/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource.md): CJ26 distribute loaded resource の元 tasknote
+- [Tasknote Summary: J52 main runtime full extraction](../summaries/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction-summary.md): root `main.py` を thin wrapper 化し runtime 正本を `src/runtime` へ移した summary
+- [Tasknote Raw: J52 main runtime full extraction](../../raw/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction.md): J52 main runtime full extraction の元 tasknote
+- [Tasknote Summary: J53 runtime modularize and single distribution](../summaries/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution-summary.md): runtime monolith 分解、Code Maker bundler、単一本番配布までを段階的に完了した summary
+- [Tasknote Raw: J53 runtime modularize and single distribution](../../raw/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution.md): J53 runtime modularize and single distribution の元 tasknote
+- [Tasknote Summary: Town framework rule align](../summaries/tasknotes/steering/done/20260424-town-framework-rule-align-summary.md): town/shop bugfix を PlayerModel 導入と scene 分解まで広げて framework-rule に合わせた summary
+- [Tasknote Raw: Town framework rule align](../../raw/tasknotes/steering/done/20260424-town-framework-rule-align.md): Town framework rule align の元 tasknote
+
+- [Tasknote Summary: Guardrails prd framework rule sync](../summaries/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync-summary.md): guardrails PRD を M1〜M5 と現行 repo layout に同期し CJG37/44 と G16〜G20 を整理した summary
+- [Tasknote Raw: Guardrails prd framework rule sync](../../raw/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync.md): Guardrails prd framework rule sync の元 tasknote
+- [Tasknote Summary: Play session ip ua browser](../summaries/tasknotes/steering/done/20260422-play-session-ip-ua-browser-summary.md): play session DB に IP/UA と browser 分類を追加し observability を report へ返した summary
+- [Tasknote Raw: Play session ip ua browser](../../raw/tasknotes/steering/done/20260422-play-session-ip-ua-browser.md): Play session ip ua browser の元 tasknote
+- [Tasknote Summary: Player dict residue crash fix](../summaries/tasknotes/steering/done/20260425-player-dict-residue-crash-fix-summary.md): PlayerModel 移行後に残った `game.player` 参照漏れ crash を潰し grep ルールを足した summary
+- [Tasknote Raw: Player dict residue crash fix](../../raw/tasknotes/steering/done/20260425-player-dict-residue-crash-fix.md): Player dict residue crash fix の元 tasknote
+- [Tasknote Summary: Shop keyerror shop list unpack](../summaries/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack-summary.md): shop KeyError と item-use shim ずれを SSoT 経路へ戻し smoke test 課題を明文化した summary
+- [Tasknote Raw: Shop keyerror shop list unpack](../../raw/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack.md): Shop keyerror shop list unpack の元 tasknote
+- [Tasknote Summary: Tests that prevent runtime crashes](../summaries/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes-summary.md): runtime crash-prevention test の新設前に既存 `test_cjg_*` 群の十分性を監査して撤収した summary
+- [Tasknote Raw: Tests that prevent runtime crashes](../../raw/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes.md): Tests that prevent runtime crashes の元 tasknote
+- [Tasknote Summary: Autonomous rule compliance loop](../summaries/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop-summary.md): M1〜M5 compliance loop を回し AGENTS 整備まで閉じて judgment item 6 件を抽出した summary
+- [Tasknote Raw: Autonomous rule compliance loop](../../raw/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop.md): Autonomous rule compliance loop の元 tasknote
+- [Tasknote Summary: Menu shim crash fix](../summaries/tasknotes/steering/done/20260425-menu-shim-crash-fix-summary.md): nonexistent Game shim を呼ぶ menu crash を scene API 直呼びと regression test で潰した summary
+- [Tasknote Raw: Menu shim crash fix](../../raw/tasknotes/steering/done/20260425-menu-shim-crash-fix.md): Menu shim crash fix の元 tasknote
+- [Tasknote Summary: Brushup customer journeys](../summaries/tasknotes/steering/done/20260425-brushup-customer-journeys-summary.md): 42 journey に competitor-before とカテゴリタグを追加し競合分析を要求化しやすくした summary
+- [Tasknote Raw: Brushup customer journeys](../../raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md): Brushup customer journeys の元 tasknote
+- [Tasknote Summary: Pyxres as world map SSOT](../summaries/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot-summary.md): pyxres world map を起動時 procedural bake で上書きしない guard を入れ probe で確認した summary
+- [Tasknote Raw: Pyxres as world map SSOT](../../raw/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot.md): Pyxres as world map SSOT の元 tasknote
+
 ## Areas
 
 - [Persistent Wiki Vs RAG](../areas/persistent-wiki-vs-rag.md): Karpathy が plain RAG より persistent wiki を推す理由
