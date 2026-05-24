@@ -10,6 +10,8 @@ sources:
   - ../../raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md
   - ../../raw/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn.md
   - ../../raw/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview.md
+  - ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration.md
 ---
 
 # Battle Balance And Spell Design
@@ -33,6 +35,8 @@ sources:
 - feature 追加でも、見える場所と使える場所が揃わない変更は未完扱いにする
 - `にげる` 失敗のような順番ミスは、数値 balance 調整とは別に `戦闘ループが成立しているか` の問題として固定する
 - `is_noise_guardian` のような既存 data flag を使い切ってから、新しい encounter 仕組みを足す
+
+- the stakeholder battle PRD migration turned enemy balance, new enemy/spell loops, and replay-safe tuning into traced requirements plus acceptance instead of scattered battle wishes.
 
 ## 関連ページ
 

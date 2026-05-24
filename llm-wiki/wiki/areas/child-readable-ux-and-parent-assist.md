@@ -1,36 +1,45 @@
 ---
 status: active
-last_updated: 2026-05-24
+last_updated: '2026-05-24'
 sources:
-  - ../summaries/knowledge/ux-policy-summary.md
-  - ../summaries/knowledge/product-requirements-platform-summary.md
-  - ../summaries/knowledge/product-requirements-narrative-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md
-  - ../summaries/tasknotes/steering/done/20260413-j37-dialogue-page-advance-summary.md
-  - ../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md
-  - ../summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md
-  - ../summaries/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime-summary.md
-  - ../summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md
-  - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
-  - ../../raw/knowledge/docs/ux-policy.md
-  - ../../raw/knowledge/docs/product-requirements-platform.md
-  - ../../raw/knowledge/docs/product-requirements-narrative.md
-  - ../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md
-  - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
-  - ../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md
-  - ../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md
-  - ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md
-  - ../../raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md
-  - ../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md
-  - ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
-  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-import-summary.md
-  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-import.md
-  - ../summaries/tasknotes/steering/done/20260420-cj26-static-codemaker-upload-summary.md
-  - ../../raw/tasknotes/steering/done/20260420-cj26-static-codemaker-upload.md
-  - ../summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md
+- ../summaries/knowledge/ux-policy-summary.md
+- ../summaries/knowledge/product-requirements-platform-summary.md
+- ../summaries/knowledge/product-requirements-narrative-summary.md
+- ../summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md
+- ../summaries/tasknotes/steering/done/20260412-j38-preview-build-flow-summary.md
+- ../summaries/tasknotes/steering/done/20260413-j37-dialogue-page-advance-summary.md
+- ../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md
+- ../summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md
+- ../summaries/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime-summary.md
+- ../summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md
+- ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
+- ../../raw/knowledge/docs/ux-policy.md
+- ../../raw/knowledge/docs/product-requirements-platform.md
+- ../../raw/knowledge/docs/product-requirements-narrative.md
+- ../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md
+- ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
+- ../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md
+- ../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md
+- ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md
+- ../../raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md
+- ../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md
+- ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
+- ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-import-summary.md
+- ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-import.md
+- ../summaries/tasknotes/steering/done/20260420-cj26-static-codemaker-upload-summary.md
+- ../../raw/tasknotes/steering/done/20260420-cj26-static-codemaker-upload.md
+- ../summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md
+- ../../raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md
+- ../summaries/tasknotes/steering/done/20260517-town-menu-show-inn-cost-summary.md
+- ../../raw/tasknotes/steering/done/20260517-town-menu-show-inn-cost.md
+- ../summaries/tasknotes/steering/done/20260517-shop-owned-marker-clipping-summary.md
+- ../../raw/tasknotes/steering/done/20260517-shop-owned-marker-clipping.md
+- ../summaries/tasknotes/steering/done/20260517-inn-skip-when-full-hp-summary.md
+- ../../raw/tasknotes/steering/done/20260517-inn-skip-when-full-hp.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 アプリ：Code Maker版ステータスバーのzone名描画で未定義エラー-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 アプリ：Code Maker版ステータスバーのzone名描画で未定義エラー.md
 ---
+
 
 # Child Readable UX And Parent Assist
 
@@ -72,6 +81,10 @@ sources:
 - static host では、動かない server-dependent カードを残すより browser 保存で本当に動く導線を見せる方が child-facing に正直である。
 
 - the kid-pixel index redesign improved the first page children see without disturbing the existing Code Maker and play flows.
+
+- showing inn cost up front, replacing clipped shop ownership badges with short readable messages, and skipping inn stays at full HP/MP all reduce small but compounding child confusion at decision points.
+
+- the Code Maker status-bar alias fix matters here too because an undefined zone-name crash breaks one of the first child-facing cues in the editor shell.
 
 ## 関連ページ
 

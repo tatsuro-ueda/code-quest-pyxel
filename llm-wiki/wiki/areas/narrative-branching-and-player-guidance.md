@@ -16,6 +16,8 @@ sources:
   - ../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md
   - ../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md
   - ../../raw/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview.md
+  - ../summaries/tasknotes/steering/done/20260510-stakeholder-voices-narrative-autonomy-tail-migration-summary.md
+  - ../../raw/tasknotes/steering/done/20260510-stakeholder-voices-narrative-autonomy-tail-migration.md
 ---
 
 # Narrative Branching And Player Guidance
@@ -45,6 +47,8 @@ sources:
 - 世界樹や通信塔のページ送り修正と、ダンジョン終点のボストリガー復旧は、
   narrative guidance を code path と map event の両側で支える例になった
 - イベント敵が通常遭遇へ漏れると、戦闘 balance だけでなく guidance と world logic も崩れる
+
+- the narrative autonomy tail migration connected endings, guidance, new-area safety, and autonomy-facing tail journeys into the stakeholder trace graph, even where implementation is still backlog or partial.
 
 ## 関連ページ
 

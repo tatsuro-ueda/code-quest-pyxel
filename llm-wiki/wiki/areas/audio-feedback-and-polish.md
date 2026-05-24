@@ -10,6 +10,8 @@ sources:
   - ../../raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md
   - ../summaries/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot-summary.md
   - ../../raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md
+  - ../summaries/tasknotes/steering/done/20260510-stakeholder-voices-av-guidance-theme-migration-summary.md
+  - ../../raw/tasknotes/steering/done/20260510-stakeholder-voices-av-guidance-theme-migration.md
 ---
 
 # Audio Feedback And Polish
@@ -32,6 +34,8 @@ sources:
 - UX 的には「押した」「勝った」「移った」がすぐ伝わることを優先する
 
 - BGM pyxres SSoT and bundle rebuild moved music truth into pyxres plus scene views, then verified the shipped artifacts reflect that simpler audio ownership.
+
+- the AV guidance/theme migration brought audio and guidance expectations under stakeholder trace coverage, making it easier to separate traced intent from implemented polish.
 
 ## 関連ページ
 

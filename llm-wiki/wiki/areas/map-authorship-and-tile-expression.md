@@ -6,6 +6,8 @@ sources:
   - ../summaries/knowledge/product-requirements-platform-summary.md
   - ../../raw/knowledge/docs/product-requirements-map.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
+  - ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration.md
 ---
 
 # Map Authorship And Tile Expression
@@ -26,6 +28,8 @@ sources:
 - editor と runtime の見え方差分は高優先の health-check 対象になる
 - auto correction や runtime-only rule を増やすほど、子どもの予測可能性が下がる
 - map 議論では pathfinding や collision だけでなく `表現面の ownership` を含めて判断する
+
+- the stakeholder map PRD migration made first-tile visibility, road/runtime agreement, walkability-preserving decoration, and landmark specialness explicit traced requirements for map editing.
 
 ## 関連ページ
 

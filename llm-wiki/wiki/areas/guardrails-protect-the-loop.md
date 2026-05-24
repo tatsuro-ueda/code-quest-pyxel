@@ -1,126 +1,229 @@
 ---
 status: active
-last_updated: 2026-05-24
+last_updated: '2026-05-24'
 sources:
-  - ../summaries/knowledge/customer-journeys-summary.md
-  - ../summaries/knowledge/framework-rule-summary.md
-  - ../summaries/knowledge/product-requirements-guardrails-summary.md
-  - ../summaries/knowledge/repository-structure-summary.md
-  - ../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md
-  - ../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-guardrails-2-hooks-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md
-  - ../summaries/tasknotes/steering/done/20260413-j42-rpg-loop-journey-summary.md
-  - ../summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md
-  - ../summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md
-  - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
-  - ../../raw/knowledge/docs/customer-journeys.md
-  - ../../raw/knowledge/docs/framework-rule.md
-  - ../../raw/knowledge/docs/product-requirements-guardrails.md
-  - ../../raw/knowledge/docs/repository-structure.md
-  - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
-  - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
-  - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md
-  - ../../raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md
-  - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
-  - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
-  - ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
-  - ../../raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md
-  - ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md
-  - ../../raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md
-  - ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
-  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime-summary.md
-  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime.md
-  - ../summaries/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip-summary.md
-  - ../../raw/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip.md
-  - ../summaries/tasknotes/steering/done/20260421-src-method-level-comments-summary.md
-  - ../../raw/tasknotes/steering/done/20260421-src-method-level-comments.md
-  - ../summaries/tasknotes/steering/done/20260424-town-framework-rule-align-summary.md
-  - ../../raw/tasknotes/steering/done/20260424-town-framework-rule-align.md
-  - ../summaries/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync-summary.md
-  - ../../raw/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync.md
-  - ../summaries/tasknotes/steering/done/20260422-play-session-ip-ua-browser-summary.md
-  - ../../raw/tasknotes/steering/done/20260422-play-session-ip-ua-browser.md
-  - ../summaries/tasknotes/steering/done/20260425-player-dict-residue-crash-fix-summary.md
-  - ../../raw/tasknotes/steering/done/20260425-player-dict-residue-crash-fix.md
-  - ../summaries/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack-summary.md
-  - ../../raw/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack.md
-  - ../summaries/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes-summary.md
-  - ../../raw/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes.md
-  - ../summaries/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop-summary.md
-  - ../../raw/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop.md
-  - ../summaries/tasknotes/steering/done/20260425-menu-shim-crash-fix-summary.md
-  - ../../raw/tasknotes/steering/done/20260425-menu-shim-crash-fix.md
-  - ../summaries/tasknotes/steering/done/20260425-brushup-customer-journeys-summary.md
-  - ../../raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md
-  - ../summaries/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot-summary.md
-  - ../../raw/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot.md
-  - ../summaries/tasknotes/steering/done/20260505-imagebank-as-scene-model-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-imagebank-as-scene-model.md
-  - ../summaries/tasknotes/steering/done/20260505-dungeon-map-removal-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-dungeon-map-removal.md
-  - ../summaries/tasknotes/steering/done/20260505-imagebank-direct-cleanup-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-imagebank-direct-cleanup.md
-  - ../summaries/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot.md
-  - ../summaries/tasknotes/steering/done/20260505-architecture-md-decision-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-architecture-md-decision.md
-  - ../summaries/tasknotes/steering/done/20260505-game-class-shrink-m43-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-game-class-shrink-m43.md
-  - ../summaries/tasknotes/steering/done/20260505-player-state-shim-removal-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-player-state-shim-removal.md
-  - ../summaries/tasknotes/steering/done/20260505-services-ui-pyxel-policy-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-services-ui-pyxel-policy.md
-  - ../summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md
-  - ../summaries/tasknotes/steering/done/20260505-docs-sync-with-recent-steering-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md
-  - ../summaries/tasknotes/steering/done/20260505-rename-production-to-dist-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-rename-production-to-dist.md
-  - ../summaries/tasknotes/steering/done/20260505-detach-index-html-from-build-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md
-  - ../summaries/tasknotes/steering/done/20260505-remove-tile-water2-deadcode-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md
-  - ../summaries/tasknotes/steering/done/20260506-bgm-pyxres-ssot-summary.md
-  - ../../raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md
-  - ../summaries/tasknotes/steering/done/20260507-build-hook-ci-integration-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md
-  - ../summaries/tasknotes/steering/done/20260507-build-runbook-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-build-runbook.md
-  - ../summaries/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md
-  - ../summaries/tasknotes/steering/done/20260507-gen-module-docstring-template-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-gen-module-docstring-template.md
-  - ../summaries/tasknotes/steering/done/20260507-scene-to-cj-map-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-scene-to-cj-map.md
-  - ../summaries/tasknotes/steering/done/20260507-src-header-functions-battle-view-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-src-header-functions-battle-view.md
-  - ../summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md
-  - ../summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md
-  - ../summaries/tasknotes/steering/done/20260508-architecture-rules-yaml-summary.md
-  - ../../raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-guardian-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-guardian.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-md-removal-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-md-removal.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-improvements-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker-improvements.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-label-ja-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-label-ja.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-facts-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md
+- ../summaries/knowledge/customer-journeys-summary.md
+- ../summaries/knowledge/framework-rule-summary.md
+- ../summaries/knowledge/product-requirements-guardrails-summary.md
+- ../summaries/knowledge/repository-structure-summary.md
+- ../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md
+- ../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md
+- ../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md
+- ../summaries/tasknotes/steering/done/20260412-guardrails-2-hooks-summary.md
+- ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
+- ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
+- ../summaries/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test-summary.md
+- ../summaries/tasknotes/steering/done/20260413-j42-rpg-loop-journey-summary.md
+- ../summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md
+- ../summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md
+- ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
+- ../../raw/knowledge/docs/customer-journeys.md
+- ../../raw/knowledge/docs/framework-rule.md
+- ../../raw/knowledge/docs/product-requirements-guardrails.md
+- ../../raw/knowledge/docs/repository-structure.md
+- ../../raw/tasknotes/done/20260412-g15-test-pinning.md
+- ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
+- ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md
+- ../../raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md
+- ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
+- ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
+- ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
+- ../../raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md
+- ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md
+- ../../raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md
+- ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
+- ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime-summary.md
+- ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime.md
+- ../summaries/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip-summary.md
+- ../../raw/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip.md
+- ../summaries/tasknotes/steering/done/20260421-src-method-level-comments-summary.md
+- ../../raw/tasknotes/steering/done/20260421-src-method-level-comments.md
+- ../summaries/tasknotes/steering/done/20260424-town-framework-rule-align-summary.md
+- ../../raw/tasknotes/steering/done/20260424-town-framework-rule-align.md
+- ../summaries/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync-summary.md
+- ../../raw/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync.md
+- ../summaries/tasknotes/steering/done/20260422-play-session-ip-ua-browser-summary.md
+- ../../raw/tasknotes/steering/done/20260422-play-session-ip-ua-browser.md
+- ../summaries/tasknotes/steering/done/20260425-player-dict-residue-crash-fix-summary.md
+- ../../raw/tasknotes/steering/done/20260425-player-dict-residue-crash-fix.md
+- ../summaries/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack-summary.md
+- ../../raw/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack.md
+- ../summaries/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes-summary.md
+- ../../raw/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes.md
+- ../summaries/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop-summary.md
+- ../../raw/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop.md
+- ../summaries/tasknotes/steering/done/20260425-menu-shim-crash-fix-summary.md
+- ../../raw/tasknotes/steering/done/20260425-menu-shim-crash-fix.md
+- ../summaries/tasknotes/steering/done/20260425-brushup-customer-journeys-summary.md
+- ../../raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md
+- ../summaries/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot-summary.md
+- ../../raw/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot.md
+- ../summaries/tasknotes/steering/done/20260505-imagebank-as-scene-model-summary.md
+- ../../raw/tasknotes/steering/done/20260505-imagebank-as-scene-model.md
+- ../summaries/tasknotes/steering/done/20260505-dungeon-map-removal-summary.md
+- ../../raw/tasknotes/steering/done/20260505-dungeon-map-removal.md
+- ../summaries/tasknotes/steering/done/20260505-imagebank-direct-cleanup-summary.md
+- ../../raw/tasknotes/steering/done/20260505-imagebank-direct-cleanup.md
+- ../summaries/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot-summary.md
+- ../../raw/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot.md
+- ../summaries/tasknotes/steering/done/20260505-architecture-md-decision-summary.md
+- ../../raw/tasknotes/steering/done/20260505-architecture-md-decision.md
+- ../summaries/tasknotes/steering/done/20260505-game-class-shrink-m43-summary.md
+- ../../raw/tasknotes/steering/done/20260505-game-class-shrink-m43.md
+- ../summaries/tasknotes/steering/done/20260505-player-state-shim-removal-summary.md
+- ../../raw/tasknotes/steering/done/20260505-player-state-shim-removal.md
+- ../summaries/tasknotes/steering/done/20260505-services-ui-pyxel-policy-summary.md
+- ../../raw/tasknotes/steering/done/20260505-services-ui-pyxel-policy.md
+- ../summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md
+- ../../raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md
+- ../summaries/tasknotes/steering/done/20260505-docs-sync-with-recent-steering-summary.md
+- ../../raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md
+- ../summaries/tasknotes/steering/done/20260505-rename-production-to-dist-summary.md
+- ../../raw/tasknotes/steering/done/20260505-rename-production-to-dist.md
+- ../summaries/tasknotes/steering/done/20260505-detach-index-html-from-build-summary.md
+- ../../raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md
+- ../summaries/tasknotes/steering/done/20260505-remove-tile-water2-deadcode-summary.md
+- ../../raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md
+- ../summaries/tasknotes/steering/done/20260506-bgm-pyxres-ssot-summary.md
+- ../../raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md
+- ../summaries/tasknotes/steering/done/20260507-build-hook-ci-integration-summary.md
+- ../../raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md
+- ../summaries/tasknotes/steering/done/20260507-build-runbook-summary.md
+- ../../raw/tasknotes/steering/done/20260507-build-runbook.md
+- ../summaries/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot-summary.md
+- ../../raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md
+- ../summaries/tasknotes/steering/done/20260507-gen-module-docstring-template-summary.md
+- ../../raw/tasknotes/steering/done/20260507-gen-module-docstring-template.md
+- ../summaries/tasknotes/steering/done/20260507-scene-to-cj-map-summary.md
+- ../../raw/tasknotes/steering/done/20260507-scene-to-cj-map.md
+- ../summaries/tasknotes/steering/done/20260507-src-header-functions-battle-view-summary.md
+- ../../raw/tasknotes/steering/done/20260507-src-header-functions-battle-view.md
+- ../summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md
+- ../../raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md
+- ../summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md
+- ../../raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md
+- ../summaries/tasknotes/steering/done/20260508-architecture-rules-yaml-summary.md
+- ../../raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-guardian-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-guardian.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-md-removal-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-md-removal.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-improvements-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker-improvements.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-rules-label-ja-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-rules-label-ja.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-facts-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md
+- ../summaries/tasknotes/steering/done/20260509-blockquestapp-legacy-shell-cleanup-summary.md
+- ../../raw/tasknotes/steering/done/20260509-blockquestapp-legacy-shell-cleanup.md
+- ../summaries/tasknotes/steering/done/20260509-codemaker-manifest-guardian-summary.md
+- ../../raw/tasknotes/steering/done/20260509-codemaker-manifest-guardian.md
+- ../summaries/tasknotes/steering/done/20260509-core-scene-manager-legacy-cleanup-summary.md
+- ../../raw/tasknotes/steering/done/20260509-core-scene-manager-legacy-cleanup.md
+- ../summaries/tasknotes/steering/done/20260509-customer-jobs-stable-trace-ids-summary.md
+- ../../raw/tasknotes/steering/done/20260509-customer-jobs-stable-trace-ids.md
+- ../summaries/tasknotes/steering/done/20260509-playermodel-final-absorption-summary.md
+- ../../raw/tasknotes/steering/done/20260509-playermodel-final-absorption.md
+- ../summaries/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion-summary.md
+- ../../raw/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion.md
+- ../summaries/tasknotes/steering/done/20260509-shared-boundary-deterministic-promotion-summary.md
+- ../../raw/tasknotes/steering/done/20260509-shared-boundary-deterministic-promotion.md
+- ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-acceptance-layer-summary.md
+- ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-acceptance-layer.md
+- ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration-summary.md
+- ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration.md
+- ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-coverage-report-summary.md
+- ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-coverage-report.md
+- ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration-summary.md
+- ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration.md
+- ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-platform-prd-migration-summary.md
+- ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-platform-prd-migration.md
+- ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-source-traceability-summary.md
+- ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-source-traceability.md
+- ../summaries/tasknotes/steering/done/20260510-stakeholder-voices-av-guidance-theme-migration-summary.md
+- ../../raw/tasknotes/steering/done/20260510-stakeholder-voices-av-guidance-theme-migration.md
+- ../summaries/tasknotes/steering/done/20260510-stakeholder-voices-guardrails-prd-migration-summary.md
+- ../../raw/tasknotes/steering/done/20260510-stakeholder-voices-guardrails-prd-migration.md
+- ../summaries/tasknotes/steering/done/20260510-stakeholder-voices-narrative-autonomy-tail-migration-summary.md
+- ../../raw/tasknotes/steering/done/20260510-stakeholder-voices-narrative-autonomy-tail-migration.md
+- ../summaries/tasknotes/steering/done/20260510-stakeholder-voices-trace-status-separation-summary.md
+- ../../raw/tasknotes/steering/done/20260510-stakeholder-voices-trace-status-separation.md
+- ../summaries/tasknotes/steering/done/20260517-flake8-cr-scenes-cr202-summary.md
+- ../../raw/tasknotes/steering/done/20260517-flake8-cr-scenes-cr202.md
+- ../summaries/tasknotes/steering/done/20260517-flake8-cr-scenes-summary.md
+- ../../raw/tasknotes/steering/done/20260517-flake8-cr-scenes.md
+- ../summaries/tasknotes/steering/done/20260517-town-menu-show-inn-cost-summary.md
+- ../../raw/tasknotes/steering/done/20260517-town-menu-show-inn-cost.md
+- ../summaries/tasknotes/steering/done/20260517-shop-owned-marker-clipping-summary.md
+- ../../raw/tasknotes/steering/done/20260517-shop-owned-marker-clipping.md
+- ../summaries/tasknotes/steering/done/20260517-inn-skip-when-full-hp-summary.md
+- ../../raw/tasknotes/steering/done/20260517-inn-skip-when-full-hp.md
+- ../summaries/tasknotes/steering/done/20260518-flake8-cr-rule-extension-summary.md
+- ../../raw/tasknotes/steering/done/20260518-flake8-cr-rule-extension.md
+- ../summaries/tasknotes/steering/done/20260518-flake8-cr-scenes-rest27-summary.md
+- ../../raw/tasknotes/steering/done/20260518-flake8-cr-scenes-rest27.md
+- ../summaries/tasknotes/steering/done/20260518-flake8-cr-src-rest-and-tools-summary.md
+- ../../raw/tasknotes/steering/done/20260518-flake8-cr-src-rest-and-tools.md
+- ../summaries/tasknotes/steering/done/20260521-update-codex-summary.md
+- ../../raw/tasknotes/steering/done/20260521-update-codex.md
+- ../summaries/tasknotes/steering/done/20260522-uncommitted-under-five-summary.md
+- ../../raw/tasknotes/steering/done/20260522-uncommitted-under-five.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：llm-wikiをカルパシー最小形まで削減する-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：llm-wikiをカルパシー最小形まで削減する.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiの健全性チェックを試す-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiの健全性チェックを試す.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 アプリ：Code Maker版ステータスバーのzone名描画で未定義エラー-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 アプリ：Code Maker版ステータスバーのzone名描画で未定義エラー.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：LLM Wikiへの質問回答保存スキルを作る-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：LLM Wikiへの質問回答保存スキルを作る.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiの点検スキルとルール更新スキルを分ける-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiの点検スキルとルール更新スキルを分ける.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiスキルの命名を整理して親スキルを作る-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiスキルの命名を整理して親スキルを作る.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる.md
 ---
+
 
 # Guardrails Protect The Loop
 
@@ -175,6 +278,14 @@ sources:
 - index build detach, dist rename, rebake_pyxres, hook/CI integration, and verify scripts prevented silent artifact drift before child-facing delivery.
 - BGM moved from a central manager to view-owned pyxres truth, simplifying audio guardrails while intentionally deleting toggle complexity.
 - architecture_rules YAML/checker/guardian/tree-first work turned architecture guardrails into auditable machine-readable rules with staged enforcement.
+
+- manifest completeness rules, scene/shared deterministic promotions, stakeholder acceptance/trace coverage, and flake8-cr rule expansion all converted tacit safety expectations into executable checks.
+- the town/shop/inn UX fixes show small child-facing behaviors are also loop-protection work when they prevent confusion, clipping, or pointless actions.
+- the llm-wiki minimal-reset and parent/manual-ingest notes framed wiki operations themselves as something that needs a narrow, guarded main route.
+
+- health-check vs update-schema splitting, summary review gates, routine lint gates, batch start conditions, and query save gates all pushed llm-wiki work toward explicit stop points instead of implicit operator judgment.
+
+- test-suite separation and the Code Maker alias fix show the same loop-protection principle on the app side: fail early, keep child-facing paths readable, and move heavy or risky checks into named guardrail lanes.
 
 ## 関連ページ
 

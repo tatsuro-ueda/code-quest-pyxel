@@ -1645,3 +1645,1000 @@
   - `schema 再編後の coverage 拡張と human-facing readability tuning はまだ続きの作業が要る。`
 - notes:
   - architecture_rules を tree-first facts 構造へ組み替え検査系も新 schema に合わせた
+
+## [2026-05-24] ingest | Blockquestapp legacy shell cleanup
+
+- source_id: `2026-05-09-blockquestapp-legacy-shell-cleanup`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-blockquestapp-legacy-shell-cleanup.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-blockquestapp-legacy-shell-cleanup-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `runtime legacy cleanup は scene_manager など周辺整理と結びつきやすく、単独削除だけでは次の coupled task が残る。`
+- notes:
+  - BlockQuestApp legacy shell を live runtime から外し docs と manifest も追従させた
+
+## [2026-05-24] ingest | Codemaker manifest guardian
+
+- source_id: `2026-05-09-codemaker-manifest-guardian`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-codemaker-manifest-guardian.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-codemaker-manifest-guardian-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `manifest autofix は safe path 追記に絞っており、より意味の強い bundle 契約変更は別判断が要る。`
+- notes:
+  - Code Maker manifest の required path を architecture rule と guardian に載せた
+
+## [2026-05-24] ingest | Core scene manager legacy cleanup
+
+- source_id: `2026-05-09-core-scene-manager-legacy-cleanup`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-core-scene-manager-legacy-cleanup.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-core-scene-manager-legacy-cleanup-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `同名 legacy 概念の整理は進んだが、protocol helper など周辺の live import 棚卸しはまだ残る。`
+- notes:
+  - 旧 core scene_manager を live code から外し shared manager 前提へ揃えた
+
+## [2026-05-24] ingest | Customer jobs stable trace ids
+
+- source_id: `2026-05-09-customer-jobs-stable-trace-ids`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-customer-jobs-stable-trace-ids.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-customer-jobs-stable-trace-ids-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `jobs 層 coverage はまだ集計途上で、stable token を使う report ルートは後続 task 依存である。`
+- notes:
+  - customer-jobs に stable token を導入し stakeholder request trace を jobs 層へつないだ
+
+## [2026-05-24] ingest | Playermodel final absorption
+
+- source_id: `2026-05-09-playermodel-final-absorption`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-playermodel-final-absorption.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-playermodel-final-absorption-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `shim 自体はまだ残っており、bundle 互換をどこまで維持するかの追加整理が必要である。`
+- notes:
+  - PlayerModel へ live 依存を吸収し item_use/player_state は互換 shim へ後退させた
+
+## [2026-05-24] ingest | Scene mvp boundary deterministic promotion
+
+- source_id: `2026-05-09-scene-mvp-boundary-deterministic-promotion`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `scene 責務そのものの是非は依然として人判断が要り、checker は静的に見える範囲へ限定される。`
+- notes:
+  - scene MVP boundary rule を deterministic checker に昇格した
+
+## [2026-05-24] ingest | Shared boundary deterministic promotion
+
+- source_id: `2026-05-09-shared-boundary-deterministic-promotion`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-shared-boundary-deterministic-promotion.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-shared-boundary-deterministic-promotion-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `autofix は見送りで、warning を受けた後の file move 判断は人手に残る。`
+- notes:
+  - shared boundary rule を deterministic checker に上げ legacy shim 再侵入も拾うようにした
+
+## [2026-05-24] ingest | Stakeholder voices acceptance layer
+
+- source_id: `2026-05-09-stakeholder-voices-acceptance-layer`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-stakeholder-voices-acceptance-layer.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-stakeholder-voices-acceptance-layer-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `verification command レベルまではまだ固定しておらず、manual acceptance の運用差は残る。`
+- notes:
+  - stakeholder_voices に acceptance layer を追加し verification contract も checker 化した
+
+## [2026-05-24] ingest | Stakeholder voices battle prd migration
+
+- source_id: `2026-05-09-stakeholder-voices-battle-prd-migration`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/battle-balance-and-spell-design.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `battle 体験の一部は manual verification 依存が残り、YAML/runtime 整合の proof はまだ強化余地がある。`
+- notes:
+  - battle PRD の残り 4 項目を stakeholder voices の requirement/acceptance へ移した
+
+## [2026-05-24] ingest | Stakeholder voices coverage report
+
+- source_id: `2026-05-09-stakeholder-voices-coverage-report`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-stakeholder-voices-coverage-report.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-stakeholder-voices-coverage-report-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `coverage は token presence ベースで、意味対応や section-level completeness までは見ていない。`
+- notes:
+  - source document ごとの missing stable refs を数える coverage report を追加した
+
+## [2026-05-24] ingest | Stakeholder voices map prd migration
+
+- source_id: `2026-05-09-stakeholder-voices-map-prd-migration`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/map-authorship-and-tile-expression.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `map acceptance は manual verification 依存が強く、実機編集の deterministic proof はまだ薄い。`
+- notes:
+  - map PRD の 7 項目を stakeholder voices requirement/acceptance へ移した
+
+## [2026-05-24] ingest | Stakeholder voices platform prd migration
+
+- source_id: `2026-05-09-stakeholder-voices-platform-prd-migration`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-stakeholder-voices-platform-prd-migration.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-stakeholder-voices-platform-prd-migration-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `platform 体験の一部は manual verification 依存が強く、selector 比較などの proof 強化は後続課題である。`
+- notes:
+  - platform PRD の残り 4 項目を stakeholder voices に移し missing を解消した
+
+## [2026-05-24] ingest | Stakeholder voices source traceability
+
+- source_id: `2026-05-09-stakeholder-voices-source-traceability`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260509-stakeholder-voices-source-traceability.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260509-stakeholder-voices-source-traceability-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `checker は token presence 止まりで、trace 先の意味的妥当性までは判断しない。`
+- notes:
+  - stakeholder voices に doc_id:stable_ref の structured trace を導入した
+
+## [2026-05-24] ingest | Stakeholder voices av guidance theme migration
+
+- source_id: `2026-05-10-stakeholder-voices-av-guidance-theme-migration`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260510-stakeholder-voices-av-guidance-theme-migration.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260510-stakeholder-voices-av-guidance-theme-migration-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/audio-feedback-and-polish.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `trace は進んだが `CJ14` など実機能は未実装で、coverage complete と implementation complete は分離して読む必要がある。`
+- notes:
+  - AV guidance/theme の source coverage と request/requirement trace を stakeholder voices へ追加した
+
+## [2026-05-24] ingest | Stakeholder voices guardrails prd migration
+
+- source_id: `2026-05-10-stakeholder-voices-guardrails-prd-migration`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260510-stakeholder-voices-guardrails-prd-migration.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260510-stakeholder-voices-guardrails-prd-migration-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `journey/job 側の残り trace は別タスクで束ね直しが必要で、1 journey = 1 requirement へ寄せすぎると読みにくくなる。`
+- notes:
+  - guardrails PRD の残り 5 項目を stakeholder voices requirement/acceptance へ移した
+
+## [2026-05-24] ingest | Stakeholder voices narrative autonomy tail migration
+
+- source_id: `2026-05-10-stakeholder-voices-narrative-autonomy-tail-migration`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260510-stakeholder-voices-narrative-autonomy-tail-migration.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260510-stakeholder-voices-narrative-autonomy-tail-migration-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/narrative-branching-and-player-guidance.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `coverage complete でもゲーム機能が完了したわけではなく、backlog/partial との分離表示が次の課題である。`
+- notes:
+  - narrative/autonomy tail を移植し stakeholder voices の source coverage を zero-missing にした
+
+## [2026-05-24] ingest | Stakeholder voices trace status separation
+
+- source_id: `2026-05-10-stakeholder-voices-trace-status-separation`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260510-stakeholder-voices-trace-status-separation.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260510-stakeholder-voices-trace-status-separation-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `tracked status はコード定数で固定されており、新しい status の扱いはまだ明文化されていない。`
+- notes:
+  - source trace coverage を tracked statuses へ広げ trace と実装状況を分離した
+
+## [2026-05-24] ingest | FLAKE8 cr scenes CR202
+
+- source_id: `2026-05-17-flake8-cr-scenes-cr202`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260517-flake8-cr-scenes-cr202.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260517-flake8-cr-scenes-cr202-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `描画レベルの回帰チェックは今回回しておらず、構造改善が UI に与える影響は別手段の追加余地がある。`
+- notes:
+  - CR202 の大物 3 件を分割しステップ列パターンを後続ルール化へ渡した
+
+## [2026-05-24] ingest | FLAKE8 cr scenes
+
+- source_id: `2026-05-17-flake8-cr-scenes`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260517-flake8-cr-scenes.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260517-flake8-cr-scenes-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `親 note 自体は inventory と分解が中心で、具体実装の正本は子タスク側に分かれる。`
+- notes:
+  - src/scenes への flake8-cr 初適用結果を棚卸しし後続タスクへ分解した
+
+## [2026-05-24] ingest | Town menu show inn cost
+
+- source_id: `2026-05-17-town-menu-show-inn-cost`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260517-town-menu-show-inn-cost.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260517-town-menu-show-inn-cost-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `shop など他メニューへ同じ発想を広げる場合は別の要約問題が出るため、今回の helper だけでは足りない。`
+- notes:
+  - Town メニューのやどやに宿代を併記し既存判定互換も保った
+
+## [2026-05-24] ingest | Shop owned marker clipping
+
+- source_id: `2026-05-17-shop-owned-marker-clipping`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260517-shop-owned-marker-clipping.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260517-shop-owned-marker-clipping-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `複雑な所持判定や別 scene への message TTL 横展開は、この note の設計外に残る。`
+- notes:
+  - Shop の右端で切れる owned 表示を TTL 付き短期メッセージへ置き換えた
+
+## [2026-05-24] ingest | Inn skip when full hp
+
+- source_id: `2026-05-17-inn-skip-when-full-hp`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260517-inn-skip-when-full-hp.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260517-inn-skip-when-full-hp-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `毒残り時は現状スキップされず/されるの解釈が罠になり得るため、将来の仕様再検討候補が残る。`
+- notes:
+  - 宿屋で HP/MP 満タンなら泊まらずメッセージだけ返すようにした
+
+## [2026-05-24] ingest | FLAKE8 cr rule extension
+
+- source_id: `2026-05-18-flake8-cr-rule-extension`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260518-flake8-cr-rule-extension.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260518-flake8-cr-rule-extension-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `複雑な setter や右辺式を step と見なす抜け道が残り、将来の誤検出/見逃し調整は続く。`
+- notes:
+  - Task A の分割パターンを CR204 として flake8-cr に機械化した
+
+## [2026-05-24] ingest | FLAKE8 cr scenes REST27
+
+- source_id: `2026-05-18-flake8-cr-scenes-rest27`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260518-flake8-cr-scenes-rest27.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260518-flake8-cr-scenes-rest27-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `helper 増殖に伴う naming/docstring drift は、継続的な verifier 運用がないと再発しやすい。`
+- notes:
+  - src/scenes の残り 27 件を flake8-cr 新ルール込みで解消し 0 件にした
+
+## [2026-05-24] ingest | FLAKE8 cr src rest and tools
+
+- source_id: `2026-05-18-flake8-cr-src-rest-and-tools`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260518-flake8-cr-src-rest-and-tools.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260518-flake8-cr-src-rest-and-tools-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `generator 側の非準拠は除外で吸収しており、再生成時に同種の style debt は残る。`
+- notes:
+  - 手書きの src と tools へ flake8-cr 0 件を広げ自動生成物は .flake8 で除外した
+
+## [2026-05-24] ingest | Update codex
+
+- source_id: `2026-05-21-update-codex`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260521-update-codex.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260521-update-codex-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `更新経路の運用ルール自体はまだ別 skill/dotfiles 側に明文化されておらず、再び分岐する余地がある。`
+- notes:
+  - 複数経路に分かれた Codex CLI を棚卸しし PATH 先頭を 0.132.0 へそろえた
+
+## [2026-05-24] ingest | Uncommitted under five
+
+- source_id: `2026-05-22-uncommitted-under-five`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260522-uncommitted-under-five.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260522-uncommitted-under-five-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `Git UI 側の根本不調は未解決で、今後も GUI 表示だけを信じると誤判断の余地がある。`
+- notes:
+  - Git Graph の stale 件数より terminal の git status を正本にする運用判断を残した
+
+## [2026-05-24] ingest | 2026年5月23日 開発基盤：llm wikiをカルパシー最小形まで削減する
+
+- source_id: `2026年5月23日 開発基盤：llm-wikiをカルパシー最小形まで削減する`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月23日 開発基盤：llm-wikiをカルパシー最小形まで削減する.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月23日 開発基盤：llm-wikiをカルパシー最小形まで削減する-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `この cleanup 自体が後続の再構築と意図的に衝突するため、historical decision と current structure を読み分ける必要がある。`
+- notes:
+  - llm-wiki を一度 raw-only へ戻し helper 層と専用 tooling を外した
+
+## [2026-05-24] ingest | 2026年5月23日 開発基盤：karpathy型llm wiki運用の親ノート
+
+- source_id: `2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `親 note は route 定義が中心で、実装や live wiki 変更の正本は child note 側に分かれる。`
+- notes:
+  - Karpathy 型 LLM Wiki の main route を親ノートとして固定し child へ分離した
+
+## [2026-05-24] ingest | 2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す
+
+- source_id: `2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `初回 trial の器定義は明確だが、後続の batch 化や taxonomy 細分化と意図的に距離を置いている。`
+- notes:
+  - Karpathy 資料 1 本で raw→summary→index→log→related pages を回す最小 ingest route を定めた
+
+## [2026-05-24] ingest | 2026年5月23日 開発基盤：wikiの健全性チェックを試す
+
+- source_id: `2026年5月23日 開発基盤：Wikiの健全性チェックを試す`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiの健全性チェックを試す.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiの健全性チェックを試す-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `health-check の分類が育つ前は、issue の粒度や優先度が run ごとにぶれやすい。`
+- notes:
+  - health-check は zero issue でなく分類付き log を残す運用として試した
+
+## [2026-05-24] ingest | 2026年5月23日 開発基盤：wikiへの質問と回答保存を試す
+
+- source_id: `2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `保存価値の判定が甘いと、query page が一時回答の墓場になりやすい。`
+- notes:
+  - query は master-index 起点で読み、wiki 外の事実は candidate source に戻す方針を残した
+
+## [2026-05-24] ingest | 2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める
+
+- source_id: `2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `batch を便利さ優先で回し始めると、弱い source や違和感をまとめて通してしまう。`
+- notes:
+  - batch ingest は開始条件つきでだけ回す方針にした
+
+## [2026-05-24] ingest | 2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する
+
+- source_id: `2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `hook だけに依存すると、環境差分や未導入状態で lint drift が起こる余地がある。`
+- notes:
+  - tasknote lint を repo root と tracked hook へ接続した
+
+## [2026-05-24] ingest | 2026年5月23日 開発基盤：llm wikiの土台フォルダと基準ページを作る
+
+- source_id: `2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `最小構成のまま役割境界を曖昧にすると、後続 skill が page の責務を誤読しやすい。`
+- notes:
+  - LLM Wiki の最小フォルダ構成と master-index / logs / areas を土台として固定した
+
+## [2026-05-24] ingest | 2026年5月24日 アプリ：code maker版ステータスバーのzone名描画で未定義エラー
+
+- source_id: `2026年5月24日 アプリ：Code Maker版ステータスバーのzone名描画で未定義エラー`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月24日 アプリ：Code Maker版ステータスバーのzone名描画で未定義エラー.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月24日 アプリ：Code Maker版ステータスバーのzone名描画で未定義エラー-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `bundler 側の alias 規則が再び drift すると、同型の import 問題が別画面で再発する。`
+- notes:
+  - Code Maker status bar の zone 名描画エラーを alias 規則ごと直した
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：llm wikiへの質問回答保存スキルを作る
+
+- source_id: `2026年5月24日 開発基盤：LLM Wikiへの質問回答保存スキルを作る`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月24日 開発基盤：LLM Wikiへの質問回答保存スキルを作る.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月24日 開発基盤：LLM Wikiへの質問回答保存スキルを作る-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `save intent の解釈が広すぎると、回答保存と candidate 切り出しの境界が崩れる。`
+- notes:
+  - query-wiki skill は 3 route と user save gate を持つ方針で整理した
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：claudeのpushover通知文をセッションごとに固定できるようにする
+
+- source_id: `2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `保存構文や hook file contract が増えすぎると、通知まわりの運用が再び分岐しやすい。`
+- notes:
+  - Pushover 通知文を session 単位で固定する hook を追加した
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る
+
+- source_id: `2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/fast-feedback-development-loop.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `test の削減と docs 参照更新を切り離すと、stakeholder voices などの stale path が静かに残る。`
+- notes:
+  - 存在価値の薄い test を整理し smoke と daily の役割を分けた
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する
+
+- source_id: `2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/fast-feedback-development-loop.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `daily と smoke の境界が曖昧だと、重い test がまた常用 suite に戻りやすい。`
+- notes:
+  - 重い全走査 test を別枠化し daily pytest を約 65% 短縮した
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：llm wikiのhealth check表記を現行契約へそろえる
+
+- source_id: `2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `役割分離の説明が index や page に散ると、次の session でまた stale wording が再発する。`
+- notes:
+  - health-check と update-schema の current wording を schema 契約へ揃えた
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：llm wikiのhealth check wikiスキルを作る
+
+- source_id: `2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `health-check skill が fix や source 補完まで抱えると、read-only 点検の境界が崩れる。`
+- notes:
+  - health-check-wiki skill は compiled wiki 読み取りと分類 log で止まる方針にした
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：llm wikiのupdate schemaスキルを作る
+
+- source_id: `2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `stable rule の判定が緩いと、一回限りの incident が schema に混ざる。`
+- notes:
+  - update-schema skill は health-check-log 起点で stable rule だけを昇格する方針にした
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：llm wikiの点検スキルとルール更新スキルを分ける
+
+- source_id: `2026年5月24日 開発基盤：LLM Wikiの点検スキルとルール更新スキルを分ける`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiの点検スキルとルール更新スキルを分ける.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiの点検スキルとルール更新スキルを分ける-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `親 skill で両 route の境界を曖昧にすると、点検 run がそのまま rule 更新へ流れやすい。`
+- notes:
+  - LLM Wiki 運用を点検 skill と schema 更新 skill の 2 route に分けた
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：llm wikiスキルの命名を整理して親スキルを作る
+
+- source_id: `2026年5月24日 開発基盤：LLM Wikiスキルの命名を整理して親スキルを作る`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiスキルの命名を整理して親スキルを作る.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiスキルの命名を整理して親スキルを作る-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `命名整理だけで active docs を追従させないと、入口名と実体名のズレが残る。`
+- notes:
+  - LLM Wiki skill 群を prefix naming と parent skill で整理した
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：urlからraw保存と対話型ingest下書きまでを一気に行うスキルを作る
+
+- source_id: `2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `入口 skill に後半の wiki 更新責務まで混ぜると、対話 ingest の停止点が見えにくくなる。`
+- notes:
+  - capture-and-ingest-source を raw capture から summary draft までの入口 skill として固めた
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：capture and ingest sourceにルーチン型lintゲートを足す
+
+- source_id: `2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `lint runner の環境依存が残るため、skill 本文が正しくても routine lint の実行系で詰まる余地がある。`
+- notes:
+  - capture-and-ingest-source の 2 gate 契約を routine lint で読める形へ寄せた
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：capture and ingest sourceに要約確認ゲートを追加する
+
+- source_id: `2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `preview gate を fast path 扱いで飛ばす運用が入ると、要約の言い過ぎを再び止められない。`
+- notes:
+  - capture-and-ingest-source に summary review gate を追加した
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：llm wiki health checkの下ごしらえをpythonに寄せる
+
+- source_id: `2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `helper 側が issue を断定し始めると、signal と judgment の責務分離が崩れる。`
+- notes:
+  - health-check の deterministic prep を Python helper に切り出す方針を固めた
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：raw tasknote ingestの単純作業をpythonに寄せる
+
+- source_id: `2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `helper が summary prose まで抱えると、speed のための切り出しが要約品質の固定化に転びやすい。`
+- notes:
+  - raw tasknote ingest の deterministic prep を Python helper 化する方針を残した
+
+## [2026-05-24] ingest | 2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をpythonに寄せる
+
+- source_id: `2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる`
+- source_path: `llm-wiki/raw/tasknotes/steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `batch helper が related page を自動確定する前提になると、LLM review を通す余地が減る。`
+- notes:
+  - steering done oldest 10 batch ingest の前処理を Python helper 化する方針を残した
+
+## [2026-05-24] ingest | 2026年5月23日 開発基盤：llm wiki運用をスキーマへ文書化する
+
+- source_id: `2026年5月23日 開発基盤：LLM Wiki運用をスキーマへ文書化する`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wiki運用をスキーマへ文書化する.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wiki運用をスキーマへ文書化する-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `schema draft を早く固定しすぎると、初回運用の偶然を恒久ルールとして焼き込む恐れがある。`
+- notes:
+  - LLM Wiki schema は repeated-success 条件でだけ昇格する方針を残した

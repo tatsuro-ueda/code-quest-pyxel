@@ -1,54 +1,101 @@
 ---
 status: active
-last_updated: 2026-05-24
+last_updated: '2026-05-24'
 sources:
-  - ../summaries/knowledge/framework-rule-summary.md
-  - ../summaries/knowledge/product-requirements-guardrails-summary.md
-  - ../summaries/knowledge/repository-structure-summary.md
-  - ../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
-  - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
-  - ../../raw/knowledge/docs/framework-rule.md
-  - ../../raw/knowledge/docs/product-requirements-guardrails.md
-  - ../../raw/knowledge/docs/repository-structure.md
-  - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
-  - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md
-  - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
-  - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
-  - ../summaries/tasknotes/steering/done/20260424-town-framework-rule-align-summary.md
-  - ../../raw/tasknotes/steering/done/20260424-town-framework-rule-align.md
-  - ../summaries/tasknotes/steering/done/20260422-play-session-ip-ua-browser-summary.md
-  - ../../raw/tasknotes/steering/done/20260422-play-session-ip-ua-browser.md
-  - ../summaries/tasknotes/steering/done/20260505-architecture-md-decision-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-architecture-md-decision.md
-  - ../summaries/tasknotes/steering/done/20260505-docs-sync-with-recent-steering-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md
-  - ../summaries/tasknotes/steering/done/20260505-rename-production-to-dist-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-rename-production-to-dist.md
-  - ../summaries/tasknotes/steering/done/20260505-detach-index-html-from-build-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md
-  - ../summaries/tasknotes/steering/done/20260505-remove-tile-water2-deadcode-summary.md
-  - ../../raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md
-  - ../summaries/tasknotes/steering/done/20260507-build-hook-ci-integration-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md
-  - ../summaries/tasknotes/steering/done/20260507-build-runbook-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-build-runbook.md
-  - ../summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md
-  - ../../raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md
-  - ../summaries/tasknotes/steering/done/20260508-architecture-rules-yaml-summary.md
-  - ../../raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-guardian-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-guardian.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-md-removal-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-md-removal.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-improvements-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker-improvements.md
-  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-summary.md
-  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker.md
+- ../summaries/knowledge/framework-rule-summary.md
+- ../summaries/knowledge/product-requirements-guardrails-summary.md
+- ../summaries/knowledge/repository-structure-summary.md
+- ../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md
+- ../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md
+- ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
+- ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
+- ../../raw/knowledge/docs/framework-rule.md
+- ../../raw/knowledge/docs/product-requirements-guardrails.md
+- ../../raw/knowledge/docs/repository-structure.md
+- ../../raw/tasknotes/done/20260412-g15-test-pinning.md
+- ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md
+- ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
+- ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
+- ../summaries/tasknotes/steering/done/20260424-town-framework-rule-align-summary.md
+- ../../raw/tasknotes/steering/done/20260424-town-framework-rule-align.md
+- ../summaries/tasknotes/steering/done/20260422-play-session-ip-ua-browser-summary.md
+- ../../raw/tasknotes/steering/done/20260422-play-session-ip-ua-browser.md
+- ../summaries/tasknotes/steering/done/20260505-architecture-md-decision-summary.md
+- ../../raw/tasknotes/steering/done/20260505-architecture-md-decision.md
+- ../summaries/tasknotes/steering/done/20260505-docs-sync-with-recent-steering-summary.md
+- ../../raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md
+- ../summaries/tasknotes/steering/done/20260505-rename-production-to-dist-summary.md
+- ../../raw/tasknotes/steering/done/20260505-rename-production-to-dist.md
+- ../summaries/tasknotes/steering/done/20260505-detach-index-html-from-build-summary.md
+- ../../raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md
+- ../summaries/tasknotes/steering/done/20260505-remove-tile-water2-deadcode-summary.md
+- ../../raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md
+- ../summaries/tasknotes/steering/done/20260507-build-hook-ci-integration-summary.md
+- ../../raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md
+- ../summaries/tasknotes/steering/done/20260507-build-runbook-summary.md
+- ../../raw/tasknotes/steering/done/20260507-build-runbook.md
+- ../summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md
+- ../../raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md
+- ../summaries/tasknotes/steering/done/20260508-architecture-rules-yaml-summary.md
+- ../../raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-guardian-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-guardian.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-md-removal-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-md-removal.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-improvements-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker-improvements.md
+- ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-summary.md
+- ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker.md
+- ../summaries/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion-summary.md
+- ../../raw/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion.md
+- ../summaries/tasknotes/steering/done/20260517-town-menu-show-inn-cost-summary.md
+- ../../raw/tasknotes/steering/done/20260517-town-menu-show-inn-cost.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：llm-wikiをカルパシー最小形まで削減する-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：llm-wikiをカルパシー最小形まで削減する.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiの健全性チェックを試す-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiの健全性チェックを試す.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する.md
+- ../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：LLM Wikiへの質問回答保存スキルを作る-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：LLM Wikiへの質問回答保存スキルを作る.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiの点検スキルとルール更新スキルを分ける-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiの点検スキルとルール更新スキルを分ける.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiスキルの命名を整理して親スキルを作る-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiスキルの命名を整理して親スキルを作る.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる.md
+- ../summaries/tasknotes/steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる-summary.md
+- ../../raw/tasknotes/steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる.md
 ---
+
 
 # No Silent Failure And Migration Safety
 
@@ -87,6 +134,11 @@ sources:
 - dist rename explicitly recorded leaked staged changes and remaining external references instead of silently normalizing them away.
 - index build detach, verify scripts, hook/CI integration, and runbook docs converted hidden artifact regressions into visible failures or named procedures.
 - architecture.md removal and architecture_rules checker/guardian work favored warning-rich, inspectable migrations over quiet replacement.
+
+- stakeholder coverage report, trace-status separation, and deterministic boundary promotions reduced the chance that missing docs traceability or stale status handling quietly passes as healthy.
+- Git Graph vs terminal truth and the town/shop/inn message fixes both reinforce the same principle: if state is ambiguous, surface it explicitly instead of assuming the user will infer it.
+
+- health-check logging, stale wording cleanup, session-scoped notification naming, and the zone-name alias fix all reduce cases where drift or undefined state would otherwise stay invisible until late.
 
 ## 関連ページ
 

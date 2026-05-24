@@ -185,6 +185,112 @@
 - [Tasknote Raw: Architecture rules tree coverage expansion](../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md): Architecture rules tree coverage expansion の元 tasknote
 - [Tasknote Summary: Architecture rules tree facts](../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-facts-summary.md): architecture_rules facts を tree-first へ再編し checker/guardian も追従させた summary
 - [Tasknote Raw: Architecture rules tree facts](../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md): Architecture rules tree facts の元 tasknote
+- [Tasknote Summary: Blockquestapp legacy shell cleanup](../summaries/tasknotes/steering/done/20260509-blockquestapp-legacy-shell-cleanup-summary.md): BlockQuestApp legacy shell を削除し manifest/docs/guard を live runtime へ寄せた summary
+- [Tasknote Raw: Blockquestapp legacy shell cleanup](../../raw/tasknotes/steering/done/20260509-blockquestapp-legacy-shell-cleanup.md): Blockquestapp legacy shell cleanup の元 tasknote
+- [Tasknote Summary: Codemaker manifest guardian](../summaries/tasknotes/steering/done/20260509-codemaker-manifest-guardian-summary.md): Code Maker manifest 完全性を rule と guardian autofix で守るようにした summary
+- [Tasknote Raw: Codemaker manifest guardian](../../raw/tasknotes/steering/done/20260509-codemaker-manifest-guardian.md): Codemaker manifest guardian の元 tasknote
+- [Tasknote Summary: Core scene manager legacy cleanup](../summaries/tasknotes/steering/done/20260509-core-scene-manager-legacy-cleanup-summary.md): 旧 core scene_manager を削除し shared state holder 前提へ寄せた summary
+- [Tasknote Raw: Core scene manager legacy cleanup](../../raw/tasknotes/steering/done/20260509-core-scene-manager-legacy-cleanup.md): Core scene manager legacy cleanup の元 tasknote
+- [Tasknote Summary: Customer jobs stable trace ids](../summaries/tasknotes/steering/done/20260509-customer-jobs-stable-trace-ids-summary.md): customer-jobs に stable trace id を入れ request から job 根拠を辿れるようにした summary
+- [Tasknote Raw: Customer jobs stable trace ids](../../raw/tasknotes/steering/done/20260509-customer-jobs-stable-trace-ids.md): Customer jobs stable trace ids の元 tasknote
+- [Tasknote Summary: Playermodel final absorption](../summaries/tasknotes/steering/done/20260509-playermodel-final-absorption-summary.md): item_use/player_state の live 依存を PlayerModel へ吸収し残りを互換 shim 化した summary
+- [Tasknote Raw: Playermodel final absorption](../../raw/tasknotes/steering/done/20260509-playermodel-final-absorption.md): Playermodel final absorption の元 tasknote
+- [Tasknote Summary: Scene mvp boundary deterministic promotion](../summaries/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion-summary.md): scene MVP boundary を deterministic checker へ昇格した summary
+- [Tasknote Raw: Scene mvp boundary deterministic promotion](../../raw/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion.md): Scene mvp boundary deterministic promotion の元 tasknote
+- [Tasknote Summary: Shared boundary deterministic promotion](../summaries/tasknotes/steering/done/20260509-shared-boundary-deterministic-promotion-summary.md): shared service vs state boundary を deterministic checker に昇格した summary
+- [Tasknote Raw: Shared boundary deterministic promotion](../../raw/tasknotes/steering/done/20260509-shared-boundary-deterministic-promotion.md): Shared boundary deterministic promotion の元 tasknote
+- [Tasknote Summary: Stakeholder voices acceptance layer](../summaries/tasknotes/steering/done/20260509-stakeholder-voices-acceptance-layer-summary.md): stakeholder_voices に acceptance layer を加え requirement と検証単位を分離した summary
+- [Tasknote Raw: Stakeholder voices acceptance layer](../../raw/tasknotes/steering/done/20260509-stakeholder-voices-acceptance-layer.md): Stakeholder voices acceptance layer の元 tasknote
+- [Tasknote Summary: Stakeholder voices battle prd migration](../summaries/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration-summary.md): Battle PRD の残り 4 項目を stakeholder voices へ移植した summary
+- [Tasknote Raw: Stakeholder voices battle prd migration](../../raw/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration.md): Stakeholder voices battle prd migration の元 tasknote
+- [Tasknote Summary: Stakeholder voices coverage report](../summaries/tasknotes/steering/done/20260509-stakeholder-voices-coverage-report-summary.md): stakeholder voices の source trace coverage report と extraction contract を追加した summary
+- [Tasknote Raw: Stakeholder voices coverage report](../../raw/tasknotes/steering/done/20260509-stakeholder-voices-coverage-report.md): Stakeholder voices coverage report の元 tasknote
+- [Tasknote Summary: Stakeholder voices map prd migration](../summaries/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration-summary.md): Map PRD の CJG01-CJG07 を stakeholder voices へ移植した summary
+- [Tasknote Raw: Stakeholder voices map prd migration](../../raw/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration.md): Stakeholder voices map prd migration の元 tasknote
+- [Tasknote Summary: Stakeholder voices platform prd migration](../summaries/tasknotes/steering/done/20260509-stakeholder-voices-platform-prd-migration-summary.md): Platform PRD の残り 4 項目を stakeholder voices へ移植した summary
+- [Tasknote Raw: Stakeholder voices platform prd migration](../../raw/tasknotes/steering/done/20260509-stakeholder-voices-platform-prd-migration.md): Stakeholder voices platform prd migration の元 tasknote
+- [Tasknote Summary: Stakeholder voices source traceability](../summaries/tasknotes/steering/done/20260509-stakeholder-voices-source-traceability-summary.md): stakeholder voices に structured source traceability を入れて active core を 100% trace 化した summary
+- [Tasknote Raw: Stakeholder voices source traceability](../../raw/tasknotes/steering/done/20260509-stakeholder-voices-source-traceability.md): Stakeholder voices source traceability の元 tasknote
+- [Tasknote Summary: Stakeholder voices av guidance theme migration](../summaries/tasknotes/steering/done/20260510-stakeholder-voices-av-guidance-theme-migration-summary.md): AV guidance/theme を stakeholder voices と coverage report に取り込んだ summary
+- [Tasknote Raw: Stakeholder voices av guidance theme migration](../../raw/tasknotes/steering/done/20260510-stakeholder-voices-av-guidance-theme-migration.md): Stakeholder voices av guidance theme migration の元 tasknote
+- [Tasknote Summary: Stakeholder voices guardrails prd migration](../summaries/tasknotes/steering/done/20260510-stakeholder-voices-guardrails-prd-migration-summary.md): Guardrails PRD の残り 5 項目を stakeholder voices へ移植した summary
+- [Tasknote Raw: Stakeholder voices guardrails prd migration](../../raw/tasknotes/steering/done/20260510-stakeholder-voices-guardrails-prd-migration.md): Stakeholder voices guardrails prd migration の元 tasknote
+- [Tasknote Summary: Stakeholder voices narrative autonomy tail migration](../summaries/tasknotes/steering/done/20260510-stakeholder-voices-narrative-autonomy-tail-migration-summary.md): narrative/autonomy tail を移植して stakeholder voices coverage を zero-missing にした summary
+- [Tasknote Raw: Stakeholder voices narrative autonomy tail migration](../../raw/tasknotes/steering/done/20260510-stakeholder-voices-narrative-autonomy-tail-migration.md): Stakeholder voices narrative autonomy tail migration の元 tasknote
+- [Tasknote Summary: Stakeholder voices trace status separation](../summaries/tasknotes/steering/done/20260510-stakeholder-voices-trace-status-separation-summary.md): stakeholder voices の trace completeness を implementation status から切り離した summary
+- [Tasknote Raw: Stakeholder voices trace status separation](../../raw/tasknotes/steering/done/20260510-stakeholder-voices-trace-status-separation.md): Stakeholder voices trace status separation の元 tasknote
+- [Tasknote Summary: FLAKE8 cr scenes CR202](../summaries/tasknotes/steering/done/20260517-flake8-cr-scenes-cr202-summary.md): Explore の CR202 大物 3 関数を分割し後続ルールの素材も抽出した summary
+- [Tasknote Raw: FLAKE8 cr scenes CR202](../../raw/tasknotes/steering/done/20260517-flake8-cr-scenes-cr202.md): FLAKE8 cr scenes CR202 の元 tasknote
+- [Tasknote Summary: FLAKE8 cr scenes](../summaries/tasknotes/steering/done/20260517-flake8-cr-scenes-summary.md): src/scenes の flake8-cr 初適用で inventory を作り A/B/C の子タスクへ分解した summary
+- [Tasknote Raw: FLAKE8 cr scenes](../../raw/tasknotes/steering/done/20260517-flake8-cr-scenes.md): FLAKE8 cr scenes の元 tasknote
+- [Tasknote Summary: Town menu show inn cost](../summaries/tasknotes/steering/done/20260517-town-menu-show-inn-cost-summary.md): Town メニューのやどやラベルへ宿代を動的併記した小さな UX 修正 summary
+- [Tasknote Raw: Town menu show inn cost](../../raw/tasknotes/steering/done/20260517-town-menu-show-inn-cost.md): Town menu show inn cost の元 tasknote
+- [Tasknote Summary: Shop owned marker clipping](../summaries/tasknotes/steering/done/20260517-shop-owned-marker-clipping-summary.md): Shop の owned 表示を行内ラベルから TTL 付き短期メッセージへ置き換えた summary
+- [Tasknote Raw: Shop owned marker clipping](../../raw/tasknotes/steering/done/20260517-shop-owned-marker-clipping.md): Shop owned marker clipping の元 tasknote
+- [Tasknote Summary: Inn skip when full hp](../summaries/tasknotes/steering/done/20260517-inn-skip-when-full-hp-summary.md): HP/MP 満タン時の宿屋をメッセージのみでスキップするようにした summary
+- [Tasknote Raw: Inn skip when full hp](../../raw/tasknotes/steering/done/20260517-inn-skip-when-full-hp.md): Inn skip when full hp の元 tasknote
+- [Tasknote Summary: FLAKE8 cr rule extension](../summaries/tasknotes/steering/done/20260518-flake8-cr-rule-extension-summary.md): flake8-cr に構造化リファクタ誘導の CR204 ルールを追加した summary
+- [Tasknote Raw: FLAKE8 cr rule extension](../../raw/tasknotes/steering/done/20260518-flake8-cr-rule-extension.md): FLAKE8 cr rule extension の元 tasknote
+- [Tasknote Summary: FLAKE8 cr scenes REST27](../summaries/tasknotes/steering/done/20260518-flake8-cr-scenes-rest27-summary.md): src/scenes の残り 27 件へ新 flake8-cr ルールを適用し 0 件まで片付けた summary
+- [Tasknote Raw: FLAKE8 cr scenes REST27](../../raw/tasknotes/steering/done/20260518-flake8-cr-scenes-rest27.md): FLAKE8 cr scenes REST27 の元 tasknote
+- [Tasknote Summary: FLAKE8 cr src rest and tools](../summaries/tasknotes/steering/done/20260518-flake8-cr-src-rest-and-tools-summary.md): src(scences除く)+tools に flake8-cr を広げ自動生成を除外しつつ 0 件へした summary
+- [Tasknote Raw: FLAKE8 cr src rest and tools](../../raw/tasknotes/steering/done/20260518-flake8-cr-src-rest-and-tools.md): FLAKE8 cr src rest and tools の元 tasknote
+- [Tasknote Summary: Update codex](../summaries/tasknotes/steering/done/20260521-update-codex-summary.md): 分裂していた Codex CLI の経路を整理し 0.132.0 を PATH 先頭へそろえた summary
+- [Tasknote Raw: Update codex](../../raw/tasknotes/steering/done/20260521-update-codex.md): Update codex の元 tasknote
+- [Tasknote Summary: Uncommitted under five](../summaries/tasknotes/steering/done/20260522-uncommitted-under-five-summary.md): Git Graph の stale 件数より terminal の git status を正とする運用判断を残した summary
+- [Tasknote Raw: Uncommitted under five](../../raw/tasknotes/steering/done/20260522-uncommitted-under-five.md): Uncommitted under five の元 tasknote
+- [Tasknote Summary: 2026年5月23日 開発基盤：llm wikiをカルパシー最小形まで削減する](../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：llm-wikiをカルパシー最小形まで削減する-summary.md): llm-wiki を raw-only の Karpathy 最小形まで削減した cleanup summary
+- [Tasknote Raw: 2026年5月23日 開発基盤：llm wikiをカルパシー最小形まで削減する](../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：llm-wikiをカルパシー最小形まで削減する.md): 2026年5月23日 開発基盤：llm wikiをカルパシー最小形まで削減する の元 tasknote
+- [Tasknote Summary: 2026年5月23日 開発基盤：karpathy型llm wiki運用の親ノート](../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート-summary.md): Karpathy 型 LLM Wiki 運用の親ルートを setup→ingest→query→health-check に固定した summary
+- [Tasknote Raw: 2026年5月23日 開発基盤：karpathy型llm wiki運用の親ノート](../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：Karpathy型LLM Wiki運用の親ノート.md): 2026年5月23日 開発基盤：karpathy型llm wiki運用の親ノート の元 tasknote
+- [Tasknote Summary: 2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す](../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す-summary.md): Karpathy 資料 1 本で回す手動 ingest の最小 done 条件を定めた summary
+- [Tasknote Raw: 2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す](../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す.md): 2026年5月23日 開発基盤：カルパシー資料1本で手動取り込みを試す の元 tasknote
+
+- [Tasknote Summary: 2026年5月23日 開発基盤：wikiの健全性チェックを試す](../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiの健全性チェックを試す-summary.md): LLM Wiki health-check を初回実行し log-first の成功条件を定めた summary
+- [Tasknote Raw: 2026年5月23日 開発基盤：wikiの健全性チェックを試す](../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiの健全性チェックを試す.md): 2026年5月23日 開発基盤：wikiの健全性チェックを試す の元 tasknote
+- [Tasknote Summary: 2026年5月23日 開発基盤：wikiへの質問と回答保存を試す](../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す-summary.md): LLM Wiki query の読取順と save/candidate の線引きを固めた summary
+- [Tasknote Raw: 2026年5月23日 開発基盤：wikiへの質問と回答保存を試す](../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：Wikiへの質問と回答保存を試す.md): 2026年5月23日 開発基盤：wikiへの質問と回答保存を試す の元 tasknote
+- [Tasknote Summary: 2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める](../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める-summary.md): 複数 source batch ingest を条件付きで始める方針を定めた summary
+- [Tasknote Raw: 2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める](../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める.md): 2026年5月23日 開発基盤：複数資料の一括取り込み方針を決める の元 tasknote
+- [Tasknote Summary: 2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する](../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する-summary.md): shared tasknote lint を repo の hook と config へ配線した summary
+- [Tasknote Raw: 2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する](../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する.md): 2026年5月23日 開発基盤：タスクノートlintをリポジトリへ配線する の元 tasknote
+- [Tasknote Summary: 2026年5月23日 開発基盤：llm wikiの土台フォルダと基準ページを作る](../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る-summary.md): LLM Wiki の base folders と core pages を現行 repo 構造で立ち上げた summary
+- [Tasknote Raw: 2026年5月23日 開発基盤：llm wikiの土台フォルダと基準ページを作る](../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wikiの土台フォルダと基準ページを作る.md): 2026年5月23日 開発基盤：llm wikiの土台フォルダと基準ページを作る の元 tasknote
+- [Tasknote Summary: 2026年5月24日 アプリ：code maker版ステータスバーのzone名描画で未定義エラー](../summaries/tasknotes/steering/done/2026年5月24日 アプリ：Code Maker版ステータスバーのzone名描画で未定義エラー-summary.md): Code Maker status bar の zone 名未定義エラーを local module alias 規則の修正で防いだ summary
+- [Tasknote Raw: 2026年5月24日 アプリ：code maker版ステータスバーのzone名描画で未定義エラー](../../raw/tasknotes/steering/done/2026年5月24日 アプリ：Code Maker版ステータスバーのzone名描画で未定義エラー.md): 2026年5月24日 アプリ：code maker版ステータスバーのzone名描画で未定義エラー の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：llm wikiへの質問回答保存スキルを作る](../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：LLM Wikiへの質問回答保存スキルを作る-summary.md): LLM Wiki query skill の 3 route と save gate を固めた summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：llm wikiへの質問回答保存スキルを作る](../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：LLM Wikiへの質問回答保存スキルを作る.md): 2026年5月24日 開発基盤：llm wikiへの質問回答保存スキルを作る の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：claudeのpushover通知文をセッションごとに固定できるようにする](../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする-summary.md): Claude Pushover 通知文を session 単位で固定する hook contract を追加した summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：claudeのpushover通知文をセッションごとに固定できるようにする](../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：ClaudeのPushover通知文をセッションごとに固定できるようにする.md): 2026年5月24日 開発基盤：claudeのpushover通知文をセッションごとに固定できるようにする の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る](../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る-summary.md): helper-only / duplicate test を整理し smoke を別枠化して daily pytest を軽くした summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る](../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る.md): 2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する](../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する-summary.md): repo 全走査系 test を smoke 側へ逃がして daily pytest を大幅短縮した summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する](../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する.md): 2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：llm wikiのhealth check表記を現行契約へそろえる](../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる-summary.md): health-check / update-schema の current wording を schema 契約へ揃えた summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：llm wikiのhealth check表記を現行契約へそろえる](../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる.md): 2026年5月24日 開発基盤：llm wikiのhealth check表記を現行契約へそろえる の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：llm wikiのhealth check wikiスキルを作る](../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る-summary.md): read-only な `health-check-wiki` skill の scope と停止点を定めた summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：llm wikiのhealth check wikiスキルを作る](../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのhealth-check-wikiスキルを作る.md): 2026年5月24日 開発基盤：llm wikiのhealth check wikiスキルを作る の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：llm wikiのupdate schemaスキルを作る](../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る-summary.md): LLM Wiki `update-schema` skill の入力面と promotion rule を固めた summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：llm wikiのupdate schemaスキルを作る](../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiのupdate-schemaスキルを作る.md): 2026年5月24日 開発基盤：llm wikiのupdate schemaスキルを作る の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：llm wikiの点検スキルとルール更新スキルを分ける](../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiの点検スキルとルール更新スキルを分ける-summary.md): LLM Wiki を health-check と update-schema の 2 skill へ分離した parent summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：llm wikiの点検スキルとルール更新スキルを分ける](../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiの点検スキルとルール更新スキルを分ける.md): 2026年5月24日 開発基盤：llm wikiの点検スキルとルール更新スキルを分ける の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：llm wikiスキルの命名を整理して親スキルを作る](../summaries/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiスキルの命名を整理して親スキルを作る-summary.md): LLM Wiki skill naming を prefix と parent skill で整理した summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：llm wikiスキルの命名を整理して親スキルを作る](../../raw/tasknotes/steering/2026年5月24日 開発基盤：LLM Wikiスキルの命名を整理して親スキルを作る.md): 2026年5月24日 開発基盤：llm wikiスキルの命名を整理して親スキルを作る の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：urlからraw保存と対話型ingest下書きまでを一気に行うスキルを作る](../summaries/tasknotes/steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る-summary.md): raw capture から interactive ingest draft までを 1 skill にまとめた summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：urlからraw保存と対話型ingest下書きまでを一気に行うスキルを作る](../../raw/tasknotes/steering/2026年5月24日 開発基盤：URLからraw保存と対話型ingest下書きまでを一気に行うスキルを作る.md): 2026年5月24日 開発基盤：urlからraw保存と対話型ingest下書きまでを一気に行うスキルを作る の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：capture and ingest sourceにルーチン型lintゲートを足す](../summaries/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す-summary.md): `capture-and-ingest-source` に routine lint と 2 gate 契約を足した summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：capture and ingest sourceにルーチン型lintゲートを足す](../../raw/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す.md): 2026年5月24日 開発基盤：capture and ingest sourceにルーチン型lintゲートを足す の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：capture and ingest sourceに要約確認ゲートを追加する](../summaries/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する-summary.md): capture-and-ingest-source に summary preview review gate を追加した summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：capture and ingest sourceに要約確認ゲートを追加する](../../raw/tasknotes/steering/2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する.md): 2026年5月24日 開発基盤：capture and ingest sourceに要約確認ゲートを追加する の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：llm wiki health checkの下ごしらえをpythonに寄せる](../summaries/tasknotes/steering/2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる-summary.md): LLM Wiki health-check の deterministic prep を Python helper に寄せた summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：llm wiki health checkの下ごしらえをpythonに寄せる](../../raw/tasknotes/steering/2026年5月24日 開発基盤：llm-wiki-health-checkの下ごしらえをPythonに寄せる.md): 2026年5月24日 開発基盤：llm wiki health checkの下ごしらえをpythonに寄せる の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：raw tasknote ingestの単純作業をpythonに寄せる](../summaries/tasknotes/steering/2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる-summary.md): raw tasknote ingest の deterministic prep を Python helper に寄せた summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：raw tasknote ingestの単純作業をpythonに寄せる](../../raw/tasknotes/steering/2026年5月24日 開発基盤：raw tasknote ingestの単純作業をPythonに寄せる.md): 2026年5月24日 開発基盤：raw tasknote ingestの単純作業をpythonに寄せる の元 tasknote
+- [Tasknote Summary: 2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をpythonに寄せる](../summaries/tasknotes/steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる-summary.md): steering oldest 10 batch ingest の deterministic helper を作る方針を固めた summary
+- [Tasknote Raw: 2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をpythonに寄せる](../../raw/tasknotes/steering/2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をPythonに寄せる.md): 2026年5月24日 開発基盤：steeringの完了タスクノート10件取り込み定型をpythonに寄せる の元 tasknote
+
+- [Tasknote Summary: 2026年5月23日 開発基盤：llm wiki運用をスキーマへ文書化する](../summaries/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wiki運用をスキーマへ文書化する-summary.md): LLM Wiki 運用ルールを repeated-success 条件つきで schema へ昇格する方針を固めた summary
+- [Tasknote Raw: 2026年5月23日 開発基盤：llm wiki運用をスキーマへ文書化する](../../raw/tasknotes/steering/done/2026年5月23日 開発基盤：LLM Wiki運用をスキーマへ文書化する.md): 2026年5月23日 開発基盤：llm wiki運用をスキーマへ文書化する の元 tasknote
 
 ## Areas
 
@@ -214,6 +320,7 @@
 
 - [Why Persistent Wiki Beats RAG](../query/2026-05-23-why-persistent-wiki-beats-rag.md): persistent wiki が compounding artifact になる理由を整理した saved answer
 - [What Protects Child Agency In Co-Development](../query/2026-05-24-what-protects-child-agency-in-co-development.md): 子どもの主体性を守るために必要な親の役割、approval loop、UX、fast feedback を整理した saved answer
+- [最新のPRレビュー（技術面のみ）チェックリスト（100項目）](../query/2026年5月24日 最新のPRレビュー（技術面のみ）チェックリスト（100項目）.md): current wiki の SSoT、M1-M5、migration safety、artifact lane を 100 項目の PR review checklist に統合した saved answer
 
 ## Candidates
 

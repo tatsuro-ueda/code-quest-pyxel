@@ -1,12 +1,17 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: '2026-05-24'
 sources:
-  - ../summaries/knowledge/customer-journeys-summary.md
-  - ../summaries/knowledge/old-customer-jobs-summary.md
-  - ../../raw/knowledge/docs/customer-journeys.md
-  - ../../raw/knowledge/docs/old-customer-jobs.md
+- ../summaries/knowledge/customer-journeys-summary.md
+- ../summaries/knowledge/old-customer-jobs-summary.md
+- ../../raw/knowledge/docs/customer-journeys.md
+- ../../raw/knowledge/docs/old-customer-jobs.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る.md
+- ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する-summary.md
+- ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：日常pytestをさらに軽くするため重い全走査テストを別枠化する.md
 ---
+
 
 # Fast Feedback Development Loop
 
@@ -31,6 +36,8 @@ sources:
 
 - 機能追加は「何を足せるか」だけでなく「数分〜数十分で次の 1 周が閉じるか」で判断する
 - 開発速度とガードレールは対立ではなく、同じ loop を守るための両輪である
+
+- the two May 24 testing notes made the fast loop more explicit by cutting helper-only and repo-scan-heavy tests out of the daily path while preserving smoke entrypoints for higher-cost checks.
 
 ## 関連ページ
 

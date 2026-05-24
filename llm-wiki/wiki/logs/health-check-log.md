@@ -221,3 +221,54 @@
   - 旧 wording と旧 H1 は `rg` 再確認で一致 0 件
 - notes:
   - 今回は compiled wiki の active page 2 件だけを直し、過去の lint entry は履歴として保持した
+
+## [2026-05-24] lint | current wiki
+
+- scope:
+  - `llm-wiki/wiki/indexes/master-index.md`
+  - `llm-wiki/wiki/areas/*.md`
+  - `llm-wiki/wiki/query/*.md`
+  - `llm-wiki/wiki/summaries/knowledge/*.md`
+  - `llm-wiki/wiki/logs/health-check-log.md`
+- contradictions: none
+- stale_claims: none
+- orphan_pages:
+  - `llm-wiki/wiki/query/2026年5月24日 最新のPRレビューチェックリスト（技術項目50件）.md` は saved query page として存在するが、`master-index` の active graph から到達できない
+- missing_concepts: none
+- missing_crossrefs: none
+- data_gaps: none
+- fix_now:
+  - 上記 query page を `master-index.md` に載せるか、saved answer として保持しないなら `archive` / 削除のどちらかに整理する
+- next_ingest:
+  - none
+- candidate_source:
+  - none
+- notes:
+  - Python helper の `orphan_signals` は 1 件、`missing_target_signals` は 0 件で、今回の concrete drift は未索引 query 1 件だけだった
+  - helper の `crossref_signals` は広めの connectivity signal なので、今回も human judgment で issue 化しなかった
+  - indexed graph 本体の矛盾、stale wording、concept 欠落は spot-check 範囲では見当たらなかった
+
+## [2026-05-24] lint | current wiki
+
+- scope:
+  - `llm-wiki/wiki/indexes/master-index.md`
+  - `llm-wiki/wiki/areas/*.md`
+  - `llm-wiki/wiki/query/*.md`
+  - `llm-wiki/wiki/summaries/knowledge/*.md`
+  - `llm-wiki/wiki/logs/health-check-log.md`
+- contradictions: none
+- stale_claims: none
+- orphan_pages: none
+- missing_concepts: none
+- missing_crossrefs: none
+- data_gaps: none
+- fix_now:
+  - none
+- next_ingest:
+  - none
+- candidate_source:
+  - none
+- notes:
+  - Python helper の `orphan_signals` は 0 件、`missing_target_signals` は 0 件だった
+  - 前回 issue 化した `最新のPRレビューチェックリスト（技術項目50件）` query page は今回の点検時点で `llm-wiki/wiki/query/` 配下に存在せず、未索引 page としては残っていなかった
+  - helper の `crossref_signals` は 151 件出たが、summary / log / candidate の薄い接続にも広く反応するため、今回も human judgment で issue 化しなかった

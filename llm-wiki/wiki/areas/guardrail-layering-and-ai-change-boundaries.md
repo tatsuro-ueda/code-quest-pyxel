@@ -80,6 +80,44 @@ sources:
   - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md
   - ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-facts-summary.md
   - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md
+  - ../summaries/tasknotes/steering/done/20260509-blockquestapp-legacy-shell-cleanup-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-blockquestapp-legacy-shell-cleanup.md
+  - ../summaries/tasknotes/steering/done/20260509-codemaker-manifest-guardian-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-codemaker-manifest-guardian.md
+  - ../summaries/tasknotes/steering/done/20260509-core-scene-manager-legacy-cleanup-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-core-scene-manager-legacy-cleanup.md
+  - ../summaries/tasknotes/steering/done/20260509-playermodel-final-absorption-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-playermodel-final-absorption.md
+  - ../summaries/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-scene-mvp-boundary-deterministic-promotion.md
+  - ../summaries/tasknotes/steering/done/20260509-shared-boundary-deterministic-promotion-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-shared-boundary-deterministic-promotion.md
+  - ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-acceptance-layer-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-acceptance-layer.md
+  - ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-battle-prd-migration.md
+  - ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-coverage-report-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-coverage-report.md
+  - ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-source-traceability-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-source-traceability.md
+  - ../summaries/tasknotes/steering/done/20260510-stakeholder-voices-trace-status-separation-summary.md
+  - ../../raw/tasknotes/steering/done/20260510-stakeholder-voices-trace-status-separation.md
+  - ../summaries/tasknotes/steering/done/20260517-flake8-cr-scenes-cr202-summary.md
+  - ../../raw/tasknotes/steering/done/20260517-flake8-cr-scenes-cr202.md
+  - ../summaries/tasknotes/steering/done/20260517-flake8-cr-scenes-summary.md
+  - ../../raw/tasknotes/steering/done/20260517-flake8-cr-scenes.md
+  - ../summaries/tasknotes/steering/done/20260517-town-menu-show-inn-cost-summary.md
+  - ../../raw/tasknotes/steering/done/20260517-town-menu-show-inn-cost.md
+  - ../summaries/tasknotes/steering/done/20260517-shop-owned-marker-clipping-summary.md
+  - ../../raw/tasknotes/steering/done/20260517-shop-owned-marker-clipping.md
+  - ../summaries/tasknotes/steering/done/20260517-inn-skip-when-full-hp-summary.md
+  - ../../raw/tasknotes/steering/done/20260517-inn-skip-when-full-hp.md
+  - ../summaries/tasknotes/steering/done/20260518-flake8-cr-rule-extension-summary.md
+  - ../../raw/tasknotes/steering/done/20260518-flake8-cr-rule-extension.md
+  - ../summaries/tasknotes/steering/done/20260518-flake8-cr-scenes-rest27-summary.md
+  - ../../raw/tasknotes/steering/done/20260518-flake8-cr-scenes-rest27.md
+  - ../summaries/tasknotes/steering/done/20260518-flake8-cr-src-rest-and-tools-summary.md
+  - ../../raw/tasknotes/steering/done/20260518-flake8-cr-src-rest-and-tools.md
 ---
 
 # Guardrail Layering And AI Change Boundaries
@@ -129,6 +167,9 @@ sources:
 - Game shrink, player_state shim removal, and imagebank/dungeon snapshot removal notes decomposed large migrations by ownership boundary instead of by file count.
 - BGM view ownership, docstring tooling, scene-to-CJ mapping, and check/fix/repair split all preferred narrow, named boundaries over broad managers.
 - architecture_rules tree-first/checker/guardian work separated facts, checks, fixers, and human review into distinct layers that AI can navigate.
+
+- runtime legacy shell removal, scene/shared deterministic promotion, PlayerModel absorption, and flake8 step-list refactors all tightened where behavior may live and how AI should change it.
+- stakeholder acceptance/trace/status work separated source refs, requirement/acceptance layers, and implementation status instead of letting one layer silently stand in for another.
 
 ## 関連ページ
 
