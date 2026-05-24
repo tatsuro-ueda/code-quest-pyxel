@@ -273,6 +273,21 @@ class BundledSourceLoadsTest(unittest.TestCase):
         except NameError as exc:  # pragma: no cover
             self.fail(f"MessageDisplay.text() raised NameError: {exc}")
 
+    def test_status_bar_zone_name_resolves_in_bundle(self):
+        """過去バグ: status bar の zone 名解決が bundle 内だけ
+        `NameError: name 'runtime' is not defined` で落ちていた。
+        """
+        mod = self._exec_bundle()
+        player = types.SimpleNamespace(y=0, in_dungeon=False)
+        game = types.SimpleNamespace(has_jp_font=False)
+        status_bar = mod.__dict__["StatusBar"](game=game)
+        try:
+            zone_name = status_bar._resolve_zone_name(player)
+        except NameError as exc:  # pragma: no cover
+            self.fail(f"StatusBar._resolve_zone_name() raised NameError: {exc}")
+        self.assertIsInstance(zone_name, str)
+        self.assertNotEqual(zone_name, "")
+
 
 if __name__ == "__main__":
     unittest.main()
