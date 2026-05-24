@@ -32,6 +32,56 @@ sources:
   - ../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md
   - ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
   - ../../raw/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-import-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-import.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-static-codemaker-upload-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-static-codemaker-upload.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import.md
+  - ../summaries/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip.md
+  - ../summaries/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource.md
+  - ../summaries/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction.md
+  - ../summaries/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution.md
+  - ../summaries/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync-summary.md
+  - ../../raw/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync.md
+  - ../summaries/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop.md
+  - ../summaries/tasknotes/steering/done/20260425-menu-shim-crash-fix-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-menu-shim-crash-fix.md
+  - ../summaries/tasknotes/steering/done/20260425-brushup-customer-journeys-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md
+  - ../summaries/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot.md
+  - ../summaries/tasknotes/steering/done/20260505-services-ui-pyxel-policy-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-services-ui-pyxel-policy.md
+  - ../summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md
+  - ../summaries/tasknotes/steering/done/20260505-docs-sync-with-recent-steering-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md
+  - ../summaries/tasknotes/steering/done/20260505-rename-production-to-dist-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-rename-production-to-dist.md
+  - ../summaries/tasknotes/steering/done/20260505-detach-index-html-from-build-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md
+  - ../summaries/tasknotes/steering/done/20260505-remove-tile-water2-deadcode-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md
+  - ../summaries/tasknotes/steering/done/20260507-build-hook-ci-integration-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md
+  - ../summaries/tasknotes/steering/done/20260507-build-runbook-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-build-runbook.md
+  - ../summaries/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md
+  - ../summaries/tasknotes/steering/done/20260507-scene-to-cj-map-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-scene-to-cj-map.md
+  - ../summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md
+  - ../summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md
 ---
 
 # Platform Sharing And Approval Ops
@@ -74,6 +124,20 @@ sources:
 - selector 説明、preview visibility、cache bust、promotion rule は全部
   `approval queue の信頼性` の一部として見る必要がある
 - `python -m http.server` のような静的配信だけでは、共有体験の事実収集まで完結しない
+- Code Maker import は `zip を戻せること` だけでなく、zip 内 code を採用せず resource だけを approval flow に戻すことまで含めて運用する必要がある。
+- static host では browser 保存 fallback が、shared 配布では server-first import が必要であり、両者を同じ UI に偽装すると approval 材料が壊れる。
+- 読み込んだ resource と配布 artifact の resource source を一致させないと、子どもが見た preview と親が渡す zip / play artifact がずれる。
+- audio でも image bank でも、imported payload を runtime が上書きしないことが sharing loop の前提になる。
+- thin wrapper 化や runtime modularization は、preview / promote / Code Maker flow を stale root main 依存から外す platform ops の更新だった。
+- competitor-before で shared / approval journeys を明示したことで、platform ops は単なる配布経路でなく競争優位を支える要求として読めるようになった。
+- guardrails PRD の M1〜M5 同期は、platform 系 PRD や approval loop の前提も docs で最新化する必要を示した。
+- menu shim crash のような scene API のずれは、approval UI に届く前の基本導線すら壊すため、platform 変更でも runtime API の実在確認が必要になる。
+- autonomous compliance loop で AGENTS.md を M1〜M5 に合わせたことは、platform / approval に触る AI 自身の行動 guardrail を強める更新でもあった。
+- pyxres world-map SSoT は shared build や Code Maker artifact が `今見えている地形` と同じであるべきという platform trust を支える。
+
+- kid-facing index redesign, top-page change-feed detachment, and dist rename reshaped the public entry lane without letting build scripts rewrite child-facing content.
+- build runbook, bundle rebuild, hook/CI integration, and verify scripts clarified how release artifacts should be regenerated and checked before sharing outward.
+- scene-to-CJ mapping and docs sync made it easier to explain why a release-side change matters in customer terms before pushing it to others.
 
 ## 関連ページ
 

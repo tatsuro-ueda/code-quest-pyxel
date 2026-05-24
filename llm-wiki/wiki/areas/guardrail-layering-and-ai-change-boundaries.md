@@ -20,6 +20,66 @@ sources:
   - ../../raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import.md
+  - ../summaries/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip.md
+  - ../summaries/tasknotes/steering/done/20260421-src-method-level-comments-summary.md
+  - ../../raw/tasknotes/steering/done/20260421-src-method-level-comments.md
+  - ../summaries/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource.md
+  - ../summaries/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction.md
+  - ../summaries/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution.md
+  - ../summaries/tasknotes/steering/done/20260425-player-dict-residue-crash-fix-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-player-dict-residue-crash-fix.md
+  - ../summaries/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack.md
+  - ../summaries/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes.md
+  - ../summaries/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop.md
+  - ../summaries/tasknotes/steering/done/20260425-menu-shim-crash-fix-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-menu-shim-crash-fix.md
+  - ../summaries/tasknotes/steering/done/20260505-imagebank-as-scene-model-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-imagebank-as-scene-model.md
+  - ../summaries/tasknotes/steering/done/20260505-dungeon-map-removal-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-dungeon-map-removal.md
+  - ../summaries/tasknotes/steering/done/20260505-imagebank-direct-cleanup-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-imagebank-direct-cleanup.md
+  - ../summaries/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot.md
+  - ../summaries/tasknotes/steering/done/20260505-game-class-shrink-m43-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-game-class-shrink-m43.md
+  - ../summaries/tasknotes/steering/done/20260505-player-state-shim-removal-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-player-state-shim-removal.md
+  - ../summaries/tasknotes/steering/done/20260505-services-ui-pyxel-policy-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-services-ui-pyxel-policy.md
+  - ../summaries/tasknotes/steering/done/20260506-bgm-pyxres-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md
+  - ../summaries/tasknotes/steering/done/20260507-gen-module-docstring-template-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-gen-module-docstring-template.md
+  - ../summaries/tasknotes/steering/done/20260507-scene-to-cj-map-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-scene-to-cj-map.md
+  - ../summaries/tasknotes/steering/done/20260507-src-header-functions-battle-view-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-src-header-functions-battle-view.md
+  - ../summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md
+  - ../summaries/tasknotes/steering/done/20260508-architecture-rules-yaml-summary.md
+  - ../../raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-guardian-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-guardian.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-facts-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md
 ---
 
 # Guardrail Layering And AI Change Boundaries
@@ -55,6 +115,20 @@ sources:
 - repo structure は guardrail の地図、 framework-rule はそのルール本体である
 - guardrail は「触る層の制限」だけでなく、「生成し直す経路」と「配布物を検証する経路」まで含めて成立する
 - guardrail を code review の注意事項だけで終わらせず、hook と headless build に落とすことで再現性が上がる
+- runtime self-heal が child-edited image bank を巻き戻すなら、それは correctness ではなく layer violation であり、検査責務を build / verify へ戻すべきである。
+- imported Sound / Music / SFX を fixed definition で再初期化しないことは、authoring と playback selection の境界を守る guardrail である。
+- method-level コメントのような readability 改善も、`src/generated/` を触らず trivial field へ過剰注釈しない境界を守って初めて安全になる。
+- shared staging、server-first import、thin wrapper、bundler、single distribution の変更は、古い root-main 前提の guardrail を runtime/build の実 lane に張り直す作業だった。
+- PlayerModel 移行後の residue crash は、new state layer へ移したつもりでも UI / scene 側に旧 API が残ると layer 境界が壊れることを示した。
+- shop の stale `M.SHOPS` 参照と menu の nonexistent Game shim は、scene が正しい façade を通らず raw shape や想像上の API を触るときに起きる boundary violation である。
+- 既存 crash-prevention test の audit は、新しい guardrail を増やす前に今ある防御層の実体を把握する step として有効だった。
+- autonomous compliance loop は、AI 自身が M1〜M5 サマリと grep で行動を矯正するメタ guardrail layer を AGENTS.md に足した。
+- imagebank-as-scene-model は、Model が `pyxel.tilemaps[0].pget` を DB-read として使う線を rule 側へ戻し、ImageBanks service の責務を再分類した例である。
+
+- services/ui pyxel policy explicitly split allowed draw zones from forbidden service code, with shared/ui becoming the sanctioned render boundary.
+- Game shrink, player_state shim removal, and imagebank/dungeon snapshot removal notes decomposed large migrations by ownership boundary instead of by file count.
+- BGM view ownership, docstring tooling, scene-to-CJ mapping, and check/fix/repair split all preferred narrow, named boundaries over broad managers.
+- architecture_rules tree-first/checker/guardian work separated facts, checks, fixers, and human review into distinct layers that AI can navigate.
 
 ## 関連ページ
 

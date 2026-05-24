@@ -6,6 +6,10 @@ sources:
   - ../summaries/knowledge/ux-policy-summary.md
   - ../../raw/knowledge/docs/product-requirements-av.md
   - ../../raw/knowledge/docs/ux-policy.md
+  - ../summaries/tasknotes/steering/done/20260506-bgm-pyxres-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md
+  - ../summaries/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md
 ---
 
 # Audio Feedback And Polish
@@ -26,6 +30,8 @@ sources:
 - audio 実装では `誰が音を作るか` と `runtime がどう鳴らすか` を混ぜない
 - pyxres を SSoT として保ち、Python 側の固定メロディ上書きを避ける
 - UX 的には「押した」「勝った」「移った」がすぐ伝わることを優先する
+
+- BGM pyxres SSoT and bundle rebuild moved music truth into pyxres plus scene views, then verified the shipped artifacts reflect that simpler audio ownership.
 
 ## 関連ページ
 

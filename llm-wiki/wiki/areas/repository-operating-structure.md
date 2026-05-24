@@ -38,6 +38,104 @@ sources:
   - ../../raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md
   - ../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md
   - ../../raw/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-import-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-import.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-static-codemaker-upload-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-static-codemaker-upload.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-audio-code-import.md
+  - ../summaries/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip.md
+  - ../summaries/tasknotes/steering/done/20260421-src-method-level-comments-summary.md
+  - ../../raw/tasknotes/steering/done/20260421-src-method-level-comments.md
+  - ../summaries/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-cj26-distribute-loaded-resource.md
+  - ../summaries/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction.md
+  - ../summaries/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-j53-runtime-modularize-and-single-distribution.md
+  - ../summaries/tasknotes/steering/done/20260424-town-framework-rule-align-summary.md
+  - ../../raw/tasknotes/steering/done/20260424-town-framework-rule-align.md
+  - ../summaries/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync-summary.md
+  - ../../raw/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync.md
+  - ../summaries/tasknotes/steering/done/20260422-play-session-ip-ua-browser-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-play-session-ip-ua-browser.md
+  - ../summaries/tasknotes/steering/done/20260425-player-dict-residue-crash-fix-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-player-dict-residue-crash-fix.md
+  - ../summaries/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack.md
+  - ../summaries/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes.md
+  - ../summaries/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop.md
+  - ../summaries/tasknotes/steering/done/20260425-menu-shim-crash-fix-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-menu-shim-crash-fix.md
+  - ../summaries/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot.md
+  - ../summaries/tasknotes/steering/done/20260505-imagebank-as-scene-model-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-imagebank-as-scene-model.md
+  - ../summaries/tasknotes/steering/done/20260505-dungeon-map-removal-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-dungeon-map-removal.md
+  - ../summaries/tasknotes/steering/done/20260505-imagebank-direct-cleanup-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-imagebank-direct-cleanup.md
+  - ../summaries/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot.md
+  - ../summaries/tasknotes/steering/done/20260505-architecture-md-decision-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-architecture-md-decision.md
+  - ../summaries/tasknotes/steering/done/20260505-game-class-shrink-m43-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-game-class-shrink-m43.md
+  - ../summaries/tasknotes/steering/done/20260505-player-state-shim-removal-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-player-state-shim-removal.md
+  - ../summaries/tasknotes/steering/done/20260505-services-ui-pyxel-policy-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-services-ui-pyxel-policy.md
+  - ../summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md
+  - ../summaries/tasknotes/steering/done/20260505-docs-sync-with-recent-steering-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md
+  - ../summaries/tasknotes/steering/done/20260505-rename-production-to-dist-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-rename-production-to-dist.md
+  - ../summaries/tasknotes/steering/done/20260505-detach-index-html-from-build-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md
+  - ../summaries/tasknotes/steering/done/20260505-remove-tile-water2-deadcode-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md
+  - ../summaries/tasknotes/steering/done/20260506-bgm-pyxres-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md
+  - ../summaries/tasknotes/steering/done/20260507-build-hook-ci-integration-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md
+  - ../summaries/tasknotes/steering/done/20260507-build-runbook-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-build-runbook.md
+  - ../summaries/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md
+  - ../summaries/tasknotes/steering/done/20260507-gen-module-docstring-template-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-gen-module-docstring-template.md
+  - ../summaries/tasknotes/steering/done/20260507-scene-to-cj-map-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-scene-to-cj-map.md
+  - ../summaries/tasknotes/steering/done/20260507-src-header-functions-battle-view-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-src-header-functions-battle-view.md
+  - ../summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md
+  - ../summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md
+  - ../summaries/tasknotes/steering/done/20260508-architecture-rules-yaml-summary.md
+  - ../../raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-guardian-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-guardian.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-md-removal-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-md-removal.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-improvements-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker-improvements.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-label-ja-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-label-ja.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-facts-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md
 ---
 
 # Repository Operating Structure
@@ -97,6 +195,24 @@ sources:
   運用で facts が落ちる
 - 説明 metadata や preview artifact を build-owned と明示しないと、
   SoT がすぐ分裂する
+- Code Maker zip import は `resource を戻す経路` と `code を採用しない契約` を分けて持ち、`ignored_code_entries` のような artifact 事実で証明する必要がある。
+- static host と shared server import は別 lane として扱い、browser fallback と shared staging を混同しない repo map が要る。
+- runtime self-heal が child-edited image bank や imported SFX を上書きしないよう、resource / audio truth の責務は build / verify / playback 境界へ戻す必要がある。
+- `main.py` の thin wrapper 化、`src/runtime/*` への正本反転、bundler と single distribution は、repo map 自体を root monolith 前提から更新した変更だった。
+- method-level コメントのような理解補助は `src/generated/` を触らない前提でだけ安全に行え、repo structure の読みやすさ改善として扱える。
+- town/shop の framework-rule 整合は gameplay bugfix であると同時に、scene / state / dispatcher の置き場を repo map に沿って戻す作業でもある。
+- guardrails PRD と framework-rule の docs 同期は、repo map の stale な入口を減らし、`main.py` や CJG 番号の古い前提で実装が迷走しないようにする作業でもある。
+- play session logging の IP / UA / browser 集計は、runtime server と report lane が observability artifact をどこまで持つかを repo structure に刻む変更だった。
+- PlayerModel 移行後の residue crash、shop の stale `M.SHOPS` 依存、menu の nonexistent shim などは、scene/service/bundle の境界が stale だと repo map が嘘をつく例として重要である。
+- 新しい crash harness を増やすより、既存 `test_cjg_*` 群の coverage map を把握する方が有効な場面もあり、repo map は test inventory の現実も指せる必要がある。
+- pyxres world-map SSoT と imagebank-as-scene-model の変更は、`tilemap/imagebank = resource DB` という実装地図を docs に戻し、`world_map` 中間層や procedural bake の扱いを再定義した。
+- AGENTS.md に M1〜M5 サマリを足した compliance loop は、repo map を AI の起点文書にも同期するための更新だった。
+
+- dungeon/world_map/imagebank cleanup plans treated tilemap/imagebank as the real map DB and named which legacy snapshots still needed removal.
+- services/ui pyxel policy, Game shrink planning, and player_state shim planning clarified where runtime shell, shared/ui, and shared state boundaries belong in the repo map.
+- index redesign, docs sync, dist rename, and top-page build detach updated the child-facing entry lane and artifact lane together.
+- BGM pyxres SSoT, build runbook, bundle rebuild, verify hooks, scene-to-CJ mapping, and docstring tooling hardened the path from source edit to release check.
+- architecture_rules.yml, checker/guardian, tree-first facts, and check/fix/repair split turned the repo map itself into machine-readable operating knowledge.
 
 ## 関連ページ
 

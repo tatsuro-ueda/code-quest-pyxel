@@ -20,6 +20,8 @@ sources:
   - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
   - ../../raw/tasknotes/steering/done/20260414-j43-public-access-log-runtime.md
   - ../../raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md
+  - ../summaries/tasknotes/steering/done/20260425-brushup-customer-journeys-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md
 ---
 
 # Low Friction Sharing
@@ -61,6 +63,7 @@ sources:
   一部として扱う
 - low-friction sharing では `開ける URL` だけでなく、
   `正しい版が開く` `遊ばれた事実が残る` まで確認する
+- journey ごとの competitor-before 追記により、共有の摩擦が URL、登録、説明、信頼のどこで発生するかを category tag 付きで見返せるようになった。
 
 ## 関連ページ
 

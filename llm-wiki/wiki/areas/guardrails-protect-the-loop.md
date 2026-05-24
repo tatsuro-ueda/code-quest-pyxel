@@ -32,6 +32,94 @@ sources:
   - ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md
   - ../../raw/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current.md
   - ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-truth-runtime.md
+  - ../summaries/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj24-codemaker-sfx-roundtrip.md
+  - ../summaries/tasknotes/steering/done/20260421-src-method-level-comments-summary.md
+  - ../../raw/tasknotes/steering/done/20260421-src-method-level-comments.md
+  - ../summaries/tasknotes/steering/done/20260424-town-framework-rule-align-summary.md
+  - ../../raw/tasknotes/steering/done/20260424-town-framework-rule-align.md
+  - ../summaries/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync-summary.md
+  - ../../raw/tasknotes/steering/done/20260424-guardrails-prd-framework-rule-sync.md
+  - ../summaries/tasknotes/steering/done/20260422-play-session-ip-ua-browser-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-play-session-ip-ua-browser.md
+  - ../summaries/tasknotes/steering/done/20260425-player-dict-residue-crash-fix-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-player-dict-residue-crash-fix.md
+  - ../summaries/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-shop-keyerror-shop-list-unpack.md
+  - ../summaries/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-tests-that-prevent-runtime-crashes.md
+  - ../summaries/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-autonomous-rule-compliance-loop.md
+  - ../summaries/tasknotes/steering/done/20260425-menu-shim-crash-fix-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-menu-shim-crash-fix.md
+  - ../summaries/tasknotes/steering/done/20260425-brushup-customer-journeys-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md
+  - ../summaries/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot.md
+  - ../summaries/tasknotes/steering/done/20260505-imagebank-as-scene-model-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-imagebank-as-scene-model.md
+  - ../summaries/tasknotes/steering/done/20260505-dungeon-map-removal-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-dungeon-map-removal.md
+  - ../summaries/tasknotes/steering/done/20260505-imagebank-direct-cleanup-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-imagebank-direct-cleanup.md
+  - ../summaries/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot.md
+  - ../summaries/tasknotes/steering/done/20260505-architecture-md-decision-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-architecture-md-decision.md
+  - ../summaries/tasknotes/steering/done/20260505-game-class-shrink-m43-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-game-class-shrink-m43.md
+  - ../summaries/tasknotes/steering/done/20260505-player-state-shim-removal-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-player-state-shim-removal.md
+  - ../summaries/tasknotes/steering/done/20260505-services-ui-pyxel-policy-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-services-ui-pyxel-policy.md
+  - ../summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md
+  - ../summaries/tasknotes/steering/done/20260505-docs-sync-with-recent-steering-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md
+  - ../summaries/tasknotes/steering/done/20260505-rename-production-to-dist-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-rename-production-to-dist.md
+  - ../summaries/tasknotes/steering/done/20260505-detach-index-html-from-build-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md
+  - ../summaries/tasknotes/steering/done/20260505-remove-tile-water2-deadcode-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md
+  - ../summaries/tasknotes/steering/done/20260506-bgm-pyxres-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md
+  - ../summaries/tasknotes/steering/done/20260507-build-hook-ci-integration-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md
+  - ../summaries/tasknotes/steering/done/20260507-build-runbook-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-build-runbook.md
+  - ../summaries/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md
+  - ../summaries/tasknotes/steering/done/20260507-gen-module-docstring-template-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-gen-module-docstring-template.md
+  - ../summaries/tasknotes/steering/done/20260507-scene-to-cj-map-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-scene-to-cj-map.md
+  - ../summaries/tasknotes/steering/done/20260507-src-header-functions-battle-view-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-src-header-functions-battle-view.md
+  - ../summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md
+  - ../summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md
+  - ../../raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md
+  - ../summaries/tasknotes/steering/done/20260508-architecture-rules-yaml-summary.md
+  - ../../raw/tasknotes/steering/done/20260508-architecture-rules-yaml.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-guardian-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-guardian.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-md-removal-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-md-removal.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-check-fix-repair-split.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-improvements-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker-improvements.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-checker-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-checker.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-label-ja-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-label-ja.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-coverage-expansion.md
+  - ../summaries/tasknotes/steering/done/20260509-architecture-rules-tree-facts-summary.md
+  - ../../raw/tasknotes/steering/done/20260509-architecture-rules-tree-facts.md
 ---
 
 # Guardrails Protect The Loop
@@ -72,6 +160,21 @@ sources:
 - YAML 正本 + codegen のような structural guardrail は、修正速度が上がるほど価値が増す
 - `.pyxres` mismatch を runtime self-heal に逃がさず、verify で止める方が current truth と child trust を守りやすい
 - `実装は正しいが説明や preview が別物` という状態も、guardrail pass ではなく loop break として扱う
+- runtime が child-edited image bank や imported SFX を上書きする状態は、クラッシュしていなくても loop break として guardrail failure に数えるべきである。
+- コード理解を助ける責務コメントも、generated を触らず future edits の誤読を減らす guardrail として機能する。
+- town/shop bugfix を PlayerModel と scene 分解まで押し上げた例は、境界を直さない応急処置より構造修正の方が loop を守ることを示している。
+- guardrails PRD 自体が stale なら、実装が正しくても何を守るかが曖昧になるため、docs 同期も loop protection の一部である。
+- IP / UA / browser observability は監視目的でなく、共有 loop がどこで止まるかを知るための facts として guardrail 側へ位置づけられる。
+- player residue crash、shop KeyError、menu shim crash のような「テストは緑でも実機で落ちる」経路は、構造 grep と regression test を guardrail として増やす理由になる。
+- 既存 `test_cjg_*` 群の coverage audit を先に行う判断は、guardrail を増やす前に何が既に守れているかを確かめる実務的な防御である。
+- competitor-before を全 journey へ入れたことで、guardrail は内部品質だけでなく競合と比べた product promise の保護としても見えるようになった。
+- pyxres world-map SSoT と imagebank 直読化は、child-edited resource を runtime が潰さないための実 guardrail である。
+
+- dungeon/world_map cleanup plans and imagebank test rewrites made pyxres/imagebank SSoT a concrete guardrail instead of a slogan.
+- services/ui draw policy, Game/player migration plans, and player_state shim removal planning translated M1/M4 guardrails into explicit migration units and static gates.
+- index build detach, dist rename, rebake_pyxres, hook/CI integration, and verify scripts prevented silent artifact drift before child-facing delivery.
+- BGM moved from a central manager to view-owned pyxres truth, simplifying audio guardrails while intentionally deleting toggle complexity.
+- architecture_rules YAML/checker/guardian/tree-first work turned architecture guardrails into auditable machine-readable rules with staged enforcement.
 
 ## 関連ページ
 

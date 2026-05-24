@@ -18,6 +18,12 @@ sources:
   - ../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md
   - ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
   - ../../raw/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-import-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-import.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-static-codemaker-upload-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-static-codemaker-upload.md
+  - ../summaries/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction-summary.md
+  - ../../raw/tasknotes/steering/done/20260422-j52-main-runtime-full-extraction.md
 ---
 
 # Approval Loop And Child Agency
@@ -54,6 +60,9 @@ sources:
 - 手書き metadata や stale preview が混ざると、選ぶ前に誤認させる approval loop になる
 - preview-first、diff 由来の説明、promotion rule がそろって初めて
   child agency の guardrail になる
+- 子どもが比べる preview/current は、Code Maker から戻した resource が本当にその候補へ入った状態でないと agency を支えられない。
+- server が無い環境で disabled の upload カードだけを見せるのは、できることの誤認を生み、agency を奪う false affordance になる。
+- thin wrapper 化で preview / promote / Code Maker flow の正本を runtime file 基準へそろえることも、子どもが stale build assumptions に振り回されないための承認ループ整備である。
 
 ## 関連ページ
 

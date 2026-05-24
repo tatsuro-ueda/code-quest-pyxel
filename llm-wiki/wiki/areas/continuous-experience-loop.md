@@ -12,6 +12,8 @@ sources:
   - ../../raw/knowledge/docs/old-customer-jobs.md
   - ../../raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md
   - ../../raw/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn.md
+  - ../summaries/tasknotes/steering/done/20260425-brushup-customer-journeys-summary.md
+  - ../../raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md
 ---
 
 # Continuous Experience Loop
@@ -47,6 +49,7 @@ sources:
 - `作れる` `遊べる` `共有できる` を別物として最適化しすぎない
 - `作る -> 遊ぶ -> 直す -> また遊ぶ` が閉じる速さも、連続体験の一部として扱う
 - 戦闘や進行の修正では、`止まらないこと` だけでなく `最後までやり切れること` を done 条件に含める
+- 42 journey すべてへ competitor-before を足したことで、`遊ぶ -> 作る -> 判断する -> 共有する` 連続体験が競合のどこで途切れやすいかを requirements 側から見比べやすくなった。
 
 ## 関連ページ
 

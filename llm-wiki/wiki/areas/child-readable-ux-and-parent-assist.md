@@ -24,6 +24,12 @@ sources:
   - ../../raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md
   - ../../raw/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen.md
   - ../../raw/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-codemaker-resource-import-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-codemaker-resource-import.md
+  - ../summaries/tasknotes/steering/done/20260420-cj26-static-codemaker-upload-summary.md
+  - ../../raw/tasknotes/steering/done/20260420-cj26-static-codemaker-upload.md
+  - ../summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md
+  - ../../raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md
 ---
 
 # Child Readable UX And Parent Assist
@@ -62,6 +68,10 @@ sources:
 - stale な説明や stale preview は、build の問題である前に
   `子どもが読んで誤解する UX` の問題である
 - preview の説明を build-owned に寄せると、親の口頭補足なしでも比較しやすくなる
+- Code Maker import UI は、zip 内 code を使わず resource だけを戻すことを parent の口頭補足なしでも誤解しにくい形で見せる必要がある。
+- static host では、動かない server-dependent カードを残すより browser 保存で本当に動く導線を見せる方が child-facing に正直である。
+
+- the kid-pixel index redesign improved the first page children see without disturbing the existing Code Maker and play flows.
 
 ## 関連ページ
 
