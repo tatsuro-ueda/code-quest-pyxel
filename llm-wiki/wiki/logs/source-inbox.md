@@ -431,3 +431,179 @@
 - status: processed
 - owner: codex
 - note: steering 古い未インジェスト組の tasknote として Pyxres as world map SSOT の記録を batch ingest
+
+## [2026-05-24] inbox | Imagebank as scene model
+
+- source_id: `2026-05-05-imagebank-as-scene-model`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-imagebank-as-scene-model.md`
+- status: processed
+- owner: codex
+- note: steering 古い未インジェスト組の tasknote として Imagebank as scene model の記録を batch ingest
+
+## [2026-05-24] inbox | Dungeon map removal
+
+- source_id: `2026-05-05-dungeon-map-removal`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-dungeon-map-removal.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Dungeon map removal の記録を反映
+
+## [2026-05-24] inbox | Imagebank direct cleanup
+
+- source_id: `2026-05-05-imagebank-direct-cleanup`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-imagebank-direct-cleanup.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Imagebank direct cleanup の記録を反映
+
+## [2026-05-24] inbox | Rewrite tests for imagebank SSOT
+
+- source_id: `2026-05-05-rewrite-tests-for-imagebank-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Rewrite tests for imagebank SSOT の記録を反映
+
+## [2026-05-24] inbox | Architecture md decision
+
+- source_id: `2026-05-05-architecture-md-decision`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-architecture-md-decision.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Architecture md decision の記録を反映
+
+## [2026-05-24] inbox | Game class shrink M43
+
+- source_id: `2026-05-05-game-class-shrink-m43`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-game-class-shrink-m43.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Game class shrink M43 の記録を反映
+
+## [2026-05-24] inbox | Player state shim removal
+
+- source_id: `2026-05-05-player-state-shim-removal`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-player-state-shim-removal.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Player state shim removal の記録を反映
+
+## [2026-05-24] inbox | Services ui pyxel policy
+
+- source_id: `2026-05-05-services-ui-pyxel-policy`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-services-ui-pyxel-policy.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Services ui pyxel policy の記録を反映
+
+## [2026-05-24] inbox | Index HTML kid pixel redesign
+
+- source_id: `2026-05-05-index-html-kid-pixel-redesign`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Index HTML kid pixel redesign の記録を反映
+
+## [2026-05-24] inbox | Docs sync with recent steering
+
+- source_id: `2026-05-05-docs-sync-with-recent-steering`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Docs sync with recent steering の記録を反映
+
+## [2026-05-24] inbox | Rename production to dist
+
+- source_id: `2026-05-05-rename-production-to-dist`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-rename-production-to-dist.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Rename production to dist の記録を反映
+
+## [2026-05-24] inbox | Detach index HTML from build
+
+- source_id: `2026-05-05-detach-index-html-from-build`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Detach index HTML from build の記録を反映
+
+## [2026-05-24] inbox | Remove tile WATER2 deadcode
+
+- source_id: `2026-05-05-remove-tile-water2-deadcode`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Remove tile WATER2 deadcode の記録を反映
+
+## [2026-05-24] inbox | Bgm pyxres SSOT
+
+- source_id: `2026-05-06-bgm-pyxres-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Bgm pyxres SSOT の記録を反映
+
+## [2026-05-24] inbox | Build hook ci integration
+
+- source_id: `2026-05-07-build-hook-ci-integration`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Build hook ci integration の記録を反映
+
+## [2026-05-24] inbox | Build runbook
+
+- source_id: `2026-05-07-build-runbook`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-build-runbook.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Build runbook の記録を反映
+
+## [2026-05-24] inbox | Bundle rebuild after bgm SSOT
+
+- source_id: `2026-05-07-bundle-rebuild-after-bgm-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Bundle rebuild after bgm SSOT の記録を反映
+
+## [2026-05-24] inbox | Gen module docstring template
+
+- source_id: `2026-05-07-gen-module-docstring-template`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-gen-module-docstring-template.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Gen module docstring template の記録を反映
+
+## [2026-05-24] inbox | Scene to cj map
+
+- source_id: `2026-05-07-scene-to-cj-map`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-scene-to-cj-map.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Scene to cj map の記録を反映
+
+## [2026-05-24] inbox | Src header functions battle view
+
+- source_id: `2026-05-07-src-header-functions-battle-view`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-src-header-functions-battle-view.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Src header functions battle view の記録を反映
+
+## [2026-05-24] inbox | Src header functions for all files
+
+- source_id: `2026-05-07-src-header-functions-for-all-files`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Src header functions for all files の記録を反映
+
+## [2026-05-24] inbox | Verify scripts and makefile
+
+- source_id: `2026-05-07-verify-scripts-and-makefile`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md`
+- status: processed
+- owner: codex
+- note: steering 3-cycle batch ingest の tasknote として Verify scripts and makefile の記録を反映

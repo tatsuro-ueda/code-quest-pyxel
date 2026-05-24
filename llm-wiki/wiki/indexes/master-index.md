@@ -123,6 +123,50 @@
 - [Tasknote Raw: Brushup customer journeys](../../raw/tasknotes/steering/done/20260425-brushup-customer-journeys.md): Brushup customer journeys の元 tasknote
 - [Tasknote Summary: Pyxres as world map SSOT](../summaries/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot-summary.md): pyxres world map を起動時 procedural bake で上書きしない guard を入れ probe で確認した summary
 - [Tasknote Raw: Pyxres as world map SSOT](../../raw/tasknotes/steering/done/20260425-pyxres-as-world-map-ssot.md): Pyxres as world map SSOT の元 tasknote
+- [Tasknote Summary: Imagebank as scene model](../summaries/tasknotes/steering/done/20260505-imagebank-as-scene-model-summary.md): ExploreModel を imagebank 直読へ寄せ `bltm` 1 回描画へ組み替えた scene-model 化の summary
+- [Tasknote Raw: Imagebank as scene model](../../raw/tasknotes/steering/done/20260505-imagebank-as-scene-model.md): Imagebank as scene model の元 tasknote
+- [Tasknote Summary: Dungeon map removal](../summaries/tasknotes/steering/done/20260505-dungeon-map-removal-summary.md): dungeon_map snapshot 撤去と dungeon pyxres SSoT への対称化を設計した follow-up summary
+- [Tasknote Raw: Dungeon map removal](../../raw/tasknotes/steering/done/20260505-dungeon-map-removal.md): Dungeon map removal の元 tasknote
+- [Tasknote Summary: Imagebank direct cleanup](../summaries/tasknotes/steering/done/20260505-imagebank-direct-cleanup-summary.md): world_map 中間 snapshot 撤去と fallback rename、test 先行書換え順序を固めた summary
+- [Tasknote Raw: Imagebank direct cleanup](../../raw/tasknotes/steering/done/20260505-imagebank-direct-cleanup.md): Imagebank direct cleanup の元 tasknote
+- [Tasknote Summary: Rewrite tests for imagebank SSOT](../summaries/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot-summary.md): imagebank SSoT 後の test 書換えを helper 集約で縮め、過大スコープを再見積もりした summary
+- [Tasknote Raw: Rewrite tests for imagebank SSOT](../../raw/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot.md): Rewrite tests for imagebank SSOT の元 tasknote
+- [Tasknote Summary: Architecture md decision](../summaries/tasknotes/steering/done/20260505-architecture-md-decision-summary.md): AGENTS→architecture→framework-rule の 2 層文書構造を固定した planning summary
+- [Tasknote Raw: Architecture md decision](../../raw/tasknotes/steering/done/20260505-architecture-md-decision.md): Architecture md decision の元 tasknote
+- [Tasknote Summary: Game class shrink M43](../summaries/tasknotes/steering/done/20260505-game-class-shrink-m43-summary.md): Game の state 7 件を 5 ループで外へ逃がす M4-3 圧縮計画の summary
+- [Tasknote Raw: Game class shrink M43](../../raw/tasknotes/steering/done/20260505-game-class-shrink-m43.md): Game class shrink M43 の元 tasknote
+- [Tasknote Summary: Player state shim removal](../summaries/tasknotes/steering/done/20260505-player-state-shim-removal-summary.md): player_state.py 残 shim 5 件を PlayerModel へ吸収して M4-4 を閉じる計画の summary
+- [Tasknote Raw: Player state shim removal](../../raw/tasknotes/steering/done/20260505-player-state-shim-removal.md): Player state shim removal の元 tasknote
+- [Tasknote Summary: Services ui pyxel policy](../summaries/tasknotes/steering/done/20260505-services-ui-pyxel-policy-summary.md): services/ui の pyxel 描画境界を docs と guard 付きで確定し message/vfx を移した summary
+- [Tasknote Raw: Services ui pyxel policy](../../raw/tasknotes/steering/done/20260505-services-ui-pyxel-policy.md): Services ui pyxel policy の元 tasknote
+- [Tasknote Summary: Index HTML kid pixel redesign](../summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md): index.html を子ども向けピクセルアート導線へ全面再デザインした summary
+- [Tasknote Raw: Index HTML kid pixel redesign](../../raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md): Index HTML kid pixel redesign の元 tasknote
+- [Tasknote Summary: Docs sync with recent steering](../summaries/tasknotes/steering/done/20260505-docs-sync-with-recent-steering-summary.md): 5/5 前後の steering 改訂を AGENTS と docs へ同期し stale repo map を減らした summary
+- [Tasknote Raw: Docs sync with recent steering](../../raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md): Docs sync with recent steering の元 tasknote
+- [Tasknote Summary: Rename production to dist](../summaries/tasknotes/steering/done/20260505-rename-production-to-dist-summary.md): production/ を dist/ へ改名し build/server 参照をそろえつつ commit 漏れ事故も記録した summary
+- [Tasknote Raw: Rename production to dist](../../raw/tasknotes/steering/done/20260505-rename-production-to-dist.md): Rename production to dist の元 tasknote
+- [Tasknote Summary: Detach index HTML from build](../summaries/tasknotes/steering/done/20260505-detach-index-html-from-build-summary.md): index.html の top changes 更新を build から切り離し hook と static guard へ移した summary
+- [Tasknote Raw: Detach index HTML from build](../../raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md): Detach index HTML from build の元 tasknote
+- [Tasknote Summary: Remove tile WATER2 deadcode](../summaries/tasknotes/steering/done/20260505-remove-tile-water2-deadcode-summary.md): TILE_WATER2 系 dead code を削り CC で pyxres を再 bake する手順も作った summary
+- [Tasknote Raw: Remove tile WATER2 deadcode](../../raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md): Remove tile WATER2 deadcode の元 tasknote
+- [Tasknote Summary: Bgm pyxres SSOT](../summaries/tasknotes/steering/done/20260506-bgm-pyxres-ssot-summary.md): BGM を pyxres SSoT + scene view 直呼びへ寄せ AudioManager を撤去した summary
+- [Tasknote Raw: Bgm pyxres SSOT](../../raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md): Bgm pyxres SSOT の元 tasknote
+- [Tasknote Summary: Build hook ci integration](../summaries/tasknotes/steering/done/20260507-build-hook-ci-integration-summary.md): verify/test スクリプトを local hook と GitHub Actions CI に載せた summary
+- [Tasknote Raw: Build hook ci integration](../../raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md): Build hook ci integration の元 tasknote
+- [Tasknote Summary: Build runbook](../summaries/tasknotes/steering/done/20260507-build-runbook-summary.md): AI が build 起動で迷わないよう architecture docs に runbook を追加した summary
+- [Tasknote Raw: Build runbook](../../raw/tasknotes/steering/done/20260507-build-runbook.md): Build runbook の元 tasknote
+- [Tasknote Summary: Bundle rebuild after bgm SSOT](../summaries/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot-summary.md): BGM SSoT 変更後の dist bundle を再生成し内包コードも検証した summary
+- [Tasknote Raw: Bundle rebuild after bgm SSOT](../../raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md): Bundle rebuild after bgm SSOT の元 tasknote
+- [Tasknote Summary: Gen module docstring template](../summaries/tasknotes/steering/done/20260507-gen-module-docstring-template-summary.md): AST から module docstring 雛形を作るスクリプトを追加した summary
+- [Tasknote Raw: Gen module docstring template](../../raw/tasknotes/steering/done/20260507-gen-module-docstring-template.md): Gen module docstring template の元 tasknote
+- [Tasknote Summary: Scene to cj map](../summaries/tasknotes/steering/done/20260507-scene-to-cj-map-summary.md): 変更 scene から関連 CJ を出す CLI を追加し影響範囲を見える化した summary
+- [Tasknote Raw: Scene to cj map](../../raw/tasknotes/steering/done/20260507-scene-to-cj-map.md): Scene to cj map の元 tasknote
+- [Tasknote Summary: Src header functions battle view](../summaries/tasknotes/steering/done/20260507-src-header-functions-battle-view-summary.md): battle/view.py に役割一覧 docstring を入れて readability パターンを実証した summary
+- [Tasknote Raw: Src header functions battle view](../../raw/tasknotes/steering/done/20260507-src-header-functions-battle-view.md): Src header functions battle view の元 tasknote
+- [Tasknote Summary: Src header functions for all files](../summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md): src header functions 改善を 4 つの実装 task に分解して完走させた umbrella summary
+- [Tasknote Raw: Src header functions for all files](../../raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md): Src header functions for all files の元 tasknote
+- [Tasknote Summary: Verify scripts and makefile](../summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md): docstring/CJ 整合 verifier を追加し Makefile build 前段へ組み込んだ summary
+- [Tasknote Raw: Verify scripts and makefile](../../raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md): Verify scripts and makefile の元 tasknote
 
 ## Areas
 

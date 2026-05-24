@@ -1054,3 +1054,423 @@
   - `dungeon bake / path variant / unknown tile fallback などの周辺 SSoT 問題はこの修正では扱っていない。`
 - notes:
   - world map の truth を pyxres 側へ戻し procedural 上書きを 1 ガードで止めた
+
+## [2026-05-24] ingest | Imagebank as scene model
+
+- source_id: `2026-05-05-imagebank-as-scene-model`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-imagebank-as-scene-model.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-imagebank-as-scene-model-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `water animation と legacy field 削除は未完で、互換残置がしばらく続く。`
+- notes:
+  - explore の地形 truth を imagebank/tilemap 直読へ寄せ world_map 中間層を薄くした
+
+## [2026-05-24] ingest | Dungeon map removal
+
+- source_id: `2026-05-05-dungeon-map-removal`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-dungeon-map-removal.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-dungeon-map-removal-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `Result 未記入の設計 note で、実装完了の事実は後続 task / commit の確認が前提である。`
+- notes:
+  - dungeon_map を消し dungeon も world_map と同じ imagebank/pyxres SSoT へ寄せる計画を固定した
+
+## [2026-05-24] ingest | Imagebank direct cleanup
+
+- source_id: `2026-05-05-imagebank-direct-cleanup`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-imagebank-direct-cleanup.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-imagebank-direct-cleanup-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `Result 未記入の設計 note なので、実装完了は別 note / code 側確認に依存する。`
+- notes:
+  - world_map 中間層を物理撤去するための runtime/test/guard の順序を固定した
+
+## [2026-05-24] ingest | Rewrite tests for imagebank SSOT
+
+- source_id: `2026-05-05-rewrite-tests-for-imagebank-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-rewrite-tests-for-imagebank-ssot-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `残りの dormant test 群は将来 dungeon tile 依存 assert が増えた時に再整理が要る。`
+- notes:
+  - imagebank SSoT 化に合わせて test helper を新設し world/dungeon 系 test の重複仕込みを整理した
+
+## [2026-05-24] ingest | Architecture md decision
+
+- source_id: `2026-05-05-architecture-md-decision`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-architecture-md-decision.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-architecture-md-decision-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `Result が空で、文書 hierarchy の実施自体は後続 docs sync note などで追う必要がある。`
+- notes:
+  - AI 用 AGENTS と人用 architecture の 2 層構造を M5-3 ルールとして固定した
+
+## [2026-05-24] ingest | Game class shrink M43
+
+- source_id: `2026-05-05-game-class-shrink-m43`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-game-class-shrink-m43.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-game-class-shrink-m43-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `実装前の設計 note で、とくに scene state 72 箇所書換えは別 review 単位が必要になる。`
+- notes:
+  - Game を runtime shell へ縮めるための 5 段階移行先と commit 粒度を固定した
+
+## [2026-05-24] ingest | Player state shim removal
+
+- source_id: `2026-05-05-player-state-shim-removal`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-player-state-shim-removal.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-player-state-shim-removal-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `Result 未記入で、shim 削除が bundle/export に与える影響確認は後続実装待ちである。`
+- notes:
+  - PlayerModel 化の最後として player_state shim 撤去の 3 ループを設計した
+
+## [2026-05-24] ingest | Services ui pyxel policy
+
+- source_id: `2026-05-05-services-ui-pyxel-policy`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-services-ui-pyxel-policy.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-services-ui-pyxel-policy-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `互換のため残した `draw_text_fn` injection や service API は将来の追加整理候補として残る。`
+- notes:
+  - services の pyxel draw を shared/ui へ押し出し M1-1 例外境界を明文化した
+
+## [2026-05-24] ingest | Index HTML kid pixel redesign
+
+- source_id: `2026-05-05-index-html-kid-pixel-redesign`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-index-html-kid-pixel-redesign-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `Google Fonts 依存とゲーム実機スクショ未導入が残り、完全オフライン配信や素材強化は後続課題である。`
+- notes:
+  - トップページをピクセルアート基調へ刷新し、見た目だけを大きく変えて既存導線は維持した
+
+## [2026-05-24] ingest | Docs sync with recent steering
+
+- source_id: `2026-05-05-docs-sync-with-recent-steering`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-docs-sync-with-recent-steering.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-docs-sync-with-recent-steering-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `legacy shell / old SceneManager / player_state 残存の最終整理は別タスクに残る。`
+- notes:
+  - 最近の steering refactor を AGENTS と docs へ追従させ、実装と文書のずれを圧縮した
+
+## [2026-05-24] ingest | Rename production to dist
+
+- source_id: `2026-05-05-rename-production-to-dist`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-rename-production-to-dist.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-rename-production-to-dist-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `historical PRD wording と外部 bookmark/systemd など repo 外の参照見直しは人手作業が残る。`
+- notes:
+  - dist 命名へ揃える整理と、前 commit 漏れを含む rename の実態を明文化した
+
+## [2026-05-24] ingest | Detach index HTML from build
+
+- source_id: `2026-05-05-detach-index-html-from-build`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-detach-index-html-from-build.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-detach-index-html-from-build-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `AI 解釈 hook の実機動作は API key 不在環境では未確認で、guard 正規表現も将来 rename に追随が要る。`
+- notes:
+  - トップページの change feed を build 依存から外し hook 主導と guard で固定した
+
+## [2026-05-24] ingest | Remove tile WATER2 deadcode
+
+- source_id: `2026-05-05-remove-tile-water2-deadcode`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260505-remove-tile-water2-deadcode.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260505-remove-tile-water2-deadcode-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `Code Maker での目視確認と再侵入防止の構造 guard はまだ人運用寄りで残る。`
+- notes:
+  - water2 dead code を削除し image bank layout 変更後の pyxres 再生成を 1 コマンド化した
+
+## [2026-05-24] ingest | Bgm pyxres SSOT
+
+- source_id: `2026-05-06-bgm-pyxres-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260506-bgm-pyxres-ssot-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/audio-feedback-and-polish.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `View ごとの小さな分岐と current_bgm の扱いはシンプルさ重視だが、将来 scene 増加時の重複は別監視が要る。`
+- notes:
+  - BGM を view 直呼びと pyxres 正本へ戻し複雑な中央 audio 管理を外した
+
+## [2026-05-24] ingest | Build hook ci integration
+
+- source_id: `2026-05-07-build-hook-ci-integration`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-build-hook-ci-integration.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-build-hook-ci-integration-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `GitHub Actions の実起動はリモート確認待ちで、完全検証は push 後になる。`
+- notes:
+  - verify lane を pre-commit と CI へ接続しローカル実行と YAML 配線まで確認した
+
+## [2026-05-24] ingest | Build runbook
+
+- source_id: `2026-05-07-build-runbook`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-build-runbook.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-build-runbook-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `build 構造が変わると runbook も同 commit で更新しない限り再び stale になる。`
+- notes:
+  - build 手順と落とし穴を architecture docs に明文化し次回以降の運用コストを下げた
+
+## [2026-05-24] ingest | Bundle rebuild after bgm SSOT
+
+- source_id: `2026-05-07-bundle-rebuild-after-bgm-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-bundle-rebuild-after-bgm-ssot-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/audio-feedback-and-polish.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 5
+- risks:
+  - `bundle 検証は個別コマンド実行に依存し、自動 gate 化はまだ十分ではない。`
+- notes:
+  - BGM pyxres SSoT 反映後の dist artifacts を再生成し bundle 内の旧 audio 痕跡を確認した
+
+## [2026-05-24] ingest | Gen module docstring template
+
+- source_id: `2026-05-07-gen-module-docstring-template`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-gen-module-docstring-template.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-gen-module-docstring-template-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `property accessor が重複列挙される既知の粗さがあり、そのまま量産するとノイズになる。`
+- notes:
+  - module docstring の雛形を AST から自動生成し readability 整備の初速を上げた
+
+## [2026-05-24] ingest | Scene to cj map
+
+- source_id: `2026-05-07-scene-to-cj-map`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-scene-to-cj-map.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-scene-to-cj-map-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `対応表は手書き粗版で、精度維持には運用しながらの更新が前提になる。`
+- notes:
+  - scene 差分を customer journeys へ引き直す CLI を作り変更影響の会話コストを下げた
+
+## [2026-05-24] ingest | Src header functions battle view
+
+- source_id: `2026-05-07-src-header-functions-battle-view`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-src-header-functions-battle-view.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-src-header-functions-battle-view-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `1 ファイル実証段階では drift 管理が手運用寄りで、横展開には自動検証が要る。`
+- notes:
+  - battle/view.py 先頭へ関数一覧 docstring を追加し読み始めのコストを下げた
+
+## [2026-05-24] ingest | Src header functions for all files
+
+- source_id: `2026-05-07-src-header-functions-for-all-files`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-src-header-functions-for-all-files.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-src-header-functions-for-all-files-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/guardrail-layering-and-ai-change-boundaries.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `親 note 自体は umbrella 性が強く、具体仕様の正本は分離した各サブタスク側に残る。`
+- notes:
+  - readability/verify backlog を 4 本の実装 note に分解して閉じた
+
+## [2026-05-24] ingest | Verify scripts and makefile
+
+- source_id: `2026-05-07-verify-scripts-and-makefile`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260507-verify-scripts-and-makefile.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260507-verify-scripts-and-makefile-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - `旧来 docstring 由来の false positive と skip-missing 前提が残り、完全 hard gate までは段階移行中である。`
+- notes:
+  - verify スクリプト本体と Makefile 依存関係を追加し build 前に docs/code 整合を検査するようにした
