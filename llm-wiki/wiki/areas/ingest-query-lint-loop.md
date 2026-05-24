@@ -1,6 +1,6 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/2026-04-04-karpathy-llm-wiki-summary.md
   - ../../raw/knowledge/2026-04-04-karpathy-llm-wiki.md
@@ -34,6 +34,7 @@ Karpathy の pattern は、source を入れる ingest、wiki に質問する que
 - orphan pages
 - missing concepts
 - missing crossrefs
+- data_gaps
 
 ## この repo への含意
 

@@ -121,4 +121,4 @@
 
 - [Source Inbox](../logs/source-inbox.md): raw source を受け付けた履歴
 - [Ingest Log](../logs/ingest-log.md): source を wiki へ反映した履歴
-- [Health Check Log](../logs/health-check-log.md): core 5 点検の履歴
+- [Health Check Log](../logs/health-check-log.md): core 6 + data_gaps を含む health-check の履歴

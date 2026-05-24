@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-24T16:25:04+00:00
 dateCreated: 2026-05-24T16:25:04+00:00
-dateModified: 2026-05-24T16:25:04+00:00
+dateModified: 2026-05-24T16:35:27+00:00
 tags:
   - task
   - llm-wiki
@@ -14,8 +14,8 @@ tags:
 
 # 2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる
 
-> 状態：② ユーザーストーリーマップ
-> 次のゲート：（ユーザー）委任度を🟢で進めてよいか
+> 状態：⑧ Closing
+> 次のゲート：なし
 
 ---
 
@@ -56,7 +56,7 @@ tags:
 6. 委任度
    1. 🟢 今回は 2 page 修正と再点検だけなので CC 単独で進められる
    2. 🟢 CCのみで可: 根拠が log と schema にそろっている
-   3. 🟡 人の判断: 専用 page を増やす話は別判断にする
+   3. 🟢 ユーザー確認済み: 専用 page は増やさず schema first で進める
 
 ---
 
@@ -88,7 +88,7 @@ tags:
 1. 当初計画
     1. 👀 stale claim として出た文言を 2 箇所に絞る
     2. 🧭 schema と log を根拠に正しい表現を決める
-    3. ✂️ page 追加が要る話と、単純表記修正を分ける
+    3. ✂️ page 追加は今回やらず、単純表記修正だけ進める
 
 #### 話題2：compiled wiki の説明を現行契約へそろえる
 
@@ -222,10 +222,10 @@ flowchart LR
 
 ## 5) Tasklist
 
-- [ ] stale wording の正しい表現を schema と log から確定する
-- [ ] `master-index` と `Ingest Query Lint Loop` を更新する
-- [ ] health-check をやり直して `health-check-log` へ結果を追記する
-- [ ] markdown lint で 0 error を確認する
+- [x] stale wording の正しい表現を schema と log から確定する
+- [x] `master-index` と `Ingest Query Lint Loop` を更新する
+- [x] health-check をやり直して `health-check-log` へ結果を追記する
+- [x] markdown lint で 0 error を確認する
 
 ---
 
@@ -234,33 +234,43 @@ flowchart LR
 - [x] health-check 所見から tasknote の scope を fix_now に絞った
 - [x] stale wording の対象を `master-index` と `Ingest Query Lint Loop` に固定した
 - [x] 新規 tasknote を起票した
+- [x] `schema first, compiled page later` 方針で進めると確定した
+- [x] `master-index` の `Health Check Log` 説明を `core 6 + data_gaps` へ更新した
+- [x] `Ingest Query Lint Loop` の `lint` 節へ `data_gaps` を追加し `last_updated` を今日に合わせた
+- [x] `health-check-log` へ再点検 entry を追記した
+- [x] helper 実行、targeted grep、markdownlint、tasknote lint を通した
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟡 起票と scope 固定は完了、実修正と再点検はこれから
+> 評価：🟢 fix_now の 2 件を解消し、schema first 方針で clean な再点検まで完了した
 
 ### 成果物
 
 - `steering/2026年5月24日 開発基盤：llm-wikiのhealth-check表記を現行契約へそろえる.md`
+- `llm-wiki/wiki/indexes/master-index.md`
+- `llm-wiki/wiki/areas/ingest-query-lint-loop.md`
+- `llm-wiki/wiki/logs/health-check-log.md`
 
 ---
 
 ## 8) Discussion
 
-- `health-check` と `update-schema` の route 分離を compiled page に昇格するかは、今回の fix 完了後に別判断でよい
+- `health-check` と `update-schema` の役割分離は、現時点では schema に置くのが正である
+- その区別自体が質問対象として何度も必要になったときだけ compiled page 化を検討する
+- 今回の再点検では、その判断を `missing_concepts` にせず `notes` へ退避するのが妥当だった
 
 ---
 
 ## 9) Closing
 
-- 状態: open
-- 次のゲート: （ユーザー）委任度を🟢で進めてよいか
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] `master-index` の stale wording が解消している
-  - [ ] `Ingest Query Lint Loop` の stale wording が解消している
-  - [ ] 再点検結果が `health-check-log` に残っている
+  - [x] `master-index` の stale wording が解消している
+  - [x] `Ingest Query Lint Loop` の stale wording が解消している
+  - [x] 再点検結果が `health-check-log` に残っている
 
 ---
 

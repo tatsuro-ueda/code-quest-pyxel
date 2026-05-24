@@ -117,3 +117,62 @@
 - notes:
   - indexed graph 自体の矛盾や crossref 破綻は見当たらない
   - 今回の中心は、active page の lint 契約が `core 5` 表記のまま残っている点と、unindexed tasknote summary 5 本が live wiki 側に残っている点である
+
+## [2026-05-24] lint | current wiki
+
+- scope:
+  - `llm-wiki/wiki/indexes/master-index.md`
+  - `llm-wiki/wiki/areas/*.md`
+  - `llm-wiki/wiki/query/*.md`
+  - `llm-wiki/wiki/summaries/knowledge/*.md`
+  - `llm-wiki/wiki/summaries/checklists/*.md`
+  - `llm-wiki/wiki/summaries/tasknotes/**/*.md`
+  - `llm-wiki/wiki/logs/health-check-log.md`
+- contradictions: none in the indexed wiki graph
+- stale_claims:
+  - `llm-wiki/wiki/indexes/master-index.md` の `Health Check Log` 説明がまだ `core 5 点検の履歴` のままで、current schema の `core 6 + data_gaps` 契約へ追随していない
+  - `llm-wiki/wiki/areas/ingest-query-lint-loop.md` の `lint` 節が `contradictions / stale claims / orphan pages / missing concepts / missing crossrefs` の 5 項目止まりで、`data_gaps` をまだ含んでいない
+- orphan_pages: none
+- missing_concepts:
+  - `health-check` を read-only lint route、`update-schema` を stable rule promotion route として分ける current contract は、schema と skill と log にはあるが、compiled wiki の area page としてはまだまとまっていない
+- missing_crossrefs:
+  - none
+- data_gaps:
+  - none
+- fix_now:
+  - `master-index` の `Health Check Log` 説明を `core 6 + data_gaps` に更新する
+  - `Ingest Query Lint Loop` の `lint` 節へ `data_gaps` を追加する
+- next_ingest:
+  - `health-check` と `update-schema` の役割分離、および `core 6 + data_gaps` lint contract を 1 本の compiled page として切り出したい
+- candidate_source:
+  - none
+- notes:
+  - Python helper の `orphan_signals` と `missing_target_signals` は空で、前回問題だった unindexed tasknote summary は `master-index` への接続で解消している
+  - helper の `crossref_signals` は hub-and-spoke な summary / log page にも広く反応するため、今回の health-check では issue 化せず human judgment で除外した
+
+## [2026-05-24] lint | current wiki after wording alignment
+
+- scope:
+  - `llm-wiki/wiki/indexes/master-index.md`
+  - `llm-wiki/wiki/areas/*.md`
+  - `llm-wiki/wiki/query/*.md`
+  - `llm-wiki/wiki/summaries/knowledge/*.md`
+  - `llm-wiki/wiki/summaries/checklists/*.md`
+  - `llm-wiki/wiki/summaries/tasknotes/**/*.md`
+  - `llm-wiki/wiki/logs/health-check-log.md`
+- contradictions: none in the indexed wiki graph
+- stale_claims: none
+- orphan_pages: none
+- missing_concepts: none
+- missing_crossrefs: none
+- data_gaps: none
+- fix_now:
+  - none
+- next_ingest:
+  - none
+- candidate_source:
+  - none
+- notes:
+  - `master-index` の `Health Check Log` 説明と `Ingest Query Lint Loop` の `lint` 節は、current schema の `core 6 + data_gaps` 契約へ追随した
+  - `health-check` と `update-schema` の役割分離は、現時点では compiled page でなく schema に置く判断とした
+  - Python helper の `orphan_signals` と `missing_target_signals` は空で、helper の `crossref_signals` は今回も human judgment で issue 化しなかった
