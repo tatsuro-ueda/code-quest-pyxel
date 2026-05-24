@@ -135,3 +135,27 @@
 - status: processed
 - owner: codex
 - note: steering 最古組の tasknote として pyxres guardrail の旧前提と現行読み替えを ingest
+
+## [2026-05-24] inbox | Guardrails 5 Save Compat
+
+- source_id: `2026-04-12-guardrails-5-save-compat`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md`
+- status: processed
+- owner: codex
+- note: steering 最古組の未インジェスト tasknote として save compatibility guardrail の記録を取り込み待ちにした
+
+## [2026-05-24] inbox | J31 Fix Selector Links
+
+- source_id: `2026-04-12-j31-fix-selector-links`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md`
+- status: processed
+- owner: codex
+- note: steering 最古組の未インジェスト tasknote として selector link restore の記録を取り込み待ちにした
+
+## [2026-05-24] inbox | J36 Dialogue SSoT
+
+- source_id: `2026-04-12-j36-dialogue-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-j36-dialogue-ssot.md`
+- status: processed
+- owner: codex
+- note: steering 最古組の未インジェスト tasknote として dialogue SSoT migration の記録を取り込み待ちにした

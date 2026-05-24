@@ -1,5 +1,60 @@
 # Ingest Log
 
+## [2026-05-24] ingest | Guardrails 5 Save Compat
+
+- source_id: `2026-04-12-guardrails-5-save-compat`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/no-silent-failure-and-migration-safety.md`
+  - `llm-wiki/wiki/areas/guardrails-protect-the-loop.md`
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 4
+- risks:
+  - save fixture の更新規律や version 増加時の fixture 拡張方針は、この source 単体ではまだ固定されていない
+- notes:
+  - save compatibility guardrail を migration safety、loop protection、approval queue、repo tool layer の各 page に接続した
+
+## [2026-05-24] ingest | J31 Fix Selector Links
+
+- source_id: `2026-04-12-j31-fix-selector-links`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/platform-sharing-and-approval-ops.md`
+  - `llm-wiki/wiki/areas/child-readable-ux-and-parent-assist.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `play-preview.html` と通常 build 時の `index.html` 上書き問題は別 tasknote としてまだ残っている
+- notes:
+  - selector 404 の修正を platform ops、child-facing UX、wrapper artifact lane の各 page に波及させた
+
+## [2026-05-24] ingest | J36 Dialogue SSoT
+
+- source_id: `2026-04-12-j36-dialogue-ssot`
+- source_path: `llm-wiki/raw/tasknotes/steering/done/20260412-j36-dialogue-ssot.md`
+- created_pages:
+  - `llm-wiki/wiki/summaries/tasknotes/steering/done/20260412-j36-dialogue-ssot-summary.md`
+- updated_pages:
+  - `llm-wiki/wiki/areas/single-source-of-truth-and-golden-path.md`
+  - `llm-wiki/wiki/areas/repository-operating-structure.md`
+  - `llm-wiki/wiki/areas/narrative-branching-and-player-guidance.md`
+  - `llm-wiki/wiki/logs/source-inbox.md`
+  - `llm-wiki/wiki/indexes/master-index.md`
+- related_page_count: 3
+- risks:
+  - `tools/test_headless.py` の不安定さや dialogue 以外の narrative data 移行はこの source では未完了のままである
+- notes:
+  - dialogue SSoT migration を one-way data flow、repo map、narrative runtime delivery の各 page に接続した
+
 ## [2026-05-24] ingest | Guardrails 2 Hooks
 
 - source_id: `2026-04-12-guardrails-2-hooks`

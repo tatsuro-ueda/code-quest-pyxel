@@ -1,13 +1,15 @@
 ---
 status: active
-last_updated: 2026-05-23
+last_updated: 2026-05-24
 sources:
   - ../summaries/knowledge/ux-policy-summary.md
   - ../summaries/knowledge/product-requirements-platform-summary.md
   - ../summaries/knowledge/product-requirements-narrative-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md
   - ../../raw/knowledge/docs/ux-policy.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/knowledge/docs/product-requirements-narrative.md
+  - ../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md
 ---
 
 # Child Readable UX And Parent Assist
@@ -22,6 +24,7 @@ sources:
 - 同時に複数の案内を重ねない
 - 押した直後の feedback を返す
 - 危険操作は確認を入れて無言で通さない
+- selector page で `あそんでみる` が dead link にならず、子どもが親のデバッグなしで遊び始められる状態を保つ
 
 ## 親の補助境界
 
@@ -33,6 +36,7 @@ sources:
 
 - UX review では文言、layout、input feedback、agency の 4 つを同時に見る
 - Code Maker 境界や CJ44 simplicity は UX の外側の話ではなく、子どもの理解可能性に直結する
+- child-facing selector の wrapper artifact 欠損も UX 破綻として扱い、単なる build 失敗で片付けない
 
 ## 関連ページ
 

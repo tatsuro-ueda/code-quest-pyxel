@@ -5,9 +5,13 @@ sources:
   - ../summaries/knowledge/product-requirements-platform-summary.md
   - ../summaries/knowledge/ux-policy-summary.md
   - ../summaries/tasknotes/done/20260412-g12-rebuild-codemaker-zip-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/knowledge/docs/ux-policy.md
   - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md
+  - ../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md
 ---
 
 # Platform Sharing And Approval Ops
@@ -22,6 +26,7 @@ sources:
 - フィードバックをその場で修正して再共有できる loop
 - play log で「届いたか」を次の行動へつなげる
 - 開発版 / 本番版の比較で承認、却下、再提案、巻き戻しを回す
+- approval queue に出す前に save compatibility を通し、既存セーブを壊す版を共有前に止める
 
 ## Code Maker との接続
 
@@ -35,6 +40,8 @@ sources:
 - platform 変更では deployment だけでなく child agency まで done 条件に入る
 - build や selector は単なる配布物生成でなく、 approval queue の UI/ops でもある
 - UX policy の読みやすさと危険操作確認は、この approval flow の説明面を支える
+- selector page の `あそんでみる` が dead link になると、共有と承認の loop 自体が始まらない
+- `play.html` 復旧のような wrapper artifact 修正も platform ops の一部として扱う必要がある
 
 ## 関連ページ
 

@@ -47,6 +47,12 @@
 - [Tasknote Raw: Guardrails 3 Headless Test](../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md): headless test 基盤の元 tasknote
 - [Tasknote Summary: Guardrails 4 pyxres Validation](../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md): `.pyxres` guardrail の旧前提と current truth への読み替えをまとめた summary
 - [Tasknote Raw: Guardrails 4 pyxres Validation](../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md): pyxres 整合チェックの元 tasknote
+- [Tasknote Summary: Guardrails 5 Save Compat](../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md): 固定 save fixture と load test で既存データ破壊を防ぐ build gate をまとめた summary
+- [Tasknote Raw: Guardrails 5 Save Compat](../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md): save compatibility guardrail の元 tasknote
+- [Tasknote Summary: J31 fix selector links](../summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md): selector page の `play.html` 404 を wrapper 再生成で復旧した summary
+- [Tasknote Raw: J31 fix selector links](../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md): selector link restore の元 tasknote
+- [Tasknote Summary: J36 dialogue SSoT](../summaries/tasknotes/steering/done/20260412-j36-dialogue-ssot-summary.md): dialogue を YAML 正本 + generated + sync へ寄せた SSoT migration の summary
+- [Tasknote Raw: J36 dialogue SSoT](../../raw/tasknotes/steering/done/20260412-j36-dialogue-ssot.md): dialogue SSoT migration の元 tasknote
 
 ## Areas
 

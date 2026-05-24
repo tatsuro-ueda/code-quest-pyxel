@@ -15,8 +15,8 @@ tags:
 
 # 2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す
 
-> 状態：② ユーザーストーリーマップ
-> 次のゲート：（ユーザー）話題3：どこまで routine 型へ寄せるか
+> 状態：⑨ Closing
+> 次のゲート：なし
 
 ---
 
@@ -33,15 +33,17 @@ tags:
 
 2. Before
    1. 💦 要約確認や continue mode は本文にあるが lint では見えない
-   2. 💦 gated profile は `状態` `次のゲート` と `Public API` を求める
-   3. 💦 今の skill 本文はその shape にまだ寄っていない
-   4. ❌ 迷う
+   2. 💦 親ノートどおりの 2 つの user gate も明示されていない
+   3. 💦 gated profile は `状態` `次のゲート` と `Public API` を求める
+   4. 💦 今の skill 本文はその shape にまだ寄っていない
+   5. ❌ 迷う
 
 3. After
-   1. 💦 どの rule と profile で gate を付けるか決まる
+   1. 💦 2 つの user gate が skill 本文で読める
    2. ✅ skill 更新時に停止点の崩れを lint で止められる
    3. ✅ `textlint` と呼んでいた gate の実体も repo 基準でそろう
-   4. ❤️ 安心
+   4. ✅ `go ahead` でも gate 1 と gate 2 を飛ばさない
+   5. ❤️ 安心
 
 4. 例外
    1. full rewrite が重ければ lighter profile を選んでもよい
@@ -53,18 +55,18 @@ tags:
    3. tasknote 起票を先に行い実装は次ゲート後に回す
 
 6. 委任度
-   1. 🟡 調査は固まったが format 方針だけ人の確認が要る
-   2. 🟢 CCのみで可：現状差分の整理と tasknote 起票
-   3. 🟡 一部判断要：full rewrite か軽量拡張かの選択
-   4. 🟢 CCのみで可：方針確定後の skill と lint の実装
+   1. 🟢 既存 profile に寄せる方針まで固まった
+   2. 🟢 CCのみで可：2 つの gate を skill 本文へ埋め込む
+   3. 🟢 CCのみで可：target 登録と lint 検証
+   4. 🟡 一部判断要：運用時に gate wording をさらに短くするか
 
 ---
 
 ## 2) ユーザーストーリーマップ
 
-> 今回は調査結果を、現状把握、差分整理、方針選択の 3 話題に分ける。
-> 委任度：🟡 調査は終わったが、実装方式の確定だけ人の確認が要る
-> 残る曖昧さ：`capture-and-ingest-source` を gated routine 本文へ寄せ切るか未確定
+> 今回は調査結果を、現状把握、差分整理、2 つの gate を含む routine 化の順に進める。
+> 委任度：🟢 既存 profile に寄せる方針と 2 つの user gate 追加まで CC が進められる
+> 残る曖昧さ：なし
 
 ### 事前確認
 
@@ -107,20 +109,21 @@ tags:
 ##### ユーザー：この repo の skill 運用者（方針選択）
 
 1. 当初計画
-    1. 🅰️ 既存 `skill_procedural_gated` に乗るよう本文を再構成する
-    2. 🅱️ 現行構成を残して専用 profile や rule を足す
-    3. 📌 第一案は A、重すぎるときだけ B に落とす
+    1. ✅ 既存 `skill_procedural_gated` に乗るよう本文を再構成する
+    2. ✅ gate 1 を `要点候補フィードバック` として明示する
+    3. ✅ gate 2 を `summary draft review` として明示する
+    4. ✅ `go ahead` でも 2 つの gate を省略しない
 
 ---
 
 ## 3) Gherkin（完了条件）
 
-> 委任度：🟡 受け入れ条件は書けるが、A/B 確定前に実装は始めない
-> 残る曖昧さ：A/B のどちらを採るか
+> 委任度：🟢 受け入れ条件の更新から実装まで CC が進められる
+> 残る曖昧さ：なし
 
 ### シナリオ一覧
 
-- [ ] シナリオ1：capture-and-ingest-source が routine lint の target として解決される
+- [x] シナリオ1：capture-and-ingest-source が routine lint の target として解決される
 
 1. 🧱 routine-skill spec と runner がある
 2. 🎬 `capture-and-ingest-source` の path を lint 対象へ登録する
@@ -133,29 +136,29 @@ Then `run_skill_lint` はこの skill を skip しない
 And 適用された profile 群が結果から分かる
 ```
 
-- [ ] シナリオ2：選んだ方式で gate が機械的に読める
+- [x] シナリオ2：2 つの user gate が機械的に読める
 
 1. 🧱 skill の gate 位置を本文で表現している
-2. 🎬 A または B の方式で lint rule を適用する
+2. 🎬 gate 1 と gate 2 を既存 gated profile に乗る shape で書く
 3. ✅ `状態` と `次のゲート` 相当の停止点ずれを検出できる
 
 ```gherkin
-Given skill に preview review continue などの gate がある
-When 選んだ profile と rule で lint を実行する
-Then gate の開始位置と次の停止点が機械的に読める
+Given skill に candidate review と summary review の 2 つの gate がある
+When 既存 gated profile と rule で lint を実行する
+Then gate 1 と gate 2 の位置が機械的に読める
 And 本文とのずれがあれば lint finding として返る
 ```
 
-- [ ] シナリオ3：skill の読みやすさを落とさず gate を追加できる
+- [x] シナリオ3：skill の読みやすさを落とさず gate を追加できる
 
 1. 🧱 skill は user invocable な長い運用手順を持つ
-2. 🎬 本文再構成または専用 profile 追加を行う
+2. 🎬 本文再構成を行い、`go ahead` でも 2 つの gate を残す
 3. ✅ summary draft と continue mode の流れが今より読みにくくならない
 
 ```gherkin
 Given `capture-and-ingest-source` は summary draft と continue mode を含む
-When skill 本文または lint profile を更新する
-Then user は preview review finalize の流れを追える
+When skill 本文を既存 gated profile に合わせて更新する
+Then user は candidate review preview review finalize の流れを追える
 And lint のためだけの不自然な構造増殖は起きない
 ```
 
@@ -167,7 +170,7 @@ And lint のためだけの不自然な構造増殖は起きない
 
 - 第一案は `capture-and-ingest-source` を routine 型の shape へ寄せる
 - その場合は既存 `skill_procedural_gated` を再利用し target 追加で済ませる
-- 本文の可読性が大きく落ちるなら、現行構成を保った専用 profile を足す
+- gate 1 と gate 2 は明示し、`go ahead` でも省略しない
 - どちらでも `run_skill_lint` と markdownlint の両方で止める
 
 ### 責務分担概要図
@@ -186,7 +189,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     D1[① 現状調査] --> D2[② tasknote 起票]
-    D2 -->|ゲート1: ユーザー| D3[③ 方式A/B確定]
+    D2 --> D3[③ 既存 gated profile 採用]
     D3 --> D4[④ skill と spec 修正]
     D4 --> D5[⑤ lint 実行]
     D5 --> D6[⑥ 結果共有]
@@ -210,10 +213,11 @@ flowchart TD
 ### 調査結果
 
 - current skill は要約確認 gate を本文に持つが routine target ではない
+- 親ノートどおりの gate 1 と gate 2 を、routine 本文として明示する必要がある
 - `skill_procedural_gated` は `doc_fields` と `batch_gate` を含む
 - `batch_gate` は `> 状態` と `> 次のゲート` を本文見出しへ解決する
 - `doc_fields` は `## Public API` 内の番号 block に `Goal` `Returns` `Policy` を求める
-- つまり既存 gated profile をそのまま使うなら、skill 本文の shape をかなり寄せる必要がある
+- つまり既存 gated profile をそのまま使うなら、skill 本文の shape をかなり寄せつつ 2 つの user gate を書き直す必要がある
 
 ### 【参照】
 
@@ -227,13 +231,14 @@ flowchart TD
 ### 変更範囲
 
 - やること:
-  - routine lint と現行 skill の差分を 1 つの方針へ寄せる
-  - 必要な target/profile/rule の追加または skill 本文の再構成を行う
+  - routine lint と現行 skill の差分を既存 gated profile に寄せる
+  - gate 1 と gate 2 を skill 本文へ明示する
+  - target 追加と skill 本文の再構成を行う
   - gate 崩れを止める検証コマンドを残す
 - やらないこと:
   - ingest の中身や wiki 反映の挙動を変えること
   - `entities/` や `concepts/` などの新構造を作ること
-  - tasknote 起票と同時に実装まで完了扱いにすること
+  - `go ahead` で gate 自体を省略すること
 
 ### 検証
 
@@ -254,9 +259,9 @@ flowchart TD
 
 - [x] 現状調査をして差分を整理する
 - [x] tasknote を起票する
-- [ ] 方式 A/B を確定する
-- [ ] skill 本文または lint profile を更新する
-- [ ] lint と sync check で検証する
+- [x] 方式 A/B を確定する
+- [x] skill 本文または lint profile を更新する
+- [x] lint と sync check で検証する
 
 ---
 
@@ -264,7 +269,11 @@ flowchart TD
 
 - `capture-and-ingest-source` は routine lint の target 未登録だった
 - 既存 gated profile は `状態` `次のゲート` `Public API` を前提にしていた
-- tasknote では、full rewrite と lighter profile の 2 案を比較できる形にした
+- gate 1 は `要点候補フィードバック`、gate 2 は `summary draft review` として明示した
+- `go ahead` でも gate を飛ばさない方針に切り替えた
+- target は `skill_procedural_gated` として spec に追加した
+- 個別 family lint、markdownlint、tasknote lint、skill registry check は通った
+- `run_skill_lint.mjs` 本体は VM に `ruby` が無く `spawnSync ruby ENOENT` で未通過だった
 
 ---
 
@@ -274,26 +283,42 @@ flowchart TD
   - `~/dotfiles/claude/.claude/skills/capture-and-ingest-source/SKILL.md`
   - `~/dotfiles/shared/linter/specs/routine-skill/routine_skill_rules.yml`
   - `~/dotfiles/shared/linter/coding-rules/routine-skill/run_skill_lint.mjs`
+- 変更対象:
+  - `~/dotfiles/claude/.claude/skills/capture-and-ingest-source/SKILL.md`
+  - `~/dotfiles/shared/linter/specs/routine-skill/routine_skill_rules.yml`
+  - `~/dotfiles/shared/linter/coding-rules/routine-skill/tests/run_skill_lint.test.mjs`
 - 成果物:
   - `steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにルーチン型lintゲートを足す.md`
+- 検証結果:
+  - `module_intent.mjs` OK
+  - `section_markers.mjs` OK
+  - `step_list_only.mjs` OK
+  - `control_flow.mjs` OK
+  - `doc_fields.mjs` OK
+  - `batch_gate.mjs` OK
+  - `markdownlint-cli2` OK
+  - `sync_claude_skills_to_agents.py --check` OK
 - 評価:
-  - current skill が lint target 外であることを特定できた
-  - gated profile の必須 shape を実装前に固定できた
+  - current skill を gated target へ移せた
+  - 2 つの user gate を routine profile に乗る形で明示できた
+  - actual runner だけは `ruby` 非搭載のため環境依存で未通過だった
 
 ---
 
 ## 8) Discussion
 
-- 第一案は A で、既存 infra を使い回す方が rule の増殖を防げる
-- ただし `capture-and-ingest-source` は長い user skill なので、本文可読性を壊すなら B へ落とす
-- つまり今回の確認点は「routine 型へどこまで本文を寄せてよいか」の 1 点に絞れる
+- 既存 gated profile を使い回す方が rule の増殖を防げる
+- user が気にしていたのは gate の数なので、`go ahead` path でも gate 1 と gate 2 を残すのが本筋である
+- routine lint は停止点の崩れを止め、運用側は 2 回の user 確認を守る役に分けられる
+- residual risk は `run_skill_lint.mjs` が `ruby` 前提のままな点だけで、skill 本文自体の family lint は通っている
 
 ---
 
 ## 9) Closing
 
 - 今回は tasknote 起票まで
-- 次のゲートは `話題3：どこまで routine 型へ寄せるか`
+- 既存 gated profile への寄せと 2 つの user gate 追加まで完了した
+- `run_skill_lint.mjs` の環境依存は別論点として残る
 - 関連tasknote:
   - `steering/2026年5月24日 開発基盤：capture-and-ingest-sourceに要約確認ゲートを追加する.md`
   - `steering/2026年5月24日 開発基盤：capture-and-ingest-sourceにrelated page更新とingest logを足す.md`

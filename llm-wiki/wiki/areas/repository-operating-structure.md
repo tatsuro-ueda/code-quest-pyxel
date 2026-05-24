@@ -6,16 +6,22 @@ sources:
   - ../summaries/knowledge/framework-rule-summary.md
   - ../summaries/tasknotes/done/20260412-g12-rebuild-codemaker-zip-summary.md
   - ../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-2-hooks-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-j31-fix-selector-links-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-j36-dialogue-ssot-summary.md
   - ../../raw/knowledge/docs/repository-structure.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
   - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
+  - ../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md
+  - ../../raw/tasknotes/steering/done/20260412-j36-dialogue-ssot.md
 ---
 
 # Repository Operating Structure
@@ -34,6 +40,9 @@ sources:
 - Code Maker 向け `code-maker.zip` は build 生成物だが、中身は `main.py` と `blockquest.pyxres` の現行正本に追従する必要がある
 - `.claude/settings.json` と `tools/hooks/*.sh` が generated / `.pyxres` / import path の誤操作を止める guardrail entrypoint になる
 - `tools/test_headless.py` が build 前段で import / init / 1 フレーム描画を検査する runtime guardrail になる
+- `tests/fixtures/save_v1.json` と `tools/test_save_compat.py` が save schema 変更の migration safety を守る tool layer になる
+- `generate_wrapper()` で作る `play.html` は selector page から実ゲームへつなぐ user-facing artifact lane の一部である
+- dialogue も `assets/dialogue.yaml -> tools/gen_data.py -> src/generated/dialogue.py -> src/game_data.py` と `tools/sync_main_data.py` の同期経路へ収まる
 
 ## 運用上の意味
 
@@ -50,6 +59,8 @@ sources:
 - repo structure が stale になると、AI の修正面も stale になる
 - packaging artifact や generated data の通り道が stale になると、AI の修正入口そのものがずれていく
 - `.pyxres` の current truth が変わったときも、runtime self-heal と build verify のどちらが正式経路かを repo map に反映しておく必要がある
+- selector から辿る wrapper artifact が欠けるだけでも、repo map と child-facing delivery は同時に壊れる
+- dialogue のような旧来の直書き data は、single-file `main.py` 同期まで含めて repo map に戻さないと半端な二重管理になる
 
 ## 関連ページ
 

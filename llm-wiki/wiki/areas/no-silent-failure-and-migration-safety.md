@@ -6,12 +6,14 @@ sources:
   - ../summaries/knowledge/product-requirements-guardrails-summary.md
   - ../summaries/knowledge/repository-structure-summary.md
   - ../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
   - ../../raw/knowledge/docs/framework-rule.md
   - ../../raw/knowledge/docs/product-requirements-guardrails.md
   - ../../raw/knowledge/docs/repository-structure.md
   - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
 ---
@@ -36,6 +38,7 @@ sources:
 - grep や目視だけで移行完了と判断しない
 - manifest や設定追加を記憶に頼らない
 - 削除済み dependency の import や obsolete test fixture path を放置しない
+- fixed save fixture を使う restore test で、`SAVED_PLAYER_KEYS` や save schema の変更が既存データを壊さないかを機械的に止める
 
 ## この repo への含意
 
@@ -45,6 +48,7 @@ sources:
 - build runbook や startup gate は migration safety を運用へ落とした形である
 - pytest import error を「テストが無い」扱いで見逃さず、guardrail の欠損として最優先で直す
 - headless 起動で NameError / ImportError / init crash を先に落とし、子どもの前で初めて壊れる状態を防ぐ
+- save compatibility test に失敗した版を approval queue の手前で落とし、「遊ぶ前に既存データが壊れる」事故を防ぐ
 
 ## 関連ページ
 

@@ -7,6 +7,7 @@ sources:
   - ../summaries/knowledge/repository-structure-summary.md
   - ../summaries/tasknotes/done/20260412-g12-rebuild-codemaker-zip-summary.md
   - ../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-j36-dialogue-ssot-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
   - ../../raw/knowledge/docs/framework-rule.md
@@ -14,6 +15,7 @@ sources:
   - ../../raw/knowledge/docs/repository-structure.md
   - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
   - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
+  - ../../raw/tasknotes/steering/done/20260412-j36-dialogue-ssot.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
 ---
@@ -31,6 +33,7 @@ sources:
 - ユーザー編集より自動生成を優先しない
 - `src/` と `assets/` を正本にし、 `dist/` を source 扱いしない
 - `assets/*.yaml -> tools/gen_data.py -> src/generated/*.py -> src/game_data.py` の一方向生成を守り、手動多重更新より regenerate を優先する
+- dialogue も `assets/dialogue.yaml -> tools/gen_data.py -> src/generated/dialogue.py -> src/game_data.py` の一方向へ寄せ、`src/dialogue_data.py` は互換レイヤーにとどめる
 - `.pyxres` の truth は runtime self-heal に置かず、Code Maker 側の実体と build / verify 側の検査で守る
 
 ## Golden Path
@@ -48,6 +51,7 @@ sources:
 - 「直した」ではなく「ユーザーが触る通り道で動いた」ことを done とみなす
 - generated data や packaging artifact も、`正本から再現できるか` で点検する
 - resource mismatch を startup self-repair に任せず、verify で止める方が current truth と相性が良い
+- `main.py` が single-file 同期を持つなら、SSoT 移行は generated file だけでなく sync script まで含めて完了扱いにする
 
 ## 関連ページ
 

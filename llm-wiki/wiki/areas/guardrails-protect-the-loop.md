@@ -8,6 +8,7 @@ sources:
   - ../summaries/knowledge/repository-structure-summary.md
   - ../summaries/tasknotes/done/20260412-g15-test-pinning-summary.md
   - ../summaries/tasknotes/done/20260412-guardrails-1-ssot-codegen-summary.md
+  - ../summaries/tasknotes/steering/done/20260412-guardrails-5-save-compat-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-2-hooks-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
   - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
@@ -17,6 +18,7 @@ sources:
   - ../../raw/knowledge/docs/repository-structure.md
   - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
   - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
+  - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-2-hooks.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-3-headless-test.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation.md
@@ -45,6 +47,7 @@ sources:
 - 壊れた test lane を先に直し、failure signal 自体を guardrail として回復させる
 - hook で generated / `.pyxres` / wrong import path をその場で止め、誤った入口から壊させない
 - headless 起動 gate を通し、壊れた版を approval queue の手前で落とす
+- save compatibility test を通し、既存データを壊す版を approval queue の手前で落とす
 
 ## この repo への含意
 
