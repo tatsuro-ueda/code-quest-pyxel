@@ -674,21 +674,22 @@ class ExplorePresenter:
             tile: 現在タイル。
         Postconditions:
             - debug_mode は早期 return。
-            - dungeon 内・ボス撃破済は早期 return。
+            - dungeon 内・ボス撃破済なら clone 戦を開始する。
             - tile の rate と乱数で勝てば battle_scene を start する。
         """
         import src.runtime.main_runtime as M
         if game.debug_mode:
             return
         player = game.player_model
-        is_dungeon_post_boss = (
-            player.in_dungeon and player.glitch_lord_defeated
-        )
-        if is_dungeon_post_boss:
-            return
         rate = M.ENCOUNTER_RATES.get(tile, 0)
         can_encounter = rate > 0 and random.random() < rate
         if not can_encounter:
+            return
+        if player.in_dungeon and player.glitch_lord_defeated:
+            game.battle_scene.start(
+                M.GLITCH_CLONE_DATA,
+                is_glitch_lord=False,
+            )
             return
         zone = M.get_zone(player.y, player.in_dungeon)
         enemies = M.ZONE_ENEMIES.get(zone, M.ZONE_ENEMIES[0])
