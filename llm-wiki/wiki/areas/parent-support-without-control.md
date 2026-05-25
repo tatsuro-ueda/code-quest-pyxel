@@ -10,8 +10,8 @@ sources:
   - ../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md
   - ../../../docs/customer-jobs.md
   - ../../../docs/customer-journeys.md
-  - ../../raw/knowledge/docs/old-customer-jobs.md
-  - ../../raw/knowledge/docs/product-requirements-platform.md
+  - ../../../docs/old-customer-jobs.md
+  - ../../../docs/product-requirements-platform.md
   - ../../../docs/ux-policy.md
   - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
 ---

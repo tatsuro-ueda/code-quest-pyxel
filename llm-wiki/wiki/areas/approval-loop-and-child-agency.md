@@ -11,7 +11,7 @@ sources:
   - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
   - ../summaries/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note-summary.md
   - ../../../docs/customer-journeys.md
-  - ../../raw/knowledge/docs/product-requirements-platform.md
+  - ../../../docs/product-requirements-platform.md
   - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
   - ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md
   - ../../raw/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime.md

@@ -1,5 +1,5 @@
 ---
-source: raw/knowledge/docs/product-requirements-map.md
+source: docs/product-requirements-map.md
 source_type: doc
 status: active
 origin:

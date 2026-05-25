@@ -1,5 +1,5 @@
 ---
-source: raw/knowledge/docs/product-requirements-narrative.md
+source: docs/product-requirements-narrative.md
 source_type: doc
 status: active
 origin:

@@ -4,7 +4,7 @@ last_updated: 2026-05-23
 sources:
   - ../summaries/knowledge/product-requirements-av-summary.md
   - ../summaries/knowledge/ux-policy-summary.md
-  - ../../raw/knowledge/docs/product-requirements-av.md
+  - ../../../docs/product-requirements-av.md
   - ../../../docs/ux-policy.md
   - ../summaries/tasknotes/steering/done/20260506-bgm-pyxres-ssot-summary.md
   - ../../raw/tasknotes/steering/done/20260506-bgm-pyxres-ssot.md

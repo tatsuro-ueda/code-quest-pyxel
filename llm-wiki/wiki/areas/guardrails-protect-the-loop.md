@@ -19,7 +19,7 @@ sources:
 - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
 - ../../../docs/customer-journeys.md
 - ../../../docs/framework-rule.md
-- ../../raw/knowledge/docs/product-requirements-guardrails.md
+- ../../../docs/product-requirements-guardrails.md
 - ../../../docs/repository-structure.md
 - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
 - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md

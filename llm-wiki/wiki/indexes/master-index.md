@@ -13,19 +13,19 @@
 - [Framework Rule Summary](../summaries/knowledge/framework-rule-summary.md): SSoT、Golden Path、M1-M5 をまとめた summary
 - [Framework Rule SSoT](../../../docs/framework-rule.md): コーディング原則と MVP 規約の repo SSoT（実体は docs/）
 - [Old Customer Jobs Summary](../summaries/knowledge/old-customer-jobs-summary.md): 親子開発の好循環と親の役割境界の原型 summary
-- [Old Customer Jobs Raw](../../raw/knowledge/docs/old-customer-jobs.md): 顧客ジョブ旧版の正本 source
+- [Old Customer Jobs Raw](../../../docs/old-customer-jobs.md): 顧客ジョブ旧版の正本 source
 - [Product Requirements AV Summary](../summaries/knowledge/product-requirements-av-summary.md): BGM / SFX / VFX と Code Maker audio 境界をまとめた summary
-- [Product Requirements AV Raw](../../raw/knowledge/docs/product-requirements-av.md): AV 要求の正本 source
+- [Product Requirements AV Raw](../../../docs/product-requirements-av.md): AV 要求の正本 source
 - [Product Requirements Battle Summary](../summaries/knowledge/product-requirements-battle-summary.md): 敵 / 呪文 / バランス調整 loop をまとめた summary
-- [Product Requirements Battle Raw](../../raw/knowledge/docs/product-requirements-battle.md): Battle 要求の正本 source
+- [Product Requirements Battle Raw](../../../docs/product-requirements-battle.md): Battle 要求の正本 source
 - [Product Requirements Guardrails Summary](../summaries/knowledge/product-requirements-guardrails-summary.md): AI 改造 guardrail と resource 境界をまとめた summary
-- [Product Requirements Guardrails Raw](../../raw/knowledge/docs/product-requirements-guardrails.md): Guardrails 要求の正本 source
+- [Product Requirements Guardrails Raw](../../../docs/product-requirements-guardrails.md): Guardrails 要求の正本 source
 - [Product Requirements Map Summary](../summaries/knowledge/product-requirements-map-summary.md): tilemap authorship と地形意味付けをまとめた summary
-- [Product Requirements Map Raw](../../raw/knowledge/docs/product-requirements-map.md): Map 要求の正本 source
+- [Product Requirements Map Raw](../../../docs/product-requirements-map.md): Map 要求の正本 source
 - [Product Requirements Narrative Summary](../summaries/knowledge/product-requirements-narrative-summary.md): dialogue / guidance / branching / ending をまとめた summary
-- [Product Requirements Narrative Raw](../../raw/knowledge/docs/product-requirements-narrative.md): Narrative 要求の正本 source
+- [Product Requirements Narrative Raw](../../../docs/product-requirements-narrative.md): Narrative 要求の正本 source
 - [Product Requirements Platform Summary](../summaries/knowledge/product-requirements-platform-summary.md): sharing / approval / Code Maker 境界をまとめた summary
-- [Product Requirements Platform Raw](../../raw/knowledge/docs/product-requirements-platform.md): Platform 要求の正本 source
+- [Product Requirements Platform Raw](../../../docs/product-requirements-platform.md): Platform 要求の正本 source
 - [Repository Structure Summary](../summaries/knowledge/repository-structure-summary.md): repo の責務分担表と build runbook をまとめた summary
 - [Repository Structure SSoT](../../../docs/repository-structure.md): リポジトリ構造定義の repo SSoT（実体は docs/）
 - [Story Concepts Summary](../summaries/knowledge/story-concepts-summary.md): theme、zone arc、landmark symbolism をまとめた summary

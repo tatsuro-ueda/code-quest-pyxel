@@ -6,7 +6,7 @@ sources:
   - ../summaries/knowledge/product-requirements-guardrails-summary.md
   - ../summaries/knowledge/repository-structure-summary.md
   - ../../../docs/framework-rule.md
-  - ../../raw/knowledge/docs/product-requirements-guardrails.md
+  - ../../../docs/product-requirements-guardrails.md
   - ../../../docs/repository-structure.md
 ---
 

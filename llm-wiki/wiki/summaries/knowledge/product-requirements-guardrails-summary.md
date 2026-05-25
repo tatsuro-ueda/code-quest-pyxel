@@ -1,5 +1,5 @@
 ---
-source: raw/knowledge/docs/product-requirements-guardrails.md
+source: docs/product-requirements-guardrails.md
 source_type: doc
 status: active
 origin:

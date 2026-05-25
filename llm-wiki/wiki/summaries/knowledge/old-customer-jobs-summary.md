@@ -1,5 +1,5 @@
 ---
-source: raw/knowledge/docs/old-customer-jobs.md
+source: docs/old-customer-jobs.md
 source_type: doc
 status: active
 origin:

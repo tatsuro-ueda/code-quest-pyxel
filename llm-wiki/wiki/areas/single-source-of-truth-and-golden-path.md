@@ -11,7 +11,7 @@ sources:
 - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
 - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
 - ../../../docs/framework-rule.md
-- ../../raw/knowledge/docs/product-requirements-guardrails.md
+- ../../../docs/product-requirements-guardrails.md
 - ../../../docs/repository-structure.md
 - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
 - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md

@@ -10,7 +10,7 @@ sources:
 - ../summaries/tasknotes/steering/done/20260412-guardrails-3-headless-test-summary.md
 - ../summaries/tasknotes/steering/done/20260412-guardrails-4-pyxres-validation-summary.md
 - ../../../docs/framework-rule.md
-- ../../raw/knowledge/docs/product-requirements-guardrails.md
+- ../../../docs/product-requirements-guardrails.md
 - ../../../docs/repository-structure.md
 - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
 - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md

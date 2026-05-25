@@ -6,7 +6,7 @@ sources:
   - ../summaries/tasknotes/steering/done/20260413-j42-rpg-loop-journey-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn-summary.md
   - ../summaries/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview-summary.md
-  - ../../raw/knowledge/docs/product-requirements-battle.md
+  - ../../../docs/product-requirements-battle.md
   - ../../raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md
   - ../../raw/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn.md
   - ../../raw/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview.md

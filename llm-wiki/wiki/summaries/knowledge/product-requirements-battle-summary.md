@@ -1,5 +1,5 @@
 ---
-source: raw/knowledge/docs/product-requirements-battle.md
+source: docs/product-requirements-battle.md
 source_type: doc
 status: active
 origin:

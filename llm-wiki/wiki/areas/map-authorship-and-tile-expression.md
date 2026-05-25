@@ -4,8 +4,8 @@ last_updated: 2026-05-23
 sources:
   - ../summaries/knowledge/product-requirements-map-summary.md
   - ../summaries/knowledge/product-requirements-platform-summary.md
-  - ../../raw/knowledge/docs/product-requirements-map.md
-  - ../../raw/knowledge/docs/product-requirements-platform.md
+  - ../../../docs/product-requirements-map.md
+  - ../../../docs/product-requirements-platform.md
   - ../summaries/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration-summary.md
   - ../../raw/tasknotes/steering/done/20260509-stakeholder-voices-map-prd-migration.md
 ---

@@ -1,5 +1,5 @@
 ---
-source: raw/knowledge/docs/product-requirements-platform.md
+source: docs/product-requirements-platform.md
 source_type: doc
 status: active
 origin:
