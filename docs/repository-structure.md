@@ -45,7 +45,8 @@
 ├─ templates/                 build 前 HTML テンプレート
 ├─ dist/                承認済み配布物
 ├─ steering/                  task note（done/ にアーカイブ済み）
-└─ docs/                      本文書を含むドキュメント群
+├─ docs/                      本文書を含むドキュメント群
+└─ llm-wiki/                  LLM 向け永続 wiki（raw source + wiki/summaries/areas/indexes/logs）
 ```
 
 ## 3.5 build の起動方法（runbook）
@@ -263,10 +264,12 @@ Pyxel の「単一 main.py」制約の受け皿。runtime 側には業務ロジ�
 | `sync_main_data.py` | monolith に inlined を貼り戻す（Phase 2 で bundler に置換） |
 | `web_runtime_server.py` | 配布 + session API + resource import API の同居サーバー（Phase 4 で systemd 常時起動） |
 | `report_play_sessions.py` | sqlite のプレイ記録を人間可読に |
-| `test_headless.py` | 起動のみ確認 |
-| `test_save_compat.py` | save 互換検証 |
-| `test_web_compat.py` | Playwright で配布 HTML 互換確認 |
-| `hooks/` | pre/post commit hook |
+| `test_headless.py` | **runtime guardrail**：build 前段で import / init / 1 フレーム描画を検査 |
+| `test_save_compat.py` | **migration safety**：固定 save fixture（`tests/fixtures/save_v1.json`）で save schema 変更時のロード破壊を防ぐ |
+| `test_web_compat.py` | **delivery gate**：Playwright で wrapper から実ブラウザ起動までを検査し、共有 URL が dead-on-arrival にならないようにする |
+| `hooks/` | **guardrail entrypoint**：`src/generated` への手書き、`.pyxres` の不正書換え、誤った import path などを pre/post commit で止める |
+
+> **guardrail entrypoint の 2 系統**：`tools/hooks/*.sh` が repo 側の誤操作を pre/post commit で止め、`.claude/settings.json` が AI セッション側の permission / hook を制御する。両方そろって初めて、人と AI の両側から `src/generated` や `.pyxres` を守れる。
 
 ### 5.3 `test/`
 
@@ -294,6 +297,23 @@ build 前テンプレート（完成 HTML は置かない）。
 | `product-requirements-*.md` | 6 分野の gherkin（av / battle / guardrails / map / narrative / platform） |
 
 AI / 人ともに `AGENTS.md` → 必要なら `repository-structure.md`（本文書）→ 必要なら `framework-rule.md` の順に降りる 2 層構造。詳細は `framework-rule.md::M5-3` を参照。
+
+### 5.7 `llm-wiki/`（LLM 向け永続 wiki）
+
+Karpathy 流の persistent knowledge base。SSoT は `docs/` 側、`llm-wiki/` は LLM が育てる層。
+
+| パス | 役割 |
+|---|---|
+| `raw/` | 外部 source の immutable コピー（tasknote / knowledge / binary） |
+| `wiki/summaries/` | source の要約 |
+| `wiki/indexes/master-index.md` | 全 page の content-oriented 入口 |
+| `wiki/areas/` | 横断的な概念・トピックページ（LLM が育てる中心層） |
+| `wiki/query/` | 再利用価値のある回答 |
+| `wiki/candidates/` | wiki 外の事実切り出し候補 |
+| `wiki/logs/` | ingest / health-check / source-inbox の chronological log |
+| `adapter.yml` | machine-readable path SSoT |
+
+運用 schema は `docs/llm-wiki-ops-schema.md`、対応 skill は `llm-wiki-query` / `llm-wiki-health-check` / `llm-wiki-capture-and-ingest-source` / `llm-wiki-update-schema`。
 
 ## 6. 依存関係のルール
 
