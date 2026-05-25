@@ -536,8 +536,8 @@ Service が便利すぎると何でも入って壊れます。なので種類を
 外部依存を扱う
 
 * SaveStore
-* SfxSystem（pyxres にデータが入っていない slot だけ fallback 定義を書き込む。`_slot_has_sound` ガード）
-* ImageBanks（**書き込み・初期化のみ**：pyxres ロード / `setup_world_tilemap` / `regenerate_world_tilemap_fallback` / `regenerate_dungeon_tilemap_fallback`（いずれも pyxres 不在時の fallback のみ）/ `pyxel.save`。**読み取りは Model 直読**（`pyxel.tilemaps[0]` / `pyxel.images[n]`）へ移管、2026-05-05 改訂。旧名 `bake_world_to_tilemap` / `bake_dungeon_to_tilemap` は同改訂でリネーム）
+* SfxSystem（pyxres にデータが入っていない slot だけ fallback 定義を書き込む。`_slot_has_sound` ガード。Code Maker 由来の imported SFX / Music が入った slot は truth として尊重し、fixed definition で上書きしない）
+* ImageBanks（**書き込み・初期化のみ**：pyxres ロード / `setup_world_tilemap` / `regenerate_world_tilemap_fallback` / `regenerate_dungeon_tilemap_fallback`（いずれも pyxres 不在時の fallback のみ）/ `pyxel.save`。**読み取りは Model 直読**（`pyxel.tilemaps[0]` / `pyxel.images[n]`）へ移管、2026-05-05 改訂。旧名 `bake_world_to_tilemap` / `bake_dungeon_to_tilemap` は同改訂でリネーム。Code Maker 由来の imported image bank も runtime self-heal で巻き戻さず、build / verify 側で truth を守る）
 
 > **2026-05-07 改訂（CJ44 確定版）**：旧 AudioManager は撤去。BGM 切替の責任は各 scene の view.py の `pyxel.playm` 呼び出しに局所化（M1 例外として View の Pyxel 直呼びを許可）。BGM データは pyxres を SSoT として扱う。
 
@@ -759,7 +759,8 @@ Model では
 2. **Presenter テスト**
 3. **Scene 結合テスト**
 4. **View スモークテスト**
-5. **Pyxel 実機確認**
+5. **headless 起動 gate**（`tools/test_headless.py`）：import / 初期化 / 1 フレーム描画の失敗を build gate で止める最後の自動バリア
+6. **Pyxel 実機確認**
 
 ### Presenter テストで見るもの
 
@@ -794,6 +795,19 @@ Presenter テストでは
 * `dict` を新規導入しない。新規状態は `dataclass`
 * 副作用は command / request として返す
 * 1 つの PR で Scene 構造とゲームルールを同時に大改造しない
+
+### 物理 guardrail（hook と AI session 設定）
+
+文面ルールだけでは AI / 人ともに踏み外しやすいので、物理的に止める仕組みを 2 系統そろえる。
+
+* `tools/hooks/*.sh`：pre/post commit で `src/generated` への手書き、`.pyxres` の不正書換え、誤った import path 等を止める
+* `.claude/settings.json`：AI セッション側の permission / hook を制御し、wrong-path edit に到達する前に止める
+
+両方そろって初めて、人と AI の両側から `src/generated` や `.pyxres` を守れる。
+
+### AI 自身が規約を見て自己矯正する compliance loop
+
+`AGENTS.md` には M1〜M5 のサマリと検証 grep を載せ、AI が改修中に自分の動きを M1〜M5 に照らし合わせて矯正できる形にする（autonomous compliance loop）。`AGENTS.md` を単なる「読まれる文書」ではなく「AI が周期的に参照して行動を修正するソース」として扱う。
 
 このへんは `AGENTS.md` (≤100 行・自動 load) と `docs/repository-structure.md` (人用詳細) に書くと効きます。両者から本ファイル `docs/framework-rule.md` (規約本体) に到達できる 2 層構造を維持します。
 
@@ -851,20 +865,7 @@ Phase 1.5 では、まず次の順で進めると安定します。
 
 ---
 
-# 付録: 本プロジェクト適用メモ（2026-04-23 起案 / 2026-04-24 メタ構造化）
-
-この規約を本リポジトリ（Block Quest Pyxel）に段階適用する際の、**未実施の方針メモ**。Phase 1.5 終了時点では着手していない。実装時はこの節を根拠資料として参照する。
-
-## 進める順序
-
-インパクト順：
-
-1. **Level 2（`player` dict → `PlayerModel`）を最初に**（M4-4） — これが決まると `item_use` / `player_state` の消化と GameState 圧縮が一緒についてくる
-2. Level 1（scene-local Model へのルール引き上げ）を scene 単位で進める（M4-1）
-3. ViewModel 導入（M2-2）は scene.py を解体する過程で scene ごとに入れる
-4. 副作用コマンド（M3-3）は Presenter テストを書くタイミングで段階導入
-
-## 旧章番号との対応（本書き換え 2026-04-24 時点）
+# 付録: 旧章番号との対応（2026-04-24 メタ構造化時点）
 
 旧書式（1〜12 章）→ 新書式（M1〜M5 配下）の対応：
 
