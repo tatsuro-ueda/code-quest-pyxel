@@ -7,8 +7,8 @@ sources:
   - ../summaries/knowledge/old-customer-jobs-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j42-rpg-loop-journey-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn-summary.md
-  - ../../raw/knowledge/docs/customer-jobs.md
-  - ../../raw/knowledge/docs/customer-journeys.md
+  - ../../../docs/customer-jobs.md
+  - ../../../docs/customer-journeys.md
   - ../../raw/knowledge/docs/old-customer-jobs.md
   - ../../raw/tasknotes/steering/done/20260413-j42-rpg-loop-journey.md
   - ../../raw/tasknotes/steering/done/20260413-j39-run-fail-enemy-turn.md

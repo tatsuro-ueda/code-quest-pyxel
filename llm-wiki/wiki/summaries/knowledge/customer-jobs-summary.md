@@ -1,9 +1,7 @@
 ---
-source: raw/knowledge/docs/customer-jobs.md
+source: ../docs/customer-jobs.md
 source_type: doc
 status: active
-origin:
-  - docs/customer-jobs.md
 last_synced: 2026-05-23
 last_ingested: 2026-05-23
 size_class: medium

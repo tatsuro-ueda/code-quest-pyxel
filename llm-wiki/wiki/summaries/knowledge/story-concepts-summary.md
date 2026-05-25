@@ -1,9 +1,7 @@
 ---
-source: raw/knowledge/docs/story-concepts.md
+source: ../docs/story-concepts.md
 source_type: doc
 status: active
-origin:
-  - docs/story-concepts.md
 last_synced: 2026-05-23
 last_ingested: 2026-05-23
 size_class: medium

@@ -5,9 +5,9 @@ sources:
   - ../summaries/knowledge/framework-rule-summary.md
   - ../summaries/knowledge/product-requirements-guardrails-summary.md
   - ../summaries/knowledge/repository-structure-summary.md
-  - ../../raw/knowledge/docs/framework-rule.md
+  - ../../../docs/framework-rule.md
   - ../../raw/knowledge/docs/product-requirements-guardrails.md
-  - ../../raw/knowledge/docs/repository-structure.md
+  - ../../../docs/repository-structure.md
 ---
 
 # View Presenter Model Boundaries

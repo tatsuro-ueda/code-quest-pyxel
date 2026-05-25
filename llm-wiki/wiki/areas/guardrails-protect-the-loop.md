@@ -17,10 +17,10 @@ sources:
 - ../summaries/tasknotes/steering/done/20260414-j33-selector-change-list-ssot-summary.md
 - ../summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md
 - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
-- ../../raw/knowledge/docs/customer-journeys.md
-- ../../raw/knowledge/docs/framework-rule.md
+- ../../../docs/customer-journeys.md
+- ../../../docs/framework-rule.md
 - ../../raw/knowledge/docs/product-requirements-guardrails.md
-- ../../raw/knowledge/docs/repository-structure.md
+- ../../../docs/repository-structure.md
 - ../../raw/tasknotes/done/20260412-g15-test-pinning.md
 - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
 - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md

@@ -4,7 +4,7 @@ last_updated: '2026-05-24'
 sources:
 - ../summaries/knowledge/customer-journeys-summary.md
 - ../summaries/knowledge/old-customer-jobs-summary.md
-- ../../raw/knowledge/docs/customer-journeys.md
+- ../../../docs/customer-journeys.md
 - ../../raw/knowledge/docs/old-customer-jobs.md
 - ../summaries/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る-summary.md
 - ../../raw/tasknotes/steering/done/2026年5月24日 開発基盤：存在価値が薄いテストを整理して実行時間を削る.md

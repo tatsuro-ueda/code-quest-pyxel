@@ -13,7 +13,7 @@ sources:
 - ../summaries/tasknotes/steering/done/20260414-j44-stale-preview-selector-runtime-summary.md
 - ../summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md
 - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
-- ../../raw/knowledge/docs/ux-policy.md
+- ../../../docs/ux-policy.md
 - ../../raw/knowledge/docs/product-requirements-platform.md
 - ../../raw/knowledge/docs/product-requirements-narrative.md
 - ../../raw/tasknotes/steering/done/20260412-j31-fix-selector-links.md

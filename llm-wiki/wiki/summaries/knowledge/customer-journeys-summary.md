@@ -1,9 +1,7 @@
 ---
-source: raw/knowledge/docs/customer-journeys.md
+source: ../docs/customer-journeys.md
 source_type: doc
 status: active
-origin:
-  - docs/customer-journeys.md
 last_synced: 2026-05-23
 last_ingested: 2026-05-23
 size_class: large

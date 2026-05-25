@@ -10,8 +10,8 @@ sources:
   - ../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md
   - ../summaries/tasknotes/steering/done/20260414-j45-noise-guardian-event-only-preview-summary.md
   - ../../raw/knowledge/docs/product-requirements-narrative.md
-  - ../../raw/knowledge/docs/story-concepts.md
-  - ../../raw/knowledge/docs/ux-policy.md
+  - ../../../docs/story-concepts.md
+  - ../../../docs/ux-policy.md
   - ../../raw/tasknotes/steering/done/20260412-j36-dialogue-ssot.md
   - ../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md
   - ../../raw/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger.md

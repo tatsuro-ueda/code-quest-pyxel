@@ -11,11 +11,11 @@ sources:
   - ../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md
   - ../summaries/tasknotes/steering/done/20260414-j43-public-access-log-runtime-summary.md
   - ../summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md
-  - ../../raw/knowledge/docs/customer-jobs.md
-  - ../../raw/knowledge/docs/customer-journeys.md
+  - ../../../docs/customer-jobs.md
+  - ../../../docs/customer-journeys.md
   - ../../raw/knowledge/docs/old-customer-jobs.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
-  - ../../raw/knowledge/docs/ux-policy.md
+  - ../../../docs/ux-policy.md
   - ../../raw/tasknotes/steering/done/20260412-guardrails-6-web-delivery-test.md
   - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
   - ../../raw/tasknotes/steering/done/20260414-j43-public-access-log-runtime.md

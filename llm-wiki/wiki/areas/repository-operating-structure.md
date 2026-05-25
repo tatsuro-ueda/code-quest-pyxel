@@ -20,8 +20,8 @@ sources:
 - ../summaries/tasknotes/steering/done/20260414-j46-web-cache-bust-preview-current-summary.md
 - ../summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md
 - ../summaries/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note-summary.md
-- ../../raw/knowledge/docs/repository-structure.md
-- ../../raw/knowledge/docs/framework-rule.md
+- ../../../docs/repository-structure.md
+- ../../../docs/framework-rule.md
 - ../../raw/tasknotes/done/20260412-g12-rebuild-codemaker-zip.md
 - ../../raw/tasknotes/done/20260412-guardrails-1-ssot-codegen.md
 - ../../raw/tasknotes/steering/done/20260412-guardrails-5-save-compat.md

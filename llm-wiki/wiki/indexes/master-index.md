@@ -7,11 +7,11 @@
 - [Karpathy LLM Wiki Summary](../summaries/knowledge/2026-04-04-karpathy-llm-wiki-summary.md): persistent wiki、ingest、query、lint、schema の核をまとめた summary
 - [Karpathy LLM Wiki Raw](../../raw/knowledge/2026-04-04-karpathy-llm-wiki.md): 2026-04-04 公開の元 source
 - [Customer Jobs Summary](../summaries/knowledge/customer-jobs-summary.md): 子ども、親、友達の顧客ジョブと競合理解をまとめた summary
-- [Customer Jobs Raw](../../raw/knowledge/docs/customer-jobs.md): 顧客ジョブの正本 source
+- [Customer Jobs SSoT](../../../docs/customer-jobs.md): 顧客ジョブの repo SSoT（実体は docs/）
 - [Customer Journeys Summary](../summaries/knowledge/customer-journeys-summary.md): Buy/Make、journey 群、承認ループ、ガードレールをまとめた summary
-- [Customer Journeys Raw](../../raw/knowledge/docs/customer-journeys.md): カスタマージャーニー設計の正本 source
+- [Customer Journeys SSoT](../../../docs/customer-journeys.md): カスタマージャーニー設計の repo SSoT（実体は docs/）
 - [Framework Rule Summary](../summaries/knowledge/framework-rule-summary.md): SSoT、Golden Path、M1-M5 をまとめた summary
-- [Framework Rule Raw](../../raw/knowledge/docs/framework-rule.md): コーディング原則と MVP 規約の正本 source
+- [Framework Rule SSoT](../../../docs/framework-rule.md): コーディング原則と MVP 規約の repo SSoT（実体は docs/）
 - [Old Customer Jobs Summary](../summaries/knowledge/old-customer-jobs-summary.md): 親子開発の好循環と親の役割境界の原型 summary
 - [Old Customer Jobs Raw](../../raw/knowledge/docs/old-customer-jobs.md): 顧客ジョブ旧版の正本 source
 - [Product Requirements AV Summary](../summaries/knowledge/product-requirements-av-summary.md): BGM / SFX / VFX と Code Maker audio 境界をまとめた summary
@@ -27,11 +27,11 @@
 - [Product Requirements Platform Summary](../summaries/knowledge/product-requirements-platform-summary.md): sharing / approval / Code Maker 境界をまとめた summary
 - [Product Requirements Platform Raw](../../raw/knowledge/docs/product-requirements-platform.md): Platform 要求の正本 source
 - [Repository Structure Summary](../summaries/knowledge/repository-structure-summary.md): repo の責務分担表と build runbook をまとめた summary
-- [Repository Structure Raw](../../raw/knowledge/docs/repository-structure.md): リポジトリ構造定義の正本 source
+- [Repository Structure SSoT](../../../docs/repository-structure.md): リポジトリ構造定義の repo SSoT（実体は docs/）
 - [Story Concepts Summary](../summaries/knowledge/story-concepts-summary.md): theme、zone arc、landmark symbolism をまとめた summary
-- [Story Concepts Raw](../../raw/knowledge/docs/story-concepts.md): ストーリーコンセプトの正本 source
+- [Story Concepts SSoT](../../../docs/story-concepts.md): ストーリーコンセプトの repo SSoT（実体は docs/）
 - [UX Policy Summary](../summaries/knowledge/ux-policy-summary.md): child-readable UX と parent assist 境界をまとめた summary
-- [UX Policy Raw](../../raw/knowledge/docs/ux-policy.md): UX policy の正本 source
+- [UX Policy SSoT](../../../docs/ux-policy.md): UX policy の repo SSoT（実体は docs/）
 - [Architecture Checklist Summary](../summaries/checklists/architecture-checklist-summary.md): Code Maker と docs/pyxres の守り方
 - [Framework Checklist Summary](../summaries/checklists/framework-checklist-summary.md): M1-M5 と done の扱い
 - [UX Checklist Summary](../summaries/checklists/ux-checklist-summary.md): UX policy の checklist summary

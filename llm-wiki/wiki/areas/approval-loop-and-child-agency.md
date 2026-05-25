@@ -10,7 +10,7 @@ sources:
   - ../summaries/tasknotes/steering/done/20260416-j47-preview-first-selector-autogen-summary.md
   - ../summaries/tasknotes/steering/done/20260416-j48-preview-must-reflect-current-request-summary.md
   - ../summaries/tasknotes/steering/done/20260416-j49-bind-preview-to-open-request-note-summary.md
-  - ../../raw/knowledge/docs/customer-journeys.md
+  - ../../../docs/customer-journeys.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
   - ../../raw/tasknotes/steering/done/20260412-j38-preview-build-flow.md
   - ../../raw/tasknotes/steering/done/20260414-j33-selector-change-list-ssot.md

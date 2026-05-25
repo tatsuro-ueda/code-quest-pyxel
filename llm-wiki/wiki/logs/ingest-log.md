@@ -2642,3 +2642,34 @@
   - `schema draft を早く固定しすぎると、初回運用の偶然を恒久ルールとして焼き込む恐れがある。`
 - notes:
   - LLM Wiki schema は repeated-success 条件でだけ昇格する方針を残した
+
+## [2026-05-25] retire | docs SSoT 6 本を raw/knowledge/docs/ から撤去
+
+- action: raw 撤去・SSoT 一本化
+- retired_paths:
+  - `llm-wiki/raw/knowledge/docs/customer-jobs.md`
+  - `llm-wiki/raw/knowledge/docs/customer-journeys.md`
+  - `llm-wiki/raw/knowledge/docs/framework-rule.md`
+  - `llm-wiki/raw/knowledge/docs/story-concepts.md`
+  - `llm-wiki/raw/knowledge/docs/ux-policy.md`
+  - `llm-wiki/raw/knowledge/docs/repository-structure.md`
+- ssot_paths:
+  - `docs/customer-jobs.md`
+  - `docs/customer-journeys.md`
+  - `docs/framework-rule.md`
+  - `docs/story-concepts.md`
+  - `docs/ux-policy.md`
+  - `docs/repository-structure.md`
+- rewired_pages:
+  - `llm-wiki/wiki/summaries/knowledge/{6 本}-summary.md`（frontmatter `source:` を `../docs/...` に、冗長な `origin:` を削除）
+  - `llm-wiki/wiki/indexes/master-index.md`（`Raw` 行を `SSoT` に書き換え、リンク先を `../../../docs/...` に）
+  - `llm-wiki/wiki/areas/`（`../../raw/knowledge/docs/{6 本}` を `../../../docs/{6 本}` へ一括書き換え）
+- preserved:
+  - `llm-wiki/wiki/logs/source-inbox.md`（受付履歴のため過去 entry は据え置き）
+  - 過去 ingest entry（append-only 原則のため据え置き）
+- rationale:
+  - これら 6 本は `docs/` の実体コピーで、内容は同一だが Karpathy 流の「raw = immutable source」原則と矛盾する。SSoT は `docs/` のままにし、wiki は `summaries/` と `areas/` で育てる方針へ整理。
+- scope:
+  - 今回は指定 6 本のみ。`product-requirements-*` 6 本、`architecture_rules.yml`、`old-customer-jobs.md` は同じ二重管理状態だが今回は対象外。
+- notes:
+  - 次の使い方の目標は `wiki → docs/` への逆流フロー（query が SSoT 更新候補を提示し、採用で `docs/` が更新される）。この撤去はその下準備でもある。

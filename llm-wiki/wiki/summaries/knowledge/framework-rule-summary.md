@@ -1,9 +1,7 @@
 ---
-source: raw/knowledge/docs/framework-rule.md
+source: ../docs/framework-rule.md
 source_type: doc
 status: active
-origin:
-  - docs/framework-rule.md
 last_synced: 2026-05-23
 last_ingested: 2026-05-23
 size_class: large

@@ -1,9 +1,7 @@
 ---
-source: raw/knowledge/docs/ux-policy.md
+source: ../docs/ux-policy.md
 source_type: doc
 status: active
-origin:
-  - docs/ux-policy.md
 last_synced: 2026-05-23
 last_ingested: 2026-05-23
 size_class: small

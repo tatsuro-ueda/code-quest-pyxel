@@ -7,7 +7,7 @@ sources:
   - ../summaries/knowledge/product-requirements-map-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j37-dialogue-page-advance-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j38-dungeon-boss-trigger-summary.md
-  - ../../raw/knowledge/docs/story-concepts.md
+  - ../../../docs/story-concepts.md
   - ../../raw/knowledge/docs/product-requirements-narrative.md
   - ../../raw/knowledge/docs/product-requirements-map.md
   - ../../raw/tasknotes/steering/done/20260413-j37-dialogue-page-advance.md

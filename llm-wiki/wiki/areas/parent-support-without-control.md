@@ -8,11 +8,11 @@ sources:
   - ../summaries/knowledge/product-requirements-platform-summary.md
   - ../summaries/knowledge/ux-policy-summary.md
   - ../summaries/tasknotes/steering/done/20260413-j21-access-log-visibility-summary.md
-  - ../../raw/knowledge/docs/customer-jobs.md
-  - ../../raw/knowledge/docs/customer-journeys.md
+  - ../../../docs/customer-jobs.md
+  - ../../../docs/customer-journeys.md
   - ../../raw/knowledge/docs/old-customer-jobs.md
   - ../../raw/knowledge/docs/product-requirements-platform.md
-  - ../../raw/knowledge/docs/ux-policy.md
+  - ../../../docs/ux-policy.md
   - ../../raw/tasknotes/steering/done/20260413-j21-access-log-visibility.md
 ---
 
