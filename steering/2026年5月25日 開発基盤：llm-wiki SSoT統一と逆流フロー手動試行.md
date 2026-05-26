@@ -276,6 +276,7 @@ And tasknote の Discussion に「wiki → 現実の逆方向ドリフト = heal
   - `docs/framework-rule.md`（コーディング原則 / MVP 規約本体）
   - `docs/repository-structure.md`（リポジトリ構造 + 責務分担）
   - `docs/ux-policy.md`（子ども向け UI / 親補助境界）
+- **ingest / 比較時はタイムスタンプ重視（ユーザー指摘 2026-05-25）**: tasknote を wiki に取り込むときも、wiki と現実を比較するときも、より新しい記述が正しい。古い記述は単純削除せず、「廃止 YYYY-MM」マーカーを付けて時系列で残す。今回の preview/current 廃止のように、何がいつ廃止されたか時系列で追える状態を保つ。
 
 ### 反省とルール化
 

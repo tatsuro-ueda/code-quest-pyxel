@@ -42,7 +42,7 @@ sources:
 - 却下した版が勝手に本番へ上がらない
 - 子どもが change list を信じて preview/current を比べられる
 - 子どもが `今の依頼に対応する preview` だけを見る
-- 前の preview がいつ current になるかが勝手に曖昧にならない
+- ~~前の preview がいつ current になるかが勝手に曖昧にならない~~（**2026-05 廃止**：preview→current 昇格 flow は運用停止）
 
 ## 止まる条件
 
@@ -55,11 +55,9 @@ sources:
 - AI の速さは、そのままだと親主導を加速させる危険もある
 - だから approval loop は nice-to-have ではなく、主体性を壊さないための core mechanism である
 - platform 側の build / approve / reject / rollback は、全部この child agency を支える ops である
-- preview build が current に混ざらず、`--promote` でだけ昇格する構造そのものが
-  child agency の guardrail になる
+- ~~preview build が current に混ざらず、`--promote` でだけ昇格する構造そのものが child agency の guardrail になる~~（**2026-05 廃止**：`--promote` 昇格は運用停止。preview build が current に混ざらない分離自体は残る）
 - 手書き metadata や stale preview が混ざると、選ぶ前に誤認させる approval loop になる
-- preview-first、diff 由来の説明、promotion rule がそろって初めて
-  child agency の guardrail になる
+- preview-first と diff 由来の説明が child agency の guardrail になる（~~promotion rule~~ は **2026-05 廃止**）
 - 子どもが比べる preview/current は、Code Maker から戻した resource が本当にその候補へ入った状態でないと agency を支えられない。
 - server が無い環境で disabled の upload カードだけを見せるのは、できることの誤認を生み、agency を奪う false affordance になる。
 - thin wrapper 化で preview / promote / Code Maker flow の正本を runtime file 基準へそろえることも、子どもが stale build assumptions に振り回されないための承認ループ整備である。

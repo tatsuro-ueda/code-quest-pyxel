@@ -178,7 +178,7 @@ sources:
 - preview source が無いときは preview card を出さず、stale artifact を shared 導線に乗せない
 - current / preview は build token 付き URL で配り、比較のたびに古い HTML を握らせない
 - 実公開 URL は play-session POST を受ける runtime server で配り、shared feedback を事実として残す
-- preview は `今の依頼内容を表す版` として扱い、次の依頼が来たら前の preview を current へ回す昇格ルールまで含めて運用する
+- preview は `今の依頼内容を表す版` として扱う（~~次の依頼が来たら前の preview を current へ回す昇格ルール~~ は **2026-05 廃止**、バグ多発のため運用停止）
 
 ## Code Maker との接続
 

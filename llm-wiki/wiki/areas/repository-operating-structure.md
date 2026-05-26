@@ -261,8 +261,7 @@ sources:
   user-facing delivery gate になる
 - `tests/fixtures/save_v1.json` と `tools/test_save_compat.py` が save schema 変更の migration safety を守る tool layer になる
 - `generate_wrapper()` で作る `play.html` は selector page から実ゲームへつなぐ user-facing artifact lane の一部である
-- `tools/build_web_release.py` は current / preview 分離と `--promote` を持つ
-  approval build lane の中核でもある
+- `tools/build_web_release.py` は current / preview 分離を持つ approval build lane の中核でもある（`--promote` 昇格 flow は **2026-05 廃止**、バグ多発のため運用停止）
 - `tools/web_runtime_server.py` と `src/play_session_logging.py` は shared play の
   session facts を残す server lane になる
 - dialogue も `assets/dialogue.yaml -> tools/gen_data.py -> src/generated/dialogue.py -> src/game_data.py` と `tools/sync_main_data.py` の同期経路へ収まる
@@ -272,8 +271,7 @@ sources:
   build artifact lane の責務に含まれる
 - `tools/build_web_release.py` は build token 付き URL と preview diff 由来の
   metadata を生成する release lane でもある
-- preview/current の昇格は request note の目視一致でなく、
-  source を回す promotion flow として扱う
+- ~~preview/current の昇格は request note の目視一致でなく、source を回す promotion flow として扱う~~（**2026-05 廃止**：preview→current 昇格 flow は運用停止。preview/current の分離・比較は残る）
 
 ## 運用上の意味
 
