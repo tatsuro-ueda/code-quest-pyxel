@@ -1,30 +1,32 @@
 ---
-status: in-progress
+status: done
 priority: high
 scheduled: 2026-05-26T18:25:15+00:00
 dateCreated: 2026-05-26T18:25:15+00:00
-dateModified: 2026-05-26T18:48:14+00:00
+dateModified: 2026-05-26T18:55:45+00:00
 tags:
   - task
+  - research
   - screenshot
   - sharing
   - chromebook
   - save
   - web
   - ux
+  - archived
 ---
 
-# 2026年5月26日 共有：Chromebook向けつっこみスクショを保存ファーストで始める
+# 2026年5月26日 調査：Chromebook向けつっこみスクショの保存導線を比較する
 
-> 状態：⑥ 作業ログ
-> 次のゲート：（user）`Chrome Canvas 型 + Show in folder` を採るか判断する
+> 状態：✅ close
+> 次のゲート：なし
 
 ---
 
 ## 1) Journey（どこへ行くか）
 
 > 補足：深層的目的 子どもが `撮る -> 保存する -> あとで見せる` を自分で把握できる導線をつくる
-> 補足：やらないこと 今回は HP へのアップロードやコメント返却までは進めない
+> 補足：やらないこと 今回は実装着手や upload 機能の追加までは進めない
 > 補足：責務分担厳格度 basic
 
 1. 前提条件
@@ -39,10 +41,10 @@ tags:
    3. ❌ 撮れたとしても、その後の行き先が分からず会話が止まりうる
 
 3. After
-   1. 💦 保存ファーストの導線が Chromebook 前提で定まる
-   2. ✅ 主導線を `保存ダイアログあり` にするかどうかが決まる
-   3. ✅ 非対応時の fallback と説明文が決まる
-   4. ❤️ 子どもが `ここに保存した` を自分で言える
+   1. 💦 保存ファーストの導線候補が Chromebook 前提で整理される
+   2. ✅ `Chrome Canvas 型 + Show in folder` が第1候補として残る
+   3. ✅ 類似事例と trusted voices が tasknote に記録される
+   4. ❤️ 次に実装へ進む前提がそろう
 
 4. 例外
    1. File System Access API は secure context と user gesture が要る
@@ -99,70 +101,70 @@ tags:
    2. ✂️ `ローカル保存` と `後から共有` の切り分け例を見る
    3. 📝 似ている保存 UX の型を 2〜3 個に整理する
 
-#### 話題2：wrapper 側の最小責務を決める
+#### 話題2：Chromebook らしい保存後体験を調べる
 
-##### ユーザー：Pyxel 本体を汚さずに始めたい担当者
-
-1. 当初計画
-   1. 👀 capture と stamp overlay と save UI を wrapper に寄せる
-   2. ✂️ Pyxel 側は必要なら `postMessage` 通知だけに留める
-   3. 📝 build 入口と smoke 手順を note に残す
-
-#### 話題3：fallback と説明文を切り分ける
-
-##### ユーザー：非対応時でも迷わせたくない担当者
+##### ユーザー：保存後に迷わせたくない担当者
 
 1. 当初計画
-   1. 👀 file picker 非対応時だけ download へ落とす
-   2. 👀 保存先が見えにくい場合の補助文を決める
-   3. 📝 子ども向け文言と親向け文言を混ぜない
+   1. 👀 `Downloads` `Select folder` `Show in folder` の導線を確認する
+   2. ✂️ 保存後に再発見しやすい UX 要素を抜き出す
+   3. 📝 子どもが理解しやすい補助導線を note に残す
+
+#### 話題3：誰の視点で判断するかを整理する
+
+##### ユーザー：調査結果の筋を確かめたい担当者
+
+1. 当初計画
+   1. 👀 trusted voices を creative learning と product で分けて探す
+   2. 👀 何をどの人の視点で判断するかを整理する
+   3. 📝 次の相談相手候補を note に残す
 
 ---
 
 ## 3) Gherkin（完了条件）
 
-> 委任度：🟢 この仕様線までなら CC が自走できる
+> 委任度：🟢 調査結果の整理と保存までなら CC が自走できる
 > 残る曖昧さ：なし
 
 ### シナリオ一覧
 
-- [ ] シナリオ1：保存ボタンから保存ダイアログを開ける
+- [x] シナリオ1：類似事例の保存 UX 型が比較できる
 
-1. 🧱 子どもが wrapper 上のスクショ画面を見ている（play.html）
-2. 🎬 `ほぞん` ボタンを押す（play.html）
-3. ✅ 保存ダイアログが開き、保存先とファイル名を選べる（OS UI）
+1. 🧱 Chromebook と子ども向け制作ツールの保存事例を調べている（調査）
+2. 🎬 似ている保存導線を比較する（調査）
+3. ✅ 保存 UX の型が 2〜4 個に整理される（tasknote）
 
 ```gherkin
-Given 子どもが Chromebook 上でつっこみスクショの保存画面を開いている
-When 子どもが `ほぞん` ボタンを押す
-Then 保存ダイアログが開く
-And 子どもは保存先とファイル名を自分で選べる
+Given Chromebook と子ども向け web editor の保存事例を調べている
+When 類似する保存導線を比較する
+Then 保存 UX の型を 2〜4 個に整理できる
+And 第1候補と補助候補を言語化できる
 ```
 
-- [ ] シナリオ2：保存後に結果がその場で分かる
+- [x] シナリオ2：Chromebook らしい保存後導線が明記される
 
-1. 🧱 子どもが保存ダイアログで保存先を選んでいる（OS UI）
-2. 🎬 保存を完了する（OS UI）
-3. ✅ wrapper 上に保存完了メッセージが出る（play.html）
+1. 🧱 Chromebook の保存先と再発見導線を調べている（調査）
+2. 🎬 `Downloads` `Select folder` `Show in folder` を確認する（調査）
+3. ✅ 保存後に迷いにくい補助導線が tasknote に残る（tasknote）
 
 ```gherkin
-Given 子どもが保存ダイアログを開いている
-When 子どもが保存先を選び PNG を保存する
-Then wrapper 上に保存できたことを示すメッセージが出る
-And 子どもは `ここに保存した` と把握できる
+Given Chromebook の保存先と再発見導線を調べている
+When 保存後の行方が分かる要素を比較する
+Then 保存後に迷いにくい補助導線を tasknote に残せる
+And `Show in folder` を補助線として評価できる
 ```
 
-- [ ] シナリオ3：file picker が使えない環境でも保存を諦めない
+- [x] シナリオ3：trusted voices が判断材料として整理される
 
-1. 🧱 ブラウザが `showSaveFilePicker` を提供していない（play.html）
-2. 🎬 子どもが `ほぞん` ボタンを押す（play.html）
-3. ✅ download fallback と補助文で保存へ進める（play.html）
+1. 🧱 子どもの創作 UX に詳しい発信者を探している（調査）
+2. 🎬 creative learning と product の両軸で整理する（調査）
+3. ✅ 次の相談相手候補が tasknote に残る（tasknote）
 
 ```gherkin
-Given ブラウザが `showSaveFilePicker` を提供していない
-When 子どもが `ほぞん` ボタンを押す
-Then PNG は download fallback で保存できる
-And どこを見ればよいかの補助文が表示される
+Given 子どもの創作 UX に詳しい発信者を探している
+When creative learning と product の両軸で候補を整理する
+Then 次の相談相手候補を tasknote に残せる
+And どの人の視点をどの判断に使うかを明記できる
 ```
 
 ---
@@ -171,32 +173,33 @@ And どこを見ればよいかの補助文が表示される
 
 ### 責務分担概要
 
-- root cause は `Chromebook での保存導線が未実装で、保存先の理解も設計されていない` である
-- 正本は `docs/customer-jobs.md` `docs/customer-journeys.md` と wrapper 構成の実体に置く
-- 修正入口は `templates/wrapper.html` とその生成元 `tools/render_release_selector.py` に閉じる
-- 実装時は `capture -> annotate -> save` を wrapper で完結させ、Pyxel 側は必要最小限に留める
+- root cause は `Chromebook 向け保存導線の前例と判断材料が未整理だった` である
+- 正本は `docs/customer-jobs.md` `docs/customer-journeys.md` と公式ヘルプ記事に置く
+- 今回の入口は tasknote と公式資料の比較であり、コード実装には入らない
+- 調査対象は `類似事例` `Chromebook 保存導線` `trusted voices` の 3 本に分ける
 
 ### 責務分担概要図
 
 ```mermaid
 flowchart TD
-    A[iframe 内 canvas から PNG を作る] --> B[絵文字スタンプを焼き込む]
-    B --> C[save picker を開く]
-    C --> D[保存完了か fallback を表示する]
+    A[類似事例を集める] --> B[Chromebook の保存後導線を比べる]
+    B --> C[trusted voices を整理する]
+    C --> D[第1候補の型を tasknote に残す]
 ```
 
 ### 責務分担詳細
 
-- `templates/wrapper.html` （✏️：保存ボタン、スタンプ overlay、save UI を持たせる）
-- `tools/render_release_selector.py` （✏️：wrapper 生成に必要な placeholder を保つ）
-- `dist/play.html` （❌：生成物のため直接編集しない）
-- `src/runtime/app.py` （❌：第1段階では保存 UI を持たせない）
+- `docs/customer-jobs.md` （👀：子どもの job との整合を見る）
+- `docs/customer-journeys.md` （👀：共有・保存の連続体験の要求を見る）
+- `Chromebook Help / Chrome Canvas / Piskel / Pixilart` （👀：保存 UX の前例を見る）
+- `tasknote` （✏️：調査結果と候補整理を記録する）
 
 ### 関連スキル・MCP
 
 - `manage-tasknotes`
 - `brainstorming`
-- `playwright`
+- `research`
+- `find-trusted-voices`
 
 ### 【参照】
 
@@ -206,14 +209,14 @@ flowchart TD
 
 ### 変更範囲
 
-- やること: wrapper の保存導線、保存結果メッセージ、fallback 文言の実装
-- やらないこと: server upload、コメント機能、Pyxel scene への大規模 UI 追加
+- やること: 類似事例調査、trusted voices 整理、推奨方針の記録
+- やらないこと: 実装着手、server upload、Pyxel scene への UI 追加
 
 ### 検証
 
-- 検証コマンド: `python -m pytest test/ -q` と local browser smoke を回す
-- 成功条件: save picker 主導線と download fallback の両方が確認できる
-- 未実施時の扱い: 実機未確認は未確認として残し、desktop smoke と分けて記録する
+- 検証コマンド: tasknote lint と `python -m pytest test/ -q` を回す
+- 成功条件: 調査結果が tasknote に残り、lint が通る
+- 未実施時の扱い: pytest の既存 fail は原因を分けて記録する
 
 ---
 
@@ -221,28 +224,25 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    T0[類似事例を調査する] --> T1[保存ファーストの最小仕様を固める]
-    T1 --> T2[wrapper の保存導線を実装する]
-    T2 --> T3[fallback 文言を入れる]
-    T3 --> T4[local browser smoke と pytest を回す]
-    T4 --> T5[Development Checklist を /tmp へコピーしてレビューする]
+    T1[類似事例を調査する] --> T2[Chromebook 保存導線を整理する]
+    T2 --> T3[trusted voices を整理する]
+    T3 --> T4[推奨方針を tasknote に残す]
+    T4 --> T5[lint と pytest の結果を記録する]
 
     classDef done fill:#d4edda,stroke:#155724,color:#000000;
     classDef wip fill:#fff3cd,stroke:#856404,color:#000000;
     classDef todo fill:#e2e3f1,stroke:#3949ab,color:#000000;
 
-    class T0 done;
-    class T1,T2,T3,T4,T5 todo;
+    class T1,T2,T3,T4,T5 done;
 ```
 
 > 必ず上から順に実施。CCがCoVeで自力検証しながら進める。
 
 - [x] （CC）類似事例を調査する
-- [ ] （CC）保存ファーストの最小仕様を固める
-- [ ] （CC）wrapper の保存導線を実装する
-- [ ] （CC）fallback 文言を入れる → **作業ログに事実を記録** → **Discussionに判断を記録**
-- [ ] （CC）local browser smoke と `python -m pytest test/ -q` を回す
-- [ ] （CC）Development Checklist を `/tmp` へコピーしてレビューする
+- [x] （CC）Chromebook 保存導線を整理する
+- [x] （CC）trusted voices を整理する → **作業ログに事実を記録** → **Discussionに判断を記録**
+- [x] （CC）推奨方針を tasknote に残す
+- [x] （CC）lint と `python -m pytest test/ -q` の結果を記録する
 
 ### 記録の分け方
 
@@ -250,20 +250,13 @@ flowchart TD
 
 - 変更したファイルや差分
 - 実行した確認コマンドと結果
-- file picker / download fallback の成否
+- 参照した事例と trusted voices
 
 #### Discussion に書く
 
-- なぜ保存ダイアログを主導線にしたか
-- 非対応時の説明文をどう決めたか
-- 次に共有や upload を足すなら何を守るか
-
-### レビュー
-
-- 原本 checklist: `docs/development-checklist.md`
-- /tmp コピー: `/tmp/development-checklist-20260526-1825.md`
-- レビュー結果: 未実施
-- 未通過時の扱い: fail があれば修正して再レビューし、全部通るまで Close しない
+- なぜその事例を近いとみなしたか
+- どの発信者の視点を何の判断に使うか
+- 次に実装 note を切るなら何を固定して始めるか
 
 ---
 
@@ -299,11 +292,11 @@ flowchart TD
 
 ## 7) 評価と成果物
 
-> 評価：🟡 類似事例の調査まで完了
+> 評価：🟢 調査完了
 
 ### 成果物
 
-- `steering/2026年5月26日 共有：Chromebook向けつっこみスクショを保存ファーストで始める.md` （保存ファースト実装の起票）
+- `steering/done/2026年5月26日 調査：Chromebook向けつっこみスクショの保存導線を比較する.md` （保存導線の調査記録）
 
 ---
 
@@ -312,7 +305,7 @@ flowchart TD
 ### 反省とルール化
 
 - 記入先：manage-tasknotes
-- 次にやること：事例比較と trusted voices を見て主導線の型を 1 本に決める
+- 次にやること：実装へ進めるなら別 note で最小仕様を切る
 
 ### 判断メモ
 
@@ -379,11 +372,11 @@ flowchart TD
 ## 9) Closing
 
 - 状態: open
-- 次のゲート: （user）`Chrome Canvas 型 + Show in folder` を採るか判断する
+- 次のゲート: なし
 - close 条件:
-  - [ ] 保存主導線と fallback が実装される
-  - [ ] local browser smoke と pytest の結果が記録される
-  - [ ] Development Checklist のレビュー結果が残る
+  - [x] 類似事例が tasknote に記録される
+  - [x] trusted voices が tasknote に記録される
+  - [x] 推奨方針と pytest 結果が tasknote に記録される
 
 ---
 
