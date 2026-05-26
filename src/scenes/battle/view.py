@@ -27,6 +27,7 @@ VICTORY_BGM_INDEX = 6
 MAIN_MESSAGE_WRAP_WIDTH = 28
 MAIN_MESSAGE_MAX_ROWS = 2
 MAIN_MESSAGE_LINE_HEIGHT = 12
+PLAYER_STATUS_BAR_Y = 128
 
 
 def _select_battle_bgm(game) -> int:
@@ -200,9 +201,13 @@ class BattleView:
         pyxel.rectb(10, 100, 236, 40, 7)
         text_writer.text(16, 104, vm.player_status_line1, 7)
         text_writer.text(16, 116, vm.player_status_line2, 7)
-        pyxel.rect(170, 116, 60, 6, 0)
+        pyxel.rect(170, PLAYER_STATUS_BAR_Y, 60, 6, 0)
         pyxel.rect(
-            170, 116, int(60 * vm.player_hp_ratio), 6, vm.player_hp_color
+            170,
+            PLAYER_STATUS_BAR_Y,
+            int(60 * vm.player_hp_ratio),
+            6,
+            vm.player_hp_color,
         )
 
     @staticmethod
