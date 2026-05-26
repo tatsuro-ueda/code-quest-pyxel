@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: done
 priority: normal
 scheduled: 2026-05-25T09:00:00.000+09:00
 dateCreated: 2026-05-25T22:00:00.000+09:00
-dateModified: 2026-05-25T22:00:00.000+09:00
+dateModified: 2026-05-26T10:00:00.000+09:00
 tags:
   - task
   - llm-wiki
@@ -291,12 +291,13 @@ And tasknote の Discussion に「wiki → 現実の逆方向ドリフト = heal
 
 ## 9) Closing
 
-- 状態: in-progress (実作業はほぼ完了、`repository-structure.md` コミットだけ残る)
-- 次のゲート: ユーザー判断: `repository-structure.md` の差分をどの単位でコミットするか (この tasknote と一緒 / 別 / 後回し)
+- 状態: done (2026-05-26 close)
+- 次のゲート: なし
 - close 条件:
-  - [ ] `docs/repository-structure.md` がコミットされる
-  - [ ] wiki side stale (preview→current) を次の health-check 案件として記録する
-  - [ ] このセッションの reflection を memory に save するか判断する
+  - [x] `docs/repository-structure.md` がコミットされる (`2e90f0d`)
+  - [x] wiki side stale (preview→current) を「2026-05 廃止」マーカーで時系列保存 (`6ae0c80`)
+  - [x] reflection は memory ではなく tasknote 集約に決定 (本ノート Discussion)
+  - [x] skill 追記提案は不採用 (ユーザー方針 simplify と整合せず、commit `089365ac` が証跡)
 
 ---
 
