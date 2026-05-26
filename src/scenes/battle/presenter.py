@@ -31,6 +31,8 @@ from src.shared.services.input_bindings import (
 )
 
 VISIBLE_LIST_ROWS = 4
+BACK_LABEL_JP = "もどる"
+BACK_LABEL_EN = "BACK"
 
 
 def _build_item_use_message(game: Any, item_data: dict, result: str) -> str:
@@ -393,7 +395,7 @@ class BattlePresenter:
             model.spell_select = max(0, model.spell_select - 1)
             game.sfx.play("cursor")
         if game.input_state.btnp(DOWN_BUTTONS):
-            model.spell_select = min(len(spells) - 1, model.spell_select + 1)
+            model.spell_select = min(len(spells), model.spell_select + 1)
             game.sfx.play("cursor")
 
     def _handle_spell_cancel(self, game: Any) -> None:
@@ -420,6 +422,9 @@ class BattlePresenter:
             - 副作用とモデル更新は実装どおり。
         """
         model = self.model
+        if model.spell_select == len(spells):
+            model.phase = "menu"
+            return
         spell_name = spells[model.spell_select]
         spell = SPELL_BY_NAME.get(spell_name)
         if spell is None:
@@ -470,7 +475,7 @@ class BattlePresenter:
             model.item_select = max(0, model.item_select - 1)
             game.sfx.play("cursor")
         if game.input_state.btnp(DOWN_BUTTONS):
-            model.item_select = min(len(items) - 1, model.item_select + 1)
+            model.item_select = min(len(items), model.item_select + 1)
             game.sfx.play("cursor")
 
     def _handle_item_cancel(self, game: Any) -> None:
@@ -496,6 +501,9 @@ class BattlePresenter:
             - 副作用とモデル更新は実装どおり。
         """
         model = self.model
+        if model.item_select == len(items):
+            model.phase = "menu"
+            return
         item = items[model.item_select]
         item_data = ITEMS[item.id]
         if item_data["type"] == "warp":
@@ -837,7 +845,10 @@ class BattlePresenter:
         model = self.model
         rows: list[BattleRow] = []
         window_start = self._compute_visible_window_start(
-            selected_index=model.spell_select,
+            selected_index=min(
+                model.spell_select,
+                max(0, len(spells) - 1),
+            ),
             item_count=len(spells),
         )
         visible_spells = spells[
@@ -854,6 +865,10 @@ class BattlePresenter:
                 text=f"{marker} {spell_name}  MP{spell['mp']}",
                 color=color,
             ))
+        rows.append(self._build_back_row(
+            game=game,
+            is_highlighted=(model.spell_select == len(spells)),
+        ))
         return rows
 
     @staticmethod
@@ -916,7 +931,17 @@ class BattlePresenter:
         """
         model = self.model
         rows: list[BattleRow] = []
-        for i, item in enumerate(items[:4]):
+        window_start = self._compute_visible_window_start(
+            selected_index=min(
+                model.item_select,
+                max(0, len(items) - 1),
+            ),
+            item_count=len(items),
+        )
+        visible_items = items[
+            window_start:window_start + VISIBLE_LIST_ROWS
+        ]
+        for i, item in enumerate(visible_items, start=window_start):
             idata = ITEMS[item.id]
             color = 10 if i == model.item_select else 6
             marker = ">" if i == model.item_select else " "
@@ -925,4 +950,17 @@ class BattlePresenter:
                 text=f"{marker} {item_name} x{item.qty}",
                 color=color,
             ))
+        rows.append(self._build_back_row(
+            game=game,
+            is_highlighted=(model.item_select == len(items)),
+        ))
         return rows
+
+    @staticmethod
+    def _build_back_row(game: Any, is_highlighted: bool) -> BattleRow:
+        """一覧末尾の back 行を返す。"""
+        back_label = game.text_fmt.t(BACK_LABEL_JP, BACK_LABEL_EN)
+        return BattleRow(
+            text=f"{'>' if is_highlighted else ' '} {back_label}",
+            color=10 if is_highlighted else 6,
+        )

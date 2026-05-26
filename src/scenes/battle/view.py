@@ -303,6 +303,7 @@ class BattleView:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
+        row_step = 10 if len(sp.rows) >= 5 else 12
         for i, row in enumerate(sp.rows):
-            cy = 196 + i * 12
+            cy = 196 + i * row_step
             text_writer.text(30, cy, row.text, row.color)

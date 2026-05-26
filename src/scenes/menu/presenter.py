@@ -69,6 +69,9 @@ class MenuPresenter:
     # === Public API ===
 
     model: MenuModel
+    _EQUIP_BACK_INDEX = 2
+    _EQUIP_ROW_COUNT = 3
+    _ITEM_VISIBLE_ROWS = 7
 
     def build_labels(self, game: Any) -> list[str]:
         """メニュー表示ラベルの i18n 解決（has_jp_font に応じて切替）。
@@ -181,6 +184,10 @@ class MenuPresenter:
             return
         self._move_item_cursor(game, model, items)
         if game.input_state.btnp(CONFIRM_BUTTONS):
+            if model.item_cursor == len(items):
+                game.sfx.play("select")
+                model.sub = None
+                return
             game.sfx.play("select")
             self._use_selected_item(game, model, items)
 
@@ -201,7 +208,7 @@ class MenuPresenter:
             game.sfx.play("cursor")
         if game.input_state.btnp(DOWN_BUTTONS):
             model.item_cursor = min(
-                len(items) - 1, model.item_cursor + 1
+                len(items), model.item_cursor + 1
             )
             model.message = ""
             game.sfx.play("cursor")
@@ -284,11 +291,20 @@ class MenuPresenter:
             game.sfx.play("cancel")
             model.sub = None
             return
+        if game.input_state.btnp(CONFIRM_BUTTONS):
+            if model.item_cursor == self._EQUIP_BACK_INDEX:
+                game.sfx.play("select")
+                model.sub = None
+            return
         if game.input_state.btnp(UP_BUTTONS):
-            model.item_cursor = (model.item_cursor - 1) % 2
+            model.item_cursor = (
+                model.item_cursor - 1
+            ) % self._EQUIP_ROW_COUNT
             game.sfx.play("cursor")
         if game.input_state.btnp(DOWN_BUTTONS):
-            model.item_cursor = (model.item_cursor + 1) % 2
+            model.item_cursor = (
+                model.item_cursor + 1
+            ) % self._EQUIP_ROW_COUNT
             game.sfx.play("cursor")
 
     _SUB_HANDLERS = {
@@ -429,9 +445,8 @@ class MenuPresenter:
             info_message=model.message or None,
         )
 
-    @staticmethod
     def _build_item_rows(
-        game: Any, model: MenuModel, items: list, M: Any
+        self, game: Any, model: MenuModel, items: list, M: Any
     ) -> list[MenuRow]:
         """items panel 用の行リストを組み立てる。
 
@@ -443,10 +458,19 @@ class MenuPresenter:
         Returns:
             MenuRow のリスト。
         Policy:
-            - 先頭 8 件まで表示する。
+            - item は最大 7 行まで見せ、最後の 1 行を back 用に使う。
         """
         rows: list[MenuRow] = []
-        for i, item in enumerate(items[:8]):
+        back_index = len(items)
+        window_start = self._compute_visible_window_start(
+            selected_index=min(model.item_cursor, max(0, len(items) - 1)),
+            item_count=len(items),
+            visible_count=self._ITEM_VISIBLE_ROWS,
+        )
+        visible_items = items[
+            window_start:window_start + self._ITEM_VISIBLE_ROWS
+        ]
+        for i, item in enumerate(visible_items, start=window_start):
             idata = M.ITEMS[item.id]
             is_highlighted = (i == model.item_cursor)
             color = 10 if is_highlighted else 6
@@ -456,6 +480,12 @@ class MenuPresenter:
                 text=f"{marker} {item_name} x{item.qty}",
                 color=color,
             ))
+        back_label = game.text_fmt.t("もどる", "BACK")
+        back_highlight = (model.item_cursor == back_index)
+        rows.append(MenuRow(
+            text=f"{'>' if back_highlight else ' '} {back_label}",
+            color=10 if back_highlight else 6,
+        ))
         return rows
 
     def _build_equip_panel(
@@ -479,9 +509,11 @@ class MenuPresenter:
         armor = M.ARMORS[player.armor]
         weapon_name = game.text_fmt.name(weapon["name"])
         armor_name = game.text_fmt.name(armor["name"])
+        back_label = game.text_fmt.t("もどる", "BACK")
         equip_lines = [
             f"{wlbl}: {weapon_name} (こうげき+{weapon['atk']})",
             f"{albl}: {armor_name} (ぼうぎょ+{armor['def']})",
+            back_label,
         ]
         rows: list[MenuRow] = []
         for i, label in enumerate(equip_lines):
@@ -527,3 +559,16 @@ class MenuPresenter:
         if player.lv >= MAX_LEVEL:
             return 0
         return max(0, exp_for_level(player.lv + 1) - player.exp)
+
+    @staticmethod
+    def _compute_visible_window_start(
+        selected_index: int, item_count: int, visible_count: int
+    ) -> int:
+        """選択中 item を見失わない一覧窓の先頭 index を返す。"""
+        if item_count <= visible_count:
+            return 0
+        max_start = item_count - visible_count
+        return min(
+            max(0, selected_index - visible_count + 1),
+            max_start,
+        )
