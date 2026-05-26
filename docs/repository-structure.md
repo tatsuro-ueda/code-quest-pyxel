@@ -142,7 +142,7 @@ YAML 生成物を runtime に供給する読み出し口。
 - `src/app.py`：2026-05-09 に削除。Phase 1 由来の `BlockQuestApp` shell は不要になり、runtime root を `src/runtime/app.py::Game` に一本化した。
 - `src/core/scene_manager.py`：2026-05-09 に削除。旧 Scene object manager は不要になり、scene 切替メタは `shared/services/scene_manager.py::SceneManager`（current / previous の 2 値 state holder）へ一本化した。
 
-### 4.4 `src/scenes/`（11 scene、MVP パターン）
+### 4.4 `src/scenes/`（9 scene、MVP パターン）
 
 各 scene ディレクトリは `model.py / view.py / presenter.py / scene.py / __init__.py` で構成する。
 
@@ -155,11 +155,10 @@ YAML 生成物を runtime に供給する読み出し口。
 | `shop/` | 武器・防具・道具の売買 | `shop_cursor, shop_inventory, shop_kind, shop_message` |
 | `battle/` | 戦闘全体（通常・ボス・Noise Guardian） | `battle_enemy, battle_phase, battle_text, battle_item_select` ほか 12 フィールド |
 | `menu/` | メニュー画面 | `menu_cursor, menu_item_cursor, menu_sub` |
-| `ai_help/` | Glitch Lord 戦の AI ヘルプ | - |
 | `professor/` | Professor 戦 intro / ending | `professor 系 6 state` |
 | `ending/` | エンディング | - |
 
-> 2026-05-07 改訂（CJ44 確定版）：`settings/` は撤去（演出 ON/OFF UI 廃止）。Scene は 10 個。
+> 2026-05-26 改訂：`ai_help/` は古い `main.py` ダウンロード導線と一緒に撤去済み。Scene は 9 個。
 
 **共通原則**：
 - `model.py` は state の保持だけ。pyxel 呼び出しは禁止

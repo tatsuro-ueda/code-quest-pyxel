@@ -32,7 +32,7 @@ from src.shared.services.vfx import VfxSystem  # noqa: F401
 from src.shared.ui.status_bar import StatusBar  # noqa: F401
 from src.scenes.splash.scene import SplashScene; from src.scenes.title.scene import TitleScene  # noqa: F401,E501,E702
 from src.scenes.explore.scene import ExploreScene; from src.scenes.shop.scene import ShopScene  # noqa: F401,E501,E702
-from src.scenes.menu.scene import MenuScene; from src.scenes.ai_help.scene import AiHelpScene  # noqa: F401,E501,E702
+from src.scenes.menu.scene import MenuScene  # noqa: F401
 from src.scenes.ending.scene import EndingScene; from src.scenes.professor.scene import ProfessorScene  # noqa: F401,E501,E702
 from src.scenes.battle.scene import BattleScene  # noqa: F401
 from src.runtime.app import Game, say, say_clear  # noqa: F401

@@ -319,9 +319,6 @@ class MenuPresenter:
             model.item_cursor = 0
             return
         if model.cursor == 3:
-            game.ai_help_scene.enter()
-            return
-        if model.cursor == 4:
             game.state = "map"
 
     def _run_build_labels(self, game: Any) -> list[str]:
@@ -335,8 +332,8 @@ class MenuPresenter:
             - 副作用とモデル更新は実装どおり。
         """
         if game.has_jp_font:
-            return ["ステータス", "アイテム", "そうび", "AIでしゅうせい", "とじる"]
-        return ["STATUS", "ITEMS", "EQUIP", "AI HELP", "CLOSE"]
+            return ["ステータス", "アイテム", "そうび", "とじる"]
+        return ["STATUS", "ITEMS", "EQUIP", "CLOSE"]
 
     def _run_update(self, game: Any) -> None:
         """_run_update() の実装本体。

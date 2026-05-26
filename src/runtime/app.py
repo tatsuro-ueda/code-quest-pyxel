@@ -54,7 +54,6 @@
   - _update_for_professor_ending_accepted: professor_ending_accepted の update
   - _update_for_shop: shop state の update
   - _update_for_ending: ending state の update
-  - _update_for_ai_help: ai_help state の update
   - _draw_for_splash: splash state の draw
   - _draw_for_title: title state の draw
   - _draw_for_map: map state の draw（status_bar 重ね）
@@ -68,7 +67,6 @@
   - _draw_for_professor_intro: professor_intro state の draw
   - _draw_for_professor_ending_main: professor_ending_main state の draw
   - _draw_for_professor_ending_accepted: professor_ending_accepted state の draw
-  - _draw_for_ai_help: ai_help state の draw
 
 Problems:
     - Game.__init__ が 70 行超の手続き列で、責務（pyxel 初期化 / service /
@@ -118,7 +116,6 @@ from src.shared.ui.status_bar import StatusBar
 
 from src.game_data import DIALOGUE_JA, DIALOGUE_EN
 
-from src.scenes.ai_help.scene import AiHelpScene
 from src.scenes.battle.scene import BattleScene
 from src.scenes.ending.scene import EndingScene
 from src.scenes.explore.scene import ExploreScene
@@ -380,7 +377,6 @@ class Game:
         self.explore_scene = ExploreScene(game=self)
         self.shop_scene = ShopScene(game=self)
         self.menu_scene = MenuScene(game=self)
-        self.ai_help_scene = AiHelpScene(game=self)
         self.ending_scene = EndingScene(game=self)
         self.town_model = TownModel()
         self.town_view = TownView(game=self)
@@ -602,14 +598,6 @@ class Game:
         """
         self.ending_scene.update()
 
-    def _update_for_ai_help(self) -> None:
-        """ai_help state の update.
-
-        Policy:
-            - ai_help_scene.update に委譲するだけ。
-        """
-        self.ai_help_scene.update()
-
     # ---- draw dispatchers (state → private handler) ----
 
     def _draw_for_splash(self) -> None:
@@ -725,15 +713,6 @@ class Game:
         """
         self.professor_scene.draw_ending_accepted()
 
-    def _draw_for_ai_help(self) -> None:
-        """ai_help state の draw.
-
-        Policy:
-            - ai_help_scene.draw に委譲するだけ。
-        """
-        self.ai_help_scene.draw()
-
-
 # state → handler の dict マップ（CR301 elif チェーンを廃する）。
 _UPDATE_DISPATCH = {
     "splash": Game._update_for_splash,
@@ -749,7 +728,6 @@ _UPDATE_DISPATCH = {
     "professor_ending_accepted": Game._update_for_professor_ending_accepted,
     "shop": Game._update_for_shop,
     "ending": Game._update_for_ending,
-    "ai_help": Game._update_for_ai_help,
 }
 
 
@@ -767,7 +745,6 @@ _DRAW_DISPATCH = {
     "professor_intro": Game._draw_for_professor_intro,
     "professor_ending_main": Game._draw_for_professor_ending_main,
     "professor_ending_accepted": Game._draw_for_professor_ending_accepted,
-    "ai_help": Game._draw_for_ai_help,
 }
 
 

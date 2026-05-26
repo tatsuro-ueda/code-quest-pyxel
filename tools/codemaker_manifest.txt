@@ -66,12 +66,6 @@ src/shared/ui/message_window.py
 src/shared/ui/status_bar.py
 
 # --- 7. scenes: M/V/P を先に、Scene を最後に
-src/scenes/ai_help/model.py
-src/scenes/ai_help/view_model.py
-src/scenes/ai_help/view.py
-src/scenes/ai_help/presenter.py
-src/scenes/ai_help/scene.py
-
 src/scenes/battle/model.py
 src/scenes/battle/view_model.py
 src/scenes/battle/view.py

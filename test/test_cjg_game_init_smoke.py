@@ -30,9 +30,11 @@ class GameInitSmokeTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        import pyxel
         from src.runtime.app import Game
         from src.shared.state.player_model import PlayerModel
 
+        pyxel.tilemaps[0].pget.return_value = (0, 0)
         cls._game = Game()
         cls._player_model_cls = PlayerModel
 
@@ -41,10 +43,10 @@ class GameInitSmokeTest(unittest.TestCase):
         self.assertEqual(self._game.prev_state, "map")
 
     def test_all_dispatcher_scenes_are_attached(self):
-        # 2026-05-07 改訂（CJ44 確定版）：settings_scene は撤去済（演出 ON/OFF 廃止）
+        # 2026-05-26 改訂：古い ai_help_scene は撤去済。
         expected_scene_attrs = (
             "splash_scene", "title_scene", "explore_scene", "battle_scene",
-            "menu_scene", "shop_scene", "ai_help_scene",
+            "menu_scene", "shop_scene",
             "ending_scene", "professor_scene",
         )
         for attr in expected_scene_attrs:
@@ -53,6 +55,10 @@ class GameInitSmokeTest(unittest.TestCase):
                     hasattr(self._game, attr),
                     f"Game に {attr} が無い。dispatcher 呼び出しで AttributeError になる",
                 )
+        self.assertFalse(
+            hasattr(self._game, "ai_help_scene"),
+            "ai_help_scene は古い main.py ダウンロード導線と一緒に撤去済み",
+        )
 
     def test_town_presenter_and_view_exist_but_not_town_scene(self):
         """town scene.py 廃止後は town_model / town_presenter / town_view が直接属性になる。"""
