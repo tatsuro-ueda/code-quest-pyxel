@@ -20,6 +20,11 @@ from src.scenes.professor.view_model import (
     ProfessorChoiceRow,
     ProfessorViewModel,
 )
+from src.shared.services.page_dialog_flow import (
+    advance_page_on_confirm,
+    build_page_prompt_xy,
+    current_page_lines_for_dialog,
+)
 from src.shared.services.input_bindings import (
     CONFIRM_BUTTONS,
     DOWN_BUTTONS,
@@ -158,13 +163,13 @@ class ProfessorPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        if not game.input_state.btnp(CONFIRM_BUTTONS):
-            return
         model = self.model
-        model.intro_idx, done = game.messages.advance_page(
-            model.intro_idx, model.intro_lines
+        model.intro_idx, done, did_advance = advance_page_on_confirm(
+            game,
+            model.intro_idx,
+            model.intro_lines,
         )
-        if done:
+        if did_advance and done:
             model.is_choice_active = True
 
     def _handle_intro_choice(self, game: Any, scene: Any) -> None:
@@ -203,13 +208,14 @@ class ProfessorPresenter:
             - 副作用とモデル更新は実装どおり。
         """
         model = self.model
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            model.ending_idx, done = game.messages.advance_page(
-                model.ending_idx, model.ending_lines
-            )
-            if done:
-                game.explore_scene.model.start_a_cooldown()
-                game.state = "map"
+        model.ending_idx, done, did_advance = advance_page_on_confirm(
+            game,
+            model.ending_idx,
+            model.ending_lines,
+        )
+        if did_advance and done:
+            game.explore_scene.model.start_a_cooldown()
+            game.state = "map"
 
     def _run_update_ending_accepted(self, game: Any) -> None:
         """_run_update_ending_accepted() の実装本体。
@@ -220,13 +226,14 @@ class ProfessorPresenter:
             - 副作用とモデル更新は実装どおり。
         """
         model = self.model
-        if game.input_state.btnp(CONFIRM_BUTTONS):
-            model.ending_idx, done = game.messages.advance_page(
-                model.ending_idx, model.ending_lines
-            )
-            if done:
-                game.state = "title"
-                game.explore_scene.model.start_a_cooldown()
+        model.ending_idx, done, did_advance = advance_page_on_confirm(
+            game,
+            model.ending_idx,
+            model.ending_lines,
+        )
+        if did_advance and done:
+            game.state = "title"
+            game.explore_scene.model.start_a_cooldown()
 
     def _run_build_intro_view_model(self, game: Any) -> ProfessorViewModel:
         """_run_build_intro_view_model() の実装本体。
@@ -239,18 +246,24 @@ class ProfessorPresenter:
             - 副作用とモデル更新は実装どおり。
         """
         model = self.model
-        page_lines = self._page_lines(game, model.intro_lines, model.intro_idx)
-        choices = self._build_intro_choices(game)
-        is_prompt_eligible = (
-            (not model.is_choice_active)
-            and bool(model.intro_lines)
-            and model.intro_idx < len(model.intro_lines)
+        page_lines = current_page_lines_for_dialog(
+            game,
+            model.intro_lines,
+            model.intro_idx,
         )
+        choices = self._build_intro_choices(game)
+        prompt_xy = None
+        is_prompt_eligible = not model.is_choice_active
+        if is_prompt_eligible:
+            prompt_xy = build_page_prompt_xy(
+                model.intro_lines,
+                model.intro_idx,
+            )
         return ProfessorViewModel(
             page_lines=page_lines,
             text_y=60,
             text_color=7,
-            prompt_xy=(228, 200) if is_prompt_eligible else None,
+            prompt_xy=prompt_xy,
             choices=choices,
         )
 
@@ -294,11 +307,8 @@ class ProfessorPresenter:
         Postconditions:
             - 副作用とモデル更新は実装どおり。
         """
-        is_predicate_0 = not lines or idx < 0 or idx >= len(lines)
-        if is_predicate_0:
-            return []
-        return list(
-            game.messages.current_page_lines(
-                lines, idx, max_chars=28, max_rows=6
-            )
+        return current_page_lines_for_dialog(
+            game,
+            lines,
+            idx,
         )

@@ -50,6 +50,7 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         game.ending_scene = EndingScene(game=game)
         game.battle_scene = BattleScene(game=game)
         game.battle_scene.start = MagicMock()
+        game.page_dialog_scene = MagicMock()
         game.player_model = _pm_from_dict({"in_dungeon": True, "glitch_lord_defeated": False})
         return game
 
@@ -155,15 +156,16 @@ class DungeonGlitchLordTriggerTest(unittest.TestCase):
         sy = rooms[0][1] + 1
         self.assertNotEqual((bx, by), (sx, sy))
 
-    def test_check_tile_events_starts_glitch_lord_battle_on_trigger(self):
+    def test_check_tile_events_starts_glitch_lord_prebattle_dialog_on_trigger(self):
         game = self.make_game()
 
         game.explore_scene._check_tile_events(self.main.T_GLITCH_LORD_TRIGGER, 7, 8)
 
-        game.battle_scene.start.assert_called_once_with(
-            self.main.GLITCH_LORD_DATA,
-            is_glitch_lord=True,
+        game.page_dialog_scene.enter_scene.assert_called_once_with(
+            "boss.glitch.prebattle_01",
+            callback=unittest.mock.ANY,
         )
+        game.battle_scene.start.assert_not_called()
 
     def test_check_tile_events_ignores_trigger_after_glitch_lord_defeat(self):
         game = self.make_game()

@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-04-18T12:31:41+00:00
 dateCreated: 2026-04-18T12:31:41+00:00
-dateModified: 2026-05-23T04:10:24+00:00
+dateModified: 2026-05-26T15:49:21.000+00:00
 tags:
   - task
   - cj09
@@ -18,8 +18,8 @@ tags:
 
 # 2026年4月18日 アプリ：cj09-glitch-lord-conversation-mode
 
-> 状態：`open`（dialogue asset はあるが、本筋の trigger 接続は未完）
-> 次のゲート：（CC）`src/scenes/explore/presenter.py` の魔王トリガーを prebattle conversation 開始へつなぎ直す
+> 状態：`done`（魔王トリガーは full-screen prebattle conversation を経由し、読み切り後に battle へ入る）
+> 次のゲート：（ユーザー）main worktree の未整理 steering 変更を整理して merge 可否を決める
 
 ---
 
@@ -57,12 +57,12 @@ flowchart TB
     BEFORE ~~~ AFTER
 ```
 
-### 現状
+### 完了時点の事実
 
-- `main.py` の `_check_tile_events()` は `T_GLITCH_LORD_TRIGGER` を踏むと即座に `_start_battle(GLITCH_LORD_DATA, is_glitch_lord=True)` を呼ぶ
-- プロフェッサー側は全画面のページ送り会話と ending を持ち、魔王より導入の密度が高い
-- 会話送りの基礎ヘルパーはあるが、全画面会話の update / draw は教授系に寄っていて、魔王へそのまま共有されていない
-- 魔王側の narrative は主に `boss.glitch.*` の battle text と `ending.main.*` に寄っており、戦闘前の受け渡しが薄い
+- `src/scenes/explore/presenter.py` の魔王トリガーは即戦闘をやめ、`page_dialog_scene.enter_scene("boss.glitch.prebattle_01", ...)` を呼ぶ
+- `src/scenes/page_dialog/` と `src/shared/services/page_dialog_flow.py` を追加し、魔王戦前会話を教授系と同じ full-screen page dialog 系で表示する
+- `src/scenes/professor/presenter.py` の intro 非分岐 / ending ページ送りは `page_dialog_flow.py` の helper を使う
+- `assets/dialogue.yaml` と `src/generated/dialogue.py` には `boss.glitch.prebattle_*` が既に揃っており、今回は接続と共通化が残課題だった
 
 ### 今回の方針
 
@@ -135,16 +135,16 @@ flowchart TB
 
 ## 4) Tasklist
 
-- [ ] `CJ09` を主ジャーニー、`CJ42` を関連ジャーニーとする根拠を note に固定する
-- [ ] `assets/dialogue.yaml` に魔王戦前の `boss.glitch.prebattle_*` を `ja/en` 両方で追加する
-- [ ] 魔王トリガーが即戦闘ではなく会話開始になる failing test を追加する
-- [ ] 魔王戦前会話の chain が `load_all_lines()` で取れる failing test を追加する
-- [ ] 全画面ページ送り会話の shared state / helper を実装する
-- [ ] 魔王導入を shared helper に接続する
-- [ ] プロフェッサー ending と intro 非分岐部分を shared helper に寄せる
-- [ ] `python tools/gen_data.py` を実行する
-- [ ] 必要なら `main.py` の同期手順を実行する
-- [ ] `python -m pytest test/ -q` を実行する
+- [x] `CJ09` を主ジャーニー、`CJ42` を関連ジャーニーとする根拠を note に固定する
+- [x] `assets/dialogue.yaml` に魔王戦前の `boss.glitch.prebattle_*` を `ja/en` 両方で追加する（既存実装で完了済み）
+- [x] 魔王トリガーが即戦闘ではなく会話開始になる failing test を追加する
+- [x] 魔王戦前会話の chain が `load_all_lines()` で取れる failing test を追加する
+- [x] 全画面ページ送り会話の shared state / helper を実装する
+- [x] 魔王導入を shared helper に接続する
+- [x] プロフェッサー ending と intro 非分岐部分を shared helper に寄せる
+- [x] ~~`python tools/gen_data.py` を実行する~~（dialogue source 未変更のため今回は不要）
+- [x] ~~必要なら `main.py` の同期手順を実行する~~（root `main.py` は wrapper のみで同期不要）
+- [x] `python -m pytest test/ -q` を実行する
 
 ---
 
@@ -157,3 +157,9 @@ flowchart TB
 **Observe**：プロフェッサーは全画面会話で戦闘前の思想を受け取れるが、魔王は最奥トリガーを踏むと即戦闘に入る。物語上の重みが魔王側だけ薄く、しかも会話 UI の共通化も途中で止まっている。  
 **Think**：この変更は分岐追加や ending 改稿ではなく、まず `CJ09` の延長で「会話をよりよい形で届ける」問題として扱うのが自然。そのうえで `CJ42` を補助線にして、最後の対決までの導線が気持ちよくつながることも守る。  
 **Act**：主ジャーニーを `CJ09`、関連ジャーニーを `CJ42` と定めたうえで、魔王戦前会話を SSoT の dialogue に追加し、全画面ページ送り会話を共通 helper に寄せる task note を起票した。
+
+### 2026年5月26日 15:49（完了）
+
+**Observe**：dialogue asset 自体は既に存在したが、`ExplorePresenter` はまだ魔王トリガーで即戦闘しており、教授系と共通の full-screen 会話 state も無かった。  
+**Think**：残課題は asset 追加ではなく `trigger -> page_dialog -> battle` の接続と、その page 処理を教授系でも共通 helper に寄せることだった。  
+**Act**：`page_dialog_scene` と `page_dialog_flow` を追加し、魔王トリガーの battle 開始を会話完了 callback に遅延させた。`test/test_dungeon_boss_trigger.py` `test/test_cjg_map_tile_transitions.py` `test/test_page_dialog_scene.py` を red→green で通し、`python -m pytest test/ -q` は `717 passed, 2 skipped, 38 deselected, 14232 subtests passed` を確認した。Pyxel smoke では frame 1/11 で会話ページ、frame 21 で battle 画面遷移を確認した。

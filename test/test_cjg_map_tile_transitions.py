@@ -64,6 +64,14 @@ class _FakeBattleScene:
 
 
 @dataclass
+class _FakePageDialogScene:
+    entered: list = field(default_factory=list)
+
+    def enter_scene(self, scene_name: str, callback=None):
+        self.entered.append({"scene_name": scene_name, "callback": callback})
+
+
+@dataclass
 class _FakeGame:
     player_model: PlayerModel = field(default_factory=PlayerModel.new_game)
     town_model: TownModel = field(default_factory=TownModel)
@@ -77,6 +85,7 @@ class _FakeGame:
     messages: _FakeMessages = field(default_factory=_FakeMessages)
     professor_scene: _FakeProfessorScene = field(default_factory=_FakeProfessorScene)
     battle_scene: _FakeBattleScene = field(default_factory=_FakeBattleScene)
+    page_dialog_scene: _FakePageDialogScene = field(default_factory=_FakePageDialogScene)
 
 
 class CastleTileTest(unittest.TestCase):
@@ -111,9 +120,9 @@ class CastleTileTest(unittest.TestCase):
 
 
 class GlitchLordTriggerTileTest(unittest.TestCase):
-    """T_GLITCH_LORD_TRIGGER を in_dungeon かつ未撃破状態で踏むと battle_scene.start が呼ばれる。"""
+    """T_GLITCH_LORD_TRIGGER を in_dungeon かつ未撃破状態で踏むと prebattle 会話へ入る。"""
 
-    def test_glitch_lord_trigger_starts_boss_battle_when_not_defeated(self):
+    def test_glitch_lord_trigger_starts_prebattle_dialog_when_not_defeated(self):
         from src.shared.constants.tile_data import T_GLITCH_LORD_TRIGGER
 
         game = _FakeGame()
@@ -123,8 +132,12 @@ class GlitchLordTriggerTileTest(unittest.TestCase):
 
         scene._check_tile_events(T_GLITCH_LORD_TRIGGER, 10, 10)
 
-        self.assertEqual(len(game.battle_scene.started), 1)
-        self.assertTrue(game.battle_scene.started[0]["is_glitch_lord"])
+        self.assertEqual(len(game.page_dialog_scene.entered), 1)
+        self.assertEqual(
+            game.page_dialog_scene.entered[0]["scene_name"],
+            "boss.glitch.prebattle_01",
+        )
+        self.assertEqual(game.battle_scene.started, [])
 
     def test_glitch_lord_trigger_skips_when_already_defeated(self):
         from src.shared.constants.tile_data import T_GLITCH_LORD_TRIGGER

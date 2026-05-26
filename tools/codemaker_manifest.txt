@@ -54,6 +54,7 @@ src/shared/services/scene_manager.py
 src/shared/services/vfx.py
 src/shared/services/item_use.py
 src/shared/services/message_display.py
+src/shared/services/page_dialog_flow.py
 src/shared/services/world_generation.py
 src/shared/services/image_banks.py
 
@@ -89,6 +90,12 @@ src/scenes/menu/view_model.py
 src/scenes/menu/view.py
 src/scenes/menu/presenter.py
 src/scenes/menu/scene.py
+
+src/scenes/page_dialog/model.py
+src/scenes/page_dialog/view_model.py
+src/scenes/page_dialog/view.py
+src/scenes/page_dialog/presenter.py
+src/scenes/page_dialog/scene.py
 
 src/scenes/professor/model.py
 src/scenes/professor/view_model.py
