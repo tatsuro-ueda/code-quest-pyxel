@@ -1,0 +1,15 @@
+docs_root: docs
+llm_wiki_update_docs:
+  default_targets:
+    - architecture
+    - framework-rule
+    - ux_policy
+    - repository-structure
+  target_docs:
+    architecture: architecture.md
+    framework-rule: framework-rule.md
+    ux_policy: ux-policy.md
+    repository-structure: repository-structure.md
+  disabled_defaults:
+  absorbed_defaults:
+    repository_structure: 
