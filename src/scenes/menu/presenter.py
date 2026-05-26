@@ -69,6 +69,8 @@ class MenuPresenter:
     # === Public API ===
 
     model: MenuModel
+    _EQUIP_BACK_INDEX = 2
+    _EQUIP_ROW_COUNT = 3
 
     def build_labels(self, game: Any) -> list[str]:
         """メニュー表示ラベルの i18n 解決（has_jp_font に応じて切替）。
@@ -284,11 +286,20 @@ class MenuPresenter:
             game.sfx.play("cancel")
             model.sub = None
             return
+        if game.input_state.btnp(CONFIRM_BUTTONS):
+            if model.item_cursor == self._EQUIP_BACK_INDEX:
+                game.sfx.play("select")
+                model.sub = None
+            return
         if game.input_state.btnp(UP_BUTTONS):
-            model.item_cursor = (model.item_cursor - 1) % 2
+            model.item_cursor = (
+                model.item_cursor - 1
+            ) % self._EQUIP_ROW_COUNT
             game.sfx.play("cursor")
         if game.input_state.btnp(DOWN_BUTTONS):
-            model.item_cursor = (model.item_cursor + 1) % 2
+            model.item_cursor = (
+                model.item_cursor + 1
+            ) % self._EQUIP_ROW_COUNT
             game.sfx.play("cursor")
 
     _SUB_HANDLERS = {
@@ -479,9 +490,11 @@ class MenuPresenter:
         armor = M.ARMORS[player.armor]
         weapon_name = game.text_fmt.name(weapon["name"])
         armor_name = game.text_fmt.name(armor["name"])
+        back_label = game.text_fmt.t("もどる", "BACK")
         equip_lines = [
             f"{wlbl}: {weapon_name} (こうげき+{weapon['atk']})",
             f"{albl}: {armor_name} (ぼうぎょ+{armor['def']})",
+            back_label,
         ]
         rows: list[MenuRow] = []
         for i, label in enumerate(equip_lines):

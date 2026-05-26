@@ -54,6 +54,17 @@ class _FakeMessages:
 
 
 @dataclass
+class _FakeTextFormat:
+    use_jp: bool = True
+
+    def t(self, jp: str, en: str) -> str:
+        return jp if self.use_jp else en
+
+    def name(self, text: str) -> str:
+        return text
+
+
+@dataclass
 class _FakeGame:
     state: str = "menu"
     has_jp_font: bool = True
@@ -61,6 +72,7 @@ class _FakeGame:
     input_state: _FakeInputState = field(default_factory=_FakeInputState)
     sfx: _FakeSfx = field(default_factory=_FakeSfx)
     messages: _FakeMessages = field(default_factory=_FakeMessages)
+    text_fmt: _FakeTextFormat = field(default_factory=_FakeTextFormat)
 
 
 class MenuCursorTest(unittest.TestCase):
@@ -209,9 +221,9 @@ class MenuItemSubUseTest(unittest.TestCase):
 
 
 class MenuEquipSubCursorTest(unittest.TestCase):
-    """equip サブは weapon / armor の 2 択カーソルで循環する。"""
+    """equip サブは weapon / armor / back の 3 択カーソルで循環する。"""
 
-    def test_down_wraps_between_weapon_and_armor(self):
+    def test_down_from_armor_moves_to_back_row(self):
         from src.shared.services.input_bindings import DOWN_BUTTONS
 
         game = _FakeGame()
@@ -222,7 +234,34 @@ class MenuEquipSubCursorTest(unittest.TestCase):
         game.input_state.press(DOWN_BUTTONS)
         scene.update()
 
-        self.assertEqual(scene.model.item_cursor, 0)
+        self.assertEqual(scene.model.item_cursor, 2)
+
+    def test_equip_panel_shows_back_row_as_last_item(self):
+        game = _FakeGame()
+        scene = MenuScene(game=game)
+        scene.model.sub = "equip"
+
+        vm = scene.presenter.build_view_model(
+            scene.presenter.build_labels(game),
+            game,
+        )
+
+        self.assertIsNotNone(vm.sub_panel)
+        self.assertEqual(len(vm.sub_panel.rows), 3)
+        self.assertEqual(vm.sub_panel.rows[-1].text.strip(), "もどる")
+
+    def test_confirm_on_back_row_closes_equip_sub(self):
+        from src.shared.services.input_bindings import CONFIRM_BUTTONS
+
+        game = _FakeGame()
+        scene = MenuScene(game=game)
+        scene.model.sub = "equip"
+        scene.model.item_cursor = 2
+        game.input_state.press(CONFIRM_BUTTONS)
+
+        scene.update()
+
+        self.assertIsNone(scene.model.sub)
 
     def test_cancel_from_equip_sub_returns_to_root(self):
         from src.shared.services.input_bindings import CANCEL_BUTTONS
