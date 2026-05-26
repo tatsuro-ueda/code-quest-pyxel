@@ -19,6 +19,10 @@
 - 都合のよい方を場面ごとに参照する
 - ユーザー編集より自動生成を優先する
 
+### 一方向経路の具体例（dialogue）
+
+dialogue も `assets/dialogue.yaml → tools/gen_data.py → src/generated/dialogue.py → src/game_data.py` の一方向に寄せる。`src/dialogue_data.py` は互換レイヤーにとどめ、新規データ追加は YAML 側で行って regenerate する（手動 multi-write 禁止）。
+
 ## 2. 本番の通り道を必ず通す（Golden Path Test / End-to-End Smoke Test）
 
 ユーザーが実際に使う主要操作を、本番に近い環境で最低一回は動かして確認する。
@@ -29,6 +33,10 @@
 - 起動・メニュー・店・戦闘など主要導線を省く
 - dev環境だけで確認する
 - bundleや実機確認を後回しにする
+
+### Code Maker zip も golden path に含める
+
+`dist/code-maker.zip` 内の `main.py` と `my_resource.pyxres` が現行正本と一致し、展開物が **headless 起動（`Game()` 初期化 + 1 フレーム描画）まで通る** ことを最低条件にする。zip 内 monolith の構文 green だけで done にしない。
 
 ## 3. Migration Safety
 

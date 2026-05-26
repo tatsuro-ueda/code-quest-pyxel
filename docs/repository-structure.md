@@ -114,6 +114,10 @@ PYTHONPATH=. python tools/build_web_release.py
   （CJ44 確定版・BGM SSoT タスクで確定した方針）
 - bundle に古い AudioManager / SettingsScene が残ったまま release した経歴があるので、毎回 3.5.3 の
   自己検査を回すこと
+- **preview / current 昇格 flow は 2026-05 廃止**（バグ多発のため運用停止）。
+  `tools/build_web_release.py --promote` および `DevelopmentCandidate` 系は使わない。
+  preview / current の分離・比較自体は残るが、approval build lane としての昇格は行わない。
+  Phase 3 で `main_development.py` ラッパーと `development/` 配布も廃止済み（→ memory `single_distribution_policy`）
 
 ## 4. ディレクトリ詳細
 
@@ -275,6 +279,8 @@ Pyxel の「単一 main.py」制約の受け皿。runtime 側には業務ロジ�
 | `hooks/` | **guardrail entrypoint**：`src/generated` への手書き、`.pyxres` の不正書換え、誤った import path などを pre/post commit で止める |
 
 > **guardrail entrypoint の 2 系統**：`tools/hooks/*.sh` が repo 側の誤操作を pre/post commit で止め、`.claude/settings.json` が AI セッション側の permission / hook を制御する。両方そろって初めて、人と AI の両側から `src/generated` や `.pyxres` を守れる。
+
+> **observability lane**：`src/shared/services/play_session_logging.py`（sqlite に Web プレイ記録 + IP / UA / browser を集計） + `tools/web_runtime_server.py`（実公開 lane の server 入口、shared play logging を含む） + `tools/report_play_sessions.py`（人間可読レポート）の 3 つで観測用 lane を構成する。コードが正しくても、この lane が落ちると運用 facts が落ちるので、runtime server と report は build / verify とは別系統の責務として扱う。
 
 ### 5.3 `test/`
 
