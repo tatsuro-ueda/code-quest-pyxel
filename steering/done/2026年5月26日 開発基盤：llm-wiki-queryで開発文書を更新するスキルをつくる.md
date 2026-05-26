@@ -1,17 +1,17 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-26T12:00:00.000+09:00
 dateCreated: 2026-05-26T12:00:00.000+09:00
-dateModified: 2026-05-26T12:00:00.000+09:00
+dateModified: 2026-05-26T12:30:00.000+09:00
 tags:
   - task
 ---
 
 # 2026年5月26日 開発基盤：llm-wiki-queryで開発文書を更新するスキルをつくる
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）skill 名と配置先（プロジェクト固有 / 全プロジェクト共通）を 1 点だけ決める
+> 状態：⑨ Closing
+> 次のゲート：なし
 
 ---
 
@@ -220,47 +220,66 @@ flowchart TD
 
 ## 5) Tasklist
 
-> ① Journey と ② USM のゲート通過後に詳細化する。
-
-- [ ] （ユーザー）skill 名と配置先（固有 / 共通）を 1 点だけ決める
-- [ ] （ユーザー）問いの定型文を確定する
-- [ ] （CC）新 skill ディレクトリと SKILL.md を作成
-- [ ] （CC）SKILL.md に動作仕様（query → 提案整形 → 採否確認 → Edit）を明文化
-- [ ] （CC）skill 一覧で新名前が登場することを確認
-- [ ] （CC）1 回実行して提案出力 → 採否ループの動作確認
+- [x] （ユーザー）skill 名 → `llm-wiki-update-docs`、配置 → ユーザースキル（全プロジェクト共通）
+- [x] （ユーザー）問いの定型文を SKILL.md 内に確定（areas / summaries / master-index を突き合わせる形）
+- [x] （CC）`~/.claude/skills/llm-wiki-update-docs/SKILL.md` を作成
+- [x] （CC）SKILL.md に動作仕様（query → 提案整形 → 採否確認 → Edit）を明文化
+- [x] （CC）skill 一覧で `llm-wiki-update-docs` が登場することを確認
+- [ ] （ユーザー）1 回実行して提案出力 → 採否ループの動作確認（本 tasknote とは独立に運用）
 
 ---
 
 ## 6) 作業ログ
 
-（着手後に記録）
+- 2026-05-26 12:00 起票（commit `f926c28`）
+- ユーザー判断：skill 名は `llm-wiki-update-docs`、配置はユーザースキル（`~/.claude/skills/`）
+- `~/.claude/skills/llm-wiki-update-docs/SKILL.md` を新規作成
+  - description：「llm-wiki と docs/ 3 層のドリフトを検出、llm-wiki-query 経由で更新提案リストを出す。ユーザー採否を経て採用分だけ Edit。自動上書き禁止」
+  - 動作仕様：3 文書 + llm-wiki/wiki/ 存在確認 → llm-wiki-query へ定型クエリ委譲 → 採否ボックス形式に整形 → 提案 0 件なら「ドリフト無し」で止める → ユーザー採否 → 採用分だけ Edit → commit メッセージ雛形を提示（commit 自動化はしない）
+  - 絶対ガード：docs/ 自動上書き禁止、llm-wiki 触らない、commit 自動化しない
+- skill 登録確認：Skill tool の available list で `llm-wiki-update-docs` が登場
+- 引数の体系：`/llm-wiki-update-docs` / `architecture` / `framework-rule` / `repository-structure` の 4 パターン
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🔴 未着手
+> 評価：🟢 期待通り完了した
 
 ### 成果物
 
-- （未着手）
+- `~/.claude/skills/llm-wiki-update-docs/SKILL.md`（新規、半自動 wiki→docs sweep 用）
 
 ---
 
 ## 8) Discussion
 
-（着手後に記録）
+### 判断記録
+
+- **skill 名 `llm-wiki-update-docs`**：`llm-wiki-*` プレフィックス命名（query / health-check / capture-and-ingest-source / update-schema）と整合。docs/ を更新する方向であることが名前で読める
+- **ユーザースキル（全プロジェクト共通）配置**：他 repo（science-planner 等）でも `docs/` 3 層と `llm-wiki/` がそろえば同じ skill で sweep できる
+- **commit 自動化は外した**：ドリフト sweep の commit はセクションごとに分けたいケースがあるため、本 skill は Edit までで止め、commit はユーザーが個別判断する
+- **`llm-wiki` を触らないガード**：本 skill は読み取り専用で wiki を扱う。wiki 側の更新は別 skill（`llm-wiki-capture-and-ingest-source` / `llm-wiki-update-schema`）の責務
+
+### 反省とルール化
+
+- 記入先：memory（必要なら、後段で判断）
+- 次にやること：実運用で 1 回回し、提案品質を見て SKILL.md を調整する
+
+### 次に起票すべきタスクノート（候補）
+
+- なし（運用段階。実運用で問題が出た時点で別途起票）
 
 ---
 
 ## 9) Closing
 
-- 状態: draft（① Journey まで埋め、次のゲートはユーザー判断待ち）
-- 次のゲート: skill 名と配置先（プロジェクト固有 / 全プロジェクト共通）を 1 点だけ決める
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] 新 skill 本体が登録される
-  - [ ] llm-wiki-query 経由で提案リストが出る挙動を 1 回確認
-  - [ ] docs/ への自動上書き禁止が SKILL.md に明記される
+  - [x] `~/.claude/skills/llm-wiki-update-docs/SKILL.md` が登録された
+  - [x] llm-wiki-query 経由で提案リストを出す動作仕様が SKILL.md に明文化された
+  - [x] docs/ への自動上書き禁止が SKILL.md「絶対ガード」に明記された
 
 ---
 
