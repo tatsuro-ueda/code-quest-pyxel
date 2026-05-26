@@ -159,6 +159,55 @@ class MenuSubEntryTest(unittest.TestCase):
 
 
 class MenuItemSubUseTest(unittest.TestCase):
+    def test_items_panel_shows_back_row_as_last_item(self):
+        game = _FakeGame()
+        game.player_model.items = [PlayerItem(id=0, qty=1), PlayerItem(id=0, qty=2)]
+        scene = MenuScene(game=game)
+        scene.model.sub = "items"
+
+        vm = scene.presenter.build_view_model(
+            scene.presenter.build_labels(game),
+            game,
+        )
+
+        self.assertIsNotNone(vm.sub_panel)
+        self.assertEqual(len(vm.sub_panel.rows), 3)
+        self.assertEqual(vm.sub_panel.rows[-1].text.strip(), "もどる")
+
+    def test_items_panel_keeps_back_row_visible_with_eight_items(self):
+        game = _FakeGame()
+        game.player_model.items = [
+            PlayerItem(id=0, qty=i + 1) for i in range(8)
+        ]
+        scene = MenuScene(game=game)
+        scene.model.sub = "items"
+        scene.model.item_cursor = 8
+
+        vm = scene.presenter.build_view_model(
+            scene.presenter.build_labels(game),
+            game,
+        )
+
+        self.assertIsNotNone(vm.sub_panel)
+        self.assertEqual(len(vm.sub_panel.rows), 8)
+        self.assertIn("x8", vm.sub_panel.rows[-2].text)
+        self.assertTrue(vm.sub_panel.rows[-1].text.startswith("> "))
+        self.assertEqual(vm.sub_panel.rows[-1].text.strip("> "), "もどる")
+
+    def test_confirm_on_items_back_row_closes_sub(self):
+        from src.shared.services.input_bindings import CONFIRM_BUTTONS
+
+        game = _FakeGame()
+        game.player_model.items = [PlayerItem(id=0, qty=1)]
+        scene = MenuScene(game=game)
+        scene.model.sub = "items"
+        scene.model.item_cursor = 1
+        game.input_state.press(CONFIRM_BUTTONS)
+
+        scene.update()
+
+        self.assertIsNone(scene.model.sub)
+
     def test_using_heal_item_when_not_full_consumes_one(self):
         from src.shared.services.input_bindings import CONFIRM_BUTTONS
 

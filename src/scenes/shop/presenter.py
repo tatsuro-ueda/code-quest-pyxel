@@ -29,6 +29,8 @@ from src.shared.services.input_bindings import (
 MESSAGE_TTL_FRAMES = 60
 
 OWNED_MESSAGE = "すでに もっている。"
+BACK_LABEL_JP = "もどる"
+BACK_LABEL_EN = "BACK"
 
 
 @dataclass
@@ -115,12 +117,19 @@ class ShopPresenter:
             - 副作用とモデル更新は実装どおり。
         """
         inventory_size = len(self.model.inventory)
+        back_index = inventory_size
         if game.input_state.btnp(UP_BUTTONS):
-            self.model.cursor = (self.model.cursor - 1) % inventory_size
+            if self.model.cursor <= 0:
+                self.model.cursor = inventory_size - 1
+            else:
+                self.model.cursor -= 1
             game.sfx.play("cursor")
             return
         if game.input_state.btnp(DOWN_BUTTONS):
-            self.model.cursor = (self.model.cursor + 1) % inventory_size
+            if self.model.cursor < back_index:
+                self.model.cursor += 1
+            else:
+                self.model.cursor = 0
             game.sfx.play("cursor")
             return
         if game.input_state.btnp(CANCEL_BUTTONS):
@@ -129,6 +138,9 @@ class ShopPresenter:
             return
         if game.input_state.btnp(CONFIRM_BUTTONS):
             game.sfx.play("select")
+            if self.model.cursor == back_index:
+                game.state = "town_menu"
+                return
             self.try_purchase(game)
 
     def _run_try_purchase(self, game: Any) -> None:
@@ -286,6 +298,12 @@ class ShopPresenter:
             color = 10 if i == model.cursor else 7
             marker = ">" if i == model.cursor else " "
             rows.append(ShopRow(label=f"{marker} {line}", color=color))
+        back_index = len(model.inventory)
+        back_label = game.text_fmt.t(BACK_LABEL_JP, BACK_LABEL_EN)
+        rows.append(ShopRow(
+            label=f"{'>' if model.cursor == back_index else ' '} {back_label}",
+            color=10 if model.cursor == back_index else 7,
+        ))
         return rows
 
     @staticmethod
@@ -354,6 +372,8 @@ class ShopPresenter:
         if model.message:
             return model.message
         if not model.inventory:
+            return None
+        if model.cursor >= len(model.inventory):
             return None
         if model.kind not in ("weapons", "armors"):
             return None

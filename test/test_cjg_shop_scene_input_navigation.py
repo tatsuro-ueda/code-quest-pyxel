@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT))
 
 from src.scenes.shop.scene import ShopScene
 from src.shared.services.game_state import TownContext
+from src.shared.services.text_format import TextFormat
 from src.shared.state.player_model import PlayerModel
 
 
@@ -53,11 +54,25 @@ class _FakeGame:
     )
     last_town_pos: tuple[int, int] | None = None
     state: str = "shop"
+    has_jp_font: bool = True
     input_state: _FakeInputState = field(default_factory=_FakeInputState)
     sfx: _FakeSfx = field(default_factory=_FakeSfx)
+    text_fmt: TextFormat = field(default_factory=TextFormat)
+
+    def __post_init__(self) -> None:
+        self.text_fmt.game = self
 
 
 class ShopCursorTest(unittest.TestCase):
+    def test_view_model_shows_back_row_as_last_item(self):
+        game = _FakeGame()
+        scene = ShopScene(game=game)
+        scene.enter("weapons")
+
+        vm = scene.presenter.build_view_model(game)
+
+        self.assertEqual(vm.rows[-1].label.strip(), "もどる")
+
     def test_down_moves_cursor_forward(self):
         from src.shared.services.input_bindings import DOWN_BUTTONS
 
@@ -96,6 +111,19 @@ class ShopCursorTest(unittest.TestCase):
 
         self.assertEqual(game.state, "town_menu")
         self.assertIn("cancel", game.sfx.played)
+
+    def test_confirm_on_back_row_returns_to_town_menu(self):
+        from src.shared.services.input_bindings import CONFIRM_BUTTONS
+
+        game = _FakeGame()
+        scene = ShopScene(game=game)
+        scene.enter("weapons")
+        scene.model.cursor = len(scene.model.inventory)
+
+        game.input_state.press(CONFIRM_BUTTONS)
+        scene.update()
+
+        self.assertEqual(game.state, "town_menu")
 
 
 class ShopEmptyInventoryTest(unittest.TestCase):

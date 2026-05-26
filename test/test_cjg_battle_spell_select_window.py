@@ -5,8 +5,8 @@
 - docs/customer-jobs.md Job4（ゲームを楽しむ）
 
 spell_select は:
-- 4 件以下では従来どおりの 4 行以内表示を保つ
-- 5 件目を選ぶと 4 行窓が scroll して選択中じゅもんを画面内に残す
+- 4 件以下では 4 spell + back の 5 行以内表示を保つ
+- 5 件目を選ぶと 4 spell 窓が scroll して選択中じゅもんを画面内に残す
 - 決定時は、見えている強調行と同じじゅもんに効果が乗る
 """
 
@@ -119,10 +119,11 @@ class BattleSpellSelectWindowTest(unittest.TestCase):
         vm = scene.presenter.build_view_model(game)
 
         self.assertIsNotNone(vm.sub_panel)
-        self.assertEqual(len(vm.sub_panel.rows), 4)
+        self.assertEqual(len(vm.sub_panel.rows), 5)
         self.assertIn(spells[2], vm.sub_panel.rows[2].text)
         self.assertTrue(vm.sub_panel.rows[2].text.startswith("> "))
         self.assertEqual(vm.sub_panel.rows[2].color, 10)
+        self.assertEqual(vm.sub_panel.rows[-1].text.strip(), "もどる")
 
     def test_fifth_spell_scrolls_into_last_visible_row(self):
         scene, game, spells = _enter_spell_select(5)
@@ -131,11 +132,12 @@ class BattleSpellSelectWindowTest(unittest.TestCase):
         vm = scene.presenter.build_view_model(game)
 
         self.assertIsNotNone(vm.sub_panel)
-        self.assertEqual(len(vm.sub_panel.rows), 4)
-        for row, expected_name in zip(vm.sub_panel.rows, spells[1:5]):
+        self.assertEqual(len(vm.sub_panel.rows), 5)
+        for row, expected_name in zip(vm.sub_panel.rows[:-1], spells[1:5]):
             self.assertIn(expected_name, row.text)
-        self.assertTrue(vm.sub_panel.rows[-1].text.startswith("> "))
-        self.assertEqual(vm.sub_panel.rows[-1].color, 10)
+        self.assertTrue(vm.sub_panel.rows[-2].text.startswith("> "))
+        self.assertEqual(vm.sub_panel.rows[-2].color, 10)
+        self.assertEqual(vm.sub_panel.rows[-1].text.strip(), "もどる")
 
     def test_confirm_uses_same_spell_as_visible_highlight_after_scroll(self):
         scene, game, spells = _enter_spell_select(5)
@@ -143,8 +145,8 @@ class BattleSpellSelectWindowTest(unittest.TestCase):
         vm = scene.presenter.build_view_model(game)
 
         self.assertIsNotNone(vm.sub_panel)
-        self.assertIn(spells[4], vm.sub_panel.rows[-1].text)
-        self.assertTrue(vm.sub_panel.rows[-1].text.startswith("> "))
+        self.assertIn(spells[4], vm.sub_panel.rows[-2].text)
+        self.assertTrue(vm.sub_panel.rows[-2].text.startswith("> "))
 
         game.input_state.pressed_groups = {CONFIRM_BUTTONS}
         scene.update()
