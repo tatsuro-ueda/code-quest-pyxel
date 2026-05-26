@@ -1,17 +1,17 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-26T09:00:00.000+09:00
 dateCreated: 2026-05-26T09:00:00.000+09:00
-dateModified: 2026-05-26T09:00:00.000+09:00
+dateModified: 2026-05-26T10:30:00.000+09:00
 tags:
   - task
 ---
 
 # 2026年5月26日 開発基盤：make-checklist スキルを新設する
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）設計／実装／レビューの 3 シーンのうち、最初に対応する 1 シーンを 1 点だけ決める
+> 状態：⑨ Closing
+> 次のゲート：なし
 
 ---
 
@@ -186,46 +186,64 @@ flowchart TD
 
 ## 5) Tasklist
 
-> ① Journey と ② USM のゲート通過後に詳細化する。
-
-- [ ] （CC）docs/ 3 文書をスキャンしてチェック項目候補を抽出
-- [ ] （CC）抽出結果を skill draft に落とす
-- [ ] （ユーザー）粒度・出力形式をレビュー
-- [ ] （CC）skill 本文を `~/.claude/skills/make-checklist/SKILL.md` に書く
-- [ ] （CC）SAMPLE 出力を 1 件作って動作確認
+- [x] （CC）docs/ 3 文書をスキャンしてチェック項目候補を抽出
+- [x] （CC）抽出結果を skill draft に落とす
+- [x] （ユーザー）粒度・出力形式をレビュー → 100 項目 / 3 シーン統合で確定
+- [x] （CC）skill 本文を `~/.claude/skills/make-checklist/SKILL.md` に書く
+- [x] （CC）SAMPLE 出力（チェックリスト本体）を SKILL.md 内に同梱、skill 登録を確認
 
 ---
 
 ## 6) 作業ログ
 
-（着手後に記録）
+- 2026-05-26 起票（commit `1bdd4c0`）
+- ユーザー判断：3 シーン（設計／実装／レビュー）統合・100 項目・配置先は全プロジェクト共通（`~/.claude/skills/`）
+- `~/.claude/skills/make-checklist/SKILL.md` を新規作成（合計 100 項目：A 25 / B 30 / C 45）
+  - A 章：docs/architecture.md より（製品の前提 3 / 採用技術と役割 10 / 採用技術から導かれる制約 12）
+  - B 章：docs/repository-structure.md より（構造規約 5 / ディレクトリ責務 15 / レイヤー依存 4 / build runbook 4 / test と guardrail 2）
+  - C 章：docs/framework-rule.md より（M1 7 / M2 5 / M3 10 / M4 18 / M5 5）
+- skill 登録確認：Skill tool の available list に `make-checklist` が出現することを確認
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🔴 未着手
+> 評価：🟢 期待通り完了した
 
 ### 成果物
 
-- （未着手）
+- `~/.claude/skills/make-checklist/SKILL.md`（新規、100 項目チェックリスト本体を含む）
+- skill description：「code-quest-pyxel の docs/ 3 層から派生した 100 項目チェックリストを出力」
 
 ---
 
 ## 8) Discussion
 
-（着手後に記録）
+### 判断記録
+
+- **3 シーン分割 vs 統合**：「時間がないため」を尊重し統合採用。あとで分割するかは未確定。100 項目は A/B/C のタグで分類済みのため、後から `/make-checklist design`・`/make-checklist review` のような分割は SKILL.md 内 routing 追記で実現できる
+- **配置先**：全プロジェクト共通（`~/.claude/skills/`）。ただしチェックリスト本体は code-quest-pyxel 固有のため、他リポで流用するときは新 skill 起票が安全と SKILL.md に明記
+- **粒度 100 項目**：3 文書を網羅するには適切。A 25 / B 30 / C 45 の偏りは framework-rule.md の規約密度に従った自然な分布
+
+### 反省とルール化
+
+- 記入先：CLAUDE.md / memory（必要なら）
+- 次にやること：docs/ 3 文書が更新されたら本 skill の項目本体も同期する運用フックを将来検討
+
+### 次に起票すべきタスクノート（候補）
+
+- なし（運用段階に入る。docs 更新時の同期は SKILL.md 内の運用ルールで担保）
 
 ---
 
 ## 9) Closing
 
-- 状態: draft（① Journey まで埋め、次のゲートはユーザー判断待ち）
-- 次のゲート: 設計／実装／レビューの 3 シーンのうち最初に対応する 1 シーンを 1 点だけ決める
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] make-checklist スキル本体が動く
-  - [ ] docs/ 3 文書を開かずにチェック項目一覧が出ることを確認
-  - [ ] docs 更新時の再生成運用ルールを skill 本文に明記
+  - [x] make-checklist スキル本体（`~/.claude/skills/make-checklist/SKILL.md`）が登録された
+  - [x] チェックリスト 100 項目が docs/ 3 層を網羅している
+  - [x] docs 更新時の再生成運用ルールを SKILL.md 本文に明記
 
 ---
 
