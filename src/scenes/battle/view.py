@@ -18,6 +18,7 @@ import pyxel
 
 from src.scenes.battle.view_model import BattleViewModel
 from src.shared.services.audio_system import play_bgm_track
+from src.shared.ui.wrapped_text import resolve_wrapped_lines
 
 
 # pyxres 内 musics スロット番号（旧 TRACK_ORDER と整合）。
@@ -248,12 +249,12 @@ class BattleView:
         Postconditions:
             - ``text_writer`` に wrap helper が無いときは 1 行のまま返す。
         """
-        wrap_text = getattr(text_writer, "wrap_text", None)
-        if not callable(wrap_text):
-            return [main_text]
-        return wrap_text(
-            main_text, max_chars=MAIN_MESSAGE_WRAP_WIDTH
-        )[:MAIN_MESSAGE_MAX_ROWS]
+        return resolve_wrapped_lines(
+            main_text,
+            text_writer,
+            max_chars=MAIN_MESSAGE_WRAP_WIDTH,
+            max_rows=MAIN_MESSAGE_MAX_ROWS,
+        )
 
     def _draw_sub_panel(
         self, vm: BattleViewModel, text_writer: Any

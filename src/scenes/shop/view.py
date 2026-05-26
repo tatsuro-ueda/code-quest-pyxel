@@ -18,6 +18,12 @@ from typing import Any
 import pyxel
 
 from src.scenes.shop.view_model import ShopViewModel
+from src.shared.ui.wrapped_text import resolve_wrapped_lines
+
+
+MESSAGE_WRAP_WIDTH = 28
+MESSAGE_MAX_ROWS = 2
+MESSAGE_LINE_HEIGHT = 12
 
 
 @dataclass
@@ -67,4 +73,12 @@ class ShopView:
         for i, row in enumerate(vm.rows):
             text_writer.text(8, 30 + i * 14, row.label, row.color)
         if vm.message is not None:
-            text_writer.text(8, 200, vm.message, 11)
+            for i, line in enumerate(
+                resolve_wrapped_lines(
+                    vm.message,
+                    text_writer,
+                    max_chars=MESSAGE_WRAP_WIDTH,
+                    max_rows=MESSAGE_MAX_ROWS,
+                )
+            ):
+                text_writer.text(8, 200 + i * MESSAGE_LINE_HEIGHT, line, 11)
