@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-24T06:08:48+00:00
 dateCreated: 2026-05-24T06:08:48+00:00
