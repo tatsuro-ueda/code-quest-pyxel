@@ -1,9 +1,9 @@
 ---
-status: later
+status: open
 priority: high
 scheduled: 2026-05-26T19:04:53+00:00
 dateCreated: 2026-05-26T19:04:53+00:00
-dateModified: 2026-05-26T19:04:53+00:00
+dateModified: 2026-05-26T19:41:41+00:00
 tags:
   - task
   - screenshot
@@ -17,7 +17,7 @@ tags:
 # 2026年5月26日 共有：Chromebook向けスクショ保存導線を実装する
 
 > 状態：① Journey
-> 次のゲート：（CC）仕様ノートで保存導線の前提が固まったら着手する
+> 次のゲート：（CC）`スマート保存` の最小仕様を wrapper 変更単位へ落とす
 
 ---
 
@@ -29,9 +29,9 @@ tags:
 
 1. 前提条件
    1. 💦 主な利用端末は Chromebook である
-   2. 💦 保存導線は `Chrome Canvas 型 + Show in folder` を第1候補にする
+   2. 💦 保存導線は `スマート保存` を採用する
    3. 💦 現行 Web 版は `play.html -> iframe(pyxel.html)` の wrapper 構成である
-   4. 💦 既存調査 note に類似事例と trusted voices が整理済みである
+   4. 💦 調査 note と仕様 note に前提が整理済みである
 
 2. Before
    1. 💦 スクショを保存する UI が wrapper にまだ存在しない
@@ -54,7 +54,7 @@ tags:
    3. `capture` と `save` を wrapper で完結させる
 
 6. 委任度
-   1. 🟡 全体として仕様前提が固まってから着手するのが安全である
+   1. 🟢 全体として実装着手の前提はそろった
    2. 🟢 CCのみで可: 仕様確定後の wrapper 実装、fallback、記録、検証
    3. 🔴 人の判断: 保存後メッセージの最終文言と親向け補助量
 
@@ -264,12 +264,16 @@ flowchart TD
 - 起票した
   - 保存導線だけを先行タスクとして切り出した
   - 絵文字スタンプ焼き込みは別 tasknote へ分離した
+- 仕様前提を更新した
+  - 仕様ノートで `スマート保存` が採用された
+  - 第1段階では `保存する -> save picker -> 保存完了表示` を主導線にする
+  - `Show in folder` 相当は後段に回し、最初は保存先の手がかり表示に絞る
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟡 起票のみ完了
+> 評価：🟡 実装着手前の前提整理まで完了
 
 ### 成果物
 
@@ -282,16 +286,28 @@ flowchart TD
 ### 反省とルール化
 
 - 記入先：manage-tasknotes
-- 次にやること：仕様ノートで保存導線の前提が固まるのを待つ
-- 関連tasknote: `steering/2026年5月26日 共有：つっこみスクショの体験仕様を決める.md`
+- 次にやること：`スマート保存` を wrapper 変更単位へ分解して実装へ進める
+- 関連tasknote: `steering/done/2026年5月26日 共有：つっこみスクショの体験仕様を決める.md`
 - 関連tasknote: `steering/2026年5月26日 共有：つっこみスクショに絵文字スタンプ書き出しを加える.md`
+
+### 判断メモ
+
+1. 今回の固定点
+   - 主導線は `showSaveFilePicker` を使う `スマート保存`
+   - 非対応時だけ `download` へ落とす
+   - 保存後は `どこに保存したかを思い出せる手がかり` を優先し、説明し過ぎない
+
+2. 後段へ回すもの
+   - `Show in folder` 相当のより強い再発見導線
+   - 親向け補助文の細かな最適化
+   - スタンプ付き PNG の最終導線
 
 ---
 
 ## 9) Closing
 
-- 状態: later
-- 次のゲート: （CC）仕様ノートで保存導線の前提が固まったら着手する
+- 状態: open
+- 次のゲート: （CC）`スマート保存` の最小仕様を wrapper 変更単位へ落とす
 - close 条件:
   - [ ] save picker 主導線と fallback が実装される
   - [ ] smoke と pytest の結果が残る
@@ -307,3 +323,4 @@ flowchart TD
 - Local: `docs/customer-journeys.md`
 - Local: `templates/wrapper.html`
 - Local: `steering/done/2026年5月26日 調査：Chromebook向けつっこみスクショの保存導線を比較する.md`
+- Local: `steering/done/2026年5月26日 共有：つっこみスクショの体験仕様を決める.md`
