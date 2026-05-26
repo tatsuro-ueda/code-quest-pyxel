@@ -24,6 +24,9 @@ from src.shared.services.audio_system import play_bgm_track
 BATTLE_BGM_INDEX = 4
 BOSS_BGM_INDEX = 5
 VICTORY_BGM_INDEX = 6
+MAIN_MESSAGE_WRAP_WIDTH = 28
+MAIN_MESSAGE_MAX_ROWS = 2
+MAIN_MESSAGE_LINE_HEIGHT = 12
 
 
 def _select_battle_bgm(game) -> int:
@@ -216,7 +219,36 @@ class BattleView:
             return
         pyxel.rect(10, 148, 236, 30, 0)
         pyxel.rectb(10, 148, 236, 30, 7)
-        text_writer.text(16, 154, vm.main_text, 7)
+        for i, line in enumerate(
+            BattleView._resolve_main_message_lines(vm.main_text, text_writer)
+        ):
+            text_writer.text(
+                16,
+                154 + i * MAIN_MESSAGE_LINE_HEIGHT,
+                line,
+                7,
+            )
+
+    @staticmethod
+    def _resolve_main_message_lines(
+        main_text: str, text_writer: Any
+    ) -> list[str]:
+        """battle の main message を枠内に収まる行列へ変換する。
+
+        Args:
+            main_text: 折返し前のメインメッセージ文字列。
+            text_writer: ``wrap_text`` を持つ描画補助オブジェクト。
+        Returns:
+            枠内に表示する最大 2 行の文字列リスト。
+        Postconditions:
+            - ``text_writer`` に wrap helper が無いときは 1 行のまま返す。
+        """
+        wrap_text = getattr(text_writer, "wrap_text", None)
+        if not callable(wrap_text):
+            return [main_text]
+        return wrap_text(
+            main_text, max_chars=MAIN_MESSAGE_WRAP_WIDTH
+        )[:MAIN_MESSAGE_MAX_ROWS]
 
     def _draw_sub_panel(
         self, vm: BattleViewModel, text_writer: Any
