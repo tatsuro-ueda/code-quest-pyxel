@@ -27,12 +27,16 @@ from src.shared.services.input_bindings import (
     CANCEL_BUTTONS,
     CONFIRM_BUTTONS,
     DOWN_BUTTONS,
+    LEFT_BUTTONS,
+    RIGHT_BUTTONS,
     UP_BUTTONS,
 )
 
 VISIBLE_LIST_ROWS = 4
 BACK_LABEL_JP = "もどる"
 BACK_LABEL_EN = "BACK"
+MENU_GRID_ROWS = 2
+MENU_GRID_COLUMNS = 2
 
 
 def _build_item_use_message(game: Any, item_data: dict, result: str) -> str:
@@ -257,7 +261,7 @@ class BattlePresenter:
         self._confirm_menu(game, scene)
 
     def _move_menu_cursor(self, game: Any) -> None:
-        """menu フェーズの上下移動を処理する。
+        """menu フェーズの 2x2 カーソル移動を処理する。
 
         Args:
             game: game の値。
@@ -265,12 +269,33 @@ class BattlePresenter:
             - 副作用とモデル更新は実装どおり。
         """
         model = self.model
-        if game.input_state.btnp(UP_BUTTONS):
-            model.menu = (model.menu - 1) % 4
-            game.sfx.play("cursor")
-        if game.input_state.btnp(DOWN_BUTTONS):
-            model.menu = (model.menu + 1) % 4
-            game.sfx.play("cursor")
+        next_menu = model.menu
+        is_up_pressed = game.input_state.btnp(UP_BUTTONS)
+        is_down_pressed = game.input_state.btnp(DOWN_BUTTONS)
+        is_left_pressed = game.input_state.btnp(LEFT_BUTTONS)
+        is_right_pressed = game.input_state.btnp(RIGHT_BUTTONS)
+        if is_up_pressed ^ is_down_pressed:
+            next_menu = self._flip_menu_row(next_menu)
+        if is_left_pressed ^ is_right_pressed:
+            next_menu = self._flip_menu_column(next_menu)
+        if next_menu == model.menu:
+            return
+        model.menu = next_menu
+        game.sfx.play("cursor")
+
+    @staticmethod
+    def _flip_menu_row(menu_index: int) -> int:
+        """2x2 battle menu の上下反転先 index を返す。"""
+        row, column = divmod(menu_index, MENU_GRID_COLUMNS)
+        next_row = (row + 1) % MENU_GRID_ROWS
+        return next_row * MENU_GRID_COLUMNS + column
+
+    @staticmethod
+    def _flip_menu_column(menu_index: int) -> int:
+        """2x2 battle menu の左右反転先 index を返す。"""
+        row, column = divmod(menu_index, MENU_GRID_COLUMNS)
+        next_column = (column + 1) % MENU_GRID_COLUMNS
+        return row * MENU_GRID_COLUMNS + next_column
 
     def _confirm_menu(self, game: Any, scene: Any) -> None:
         """menu フェーズで決定を押したときの遷移。
