@@ -31,7 +31,7 @@ def test_prepare_health_check_material_collects_signals_and_scaffold(
     assert payload["orphan_signals"][0]["path"] == "llm-wiki/wiki/areas/orphan-topic.md"
     assert (
         payload["missing_target_signals"][0]["missing_path"]
-        == "llm-wiki/wiki/areas/missing-topic.md"
+        == "llm-wiki/wiki/areas/Missing Topic.md"
     )
     assert any(
         signal["path"] == "llm-wiki/wiki/query/question-a.md"
@@ -40,6 +40,23 @@ def test_prepare_health_check_material_collects_signals_and_scaffold(
     assert payload["log_scaffold"].startswith("## [2026-05-24] lint | current wiki")
     assert "- contradictions: none" in payload["log_scaffold"]
     assert "- notes:" in payload["log_scaffold"]
+
+
+def test_prepare_health_check_material_preserves_japanese_area_titles(
+    tmp_path: Path,
+) -> None:
+    repo_root = _build_small_wiki_repo(tmp_path)
+    _write_page(
+        repo_root / "llm-wiki/wiki/areas/topic-a.md",
+        "# Topic A\n\nSee [[授業設計]] and [[Summary A]].\n",
+    )
+
+    payload = prepare_health_check_material(repo_root, current_date="2026-05-24")
+
+    assert any(
+        signal["missing_path"] == "llm-wiki/wiki/areas/授業設計.md"
+        for signal in payload["missing_target_signals"]
+    )
 
 
 def test_prepare_health_check_material_uses_adapter_paths(tmp_path: Path) -> None:
