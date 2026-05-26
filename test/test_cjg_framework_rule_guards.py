@@ -29,8 +29,8 @@ DOCS = ROOT / "docs"
 LIVE_NAV_FILES = (
     ROOT / "AGENTS.md",
     ROOT / "README.md",
+    DOCS / "architecture.md",
     DOCS / "framework-rule.md",
-    DOCS / "architecture_rules.yml",
     ROOT / "test" / "test_cjg_scene_directory_structure.py",
 )
 

@@ -262,10 +262,6 @@ Pyxel の「単一 main.py」制約の受け皿。runtime 側には業務ロジ�
 | `build_web_release.py` | production / development の Web 配布物生成。`build_web_release`, `build_development_release`（Phase 3 削除）, `approve_development`（同）, `promote` |
 | `build_codemaker.py` | Code Maker 用 zip 生成。`build_codemaker_main_text`, `build_codemaker_zip`（Phase 2 で bundler 呼び出しに書き換え） |
 | `build_release_artifacts.py` | 配布成果物の staging と prune。`stage_release`, `write_wrapper_outputs`, `prune_*`, `build_codemaker_release` |
-| `check_architecture_rules.py` | architecture rules checker の薄い CLI 入口 |
-| `fix_architecture_rules.py` | architecture rules fixer の薄い CLI 入口 |
-| `repair_architecture_rules.py` | architecture rules repair の薄い CLI 入口 |
-| `architecture_rules/` | checker / fixer / repair の実装パッケージ |
 | `render_release_selector.py` | selector / wrapper の HTML 展開。`generate_wrapper`, `generate_selector`, `generate_top_selector`, `load_top_page_changes`, `versioned_asset_url` |
 | `resolve_release_source_of_truth.py` | dev / prod 判定。`DevelopmentCandidate`, `resolve_development_candidate`, `build_cache_token`, `build_development_change_list`（DevelopmentCandidate 系は Phase 3 で削除） |
 | `gen_data.py` | `assets/*.yaml` → `src/generated/*.py` の一方向生成。`generate_one`, `_write_generated_module` |
