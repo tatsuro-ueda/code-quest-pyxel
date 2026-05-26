@@ -49,6 +49,9 @@
 - 初回 ingest の done 条件は `raw / summary / master index / related pages / ingest log`
 - related page は最低 2 件更新する。届かないときは保留理由を log に残す
 - 早すぎる entity / concept 分離は行わず、まず `areas` を使う
+- 新規 area page は日本語の論点名ベースの file 名を既定にする
+- `/` `\\` `:` `*` `?` `\"` `<` `>` `|` と改行は `・` に置き換える
+- 既存の英語 slug area page は legacy 例として残し、今回の rule 更新では自動 rename しない
 
 ## Query Defaults
 
