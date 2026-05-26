@@ -1,9 +1,9 @@
 ---
-status: open
+status: in-progress
 priority: high
 scheduled: 2026-05-26T18:25:15+00:00
 dateCreated: 2026-05-26T18:25:15+00:00
-dateModified: 2026-05-26T18:25:15+00:00
+dateModified: 2026-05-26T18:37:50+00:00
 tags:
   - task
   - screenshot
@@ -16,8 +16,8 @@ tags:
 
 # 2026年5月26日 共有：Chromebook向けつっこみスクショを保存ファーストで始める
 
-> 状態：① Journey
-> 次のゲート：（CC）Chromebook 前提の保存ダイアログ導線を wrapper の最小仕様へ落とす
+> 状態：⑥ 作業ログ
+> 次のゲート：（user）類似事例を見て `Chrome Canvas 型` に寄せるか判断する
 
 ---
 
@@ -62,9 +62,9 @@ tags:
 
 ## 2) ユーザーストーリーマップ
 
-> Gherkin の前に、今回の実装テーマをどの順番で固めるかだけをそろえる。
-> 委任度：🟢 初手の進め方はこの順でそのまま進められる
-> 残る曖昧さ：保存後の表示文言だけは実装中に微調整の余地がある
+> Gherkin の前に、今回の実装テーマと事例調査の順番だけをそろえる。
+> 委任度：🟢 事例調査まではこの順でそのまま進められる
+> 残る曖昧さ：どの事例パターンを主導線に寄せるかは user 相談が要る
 
 ### 事前確認
 
@@ -94,6 +94,10 @@ tags:
    1. 👀 主導線を `showSaveFilePicker` と `download` で比較する
    2. ✂️ 最初の実装を `保存ファースト` に固定する
    3. 📝 子どもに伝わる保存後メッセージの要件を残す
+2. 追加分
+   1. 👀 Chromebook と子ども向け web editor の事例を集める
+   2. ✂️ `ローカル保存` と `後から共有` の切り分け例を見る
+   3. 📝 似ている保存 UX の型を 2〜3 個に整理する
 
 #### 話題2：wrapper 側の最小責務を決める
 
@@ -217,7 +221,8 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    T1[保存ファーストの最小仕様を固める] --> T2[wrapper の保存導線を実装する]
+    T0[類似事例を調査する] --> T1[保存ファーストの最小仕様を固める]
+    T1 --> T2[wrapper の保存導線を実装する]
     T2 --> T3[fallback 文言を入れる]
     T3 --> T4[local browser smoke と pytest を回す]
     T4 --> T5[Development Checklist を /tmp へコピーしてレビューする]
@@ -226,11 +231,13 @@ flowchart TD
     classDef wip fill:#fff3cd,stroke:#856404,color:#000000;
     classDef todo fill:#e2e3f1,stroke:#3949ab,color:#000000;
 
+    class T0 done;
     class T1,T2,T3,T4,T5 todo;
 ```
 
 > 必ず上から順に実施。CCがCoVeで自力検証しながら進める。
 
+- [x] （CC）類似事例を調査する
 - [ ] （CC）保存ファーストの最小仕様を固める
 - [ ] （CC）wrapper の保存導線を実装する
 - [ ] （CC）fallback 文言を入れる → **作業ログに事実を記録** → **Discussionに判断を記録**
@@ -265,12 +272,28 @@ flowchart TD
 - 起票方針を決めた
   - Chromebook 前提では `保存ファースト` が最小実装と判断した
   - 自動 download より `保存ダイアログあり` を主導線に置く方針にした
+- 類似事例を調査した
+  - Google `Chrome Canvas` は Chromebook 上で絵をローカル保存でき、
+    `画像として保存` のあと `フォルダで表示` を案内している
+  - Chromebook 標準のスクリーンショットは `Downloads` へ保存され、
+    保存先フォルダを変えられる
+  - Chromebook shelf / Tote には recent screenshot preview が出て、
+    `Show in folder` や `Copy image` がある
+  - `Piskel For Kids` は子ども向けに social 機能を削り、
+    browser 上で安全に export する方針を取っている
+  - `Pixilart` は `Download .PNG` と `Upload Drawing` を UI で分け、
+    upload には login を要求している
+- 検証コマンドを回した
+  - tasknote lint は通過した
+  - `python -m pytest test/ -q` は既存 3 fail のままで、
+    `docs/architecture_rules.yml`
+    と `docs/stakeholder_voices.yml` 欠落が原因だった
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟡 起票のみ完了
+> 評価：🟡 類似事例の調査まで完了
 
 ### 成果物
 
@@ -283,14 +306,37 @@ flowchart TD
 ### 反省とルール化
 
 - 記入先：manage-tasknotes
-- 次にやること：保存ダイアログ主導線の最小仕様を固めて実装に進める
+- 次にやること：事例比較を見て主導線の型を 1 本に決める
+
+### 判断メモ
+
+1. `Chrome Canvas 型`
+   - 最も Chromebook に近い
+   - `保存する` と `保存先を見る` が連続している
+   - 今回はこの型が第1候補である
+
+2. `Chromebook screenshot 型`
+   - `Downloads` と `Select folder` が前提にある
+   - 保存後に shelf / Tote から再発見できる
+   - `保存後の行方が分からない` 問題への補助線として強い
+
+3. `Piskel For Kids 型`
+   - 子ども向けに `no ads` `no tracking` `no social features`
+     を明示している
+   - `まず export` して終える考え方は相性が良い
+   - ただし Chromebook 固有の保存理解までは支えていない
+
+4. `Pixilart 型`
+   - `Download .PNG` と `Upload Drawing` を明確に分けている
+   - 今回の `まず保存、upload は別機能` の考え方を後押しする
+   - ただし子ども向け安全性は Piskel For Kids より弱い
 
 ---
 
 ## 9) Closing
 
 - 状態: open
-- 次のゲート: （CC）Chromebook 前提の保存ダイアログ導線を wrapper の最小仕様へ落とす
+- 次のゲート: （user）類似事例を見て `Chrome Canvas 型` に寄せるか判断する
 - close 条件:
   - [ ] 保存主導線と fallback が実装される
   - [ ] local browser smoke と pytest の結果が記録される
@@ -306,3 +352,9 @@ flowchart TD
 - Local: `docs/customer-journeys.md`
 - Local: `templates/wrapper.html`
 - Local: `steering/done/2026年5月26日 調査：つっこみスクショ機能の技術選定を進める.md`
+- Web: [Chrome 描画キャンバスで絵を描く - Chromebook ヘルプ](https://support.google.com/chromebook/answer/9200774?hl=ja)
+- Web: [Take a screenshot or record your screen - Chromebook Help](https://support.google.com/chromebook/answer/10474268?hl=en-en)
+- Web: [Customize your Chromebook's shelf - Chromebook Help](https://support.google.com/chromebook/answer/3113576?hl=en-en)
+- Web: [Piskel FAQ](https://www.piskelapp.com/faq/)
+- Web: [Piskel Terms](https://www.piskelapp.com/terms/)
+- Web: [Pixilart Editing Help](https://www.pixilart.com/draw/help-6a87c26067abf16)
