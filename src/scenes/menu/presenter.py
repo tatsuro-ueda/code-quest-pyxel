@@ -17,6 +17,7 @@ from typing import Any
 
 from src.scenes.menu.model import MenuModel
 from src.scenes.menu.view_model import MenuRow, MenuSubPanel, MenuViewModel
+from src.shared.state.player_model import MAX_LEVEL, exp_for_level
 from src.shared.services.input_bindings import (
     CANCEL_BUTTONS,
     CONFIRM_BUTTONS,
@@ -508,8 +509,10 @@ class MenuPresenter:
         """
         total_atk = player.atk + M.WEAPONS[player.weapon]["atk"]
         total_def = player.defense + M.ARMORS[player.armor]["def"]
+        next_level_gap = self._remaining_exp_to_next_level(player)
         stat_lines = [
             f"レベル {player.lv}  けいけん {player.exp}",
+            f"つぎまで {next_level_gap}",
             f"HP {player.hp}/{player.max_hp}",
             f"MP {player.mp}/{player.max_mp}",
             f"こうげき {total_atk}  ぼうぎょ {total_def}",
@@ -520,3 +523,10 @@ class MenuPresenter:
             height=120,
             rows=[MenuRow(text=line, color=7) for line in stat_lines],
         )
+
+    @staticmethod
+    def _remaining_exp_to_next_level(player: Any) -> int:
+        """次のレベルまでに必要な残り経験値を返す。"""
+        if player.lv >= MAX_LEVEL:
+            return 0
+        return max(0, exp_for_level(player.lv + 1) - player.exp)
