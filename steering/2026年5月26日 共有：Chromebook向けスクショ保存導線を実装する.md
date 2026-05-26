@@ -1,5 +1,5 @@
 ---
-status: open
+status: later
 priority: high
 scheduled: 2026-05-26T19:04:53+00:00
 dateCreated: 2026-05-26T19:04:53+00:00
@@ -17,7 +17,7 @@ tags:
 # 2026年5月26日 共有：Chromebook向けスクショ保存導線を実装する
 
 > 状態：① Journey
-> 次のゲート：（CC）`Chrome Canvas 型 + Show in folder` の最小仕様を wrapper 実装案へ落とす
+> 次のゲート：（CC）仕様ノートで保存導線の前提が固まったら着手する
 
 ---
 
@@ -54,8 +54,8 @@ tags:
    3. `capture` と `save` を wrapper で完結させる
 
 6. 委任度
-   1. 🟢 全体として最小実装と smoke までは CC が自走できる
-   2. 🟢 CCのみで可: wrapper 実装、fallback、記録、検証
+   1. 🟡 全体として仕様前提が固まってから着手するのが安全である
+   2. 🟢 CCのみで可: 仕様確定後の wrapper 実装、fallback、記録、検証
    3. 🔴 人の判断: 保存後メッセージの最終文言と親向け補助量
 
 ---
@@ -282,15 +282,16 @@ flowchart TD
 ### 反省とルール化
 
 - 記入先：manage-tasknotes
-- 次にやること：save picker 主導線の最小仕様を決める
+- 次にやること：仕様ノートで保存導線の前提が固まるのを待つ
+- 関連tasknote: `steering/2026年5月26日 共有：つっこみスクショの体験仕様を決める.md`
 - 関連tasknote: `steering/2026年5月26日 共有：つっこみスクショに絵文字スタンプ書き出しを加える.md`
 
 ---
 
 ## 9) Closing
 
-- 状態: open
-- 次のゲート: （CC）`Chrome Canvas 型 + Show in folder` の最小仕様を wrapper 実装案へ落とす
+- 状態: later
+- 次のゲート: （CC）仕様ノートで保存導線の前提が固まったら着手する
 - close 条件:
   - [ ] save picker 主導線と fallback が実装される
   - [ ] smoke と pytest の結果が残る
