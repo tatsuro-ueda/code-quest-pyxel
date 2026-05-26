@@ -513,7 +513,7 @@ class ExplorePresenter:
         Returns:
             bool: True なら処理した。
         Postconditions:
-            - dungeon 内・未撃破のとき battle_scene を start する。
+            - dungeon 内・未撃破のとき prebattle conversation を開始する。
         """
         import src.runtime.main_runtime as M
         player = game.player_model
@@ -523,7 +523,13 @@ class ExplorePresenter:
         if not is_glitch_lord_trigger:
             return False
         if not player.glitch_lord_defeated:
-            game.battle_scene.start(M.GLITCH_LORD_DATA, is_glitch_lord=True)
+            game.page_dialog_scene.enter_scene(
+                "boss.glitch.prebattle_01",
+                callback=lambda: game.battle_scene.start(
+                    M.GLITCH_LORD_DATA,
+                    is_glitch_lord=True,
+                ),
+            )
         return True
 
     def _handle_town(self, game, tile, nx: int, ny: int) -> bool:

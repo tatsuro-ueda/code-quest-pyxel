@@ -52,6 +52,7 @@
   - _update_for_professor_intro: professor_intro state の update
   - _update_for_professor_ending_main: professor_ending_main state の update
   - _update_for_professor_ending_accepted: professor_ending_accepted の update
+  - _update_for_page_dialog: page_dialog state の update
   - _update_for_shop: shop state の update
   - _update_for_ending: ending state の update
   - _draw_for_splash: splash state の draw
@@ -67,6 +68,7 @@
   - _draw_for_professor_intro: professor_intro state の draw
   - _draw_for_professor_ending_main: professor_ending_main state の draw
   - _draw_for_professor_ending_accepted: professor_ending_accepted state の draw
+  - _draw_for_page_dialog: page_dialog state の draw
 
 Problems:
     - Game.__init__ が 70 行超の手続き列で、責務（pyxel 初期化 / service /
@@ -120,6 +122,7 @@ from src.scenes.battle.scene import BattleScene
 from src.scenes.ending.scene import EndingScene
 from src.scenes.explore.scene import ExploreScene
 from src.scenes.menu.scene import MenuScene
+from src.scenes.page_dialog.scene import PageDialogScene
 from src.scenes.professor.scene import ProfessorScene
 from src.scenes.shop.scene import ShopScene
 from src.scenes.splash.scene import SplashScene
@@ -384,6 +387,7 @@ class Game:
             model=self.town_model, game=self
         )
         self.professor_scene = ProfessorScene(game=self)
+        self.page_dialog_scene = PageDialogScene(game=self)
         self.battle_scene = BattleScene(game=self)
         self.status_bar = StatusBar(game=self)
 
@@ -582,6 +586,14 @@ class Game:
         """
         self.professor_scene.update_ending_accepted()
 
+    def _update_for_page_dialog(self) -> None:
+        """page_dialog state の update.
+
+        Policy:
+            - page_dialog_scene.update に委譲するだけ。
+        """
+        self.page_dialog_scene.update()
+
     def _update_for_shop(self) -> None:
         """shop state の update.
 
@@ -713,6 +725,14 @@ class Game:
         """
         self.professor_scene.draw_ending_accepted()
 
+    def _draw_for_page_dialog(self) -> None:
+        """page_dialog state の draw.
+
+        Policy:
+            - page_dialog_scene.draw に委譲するだけ。
+        """
+        self.page_dialog_scene.draw()
+
 # state → handler の dict マップ（CR301 elif チェーンを廃する）。
 _UPDATE_DISPATCH = {
     "splash": Game._update_for_splash,
@@ -726,6 +746,7 @@ _UPDATE_DISPATCH = {
     "professor_intro": Game._update_for_professor_intro,
     "professor_ending_main": Game._update_for_professor_ending_main,
     "professor_ending_accepted": Game._update_for_professor_ending_accepted,
+    "page_dialog": Game._update_for_page_dialog,
     "shop": Game._update_for_shop,
     "ending": Game._update_for_ending,
 }
@@ -745,6 +766,7 @@ _DRAW_DISPATCH = {
     "professor_intro": Game._draw_for_professor_intro,
     "professor_ending_main": Game._draw_for_professor_ending_main,
     "professor_ending_accepted": Game._draw_for_professor_ending_accepted,
+    "page_dialog": Game._draw_for_page_dialog,
 }
 
 
