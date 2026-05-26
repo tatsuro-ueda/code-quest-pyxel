@@ -57,6 +57,11 @@ Block Quest Pyxel は **子どもが Pyxel Code Maker で自分のゲームを�
 
 - **データ編集は人が読める形に**：敵・アイテム・呪文・店・武具・会話は `assets/*.yaml` を直接編集する。
 - **runtime には自動生成物だけ流す**：`tools/gen_data.py` → `src/generated/*.py` の一方向（→ memory `ssot_policy`）。AI が dict を勝手に増やせない。
+- `generated/*.py` は、YAML を先に読みやすい形へ写した「清書ノート」。
+- 今の repo は、ゲーム本番にその清書ノートだけを持って行く作り。
+- そうすると、ブラウザで YAML を読む準備や追加部品がいらない。
+- Code Maker 用の配布物も、この清書ノートを前提にまとめている。
+- つまり今は、「本番で迷わず確実に動かす」ために `generated/*.py` を使う。
 
 ### 3.5 exe.dev VM を選んだ理由
 
