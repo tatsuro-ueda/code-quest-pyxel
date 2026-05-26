@@ -40,6 +40,47 @@ html, body {
   opacity: 0;
   pointer-events: none;
 }
+#save-image-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1001;
+  padding: 10px 16px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: sans-serif;
+  color: #111;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+#save-image-btn[disabled] {
+  opacity: 0.65;
+  cursor: wait;
+}
+#save-status {
+  position: fixed;
+  left: 50%;
+  bottom: 56px;
+  transform: translateX(-50%);
+  z-index: 1001;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 13px;
+  font-family: sans-serif;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+#save-status.visible {
+  opacity: 1;
+}
 #fallback-msg {
   display: none;
   position: fixed;
@@ -55,16 +96,22 @@ html, body {
 </style>
 </head>
 <body data-page-kind="production" data-session-api-base="/internal/play-sessions">
-<iframe id="game-frame" src="pyxel.html?v=1779802072" allowfullscreen></iframe>
+<iframe id="game-frame" src="pyxel.html?v=1779826599" allowfullscreen></iframe>
+<button id="save-image-btn" type="button">がぞうを ほぞん</button>
+<p id="save-status" aria-live="polite"></p>
 <button id="fullscreen-btn">ぜんがめんであそぶ</button>
 <p id="fallback-msg">ホームがめんについかすると ぜんがめんであそべます</p>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   var btn = document.getElementById('fullscreen-btn');
+  var saveBtn = document.getElementById('save-image-btn');
+  var saveStatus = document.getElementById('save-status');
   var fallbackMsg = document.getElementById('fallback-msg');
+  var frame = document.getElementById('game-frame');
   var target = document.documentElement;
   var root = document.body;
   var fadeTimer = null;
+  var saveStatusTimer = null;
   var pageKind = root.dataset.pageKind || 'production';
   var sessionApiBase = root.dataset.sessionApiBase || '/internal/play-sessions';
   var sessionId = window.crypto && window.crypto.randomUUID
@@ -125,6 +172,151 @@ document.addEventListener('DOMContentLoaded', function() {
   startSession();
   heartbeatTimer = setInterval(heartbeatSession, 15000);
 
+  function setSaveStatus(message) {
+    clearTimeout(saveStatusTimer);
+    if (!message) {
+      saveStatus.textContent = '';
+      saveStatus.classList.remove('visible');
+      return;
+    }
+    saveStatus.textContent = message;
+    saveStatus.classList.add('visible');
+    saveStatusTimer = setTimeout(function() {
+      saveStatus.classList.remove('visible');
+    }, 3200);
+  }
+
+  function buildSuggestedFileName() {
+    var iso = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+    var safe = iso.replace(/[:T]/g, '-').replace('Z', '');
+    return 'block-quest-' + safe + '.png';
+  }
+
+  function setSaveBusy(isBusy) {
+    saveBtn.disabled = isBusy;
+    saveBtn.textContent = isBusy ? 'ほぞん中...' : 'がぞうを ほぞん';
+  }
+
+  function getGameCanvas() {
+    var frameDoc = frame && frame.contentWindow && frame.contentWindow.document;
+    if (!frameDoc) {
+      return null;
+    }
+    return frameDoc.querySelector('canvas');
+  }
+
+  function copyCanvas(canvas) {
+    if (!canvas || !canvas.width || !canvas.height) {
+      return null;
+    }
+    var out = document.createElement('canvas');
+    out.width = canvas.width;
+    out.height = canvas.height;
+    var ctx = out.getContext('2d');
+    if (!ctx) {
+      return null;
+    }
+    ctx.drawImage(canvas, 0, 0);
+    return out;
+  }
+
+  function canvasToBlob(canvas) {
+    return new Promise(function(resolve, reject) {
+      try {
+        canvas.toBlob(function(blob) {
+          if (!blob) {
+            reject(new Error('blob-empty'));
+            return;
+          }
+          resolve(blob);
+        }, 'image/png');
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  async function captureGameBlob() {
+    var gameCanvas = getGameCanvas();
+    if (!gameCanvas) {
+      throw new Error('canvas-missing');
+    }
+    var copiedCanvas = copyCanvas(gameCanvas);
+    if (!copiedCanvas) {
+      throw new Error('canvas-copy-failed');
+    }
+    return canvasToBlob(copiedCanvas);
+  }
+
+  function triggerDownload(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(function() {
+      URL.revokeObjectURL(url);
+    }, 1000);
+  }
+
+  async function saveWithPicker() {
+    var fileHandle = await window.showSaveFilePicker({
+      suggestedName: buildSuggestedFileName(),
+      startIn: 'downloads',
+      types: [{
+        description: 'PNG Image',
+        accept: { 'image/png': ['.png'] }
+      }]
+    });
+    var blob = await captureGameBlob();
+    var writable = await fileHandle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+    setSaveStatus('ほぞんしたよ');
+  }
+
+  async function saveWithDownloadFallback() {
+    var blob = await captureGameBlob();
+    triggerDownload(blob, buildSuggestedFileName());
+    setSaveStatus('ダウンロードしたよ。Downloads をみてね');
+  }
+
+  saveBtn.addEventListener('click', async function() {
+    setSaveBusy(true);
+    try {
+      if ('showSaveFilePicker' in window) {
+        await saveWithPicker();
+      } else {
+        await saveWithDownloadFallback();
+      }
+    } catch (error) {
+      if (error && error.name === 'AbortError') {
+        return;
+      }
+      setSaveStatus('ほぞんできなかった。もういちどためしてね');
+    } finally {
+      setSaveBusy(false);
+    }
+  });
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      endSession(false);
+      return;
+    }
+    heartbeatSession();
+  });
+
+  window.addEventListener('pagehide', function() {
+    endSession(true);
+  });
+
+  window.addEventListener('beforeunload', function() {
+    endSession(true);
+  });
+
   var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
   if (!isTouchDevice) {
@@ -183,22 +375,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.addEventListener('fullscreenchange', onFullscreenChange);
   document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-
-  document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden') {
-      endSession(false);
-      return;
-    }
-    heartbeatSession();
-  });
-
-  window.addEventListener('pagehide', function() {
-    endSession(true);
-  });
-
-  window.addEventListener('beforeunload', function() {
-    endSession(true);
-  });
 });
 </script>
 </body>

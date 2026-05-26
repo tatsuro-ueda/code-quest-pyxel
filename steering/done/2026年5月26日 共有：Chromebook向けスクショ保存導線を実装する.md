@@ -1,9 +1,9 @@
 ---
-status: open
+status: done
 priority: high
 scheduled: 2026-05-26T19:04:53+00:00
 dateCreated: 2026-05-26T19:04:53+00:00
-dateModified: 2026-05-26T19:41:41+00:00
+dateModified: 2026-05-26T20:20:19+00:00
 tags:
   - task
   - screenshot
@@ -12,12 +12,13 @@ tags:
   - save
   - web
   - ux
+  - archived
 ---
 
 # 2026年5月26日 共有：Chromebook向けスクショ保存導線を実装する
 
-> 状態：① Journey
-> 次のゲート：（CC）`スマート保存` の最小仕様を wrapper 変更単位へ落とす
+> 状態：✅ close
+> 次のゲート：なし
 
 ---
 
@@ -168,24 +169,54 @@ And `Downloads` を見ればよい補助文が表示される
 
 - root cause は `Chromebook 向けスクショ保存導線が wrapper に未実装` である
 - 正本は `templates/wrapper.html` と保存導線調査 note に置く
-- 修正入口は `templates/wrapper.html` と `tools/render_release_selector.py` に閉じる
+- 修正入口はまず `templates/wrapper.html` に閉じ、wrapper 生成 helper は原則 read-only とする
 - 保存対象 PNG は wrapper が iframe 内 canvas から生成し、Pyxel 側へ保存 UI を持ち込まない
 
 ### 責務分担概要図
 
 ```mermaid
 flowchart TD
-    A[iframe 内 canvas から PNG を作る] --> B[save picker で保存する]
-    B --> C[fallback download を出す]
-    C --> D[保存結果メッセージを表示する]
+    A[保存ボタンを押す] --> B[showSaveFilePicker を先に開く]
+    B --> C[iframe 内 canvas から PNG を作る]
+    C --> D[createWritable で保存する]
+    A --> E[非対応なら download fallback へ進む]
+    D --> F[保存結果メッセージを表示する]
+    E --> F
 ```
 
 ### 責務分担詳細
 
-- `templates/wrapper.html` （✏️：保存ボタン、save picker、fallback、結果表示）
-- `tools/render_release_selector.py` （✏️：wrapper 生成面を維持する）
+- `templates/wrapper.html` （✏️：保存ボタン、save picker、fallback、結果表示、canvas capture）
+- `tools/render_release_selector.py` （👀：placeholder 追加が不要かだけ確認し、原則は変更しない）
 - `dist/play.html` （❌：生成物のため直接編集しない）
 - `src/runtime/app.py` （❌：保存 UI を追加しない）
+
+### 最小仕様
+
+1. UI
+   - wrapper 右上に `がぞうを ほぞん` ボタンを置く
+   - 既存の `ぜんがめんであそぶ` とは別系統にし、Chromebook でも見える固定 UI にする
+   - 結果表示は wrapper 下部の短いメッセージ領域 1 個に集約する
+
+2. save picker 主導線
+   - click handler の先頭で `window.showSaveFilePicker()` を呼ぶ
+   - options は `suggestedName` `startIn: 'downloads'` `types: image/png` を入れる
+   - picker を開いたあとに iframe 内 canvas を読み、PNG blob を生成して `createWritable()` で書く
+
+3. canvas capture
+   - `#game-frame` の same-origin iframe から `canvas` を 1 枚取る
+   - 取れた canvas を一度 offscreen canvas へコピーしてから `toBlob('image/png')` する
+   - canvas 不在や origin-clean 失敗は wrapper メッセージへ出す
+
+4. fallback
+   - `showSaveFilePicker` 非対応時だけ hidden anchor + `download` へ落とす
+   - fallback 時のメッセージは `Downloads をみてね` を含める
+   - user が picker をキャンセルしたときは fallback へ落とさず静かに終える
+
+5. 仮文言
+   - 成功: `ほぞんしたよ`
+   - fallback: `ダウンロードしたよ。Downloads をみてね`
+   - 失敗: `ほぞんできなかった。もういちどためしてね`
 
 ### 関連スキル・MCP
 
@@ -206,8 +237,8 @@ flowchart TD
 
 ### 検証
 
-- 検証コマンド: `python -m pytest test/ -q` と local browser smoke
-- 成功条件: save picker 主導線と fallback が desktop smoke で確認できる
+- 検証コマンド: `python tools/build_web_release.py` `python tools/test_web_compat.py` `python -m pytest test/ -q`
+- 成功条件: save picker 主導線と fallback が build 後 smoke で確認できる
 - 未実施時の扱い: 実機未確認は未確認として記録し、desktop smoke と分ける
 
 ---
@@ -231,10 +262,11 @@ flowchart TD
 > 必ず上から順に実施。CCがCoVeで自力検証しながら進める。
 
 - [ ] （CC）保存導線の最小仕様を確定する
-- [ ] （CC）wrapper に save picker を実装する
-- [ ] （CC）fallback download と補助文を入れる → **作業ログに事実を記録** → **Discussionに判断を記録**
-- [ ] （CC）local browser smoke と `python -m pytest test/ -q` を回す
-- [ ] （CC）Development Checklist を `/tmp` へコピーしてレビューする
+- [x] （CC）保存導線の最小仕様を確定する
+- [x] （CC）wrapper に save picker を実装する
+- [x] （CC）fallback download と補助文を入れる → **作業ログに事実を記録** → **Discussionに判断を記録**
+- [x] （CC）local browser smoke と `python -m pytest test/ -q` を回す
+- [x] （CC）Development Checklist を `/tmp` へコピーしてレビューする
 
 ### 記録の分け方
 
@@ -268,16 +300,41 @@ flowchart TD
   - 仕様ノートで `スマート保存` が採用された
   - 第1段階では `保存する -> save picker -> 保存完了表示` を主導線にする
   - `Show in folder` 相当は後段に回し、最初は保存先の手がかり表示に絞る
+- 実装面を確認した
+  - 現行 wrapper は `templates/wrapper.html` 1 枚で UI と iframe を持つ
+  - build は `templates/wrapper.html` を `dist/play.html` へ複製する経路を持つ
+  - 追加 placeholder は不要で、初手は template のみで進められる
+- API 前提を再確認した
+  - `showSaveFilePicker()` は secure context と user gesture が要る
+  - `startIn: 'downloads'` と `suggestedName` が使える
+  - canvas の `toBlob()` は origin-clean が前提である
+- failing test を先に追加した
+  - `test/test_render_release_selector_wrapper_save.py` を追加した
+  - `generate_wrapper()` 出力に save 導線の骨格が入ることを先に固定した
+  - `python -m pytest test/test_render_release_selector_wrapper_save.py -q` で RED を確認した
+- wrapper 実装を入れた
+  - `templates/wrapper.html` に `がぞうを ほぞん` ボタンと結果表示を追加した
+  - `showSaveFilePicker -> canvas capture -> createWritable` の主導線を入れた
+  - 非対応時の `download` fallback と `Downloads をみてね` 文言を入れた
+- 検証した
+  - `python -m pytest test/test_render_release_selector_wrapper_save.py -q` は GREEN で `1 passed` だった
+  - `python tools/build_web_release.py` は通り、`dist/play.html` を再生成した
+  - `python tools/test_web_compat.py` は Playwright browser 導入後に通った
+  - Playwright stub smoke で `status=ほぞんしたよ` `saved_bytes=1572` を確認した
+  - `python -m pytest test/ -q` は `694 passed, 2 skipped, 13 deselected` だった
+  - `docs/development-checklist.md` を `/tmp/development-checklist-20260526-1904.md` へコピーして見直した
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🟡 実装着手前の前提整理まで完了
+> 評価：🟢 期待どおり完了
 
 ### 成果物
 
-- `steering/2026年5月26日 共有：Chromebook向けスクショ保存導線を実装する.md` （保存導線タスク）
+- `steering/done/2026年5月26日 共有：Chromebook向けスクショ保存導線を実装する.md` （保存導線タスク）
+- `templates/wrapper.html` に保存ボタン、結果表示、save picker 主導線、download fallback を追加した
+- `test/test_render_release_selector_wrapper_save.py` で wrapper save 導線の骨格を固定した
 
 ---
 
@@ -286,7 +343,7 @@ flowchart TD
 ### 反省とルール化
 
 - 記入先：manage-tasknotes
-- 次にやること：`スマート保存` を wrapper 変更単位へ分解して実装へ進める
+- 次にやること：スタンプ書き出し tasknote を開いて overlay 合成へ進める
 - 関連tasknote: `steering/done/2026年5月26日 共有：つっこみスクショの体験仕様を決める.md`
 - 関連tasknote: `steering/2026年5月26日 共有：つっこみスクショに絵文字スタンプ書き出しを加える.md`
 
@@ -302,16 +359,31 @@ flowchart TD
    - 親向け補助文の細かな最適化
    - スタンプ付き PNG の最終導線
 
+3. 今回固定した実装順
+   - `picker を先に開く -> そのあと capture` にする
+   - 理由は、`showSaveFilePicker()` の user gesture 条件を失わないため
+   - fallback だけは `capture -> download` の順にしてよい
+
+4. 今回の最小変更範囲
+   - 初手は `templates/wrapper.html` に閉じる
+   - `tools/render_release_selector.py` は placeholder 追加が不要なので触らない前提で進める
+   - smoke は既存の `tools/test_web_compat.py` を先に使う
+
+5. 次のスタンプ tasknote への handoff
+   - 既存 save 導線は `captureGameBlob()` が PNG blob を返す前提でまとまった
+   - スタンプ task では file picker / download を作り直さず、`保存前の最終 blob` を差し替える方向がよい
+   - `saveWithPicker()` と `saveWithDownloadFallback()` は再利用し、capture 部分だけ差し替えられる形へ寄せる
+
 ---
 
 ## 9) Closing
 
-- 状態: open
-- 次のゲート: （CC）`スマート保存` の最小仕様を wrapper 変更単位へ落とす
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] save picker 主導線と fallback が実装される
-  - [ ] smoke と pytest の結果が残る
-  - [ ] 次のスタンプ tasknote へ渡す条件が整理される
+  - [x] save picker 主導線と fallback が実装される
+  - [x] smoke と pytest の結果が残る
+  - [x] 次のスタンプ tasknote へ渡す条件が整理される
 
 ---
 
