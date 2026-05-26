@@ -3,7 +3,7 @@ status: in-progress
 priority: high
 scheduled: 2026-05-26T18:25:15+00:00
 dateCreated: 2026-05-26T18:25:15+00:00
-dateModified: 2026-05-26T18:37:50+00:00
+dateModified: 2026-05-26T18:48:14+00:00
 tags:
   - task
   - screenshot
@@ -17,7 +17,7 @@ tags:
 # 2026年5月26日 共有：Chromebook向けつっこみスクショを保存ファーストで始める
 
 > 状態：⑥ 作業ログ
-> 次のゲート：（user）類似事例を見て `Chrome Canvas 型` に寄せるか判断する
+> 次のゲート：（user）`Chrome Canvas 型 + Show in folder` を採るか判断する
 
 ---
 
@@ -288,6 +288,12 @@ flowchart TD
   - `python -m pytest test/ -q` は既存 3 fail のままで、
     `docs/architecture_rules.yml`
     と `docs/stakeholder_voices.yml` 欠落が原因だった
+- 信頼できる発信者を追加で整理した
+  - `Mitchel Resnick` は child agency と creative learning の原理を見る軸
+  - `Ricarose Roque` は family creative learning と関係性設計を見る軸
+  - `Andrés Monroy-Hernández` は `つくる + 共有する` の設計を見る軸
+  - `Björn Jeffery` は子ども向けデジタルトイの感覚を見る軸
+  - `Karen Brennan` と `Yasmin Kafai` は Scratch 周辺の補助線になる
 
 ---
 
@@ -306,7 +312,7 @@ flowchart TD
 ### 反省とルール化
 
 - 記入先：manage-tasknotes
-- 次にやること：事例比較を見て主導線の型を 1 本に決める
+- 次にやること：事例比較と trusted voices を見て主導線の型を 1 本に決める
 
 ### 判断メモ
 
@@ -331,12 +337,49 @@ flowchart TD
    - 今回の `まず保存、upload は別機能` の考え方を後押しする
    - ただし子ども向け安全性は Piskel For Kids より弱い
 
+### 参考にしたい個人発信者
+
+1. `Mitchel Resnick`
+   - URL: `https://www.media.mit.edu/people/mres/`
+   - 理由: Scratch と 4P の原点で、`保存` を単機能でなく
+     `Projects + Peers + Passion + Play` の流れで見られる
+   - 注意: 原理は強いが、Chromebook 固有 UX の話は少ない
+
+2. `Ricarose Roque`
+   - URL: `https://www.ricarose.com/`
+   - 理由: Family Creative Learning を直接持っており、
+     `親子で保存物を介して関係をつくる` 視点が近い
+   - 注意: product UI の細部より workshop / community 寄り
+
+3. `Andrés Monroy-Hernández`
+   - URL: `https://www.andresmh.com/`
+   - 理由: Scratch website の設計に関わっており、
+     `create and share programmable media` の橋渡しに近い
+   - 注意: 現在は子ども専業ではなく social computing 全般へ広い
+
+4. `Björn Jeffery`
+   - URL: `https://www.bjornjeffery.com/`
+   - 理由: Toca Boca 由来で、
+     `子どもが迷わず触れて見せたくなる` 体験の感覚が強い
+   - 注意: 学術原理より product / market 観点が中心
+
+5. `Karen Brennan`
+   - URL: `https://kbrennan.scholars.harvard.edu/`
+   - 理由: ScratchEd と Creative Computing Lab から、
+     `作る人を支える周辺導線` の視点を借りやすい
+   - 注意: 教師支援の比重が高く、親子共有に直結しない部分もある
+
+6. `Yasmin Kafai`
+   - URL: `https://www.gse.upenn.edu/academics/faculty-directory/kafai`
+   - 理由: `game design as learning` と Scratch 研究の基礎が深い
+   - 注意: save UX の細部より learning design 全体を見る人
+
 ---
 
 ## 9) Closing
 
 - 状態: open
-- 次のゲート: （user）類似事例を見て `Chrome Canvas 型` に寄せるか判断する
+- 次のゲート: （user）`Chrome Canvas 型 + Show in folder` を採るか判断する
 - close 条件:
   - [ ] 保存主導線と fallback が実装される
   - [ ] local browser smoke と pytest の結果が記録される
@@ -355,6 +398,12 @@ flowchart TD
 - Web: [Chrome 描画キャンバスで絵を描く - Chromebook ヘルプ](https://support.google.com/chromebook/answer/9200774?hl=ja)
 - Web: [Take a screenshot or record your screen - Chromebook Help](https://support.google.com/chromebook/answer/10474268?hl=en-en)
 - Web: [Customize your Chromebook's shelf - Chromebook Help](https://support.google.com/chromebook/answer/3113576?hl=en-en)
+- Web: [Mitchel Resnick - MIT Media Lab](https://www.media.mit.edu/people/mres/)
+- Web: [Ricarose Roque](https://www.ricarose.com/)
+- Web: [Andrés Monroy-Hernández](https://www.andresmh.com/)
+- Web: [Björn Jeffery](https://www.bjornjeffery.com/)
+- Web: [Karen Brennan](https://kbrennan.scholars.harvard.edu/)
+- Web: [Yasmin B. Kafai | Penn GSE](https://www.gse.upenn.edu/academics/faculty-directory/kafai)
 - Web: [Piskel FAQ](https://www.piskelapp.com/faq/)
 - Web: [Piskel Terms](https://www.piskelapp.com/terms/)
 - Web: [Pixilart Editing Help](https://www.pixilart.com/draw/help-6a87c26067abf16)
