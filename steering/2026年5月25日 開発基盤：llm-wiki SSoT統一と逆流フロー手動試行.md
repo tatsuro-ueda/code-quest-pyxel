@@ -272,6 +272,10 @@ And tasknote の Discussion に「wiki → 現実の逆方向ドリフト = heal
   - target docs ファイル名から関連 area を引く仕組み (今回は master-index と勘で決定)
   - 候補の優先度づけを機械化 (複数 area で言及 / 最近の tasknote / 既存項との関連度 など)
   - 候補提示は技術用語禁止、やさしい言葉と具体例
+- **target docs 優先リスト（ユーザー指定 2026-05-25）**: 次回以降の逆流フローは、別途指定がなければ次の 3 つを優先 target にする
+  - `docs/framework-rule.md`（コーディング原則 / MVP 規約本体）
+  - `docs/repository-structure.md`（リポジトリ構造 + 責務分担）
+  - `docs/ux-policy.md`（子ども向け UI / 親補助境界）
 
 ### 反省とルール化
 
