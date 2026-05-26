@@ -1,10 +1,7 @@
 # AGENTS.md — Block Quest Pyxel の作業ルール（AI 用最優先・自動 load）
 
 > **役割**: AI がこの repo に入って最初に読む 100 行以内のエントリポイント。
-> **設計判断（なぜ？）**: [docs/architecture.md](docs/architecture.md)
-> **責務分担（どこに？）**: [docs/repository-structure.md](docs/repository-structure.md)
-> **規約本体（どう書く？）**: [docs/framework-rule.md](docs/framework-rule.md)
->
+> **設計判断 / 責務分担 / 規約本体**: [docs/architecture.md](docs/architecture.md) / [docs/repository-structure.md](docs/repository-structure.md) / [docs/framework-rule.md](docs/framework-rule.md)
 > 起動時は本ファイル → 必要なら上の 3 ファイルの順に辿る。
 
 ## いちばん大事な約束
@@ -22,6 +19,13 @@
 - ユーザーに道具選びを押しつけない（道具選びは AI の責任）
 - ユーザーが「まだ違う」と言ったら、まず現物を確認する（先に defending しない）
 - AI の仕事は **ユーザー指示の技術翻訳**
+
+## コミットメッセージ
+
+- 原則 `type: 目的（具体的な変更内容）`。`type` は `chore` `feat` `fix` `docs` `refactor`
+- `:` の後ろは日本語。目的は短く `〜したい`、補足は丸括弧 `（...）`
+- 複数変更でも細かい列挙ではなく、全体を束ねる 1 つの目的で書く
+- commit 報告は `[commit] <commit message>` を先に出し、hash は必要時だけ補足する
 
 ## まず何を正とするか（実物優先）
 
@@ -54,8 +58,7 @@
 ## まず読む文書（順序）
 
 1. 本ファイル（AGENTS.md）
-2. 必要に応じ `docs/architecture.md`（なぜ？）/ `docs/repository-structure.md`（どこに？）/ `docs/framework-rule.md`（どう書く？）
-3. `docs/customer-journeys.md` / `docs/product-requirements-*.md` / 関係 `steering/`
+2. 必要に応じ `docs/architecture.md` / `docs/repository-structure.md` / `docs/framework-rule.md` → さらに `docs/customer-journeys.md` / `docs/product-requirements-*.md` / 関係 `steering/`
 
 ## コード階層規約（M1〜M5 サマリ）
 
@@ -76,15 +79,11 @@
 
 ## データの流れ
 
-```text
-assets/*.yaml -> tools/gen_data.py -> src/generated/*.py -> src/game_data.py -> main.py
-```
+`assets/*.yaml -> tools/gen_data.py -> src/generated/*.py -> src/game_data.py -> main.py`
 
-| Path | 理由 | 代わりに |
-|---|---|---|
-| `src/generated/*.py` | YAML から自動生成 | `assets/*.yaml` を直して `python tools/gen_data.py` |
-| `*.pyxres` | Code Maker 編集物 | Code Maker で編集、AI は build/verify で支える |
-| `from src.generated.*` import | loader 経由前提 | `from src.game_data import ENEMIES` |
+- `src/generated/*.py` は自動生成。直さずに `assets/*.yaml` を直して `python tools/gen_data.py`
+- `*.pyxres` は Code Maker 編集物。AI は build/verify で支える
+- `from src.generated.*` import は避け、`from src.game_data import ENEMIES` を使う
 
 ## 変更したら毎回
 
