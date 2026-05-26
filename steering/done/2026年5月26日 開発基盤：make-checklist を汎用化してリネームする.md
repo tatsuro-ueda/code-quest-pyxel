@@ -1,17 +1,17 @@
 ---
-status: open
+status: done
 priority: normal
 scheduled: 2026-05-26T11:00:00.000+09:00
 dateCreated: 2026-05-26T11:00:00.000+09:00
-dateModified: 2026-05-26T11:00:00.000+09:00
+dateModified: 2026-05-26T11:30:00.000+09:00
 tags:
   - task
 ---
 
 # 2026年5月26日 開発基盤：make-checklist を汎用化してリネームする
 
-> 状態：① Journey
-> 次のゲート：（ユーザー）汎用化方針（事前生成テンプレ / 動的スキャン / ハイブリッド）を 1 点だけ決める
+> 状態：⑨ Closing
+> 次のゲート：なし
 
 ---
 
@@ -195,46 +195,67 @@ flowchart TD
 
 ## 5) Tasklist
 
-> ① Journey と ② USM のゲート通過後に詳細化する。
-
-- [ ] （ユーザー）汎用化方針（テンプレ / 動的 / ハイブリッド）を 1 点だけ決める
-- [ ] （CC）旧 `~/.claude/skills/make-checklist/` を撤去
-- [ ] （CC）新 `~/.claude/skills/make-development-checklist/SKILL.md` を作成
-- [ ] （CC）汎用化方針に沿った内容で SKILL.md を書く
-- [ ] （CC）Skill 一覧で新名前が出ることを確認
+- [x] （ユーザー）汎用化方針 → **動的スキャン** を採択
+- [x] （CC）旧 `~/.claude/skills/make-checklist/` を撤去
+- [x] （CC）新 `~/.claude/skills/make-development-checklist/SKILL.md` を作成
+- [x] （CC）動的スキャン方式で SKILL.md を書く（チェック項目本体は固定せず docs/ Read で生成する指示）
+- [x] （CC）Skill 一覧で新名前が登場、旧名前が消えたことを確認
 
 ---
 
 ## 6) 作業ログ
 
-（着手後に記録）
+- 2026-05-26 11:00 起票（commit `98fcce3`）
+- ユーザー判断：汎用化方針は **動的スキャン**（3 案：事前テンプレ / 動的スキャン / ハイブリッド から 2 を選択）
+- `rm -rf ~/.claude/skills/make-checklist` で旧版を撤去
+- `~/.claude/skills/make-development-checklist/SKILL.md` を新規作成
+  - description は「現在の repo の docs/ 3 層を実行時に Read してチェックリストを動的に生成する。プロジェクト非依存」
+  - 動作仕様セクションで CC が呼ばれた時の処理（3 文書 Read → 観点別抽出 → チェックボックス出力 → 章別 / save 引数の挙動 → 未整備時警告）を明文化
+  - code-quest-pyxel 固有用語（Pyxel / pyxres / Scene MVP / GameState / CJ44 等）を **本体から完全排除**
+- skill 登録確認：Skill tool の available list で `make-development-checklist` が登場、旧 `make-checklist` は消滅
 
 ---
 
 ## 7) 評価と成果物
 
-> 評価：🔴 未着手
+> 評価：🟢 期待通り完了した
 
 ### 成果物
 
-- （未着手）
+- `~/.claude/skills/make-development-checklist/SKILL.md`（新規、動的スキャン方式）
+- 旧 `~/.claude/skills/make-checklist/` 撤去
+- 残置：`tmp/make-checklist-20260526.md`（旧版の固定出力例、履歴として保持）
 
 ---
 
 ## 8) Discussion
 
-（着手後に記録）
+### 判断記録
+
+- **動的スキャン採用の決め手**：他プロジェクトでも使うことが前提。固定テンプレだとプロジェクトごとに skill を分ける必要があり、横展開のしにくさが本質課題と衝突する。動的スキャンは「呼ぶたびに項目がばらつく」短所があるが、docs/ 自体が SSoT なので docs/ が安定していれば出力も安定する
+- **項目品質のばらつき対策**：SKILL.md の「動作仕様」と「出力ガイドライン」で **抽出観点と出力形式を厳密に固定** した。CC が呼ばれた時に従う手順を明示することで、生成結果の品質を担保する
+- **save 引数の警告**：`tmp/` が無い repo もありうるので、無い場合はユーザー確認に切り替える形にした
+- **3 シーン分割は据え置き**：当面統合版、必要なら将来 `design` / `implement` / `review` 引数を追加する旨を SKILL.md に明記
+
+### 反省とルール化
+
+- 記入先：memory（必要なら）
+- 次にやること：他プロジェクト（例：science-planner）で実際に呼んで動作確認したくなった時点で追加 tasknote を起票
+
+### 次に起票すべきタスクノート（候補）
+
+- なし（運用段階）
 
 ---
 
 ## 9) Closing
 
-- 状態: draft（① Journey まで埋め、次のゲートはユーザー判断待ち）
-- 次のゲート: 汎用化方針（テンプレ / 動的 / ハイブリッド）を 1 点だけ決める
+- 状態: done
+- 次のゲート: なし
 - close 条件:
-  - [ ] `~/.claude/skills/make-development-checklist/SKILL.md` が登録される
-  - [ ] code-quest-pyxel 固有用語が SKILL.md 本体から排除されている
-  - [ ] 旧 `~/.claude/skills/make-checklist/` が撤去されている
+  - [x] `~/.claude/skills/make-development-checklist/SKILL.md` が登録された
+  - [x] code-quest-pyxel 固有用語が SKILL.md 本体から排除されている
+  - [x] 旧 `~/.claude/skills/make-checklist/` が撤去されている
 
 ---
 
