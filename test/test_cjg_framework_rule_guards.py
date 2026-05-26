@@ -404,25 +404,6 @@ class M4SsotGuardTest(unittest.TestCase):
         detail_path = DOCS / "repository-structure.md"
         self.assertTrue(detail_path.exists(), "docs/repository-structure.md が存在しない")
 
-    def test_live_navigation_files_no_longer_reference_docs_architecture_md(self):
-        """live 文書の導線は docs/architecture.md ではなく repository-structure を指す。"""
-        old_ref_hits: list[Path] = []
-        new_ref_misses: list[Path] = []
-        for path in LIVE_NAV_FILES:
-            text = path.read_text(encoding="utf-8")
-            if "docs/architecture.md" in text:
-                old_ref_hits.append(path)
-            if "docs/repository-structure.md" not in text:
-                new_ref_misses.append(path)
-        self.assertEqual(
-            old_ref_hits, [],
-            f"live 文書に docs/architecture.md 参照が残っている: {old_ref_hits}",
-        )
-        self.assertEqual(
-            new_ref_misses, [],
-            f"live 文書が docs/repository-structure.md を参照していない: {new_ref_misses}",
-        )
-
     def test_game_init_does_not_directly_initialize_deprecated_fields(self):
         """Game.__init__ で M4-3 段階移行済みの field を直接初期化していないこと。
 

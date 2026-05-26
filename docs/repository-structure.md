@@ -1,8 +1,10 @@
 # リポジトリ構造定義書
 
-> **この文書の役割**：人用の詳細リファレンス（リポジトリ構造 + ディレクトリ規約 + 責務分担表）。AI も必要時にここを参照する。
+> **この文書の役割**：人用の詳細リファレンス（**どこに何があるか** = リポジトリ構造 + ディレクトリ規約 + 責務分担表）。AI も必要時にここを参照する。
 >
 > **上位文書（最優先・自動 load）**：[../AGENTS.md](../AGENTS.md)（≤100 行、AI 用エントリポイント）
+>
+> **設計判断の SSoT（なぜこの作り？）**：[architecture.md](architecture.md)（採用技術と選定理由・そこから導かれる制約）
 >
 > **規約本体（M1〜M5 詳細）**：[framework-rule.md](framework-rule.md)
 
@@ -10,15 +12,18 @@
 
 この文書は「どの file / 関数が何を担当するか」を固定する責務分担表である。`docs` と `code` がずれたら **未実装 / バグ / 仕様ずれ** として扱い、コードではなくこの文書を正本とする（AI が読める分担表の維持は [CJ37](customer-journeys.md) 「責務が曖昧で直すほど別の所が壊れる」のガードレール）。
 
-## 2. 設計原則
+「**なぜこの構造なのか**」（採用技術 → 制約 → 規約の論理鎖）は [architecture.md](architecture.md) に分離した。本文書は「どこに何があるか」に純化する。
 
-- `src/` と `assets/` を source of truth にする
-- `dist/` は source ではなく **配布物の置き場**
-- root `main.py` は 8 行の wrapper（runtime 本体は `src/runtime/app.py` 側。`main_development.py` は Phase 3 で廃止済）
-- `Pyxel Code Maker` は子どもの正式な編集面
-- image bank は `.pyxres` 往復、`Sound / Music` は Code Maker → code 側 audio asset に取り込んでから runtime
-- runtime は Pyxel の「単一 main.py」制約を受けるので bundler で concat する（手で inlined コピーは維持しない）
-- Scene は MVP パターン（model / view / presenter / scene）。scene 横断 state は `GameState` に集約して DI
+## 2. 構造上の規約
+
+採用技術と選定理由は [architecture.md](architecture.md) を参照。本節はそこから導かれる **配置上のルール** のみ列挙する。
+
+- `src/` と `assets/` が source of truth、`dist/` は配布物の置き場（source を置かない）
+- root `main.py` は 8 行の wrapper、runtime 本体は `src/runtime/app.py` 側（`main_development.py` は Phase 3 で廃止済）
+- runtime monolith の inlined コピーは bundler が自動生成する（**手で維持しない**）
+- `Pyxel Code Maker` は子どもの正式な編集面、`.pyxres` は AI / runtime が直接編集しない
+- image bank は `.pyxres` 往復、Sound / Music は Code Maker → code 側 audio asset に取り込んでから runtime
+- Scene は MVP パターン（model / view / presenter / scene）、scene 横断 state は `GameState` に集約して DI
 
 ## 3. 全体構造
 
@@ -290,13 +295,17 @@ build 前テンプレート（完成 HTML は置かない）。
 | ファイル | 役割 |
 |---|---|
 | `../AGENTS.md` | **AI 用最優先・自動 load・エントリポイント（≤100 行）**。`test_cjg_framework_rule_guards.py::test_agents_md_under_100_lines` で行数を保証 |
-| `repository-structure.md`（本文書） | 人用詳細リファレンス（リポジトリ構造 + ディレクトリ規約 + 責務分担表） |
+| `architecture.md` | **設計判断の SSoT**（採用技術と選定理由・そこから導かれる制約） |
+| `repository-structure.md`（本文書） | 責務分担表（どこに何があるか + ディレクトリ規約 + build runbook） |
 | `framework-rule.md` | 規約本体（M1〜M5 詳細根拠） |
 | `customer-jobs.md` | 顧客のジョブと好循環の定義 |
 | `customer-journeys.md` | カスタマージャーニーとソリューション構成 |
 | `product-requirements-*.md` | 6 分野の gherkin（av / battle / guardrails / map / narrative / platform） |
 
-AI / 人ともに `AGENTS.md` → 必要なら `repository-structure.md`（本文書）→ 必要なら `framework-rule.md` の順に降りる 2 層構造。詳細は `framework-rule.md::M5-3` を参照。
+AI / 人ともに `AGENTS.md` を最初に読み、必要に応じて
+**「なぜ？」→ `architecture.md`** /
+**「どこに？」→ `repository-structure.md`（本文書）** /
+**「どう書く？」→ `framework-rule.md`** の 3 ファイルに降りる **3 層構造**。詳細は `framework-rule.md::M5-3` を参照。
 
 ### 5.7 `llm-wiki/`（LLM 向け永続 wiki）
 
@@ -358,7 +367,9 @@ GameState は **dataclass の values のみ**（PlayerModel・進行 flag・座�
 - `.pyxres` を AI が直接編集する前提にする
 - runtime monolith の inlined コピーを **手で維持する**（bundler が自動生成）
 
-## 8. 使用ライブラリ
+## 8. 使用ライブラリ（配置一覧）
+
+> 各ライブラリを **なぜ選んだか** は [architecture.md](architecture.md) 2〜4 章を参照。本表は「どこで使われているか」だけを示す責務一覧。
 
 | ライブラリ | 主な場所 | 責務 |
 |---|---|---|

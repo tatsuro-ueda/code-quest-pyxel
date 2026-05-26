@@ -1,10 +1,11 @@
 # AGENTS.md — Block Quest Pyxel の作業ルール（AI 用最優先・自動 load）
 
 > **役割**: AI がこの repo に入って最初に読む 100 行以内のエントリポイント。
-> **補足（人用詳細）**: [docs/repository-structure.md](docs/repository-structure.md)
-> **規約本体（M1〜M5）**: [docs/framework-rule.md](docs/framework-rule.md)
+> **設計判断（なぜ？）**: [docs/architecture.md](docs/architecture.md)
+> **責務分担（どこに？）**: [docs/repository-structure.md](docs/repository-structure.md)
+> **規約本体（どう書く？）**: [docs/framework-rule.md](docs/framework-rule.md)
 >
-> 起動時は本ファイル → 必要なら repository-structure.md → 必要なら framework-rule.md の順に辿る。
+> 起動時は本ファイル → 必要なら上の 3 ファイルの順に辿る。
 
 ## いちばん大事な約束
 
@@ -53,9 +54,8 @@
 ## まず読む文書（順序）
 
 1. 本ファイル（AGENTS.md）
-2. 必要に応じ `docs/repository-structure.md`（人用詳細・ディレクトリ規約）
-3. 必要に応じ `docs/framework-rule.md`（M1〜M5 規約本体）
-4. `docs/customer-journeys.md` / `docs/product-requirements-*.md` / 関係 `steering/`
+2. 必要に応じ `docs/architecture.md`（なぜ？）/ `docs/repository-structure.md`（どこに？）/ `docs/framework-rule.md`（どう書く？）
+3. `docs/customer-journeys.md` / `docs/product-requirements-*.md` / 関係 `steering/`
 
 ## コード階層規約（M1〜M5 サマリ）
 

@@ -1,10 +1,12 @@
 # コーディング原則
 
-> **この文書の役割**: M1〜M5 メタルールの規約本体（詳細根拠）。
+> **この文書の役割**: M1〜M5 メタルールの規約本体（**どう書くか**の詳細根拠）。
 >
 > **上位文書（最優先・自動 load）**: [../AGENTS.md](../AGENTS.md)（≤100 行、AI 用エントリポイント）
 >
-> **人用詳細リファレンス**: [repository-structure.md](repository-structure.md)（リポジトリ構造 + ディレクトリ規約）
+> **設計判断の SSoT（なぜこの作り？）**: [architecture.md](architecture.md)（採用技術 → 制約）
+>
+> **責務分担表（どこに何？）**: [repository-structure.md](repository-structure.md)
 
 ## 1. 正本を一つにする（SSoT / Single Source of Truth）
 
@@ -811,15 +813,16 @@ Presenter テストでは
 
 このへんは `AGENTS.md` (≤100 行・自動 load) と `docs/repository-structure.md` (人用詳細) に書くと効きます。両者から本ファイル `docs/framework-rule.md` (規約本体) に到達できる 2 層構造を維持します。
 
-### 文書 2 層構造（2026-05-05 改訂）
+### 文書 3 層構造（2026-05-26 改訂）
 
-| 文書 | 役割 | サイズ |
+| 文書 | 答える問い | サイズ |
 |---|---|---|
-| `AGENTS.md` | AI 用最優先・自動 load・エントリポイント | ≤100 行 |
-| `docs/repository-structure.md` | 人用詳細（補足リファレンス、AI も必要時参照） | 制限なし |
-| `docs/framework-rule.md` (本ファイル) | 規約本体（M1〜M5 詳細根拠） | 制限なし |
+| `AGENTS.md` | 最初に何を読むか / 何を絶対にやらないか | ≤100 行 |
+| `docs/architecture.md` | **なぜこの作りか**（採用技術 → 制約） | 制限なし |
+| `docs/repository-structure.md` | **どこに何があるか**（責務分担表 + ディレクトリ規約） | 制限なし |
+| `docs/framework-rule.md` (本ファイル) | **どう書くか**（M1〜M5 規約） | 制限なし |
 
-AI / 人ともに `AGENTS.md` を最初に読み、必要に応じて `repository-structure.md`、最後に本ファイルへ降りる流れ。`AGENTS.md` が大きくなって自動 load の context を圧迫すると AI が起動時に読み切れなくなるため、100 行制限を `test_cjg_framework_rule_guards.py` の static guard で守る。
+AI / 人ともに `AGENTS.md` を最初に読み、必要に応じて `architecture.md`（なぜ？）/ `repository-structure.md`（どこに？）/ 本ファイル（どう書く？）に降りる **3 層構造**。`AGENTS.md` が大きくなって自動 load の context を圧迫すると AI が起動時に読み切れなくなるため、100 行制限を `test_cjg_framework_rule_guards.py` の static guard で守る。
 
 ## 検証の目安
 
