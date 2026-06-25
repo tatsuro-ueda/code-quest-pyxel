@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>土地面積計算アプリ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-light: #334155;
+    --accent: #10b981;
+    --accent-dark: #059669;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+    --text: #f1f5f9;
+    --text-dim: #94a3b8;
+    --border: #334155;
+  }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+  }
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  header {
+    padding: 12px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  header .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  .mode-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .mode-tab {
+    flex: 1;
+    padding: 9px;
+    border-radius: 10px;
+    background: var(--panel-light);
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .mode-tab.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  #canvasWrap {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    background:
+      linear-gradient(rgba(148,163,184,.08) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, rgba(148,163,184,.08) 1px, transparent 1px) 0 0 / 28px 28px,
+      #131c2e;
+    touch-action: none;
+  }
+  #plot { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .hint {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 14px;
+    pointer-events: none;
+    width: 80%;
+    line-height: 1.6;
+  }
+  .hint .big { font-size: 36px; display:block; margin-bottom: 10px; opacity:.5; }
+
+  .gps-badge {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(15,23,42,.85);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex; align-items: center; gap: 6px;
+    backdrop-filter: blur(4px);
+  }
+  .dot-live { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); }
+  .dot-live.ok { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .dot-live.err { background: var(--danger); }
+
+  .gps-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,23,42,.92);
+    backdrop-filter: blur(3px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 20;
+  }
+  .gps-overlay.show { display: flex; }
+  .gps-overlay-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    max-width: 340px;
+    width: 100%;
+  }
+  .gps-overlay-icon { font-size: 44px; margin-bottom: 12px; }
+  .gps-overlay-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .gps-overlay-msg { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+  .btn-link {
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px;
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .readout {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(15,23,42,.85);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: right;
+    backdrop-filter: blur(4px);
+  }
+  .readout .pts { font-size: 11px; color: var(--text-dim); }
+  .readout .area { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .readout .area.empty { color: var(--text-dim); font-size: 14px; }
+
+  .controls {
+    flex-shrink: 0;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    padding: 12px;
+  }
+  .result-card {
+    background: var(--panel-light);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .result-card.show { display: block; }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; }
+  .result-row .label { font-size: 12px; color: var(--text-dim); }
+  .result-row .val { font-size: 15px; font-weight: 600; }
+  .result-row .val.main { font-size: 22px; color: var(--accent); }
+  .result-note { font-size: 10px; color: var(--text-dim); margin-top: 8px; line-height: 1.4; }
+
+  .btn-row { display: flex; gap: 8px; }
+  button {
+    font-family: inherit;
+    border: none;
+    border-radius: 11px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .08s, opacity .15s;
+    flex: 1;
+  }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:active { background: var(--accent-dark); }
+  .btn-finish { background: var(--warn); color: #1a1206; }
+  .btn-ghost { background: var(--panel-light); color: var(--text); flex: 0 0 auto; padding: 14px 16px; }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+
+  .secondary-row { display: flex; gap: 8px; margin-top: 8px; }
+  .secondary-row button { font-size: 13px; padding: 10px; }
+
+  .toast {
+    position: fixed;
+    bottom: 90px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #000;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 24px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all .25s;
+    pointer-events: none;
+    z-index: 50;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>📐 土地面積計算</h1>
+    <div class="sub">頂点を順にタップして記録 → 「記録終了」で面積を算出</div>
+  </header>
+
+  <div class="mode-tabs">
+    <div class="mode-tab active" data-mode="gps">📍 GPSモード</div>
+    <div class="mode-tab" data-mode="manual">🗺 手動モード</div>
+  </div>
+
+  <div id="canvasWrap">
+    <canvas id="plot"></canvas>
+    <div class="gps-badge" id="gpsBadge" style="display:none;">
+      <span class="dot-live" id="gpsDot"></span>
+      <span id="gpsText">GPS待機中…</span>
+    </div>
+    <div class="gps-overlay" id="gpsOverlay">
+      <div class="gps-overlay-box">
+        <div class="gps-overlay-icon" id="ovIcon">📍</div>
+        <div class="gps-overlay-title" id="ovTitle">GPSを有効にしてください</div>
+        <div class="gps-overlay-msg" id="ovMsg">「GPSを有効化」を押して、ブラウザの位置情報の許可ダイアログで「許可」を選んでください。</div>
+        <button class="btn-primary" id="enableGpsBtn" style="margin-top:14px;">📍 GPSを有効化</button>
+        <button class="btn-link" id="toManualBtn">手動モードで試す →</button>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="pts"><span id="ptCount">0</span> 点</div>
+      <div class="area empty" id="liveArea">—</div>
+    </div>
+    <div class="hint" id="hint">
+      <span class="big">📍</span>
+      下の「この地点を記録」を押すと<br>現在地を頂点として追加します
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="result-card" id="resultCard">
+      <div class="result-row">
+        <span class="label">面積</span>
+        <span class="val main"><span id="rArea">0</span> ㎡</span>
+      </div>
+      <div class="result-row">
+        <span class="label">坪</span>
+        <span class="val"><span id="rTsubo">0</span> 坪</span>
+      </div>
+      <div class="result-row">
+        <span class="label">周囲長</span>
+        <span class="val"><span id="rPerim">0</span> m</span>
+      </div>
+      <div class="result-note" id="resultNote"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="recordBtn">📍 この地点を記録</button>
+      <button class="btn-ghost" id="undoBtn" disabled>↩︎ 1点戻す</button>
+    </div>
+    <div class="secondary-row">
+      <button class="btn-finish" id="finishBtn" disabled>✓ 記録終了して計算</button>
+      <button class="btn-danger" id="clearBtn" disabled>全消去</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const wrap = document.getElementById('canvasWrap');
+
+  let mode = 'gps';
+  let points = [];      // {lat, lng}  地理座標（GPS or 手動の擬似座標）
+  let finished = false;
+  let watchId = null;
+  let lastFix = null;   // {lat, lng, acc}
+
+  // ---------- ユーティリティ ----------
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._tm);
+    t._tm = setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+
+  // 緯度経度 → ローカル平面メートル（基準点からの東西・南北距離）
+  function toMeters(pts){
+    if(pts.length === 0) return [];
+    const lat0 = pts[0].lat * Math.PI/180;
+    const mPerDegLat = 111132.92 - 559.82*Math.cos(2*lat0) + 1.175*Math.cos(4*lat0);
+    const mPerDegLng = 111412.84*Math.cos(lat0) - 93.5*Math.cos(3*lat0);
+    return pts.map(p => ({
+      x: (p.lng - pts[0].lng) * mPerDegLng,
+      y: (p.lat - pts[0].lat) * mPerDegLat
+    }));
+  }
+
+  // シューレース公式
+  function polygonArea(mpts){
+    let a = 0;
+    const n = mpts.length;
+    if(n < 3) return 0;
+    for(let i=0;i<n;i++){
+      const j = (i+1)%n;
+      a += mpts[i].x * mpts[j].y - mpts[j].x * mpts[i].y;
+    }
+    return Math.abs(a)/2;
+  }
+
+  function perimeter(mpts){
+    let p = 0;
+    const n = mpts.length;
+    if(n < 2) return 0;
+    for(let i=0;i<n;i++){
+      const j = (i+1)%n;
+      p += Math.hypot(mpts[j].x-mpts[i].x, mpts[j].y-mpts[i].y);
+    }
+    return p;
+  }
+
+  function fmt(n, d){
+    return n.toLocaleString('ja-JP', {minimumFractionDigits:d, maximumFractionDigits:d});
+  }
+
+  // ---------- 描画 ----------
+  function resize(){
+    const r = wrap.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = r.width * dpr;
+    canvas.height = r.height * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    draw();
+  }
+
+  function draw(){
+    const r = wrap.getBoundingClientRect();
+    ctx.clearRect(0,0,r.width,r.height);
+    if(points.length === 0) return;
+
+    const m = toMeters(points);
+    // バウンディングボックス
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    m.forEach(p=>{ minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x); minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y); });
+    const pad = 60;
+    const w = r.width - pad*2, h = r.height - pad*2;
+    const spanX = Math.max(maxX-minX, 1), spanY = Math.max(maxY-minY, 1);
+    const scale = Math.min(w/spanX, h/spanY);
+    const offX = pad + (w - spanX*scale)/2;
+    const offY = pad + (h - spanY*scale)/2;
+    // y反転（北を上に）
+    const sx = p => offX + (p.x - minX)*scale;
+    const sy = p => r.height - (offY + (p.y - minY)*scale);
+
+    // 多角形面
+    if(points.length >= 2){
+      ctx.beginPath();
+      m.forEach((p,i)=>{ const X=sx(p),Y=sy(p); i===0?ctx.moveTo(X,Y):ctx.lineTo(X,Y); });
+      if(finished || points.length >= 3) ctx.closePath();
+      ctx.fillStyle = 'rgba(16,185,129,.18)';
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2.5;
+      if(finished || points.length >= 3) ctx.fill();
+      ctx.stroke();
+    }
+
+    // 頂点
+    m.forEach((p,i)=>{
+      const X=sx(p),Y=sy(p);
+      ctx.beginPath();
+      ctx.arc(X,Y,7,0,Math.PI*2);
+      ctx.fillStyle = i===0 ? '#f59e0b' : '#10b981';
+      ctx.fill();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // 番号
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(String(i+1), X, Y-16);
+    });
+  }
+
+  // ---------- 状態更新 ----------
+  function update(){
+    document.getElementById('ptCount').textContent = points.length;
+    const undo = document.getElementById('undoBtn');
+    const finish = document.getElementById('finishBtn');
+    const clear = document.getElementById('clearBtn');
+    undo.disabled = points.length === 0 || finished;
+    finish.disabled = points.length < 3 || finished;
+    clear.disabled = points.length === 0;
+    document.getElementById('recordBtn').disabled = finished;
+
+    document.getElementById('hint').style.display = points.length === 0 ? 'block' : 'none';
+
+    // ライブ面積（3点以上で概算表示）
+    const live = document.getElementById('liveArea');
+    if(points.length >= 3){
+      const area = polygonArea(toMeters(points));
+      live.classList.remove('empty');
+      live.innerHTML = fmt(area,1) + ' <span style="font-size:12px;color:#94a3b8">㎡</span>';
+    } else {
+      live.classList.add('empty');
+      live.textContent = '—';
+    }
+    draw();
+  }
+
+  function addGeoPoint(lat,lng){
+    if(finished) return;
+    points.push({lat,lng});
+    update();
+  }
+
+  // ---------- GPS ----------
+  let gpsStarted = false;
+
+  function showGpsOverlay(icon, title, msg, showEnable){
+    const ov = document.getElementById('gpsOverlay');
+    document.getElementById('ovIcon').textContent = icon;
+    document.getElementById('ovTitle').textContent = title;
+    document.getElementById('ovMsg').textContent = msg;
+    document.getElementById('enableGpsBtn').style.display = showEnable ? '' : 'none';
+    ov.classList.add('show');
+  }
+  function hideGpsOverlay(){
+    document.getElementById('gpsOverlay').classList.remove('show');
+  }
+
+  function startGPS(){
+    if(mode !== 'gps') return;
+    const badge = document.getElementById('gpsBadge');
+    const dot = document.getElementById('gpsDot');
+    const txt = document.getElementById('gpsText');
+
+    if(!navigator.geolocation){
+      showGpsOverlay('🚫', '位置情報に非対応', 'このブラウザ／端末は位置情報APIに対応していません。手動モードをご利用ください。', false);
+      return;
+    }
+
+    // 許可状態を事前確認（対応ブラウザのみ）
+    if(navigator.permissions && navigator.permissions.query){
+      navigator.permissions.query({name:'geolocation'}).then(res=>{
+        if(res.state === 'denied'){
+          showGpsOverlay('⛔', '位置情報がブロックされています',
+            'ブラウザの設定でこのページの位置情報が「拒否」になっています。アドレスバーの🔒や設定から位置情報を「許可」に変更してから、再読み込みしてください。プレビュー画面では許可できない場合があります。', false);
+        } else {
+          // prompt or granted → 有効化ボタンから取得
+          showGpsOverlay('📍', 'GPSを有効にしてください',
+            '「GPSを有効化」を押して、表示される位置情報の許可ダイアログで「許可」を選んでください。', true);
+        }
+      }).catch(()=>{
+        showGpsOverlay('📍', 'GPSを有効にしてください',
+          '「GPSを有効化」を押して、位置情報の利用を許可してください。', true);
+      });
+    } else {
+      showGpsOverlay('📍', 'GPSを有効にしてください',
+        '「GPSを有効化」を押して、位置情報の利用を許可してください。', true);
+    }
+  }
+
+  function activateGPS(){
+    const dot = document.getElementById('gpsDot');
+    const txt = document.getElementById('gpsText');
+    const badge = document.getElementById('gpsBadge');
+
+    if(!navigator.geolocation){
+      showGpsOverlay('🚫', '位置情報に非対応', 'このブラウザ／端末は位置情報に対応していません。手動モードをご利用ください。', false);
+      return;
+    }
+
+    badge.style.display = 'flex';
+    dot.className = 'dot-live';
+    txt.textContent = 'GPS取得中…';
+    showGpsOverlay('⏳', '位置情報を取得しています…', 'しばらくお待ちください。許可ダイアログが出たら「許可」を選んでください。', false);
+
+    if(watchId !== null){ navigator.geolocation.clearWatch(watchId); }
+    watchId = navigator.geolocation.watchPosition(
+      pos=>{
+        lastFix = {lat:pos.coords.latitude, lng:pos.coords.longitude, acc:pos.coords.accuracy};
+        gpsStarted = true;
+        dot.className = 'dot-live ok';
+        txt.textContent = '誤差 約' + Math.round(pos.coords.accuracy) + 'm';
+        hideGpsOverlay();
+      },
+      err=>{
+        dot.className = 'dot-live err';
+        lastFix = null;
+        if(err.code === 1){ // PERMISSION_DENIED
+          txt.textContent = '位置情報が拒否されました';
+          showGpsOverlay('⛔', '位置情報が拒否されました',
+            'このページに位置情報の利用が許可されませんでした。アートファクトのプレビュー画面ではブラウザが位置情報をブロックすることがあります。実機で使う場合はコードをご自身のHTTPSページに置いてお試しください。それまでは手動モードをご利用いただけます。', true);
+        } else if(err.code === 2){ // POSITION_UNAVAILABLE
+          txt.textContent = 'GPS信号を取得できません';
+          showGpsOverlay('📡', 'GPS信号を取得できません',
+            '現在地を測定できませんでした。屋内や電波の弱い場所では取得しにくくなります。屋外で再試行するか、手動モードをご利用ください。', true);
+        } else if(err.code === 3){ // TIMEOUT
+          txt.textContent = 'GPSタイムアウト';
+          showGpsOverlay('⏱', 'GPS取得がタイムアウトしました',
+            '時間内に位置を取得できませんでした。もう一度お試しいただくか、手動モードをご利用ください。', true);
+        } else {
+          txt.textContent = 'GPS取得失敗';
+          showGpsOverlay('⚠️', 'GPSを取得できませんでした', 'もう一度お試しいただくか、手動モードをご利用ください。', true);
+        }
+      },
+      {enableHighAccuracy:true, maximumAge:1000, timeout:15000}
+    );
+  }
+
+  function stopGPS(){
+    if(watchId!==null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+    document.getElementById('gpsBadge').style.display='none';
+    hideGpsOverlay();
+  }
+
+  // ---------- 手動モード：擬似座標 ----------
+  // 画面ピクセル → 仮想的な緯度経度（東京付近を基準に1px≒一定m）
+  const BASE_LAT = 35.681, BASE_LNG = 139.767;
+  const M_PER_PX = 0.15; // 手動モードの縮尺（1px = 0.15m 相当）
+  function pxToGeo(px, py){
+    const r = wrap.getBoundingClientRect();
+    const lat0 = BASE_LAT*Math.PI/180;
+    const mPerDegLat = 111132.92;
+    const mPerDegLng = 111412.84*Math.cos(lat0);
+    const east = (px - r.width/2) * M_PER_PX;
+    const north = (r.height/2 - py) * M_PER_PX;
+    return {
+      lat: BASE_LAT + north/mPerDegLat,
+      lng: BASE_LNG + east/mPerDegLng
+    };
+  }
+
+  // ---------- イベント ----------
+  document.getElementById('recordBtn').addEventListener('click', ()=>{
+    if(mode === 'gps'){
+      if(!lastFix){ toast('GPS信号を取得できていません'); return; }
+      addGeoPoint(lastFix.lat, lastFix.lng);
+      toast('頂点 ' + points.length + ' を記録');
+    } else {
+      // 手動：中央に点を置く代わりに、タップ案内
+      toast('地図エリアを直接タップして点を置いてください');
+    }
+  });
+
+  wrap.addEventListener('click', (e)=>{
+    if(mode !== 'manual' || finished) return;
+    const r = wrap.getBoundingClientRect();
+    const px = e.clientX - r.left;
+    const py = e.clientY - r.top;
+    const g = pxToGeo(px, py);
+    addGeoPoint(g.lat, g.lng);
+  });
+
+  document.getElementById('undoBtn').addEventListener('click', ()=>{
+    points.pop();
+    update();
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    points = [];
+    finished = false;
+    document.getElementById('resultCard').classList.remove('show');
+    document.getElementById('finishBtn').textContent = '✓ 記録終了して計算';
+    update();
+  });
+
+  document.getElementById('finishBtn').addEventListener('click', ()=>{
+    if(points.length < 3) return;
+    finished = true;
+    const m = toMeters(points);
+    const area = polygonArea(m);
+    const perim = perimeter(m);
+    const tsubo = area / 3.305785;
+
+    document.getElementById('rArea').textContent = fmt(area,2);
+    document.getElementById('rTsubo').textContent = fmt(tsubo,2);
+    document.getElementById('rPerim').textContent = fmt(perim,2);
+
+    let note = '';
+    if(mode === 'gps'){
+      const acc = lastFix ? Math.round(lastFix.acc) : null;
+      note = '※ シューレース公式による概算値です。スマホGPSには通常数mの誤差があるため、登記等の正式な数値には測量が必要です。';
+      if(acc!==null) note += ' 直近のGPS誤差: 約'+acc+'m。';
+    } else {
+      note = '※ 手動モードの座標は画面上の作図に基づく相対値で、実寸とは一致しません。形状・比率の確認用です。';
+    }
+    document.getElementById('resultNote').textContent = note;
+    document.getElementById('resultCard').classList.add('show');
+    document.getElementById('finishBtn').textContent = '計算済み（全消去で再開）';
+    update();
+    toast('面積を計算しました');
+  });
+
+  // GPS有効化ボタン
+  document.getElementById('enableGpsBtn').addEventListener('click', activateGPS);
+
+  // オーバーレイから手動モードへ
+  document.getElementById('toManualBtn').addEventListener('click', ()=>{
+    document.querySelector('.mode-tab[data-mode="manual"]').click();
+  });
+
+  // モード切替
+  document.querySelectorAll('.mode-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      const newMode = tab.dataset.mode;
+      if(newMode === mode) return;
+      mode = newMode;
+      document.querySelectorAll('.mode-tab').forEach(t=>t.classList.toggle('active', t===tab));
+      // リセット
+      points = []; finished = false;
+      document.getElementById('resultCard').classList.remove('show');
+      document.getElementById('finishBtn').textContent = '✓ 記録終了して計算';
+
+      const recBtn = document.getElementById('recordBtn');
+      const hint = document.getElementById('hint');
+      if(mode === 'gps'){
+        recBtn.style.display = '';
+        recBtn.textContent = '📍 この地点を記録';
+        hint.innerHTML = '<span class="big">📍</span>下の「この地点を記録」を押すと<br>現在地を頂点として追加します';
+        startGPS();
+      } else {
+        recBtn.style.display = 'none';
+        hint.innerHTML = '<span class="big">🗺</span>地図エリアをタップして<br>土地の頂点を順に置いてください';
+        stopGPS();
+      }
+      update();
+    });
+  });
+
+  // 初期化
+  window.addEventListener('resize', resize);
+  resize();
+  update();
+  startGPS();  // GPSモードの有効化オーバーレイを表示
+})();
+</script>
+</body>
+</html>

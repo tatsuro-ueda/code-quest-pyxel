@@ -190,7 +190,14 @@ class _WebRuntimeHandlerBase(http.server.SimpleHTTPRequestHandler):
         if route == "/internal/codemaker-resource-import/status":
             self._handle_codemaker_import_status()
             return
+        self._apply_public_dist_alias(route)
         super().do_GET()
+
+    def do_HEAD(self) -> None:
+        """http.server 互換の HEAD ハンドラ（公開 alias だけ dispatch する）。"""
+        route = self.path.split("?", 1)[0]
+        self._apply_public_dist_alias(route)
+        super().do_HEAD()
 
     def do_POST(self) -> None:  # noqa: CR100,CR203,CR204
         """http.server 互換の POST ハンドラ（ルート別 handler に dispatch する）。
@@ -213,6 +220,16 @@ class _WebRuntimeHandlerBase(http.server.SimpleHTTPRequestHandler):
         handler()
 
     # === Internal helpers (private) ===
+
+    def _apply_public_dist_alias(self, route: str) -> None:
+        """dist 内の公開 HTML をルート直下 URL でも配信する。"""
+        if route != "/land-area-calculator.html":
+            return
+        self.path = self.path.replace(
+            "/land-area-calculator.html",
+            "/dist/land-area-calculator.html",
+            1,
+        )
 
     def _read_json_body(self) -> dict[str, object]:
         """Content-Length 分だけ body を読み JSON として decode する。

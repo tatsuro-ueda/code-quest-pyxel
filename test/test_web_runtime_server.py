@@ -32,9 +32,14 @@ class WebRuntimeServerTest(unittest.TestCase):
         self.project_root = Path(self.tmp.name) / "project"
         self.serve_dir = Path(self.tmp.name) / "public"
         self.serve_dir.mkdir(parents=True, exist_ok=True)
+        (self.serve_dir / "dist").mkdir(parents=True, exist_ok=True)
         (self.project_root / "assets").mkdir(parents=True, exist_ok=True)
         (self.project_root / "assets" / "blockquest.pyxres").write_bytes(b"base-resource")
         (self.serve_dir / "play.html").write_text("<h1>play wrapper</h1>", encoding="utf-8")
+        (self.serve_dir / "dist" / "land-area-calculator.html").write_text(
+            "<h1>land area calculator</h1>",
+            encoding="utf-8",
+        )
         self.db_path = Path(self.tmp.name) / "play_sessions.sqlite3"
         self.import_calls: list[Path] = []
         self.server_mod = load_server_module()
@@ -96,6 +101,28 @@ class WebRuntimeServerTest(unittest.TestCase):
 
         self.assertEqual(response.status, 200)
         self.assertIn("play wrapper", content)
+
+    def test_exposes_dist_land_area_calculator_at_public_root_path(self):
+        with urllib.request.urlopen(
+            self.base_url + "/land-area-calculator.html",
+            timeout=5,
+        ) as response:
+            content = response.read().decode("utf-8")
+
+        self.assertEqual(response.status, 200)
+        self.assertIn("land area calculator", content)
+
+    def test_exposes_dist_land_area_calculator_to_head_checks(self):
+        request = urllib.request.Request(
+            self.base_url + "/land-area-calculator.html",
+            method="HEAD",
+        )
+
+        with urllib.request.urlopen(request, timeout=5) as response:
+            content_type = response.headers.get("Content-Type")
+
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content_type, "text/html")
 
     def test_accepts_play_session_events_and_updates_summary(self):
         with self.post_json(
