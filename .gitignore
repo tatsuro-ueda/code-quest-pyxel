@@ -10,3 +10,4 @@ mock/
 .playwright-mcp/
 .claude/
 .worktrees/
+todos/files-to-fetch/

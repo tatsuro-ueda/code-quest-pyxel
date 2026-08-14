@@ -11,3 +11,14 @@ tasknote_required_sections:
   result: Result
   discussion: Discussion
   closing: Closing
+
+# close済tasknoteの送信箱設定（2026-08-14 追加）。
+# tn-close時は shared helper（~/.local/share/chezmoi/shared/llm-wiki-core/python/
+# llm_wiki_tasknote_ship_helper.py）がこの設定を読んで送信箱へ出す。
+# 送信箱に置いただけでは届かない。続けて `llm-wiki-push push` を実行する
+# （bd側からのfetch回収は2026-07-26にdeprecated。ディレクトリ名 files-to-fetch は名残）。
+tasknote_ship:
+  enabled: true
+  outbox_root: todos/files-to-fetch
+  category: 5-製品開発/code-quest
+  wont_root: todos/wont
