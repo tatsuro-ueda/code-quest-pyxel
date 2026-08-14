@@ -97,3 +97,28 @@ python -m pytest test/ -q
 ## done の意味
 
 `done` = コードがある + テストが通る + **人がタイトルを見て自然に期待する状態**。実物確認まで含む。
+
+## tn-close したら bd へ送る（送信箱方式）
+
+close した tasknote は `steering/done/` に置いて終わりにしない。知見の正本は
+business-docs の llm-wiki に一本化する（SSoT）。close の直後に2手とも実行する。
+
+```bash
+cd ~/code-quest-pyxel
+
+# 1手目: 送信箱（todos/files-to-fetch/5-製品開発/code-quest/）へ出す
+uv run --no-project --with pyyaml python3 \
+  ~/.local/share/chezmoi/shared/llm-wiki-core/python/llm_wiki_tasknote_ship_helper.py \
+  "steering/done/<閉じたノート>.md"
+
+# 2手目: business-docs へ push する
+llm-wiki-push push --dry-run   # 送る対象を確認
+llm-wiki-push push             # ACK を受けたファイルだけ送信箱から消える
+```
+
+- `status: done` → 送信箱へ移動し、元ファイルは残さない。`status: wont` は送らず `todos/wont/` へ退避する。
+- **2手目を省かない。** 送信箱に置いただけでは bd に届かない。bd 側からの fetch 回収は 2026-07-26 に廃止済みで、ディレクトリ名 `files-to-fetch` は当時の名残。
+- 結果 JSON の `conflict` / `failed` は自動復旧しない。送信箱に残るので中身を見て人が判断する。
+- 送信箱は `.gitignore` 済み。中身を手で消さない。
+- 送れるのは `.md` だけ。スクショ `.png` は `steering/done/` に残るので、参照している tasknote 本文に要点を書き写しておく。
+- 理由: bd の llm-wiki を全マシンの頭脳として鍛えるため。2026-08-14 に、この導線が無く3か月ぶん26本が滞留していた取りこぼしを解消した。
