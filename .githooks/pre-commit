@@ -14,7 +14,14 @@ cd "$REPO_ROOT"
 
 if [[ "${TASKNOTE_PRECOMMIT:-0}" == "1" && -f tasknote-lint.config.json ]]; then
   echo "pre-commit: tasknote-lint ..."
-  if ! node "${HOME}/dotfiles/shared/linter/coding-rules/tasknote/run_tasknote_lint.mjs" \
+  # linter の実体は chezmoi 管理下にある。~/dotfiles は旧レイアウトの名残で
+  # 現在は存在しないため、chezmoi に置き場所を尋ねて解決する。
+  if ! command -v chezmoi >/dev/null 2>&1; then
+    echo "pre-commit: chezmoi is unavailable; cannot locate tasknote-lint." >&2
+    exit 1
+  fi
+  TASKNOTE_LINT="$(dirname "$(chezmoi source-path)")/shared/linter/coding-rules/tasknote/run_tasknote_lint.mjs"
+  if ! node "${TASKNOTE_LINT}" \
     --config ./tasknote-lint.config.json \
     --staged; then
     echo "pre-commit: tasknote-lint FAILED. Commit blocked."
