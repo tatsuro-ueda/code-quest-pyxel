@@ -400,6 +400,10 @@ body::before {
   .cta-btn, .sub-btn, .lightbox-close { transition: none; }
 }
 </style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1466">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="ga4.js" defer></script>
 </head>
 <body>
 <div class="container">
@@ -664,6 +668,13 @@ body::before {
     }
   });
 })();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js");
+  });
+}
 </script>
 </body>
 </html>
