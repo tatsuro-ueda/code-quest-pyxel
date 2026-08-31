@@ -1,6 +1,6 @@
 // GA4 測定ID。Google Analytics 管理画面で発行したものをここに1行だけ書く。
 // 空文字のあいだは何も読み込まない（計測しない）。
-var GA4_MEASUREMENT_ID = "";
+var GA4_MEASUREMENT_ID = "G-RSPX3VPF2T";
 
 (function () {
   if (!GA4_MEASUREMENT_ID) return;
