@@ -94,6 +94,10 @@ html, body {
   white-space: nowrap;
 }
 </style>
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1a1466">
+<link rel="apple-touch-icon" href="../icons/icon-192.png">
+<script src="../ga4.js" defer></script>
 </head>
 <body data-page-kind="production" data-session-api-base="/internal/play-sessions">
 <iframe id="game-frame" src="pyxel.html?v=1779826599" allowfullscreen></iframe>
@@ -376,6 +380,13 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('fullscreenchange', onFullscreenChange);
   document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 });
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("../sw.js");
+  });
+}
 </script>
 </body>
 </html>
